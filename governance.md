@@ -5,7 +5,7 @@ The initial bootstrap committee will consist of 5 individuals and one governance
 Members are:
 
 * [Andrew Bayer](https://github.com/abayer) (CloudBees)
-* [Vincent Demeester](https://github.com/vdemeester) (RedHat)
+* [Vincent Demeester](https://github.com/vdemeester) (Red Hat)
 * [Christie Wilson](https://github.com/bobcatfish) (Google)
 * [Dan Lorenc](https://github.com/dlorenc) (Google)
 * [Kim Lewandowski](https://github.com/kimsterv) (Google)
@@ -80,7 +80,7 @@ The committee MUST define a contribution process that:
 ## Code of Conduct
 
 The code of conduct MUST set expectations for contributors on expected behavior, as well as explaining the consequences of violating the terms of the code.
-The Contributor Covenant has become the de facto standard for this language.
+The [Contributor Covenant](https://www.contributor-covenant.org) has become the de facto standard for this language.
 
 ## Project Communication Channels
 What are the primary communications channels the project will adopt and manage?

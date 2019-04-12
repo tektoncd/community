@@ -33,13 +33,13 @@ The committee will be responsible for a series of specific artifacts and activit
 ### Initial Charter
 
 This document will define how the committee is to manage the project until it has transitioned to an elected steering body, as well as what governance must be in place.
-The Kubernetes Steering Committee Charter Draft serves as a good example. 
+The Kubernetes Steering Committee Charter Draft serves as a good example.
 
 A charter should cover all of the following topics:
 
 * Scope of rights and responsibilities explicitly held by the committee
 * Committee structure that meets the requirements above
-* Election process, including: 
+* Election process, including:
   * special elections in the case someone resigns or is impeached
   * who is eligible to nominate candidates and how
   * who is eligible to run as a candidate
@@ -60,22 +60,24 @@ A charter should cover all of the following topics:
 ## Transition Process
 
 The transition process MUST:
-  * Organize, execute, and validate an election for replacing bootstrap members (they may re-run, but would need to be re-elected in order to stay)
-  * Define the term lengths for newly-elected individuals, ideally so not all members change out at once
-  * Provide documentation for the community and committee members sufficient to smoothly continue the established practices of the committee
+
+* Organize, execute, and validate an election for replacing bootstrap members (they may re-run, but would need to be re-elected in order to stay)
+* Define the term lengths for newly-elected individuals, ideally so not all members change out at once
+* Provide documentation for the community and committee members sufficient to smoothly continue the established practices of the committee
 
 ## Contribution Process
 
 The committee MUST define a contribution process that:
-  * Explains to potential contributors how/if they can add code to the repository/repositories
-  * Documents Workflow and management of pull requests
-  * Identifies who is authorized to commit or revert code
-  * Identifies automation is required for normal operations
-  * Defines how release decisions are made
-    * Who is authorized to release and when.
-    * Frequency limits
-  * Defines the documentation process
-  * Defines what CLA process is required and how it is programmatically enforced before code is merged
+
+* Explains to potential contributors how/if they can add code to the repository/repositories
+* Documents Workflow and management of pull requests
+* Identifies who is authorized to commit or revert code
+* Identifies automation is required for normal operations
+* Defines how release decisions are made
+  * Who is authorized to release and when.
+  * Frequency limits
+* Defines the documentation process
+* Defines what CLA process is required and how it is programmatically enforced before code is merged
 
 ## Code of Conduct
 
@@ -83,6 +85,6 @@ The code of conduct MUST set expectations for contributors on expected behavior,
 The [Contributor Covenant](https://www.contributor-covenant.org) has become the de facto standard for this language.
 
 ## Project Communication Channels
+
 What are the primary communications channels the project will adopt and manage?
 This can include Slack, mailing lists, an organized Stack Overflow topic, or exist only in GitHub issues and pull requests.
-

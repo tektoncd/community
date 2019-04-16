@@ -19,7 +19,7 @@ See our standards regarding:
 * [Code of conduct](code-of-conduct.md)
 * [Development principles](standards.md#principles)
 * [Commit messages](standards.md#commit-messages)
-* [Go coding standards](standard.md#go)
+* [Go coding standards](standards.md#go)
 
 Find out about our processes:
 

@@ -27,5 +27,6 @@ Find out about our processes:
 * [Propose features](process.md#proposing-features)
 * [Project OWNERS](process.md#OWNERS)
 * [Pull request reviews](process.md#reviews)
+* [Propose projects](process.md#proposing-projects)
 
 _For guidelines on how to contribute to `tektoncd/community` see [CONTRIBUTING.md](CONTRIBUTING.md)._

@@ -84,6 +84,9 @@ The committee MUST define a contribution process that:
 The code of conduct MUST set expectations for contributors on expected behavior, as well as explaining the consequences of violating the terms of the code.
 The [Contributor Covenant](https://www.contributor-covenant.org) has become the de facto standard for this language.
 
+Members of the governance committee will be responsible for handling [Tekton code of conduct](code-of-conduct.md)
+violations via tekton-code-of-conduct@googlegroups.com.
+
 ## Project Communication Channels
 
 What are the primary communications channels the project will adopt and manage?

@@ -88,3 +88,12 @@ The [Contributor Covenant](https://www.contributor-covenant.org) has become the 
 
 What are the primary communications channels the project will adopt and manage?
 This can include Slack, mailing lists, an organized Stack Overflow topic, or exist only in GitHub issues and pull requests.
+
+## Permissions and access
+
+Members of the governing board will be given access to these resources:
+
+* [The GCP project `tekton-releases`](http://console.cloud.google.com/home/dashboard?project=tekton-releases)
+  which is used for [test and release infrastructure](https://github.com/tektoncd/plumbing)
+* [The GCP projects](https://github.com/tektoncd/plumbing/blob/master/boskos/boskos-config.yaml)
+  used by [boskos](https://github.com/tektoncd/plumbing#boskos)

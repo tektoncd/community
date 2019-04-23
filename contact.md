@@ -8,11 +8,12 @@ We are so happy you want to get in touch! You can reach and join us via:
 
 ## Slack
 
-We can be reached on slack at
-[`#build-pipeline`](https://knative.slack.com/messages/build-pipeline)!
+We can be reached [on the `tektoncd` slack](https://tektoncd.slack.com/)!
 
-(We were formerly part of [the knative project](github.com/knative)) and they
-are kindly letting us continue to use their slack until we get our own!)
+Some important channels:
+
+* `#admin` - Request slack related changes, e.g. proposing new channels
+* `#plumbing` - Request [infrastructure support](https://github.com/tektoncd/plumbing#support)
 
 ## Mailing List
 

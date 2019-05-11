@@ -19,8 +19,11 @@ You can join the `tektoncd` slack using the following link : [here](https://join
 
 ## Mailing List
 
-Our mailing list is
+Our mailing list for developers working on Tektton is
 [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev).
+
+Our mailing list for end user of Tekton is
+[tekton-users@](https://groups.google.com/forum/#!forum/tekton-users).
 
 All docs which are shared with the Tekton community (including
 [working group](#working-group) meeting recordings!) are made visible to this group,

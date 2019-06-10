@@ -19,7 +19,7 @@ Some important channels:
 
 ## Mailing List
 
-Our mailing list for developers working on Tektton is
+Our mailing list for developers working on Tekton is
 [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev).
 
 Our mailing list for end user of Tekton is

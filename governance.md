@@ -98,5 +98,18 @@ Members of the governing board will be given access to these resources:
 
 * [The GCP project `tekton-releases`](http://console.cloud.google.com/home/dashboard?project=tekton-releases)
   which is used for [test and release infrastructure](https://github.com/tektoncd/plumbing)
-* [The GCP projects](https://github.com/tektoncd/plumbing/blob/master/boskos/boskos-config.yaml)
-  used by [boskos](https://github.com/tektoncd/plumbing#boskos)
+* [The GCP project `tekton-nightly`](http://console.cloud.google.com/home/dashboard?project=tekton-nightly)
+  which is used for publishing nightly releases for Tekton projects
+
+They have the following permissions:
+
+* `Project Viewer` - To see the project in the web UI
+* `Kubernetes Engine Admin` - To create and use GKE clusters
+* `Storage Admin` - To push to GCS buckets and GCR
+
+At the moment access to
+[the GCP projects](https://github.com/tektoncd/plumbing/blob/master/boskos/boskos-config.yaml)
+used by [boskos](https://github.com/tektoncd/plumbing#boskos) is limited to members of the
+Governing board from Google. In [plumbing #34](https://github.com/tektoncd/plumbing/issues/34)
+we will reduce the number of projects we need to manage and ensure all governing members have
+access.

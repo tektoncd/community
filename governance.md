@@ -92,6 +92,8 @@ violations via tekton-code-of-conduct@googlegroups.com.
 What are the primary communications channels the project will adopt and manage?
 This can include Slack, mailing lists, an organized Stack Overflow topic, or exist only in GitHub issues and pull requests.
 
+Governance decisions, votes and questions should take place on the tekton-governance@googlegroups.com mailing list.
+
 ## Permissions and access
 
 Members of the governing board will be given access to these resources:

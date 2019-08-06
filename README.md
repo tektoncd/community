@@ -8,11 +8,12 @@ This is the central home for documentation on joining and contributing to the Te
 
 ## Want to get involved
 
-[Reach out](contact.md) via:
+[Reach out](contact.md) and see what we're up to via:
 
 * [slack](contact.md#slack)
 * [our mailing list](contact.md#mailing-list)
 * [our working group](contact.md#working-group)
+* [our shared document drive](contact.md#shared-drive)
 
 See our standards regarding:
 

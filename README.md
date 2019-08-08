@@ -12,8 +12,9 @@ This is the central home for documentation on joining and contributing to the Te
 
 * [slack](contact.md#slack)
 * [our mailing list](contact.md#mailing-list)
-* [our working group](contact.md#working-group)
+* [our working group](contact.md#working-group) and [other meetings](contact.md#other-meetings)
 * [our shared document drive](contact.md#shared-drive)
+* [our shared calendar](contact.md#calendar)
 
 See our standards regarding:
 

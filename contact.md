@@ -25,7 +25,7 @@ which are shared with the Tekton community (including
 [working group](#working-group) meeting recordings!) are made visible to this
 group, so please join if you are interested in accessing those docs.
 
-Our mailing list for end user of Tekton is
+Our mailing list for end users of Tekton is
 [tekton-users@](https://groups.google.com/forum/#!forum/tekton-users).
 
 ## Calendar

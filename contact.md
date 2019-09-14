@@ -45,7 +45,7 @@ There are several regular working group meetings:
   [These are the meeting minutes](https://docs.google.com/document/d/1JmRd0vbh2Q6Emu2DOk-LwLHfxd2V0zrN4WNawGzoNXw).
 * As we get the initial implementation of [Tekton Triggers](https://github.com/tektoncd/triggers) off the group,
   we are having a meeting
-  [at 10am EST on Thursdays every 2 weeks](https://calendar.google.com/event?action=TEMPLATE&tmeid=NHRlZGVzOWxzajRzMWx1MWZlM3R2MXFqbDlfMjAxOTExMTRUMTUwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL).
+  [at 12pm EST on Tuesdays every 2 weeks](https://calendar.google.com/event?action=TEMPLATE&tmeid=NHRlZGVzOWxzajRzMWx1MWZlM3R2MXFqbDlfMjAxOTExMTRUMTUwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL).
   [These are the meeting minutes](https://docs.google.com/document/d/1T87yK4BIu291gGK1L2ZzDpesGCnXX3tGuWXjdr5Soxw/edit)
   which are available in our [the shared drive](#shared-drive).
 

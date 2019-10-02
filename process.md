@@ -93,7 +93,7 @@ If you are interested in becoming an OWNER of a project, take a look at the
 
 ### Requirements
 
-To be added as an OWNER of a project, you must:
+To be added as an OWNER of most repositories, you must:
 
 * Have been actively participating in reviews for at least 3 months or
   50% of the project lifetime, whichever is shorter
@@ -102,6 +102,20 @@ To be added as an OWNER of a project, you must:
 * Be nominated by another OWNER (with no objections from other OWNERS)
 
 The final change will be made via a PR to update the OWNERS file.
+
+To facilitate productivity, small repositories, or repositories that do not contain production
+code may decide to use a simpler OWNERs process.
+To become an OWNER of one of these repositores, you must either:
+
+* Be an OWNER on any other repository in the Tekton project, and ask an existing OWNER to add you.
+* Or, Be nominated by another OWNER (with no objections from other OWNERs)
+
+Repositories currently using this simpler mechanism are:
+
+* tektoncd/plumbing
+* tektoncd/friends
+* tektoncd/community
+* tektoncd/website
 
 ## Reviews
 

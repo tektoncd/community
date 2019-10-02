@@ -239,3 +239,25 @@ a project can get its own top level repo in [the `tektoncd` org](https://github.
 The criteria here is that the governing committee agrees that the project
 should be considered part of `Tekton` and will be promoted and maintained
 as such.
+
+### Meetings
+
+Despite the best wishes of many engineers, meetings are sometimes necessary in the software development process.
+We expect that engineers will meet with each other from time to time to discuss designs, resolve issues and
+brainstorm ideas.
+
+There is no requirement that all meetings take place publicly.
+Face to face meetings between a small number of engineers, meetings internal to a single company, and ad-hoc
+discussions will always occur.
+Whenever you feel a meeting has touched on a topic of interest to the broader community, please make an effort
+to summarize this discussion in notes or an issue sent to
+[our list](https://groups.google.com/forum/#!forum/tekton-dev) or Slack [channel](https://tektoncd.slack.com).
+
+Before a meeting has occurred, if you feel it may be of broader interest to the community, there are several
+best-practices to make sure everyone interested can attend:
+
+* Use a video-chat channel that is easily accessible.
+  Today the community widely uses Google Hangouts and Zoom.
+* Try to record the meeting, and post a link to the recording.
+* If the meeting will be recurring, or have a large enough audience, use a poll to allow participants to vote on
+  potential times.

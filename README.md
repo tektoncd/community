@@ -30,5 +30,6 @@ Find out about our processes:
 * [Project OWNERS](process.md#OWNERS)
 * [Pull request reviews](process.md#reviews)
 * [Propose projects](process.md#proposing-projects)
+* [Github Org Management](org/README.md)
 
 _For guidelines on how to contribute to `tektoncd/community` see [CONTRIBUTING.md](CONTRIBUTING.md)._

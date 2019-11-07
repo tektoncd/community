@@ -22,6 +22,7 @@ See our standards regarding:
 * [Development principles](standards.md#principles)
 * [Commit messages](standards.md#commit-messages)
 * [Go coding standards](standards.md#go)
+* [User profiles](user-profiles.md)
 
 Find out about our processes:
 

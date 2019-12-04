@@ -63,7 +63,7 @@ This is for two main reasons:
 Some suggestions for how to do this:
 
 1. Write up a design doc and share it with [the mailing list](contact.md#mailing-list)
-2. Bring your design/ideas to [our working group meetings](contact.md#working-group) for
+2. Bring your design/ideas to [our working group meetings](working-groups.md) for
    discussion
 
 A great proposal will include:
@@ -179,7 +179,7 @@ If you have an idea for a project that you'd like to add to `Tekton`,
 you should [be aware of the requirements](#project-requirements) follow this process:
 
 1. Propose the project in
-  [a Tekton working group meeting](https://github.com/tektoncd/community/blob/master/contact.md#working-group)
+  [a Tekton working group meeting](https://github.com/tektoncd/community/blob/master/working-groups.md)
 2. [File an issue in the `community` repo](https://github.com/tektoncd/community/issues)
   which describes:
     * The problem the project will solve

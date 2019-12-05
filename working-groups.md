@@ -97,7 +97,7 @@ This is the [`tektoncd/cli`](https://github.com/tektoncd/cli) working group.
 | --------------------------------------------------------      | ----------        | ------- | ---------------------------------------           |
 | <img width="30px" src="https://github.com/vdemeester.png">    | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester)       |
 | <img width="30px" src="https://github.com/chmouel.png">       | Chmouel Boudjnah  | Red Hat | [chmouel](https://github.com/chmouel)             |
-| <img width="30px" src="https://github.com/danielhelfand.png"> | Daniel Helfand    | VMWare  | [danielhelfand](https://github.com/danielhelfand) |
+| <img width="30px" src="https://github.com/danielhelfand.png"> | Daniel Helfand    | VMware  | [danielhelfand](https://github.com/danielhelfand) |
 
 ## Documentation
 

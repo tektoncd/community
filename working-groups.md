@@ -41,14 +41,24 @@ This is the general working group, where we discuss each project's
 update and cross-project subjects. This is also the main working group
 to discuss the `tektoncd/pipeline` project.
 
+We altenate between two meeting times, a time that is friendly for Europe + North America
+(PST+EST+CEST) and a time that is friendly for Asia + Europe (CEST+IST+CST).
+
+
 | Artifact                   | Link                                                                                                                                                                                                                                                                                                 |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------                                                                                                                                        |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                                                                                    |
-| Community Meeting VC       | [https://meet.google.com/gnx-mwhf-wqt](https://meet.google.com/gnx-mwhf-wqt)                                                                                                                                                                                                                                         |
-| Community Meeting Calendar | Wednesdays 09:00a-10:00a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=bjc0aWJqMzVtYm04ZWt2NHJlajJmajdvNGtfMjAxOTA1MjlUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
-| Meeting Notes              | [Notes](https://docs.google.com/document/d/1rPR7m1Oj0ip3bpd_bcS1sjZyPgGi_g9asF5YrExeESc)                                                                                                                                                                                                             |
 | Slack Channel              | [#pipeline](https://tektoncd.slack.com/messages/pipeline)                                                                                                                                                                                                                                            |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1rPR7m1Oj0ip3bpd_bcS1sjZyPgGi_g9asF5YrExeESc)                                                                                                                                                                                                             |
 
+### Europe + North America
+
+
+| Artifact                   | Link                                                                                                                                                                                                                                                                                                 |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------                                                                                                                                        |
+| Community Meeting VC       | [https://meet.google.com/gnx-mwhf-wqt](https://meet.google.com/gnx-mwhf-wqt)                                                                                                                                                                                                                                         |
+| Community Meeting Calendar | Wednesdays 9:00am-10:00am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=bjc0aWJqMzVtYm04ZWt2NHJlajJmajdvNGtfMjAxOTA1MjlUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1rPR7m1Oj0ip3bpd_bcS1sjZyPgGi_g9asF5YrExeESc)                                                                                                                                                                                                             |
 
 | &nbsp;                                                     | Facilitators      | Company | Profile                                     |
 | --------------------------------------------------------   | ----------        | ------- | ---------------------------------------     |
@@ -56,6 +66,20 @@ to discuss the `tektoncd/pipeline` project.
 | <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |
 | <img width="30px" src="https://github.com/skaegi.png">     | Simon Kaegi       | IBM     | [skaegi](https://github.com/skaegi)         |
 | <img width="30px" src="https://github.com/dlorenc.png">    | Dan Lorenc        | Google  | [dlorenc](https://github.com/dlorenc)       |
+
+### Europe + Asia
+
+| Artifact                   | Link                                                                                                                                                                                                                                                                                                 |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------                                                                                                                                        |
+| Community Meeting VC       | [meet.google.com/xgi-shbo-mym](https://meet.google.com/xgi-shbo-mym)                                                                                                                                                                                                                                         |
+| Community Meeting Calendar | Wednesdays 8:30pm-9:30pm CST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=M3Rsa2lsdnA5ZGc2aHJ1bGlqdGUzOXFnYjNfMjAyMDAxMjJUMTIzMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1rPR7m1Oj0ip3bpd_bcS1sjZyPgGi_g9asF5YrExeESc)                                                                                                                                                                                                             |
+
+
+| &nbsp;                                                     | Facilitators      | Company | Profile                                     |
+| --------------------------------------------------------   | ----------        | ------- | ---------------------------------------     |
+| <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli) |
+| <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |
 
 ## Triggers
 

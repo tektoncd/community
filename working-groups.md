@@ -127,7 +127,7 @@ This is the [`tektoncd/cli`](https://github.com/tektoncd/cli) working group.
 
 This is the documentation working group, related to
 [`tektoncd/website`](https://github.com/tektoncd/website) and all
-repository that need to expose documetnation.
+repository that need to expose documentation.
 
 | Artifact                   | Link                                                                                                                                                                                                                                         |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------                                                                                |

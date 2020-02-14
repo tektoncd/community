@@ -4,6 +4,7 @@ This is the central home for documentation on joining and contributing to the Te
 
 ## Want to learn how the project works
 
+* Take a look at our [mission and roadmaps](roadmap.md)
 * Take a look at [our Governance docs](governance.md)
 
 ## Want to get involved

@@ -19,6 +19,7 @@ orgs:
     has_repository_projects: true
     location: ""
     members:
+    - 16yuki0702
     - a-roberts
     - afrittoli
     - akihikokuroda

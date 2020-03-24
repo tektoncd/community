@@ -7,3 +7,22 @@ This system uses [peribolos](https://github.com/kubernetes/test-infra/tree/maste
 to manage the org configuration.
 
 After config updates are made, an administrator must manually sync the configurations for them to take effect.
+
+## Requirements
+
+Feel free to open issues, comment, open pull requests or propose designs whether you
+are a member of the tektoncd org or not!
+
+If you are regularly contributing to repos in tektoncd, then you can become a
+member of the Tekton GitHub organization in order to have tests run against your
+pull requests without requiring [`ok-to-test`](process.md#prow-commands) and to be
+able to [`lgtm`](process.md#prow-commands) pull requests.
+
+To be eligible to become a member of the org you must (not that this is at the
+discretion of [the governing board members](governance.md)) do both of:
+
+* Opened 5 pull requests against projects in tektoncd
+* Reviewed 5 pull requests against projects in tektoncd
+
+OR you can be endorsed by existing contributors (e.g. if you are joining a team that
+is working on Tekton).

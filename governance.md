@@ -7,8 +7,8 @@ Members are:
 * [Andrew Bayer](https://github.com/abayer) (CloudBees)
 * [Vincent Demeester](https://github.com/vdemeester) (Red Hat)
 * [Christie Wilson](https://github.com/bobcatfish) (Google)
-* [Dan Lorenc](https://github.com/dlorenc) (Google)
-* [Kim Lewandowski](https://github.com/kimsterv) (Google)
+* [Andrea Frittoli](https://github.com/afrittoli) (IBM)
+* [Jason Hall](https://github.com/ImJasonH) (Google)
 
 The committee MUST:
 

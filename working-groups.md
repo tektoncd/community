@@ -64,9 +64,9 @@ We altenate between two meeting times, a time that is friendly for Europe + Nort
 | &nbsp;                                                     | Facilitators      | Company | Profile                                     |
 | --------------------------------------------------------   | ----------        | ------- | ---------------------------------------     |
 | <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson   | Google  | [bobcatfish](https://github.com/bobcatfish) |
-| <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |
 | <img width="30px" src="https://github.com/skaegi.png">     | Simon Kaegi       | IBM     | [skaegi](https://github.com/skaegi)         |
-| <img width="30px" src="https://github.com/dlorenc.png">    | Dan Lorenc        | Google  | [dlorenc](https://github.com/dlorenc)       |
+| <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee | Google  | [dibyom](https://github.com/dibyom)         |
+| <img width="30px" src="https://github.com/chhsia0.png">     | Chun-Hung Hsiao | D2iQ  | [chhsia0](https://github.com/chhsia0)         |
 
 ### Europe + Asia
 
@@ -102,7 +102,6 @@ This is the [`tektoncd/triggers`](https://github.com/tektoncd/triggers) working 
 | <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee | Google  | [dibyom](https://github.com/dibyom)         |
 | <img width="30px" src="https://github.com/vtereso.png">    | Vincent Tereso  | IBM     | [vtereso](https://github.com/vtereso)       |
 | <img width="30px" src="https://github.com/ncskier.png">    | Brandon Walker  | IBM     | [ncskier](https://github.com/ncskier)       |
-| <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson | Google  | [bobcatfish](https://github.com/bobcatfish) |
 
 ## CLI
 
@@ -145,6 +144,8 @@ repository that need to expose documentation.
 | <img width="30px" src="https://github.com/kimsterv.png">   | Kim Lewandowski   | Google  | [kimsterv](https://github.com/kimsterv)     |
 | <img width="30px" src="https://github.com/spomorski.png">  | Serge Pomorski    | Google  | [spomorski](https://github.com/spomorski)   |
 | <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |
+| <img width="30px" src="https://github.com/anneqm.png"> | Anne Michalak | IBM | [anneqm](https://github.com/anneqm) |
+| <img width="30px" src="https://github.com/popcor255.png"> | Napoleon Santana | IBM | [popcor255](https://github.com/popcor255) |
 
 ## Productivity
 

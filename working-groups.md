@@ -33,7 +33,7 @@ The current working groups are:
 - [CLI](#cli)
 - [Documentation](#documentation)
 - [Productivity](#productivity)
-- [Beta release](#beta-release)
+- [API](#api)
 - [Dashboard](#dashboard)
 
 ## General
@@ -170,19 +170,18 @@ aspect of this working group for now is **dogfooding**.
 | <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli)   |
 | <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson   | Google  | [bobcatfish](https://github.com/bobcatfish) |
 
-## Beta release
+## API
 
-This is the beta release working group, related to the work towards
-the beta API releases of
-[`tektoncd/pipeline`](https://github.com/tektoncd/pipeline) APIs. This
-is a temporary working group.
+This working group is all about proposing and discussing changes to the Tekton
+Pipelines API. Changes to the Pipelines API have ramifications for all other
+Tekton projects.
 
 | Artifact                   | Link                                                                                                                                                                                                                                                                                                             |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------                                                                                                                                                    |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                                                                                                |
 | Community Meeting VC       | [https://meet.google.com/tse-axnh-mdv](https://meet.google.com/tse-axnh-mdv)                                                                                                                                                                                                                                     |
-| Community Meeting Calendar | Mondays every 2 weeks, 09:00a-10:00a EST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NXRiamQwbWh1ajk0OTEyOTY0YjVzcXBnbGJfMjAxOTA5MjNUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
-| Meeting Notes              | [Notes](https://docs.google.com/document/d/1JmRd0vbh2Q6Emu2DOk-LwLHfxd2V0zrN4WNawGzoNXw)                                                                                                                                                                                                                         |
+| Community Meeting Calendar | Mondays every week, 09:00a-10:00a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=YnBscG9lcGk3b3ZrN3VxZWpjaXRsMm1uNmJfMjAyMDA0MTNUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL)
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/17PodAxG8hV351fBhSu7Y_OIPhGTVgj6OJ2lPphYYRpU/edit)
 | Slack Channel              | [#pipeline-dev](https://tektoncd.slack.com/messages/pipeline-dev)                                                                                                                                                                                                                                                |
 
 
@@ -190,7 +189,12 @@ is a temporary working group.
 | &nbsp;                                                     | Facilitators    | Company | Profile                                     |
 | --------------------------------------------------------   | ----------      | ------- | ---------------------------------------     |
 | <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson | Google  | [bobcatfish](https://github.com/bobcatfish) |
-
+| <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |
+| <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli) |
+| <img width="30px" src="https://github.com/skaegi.png"> | Simon Kaegi | IBM | [skaegi](https://github.com/skaegi) |
+| <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee | Google  | [dibyom](https://github.com/dibyom)         |
+| <img width="30px" src="https://github.com/chhsia0.png">     | Chun-Hung Hsiao | D2iQ  | [chhsia0](https://github.com/chhsia0)         |
+| <img width="30px" src="https://github.com/pritidesai.png">     | Priti Desai | IBM  | [pritidesai](https://github.com/pritidesai)         |
 
 
 ## Dashboard

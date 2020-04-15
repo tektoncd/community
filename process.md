@@ -9,6 +9,7 @@ which you can find documented in their individual `CONTRIBUTING.md` files.
 * [Project OWNERS](#OWNERS)
 * Pull request [reviews](#reviews) and [process](#pull-request-process)
 * [Propose projects](process.md#proposing-projects)
+* [The CDF CLA](#cla)
 
 ## Finding something to work on
 
@@ -261,3 +262,17 @@ best-practices to make sure everyone interested can attend:
 * Try to record the meeting, and post a link to the recording.
 * If the meeting will be recurring, or have a large enough audience, use a poll to allow participants to vote on
   potential times.
+
+## CLA
+
+To contribute to repos in tektoncd you need to be authorized to contributed under the CDF Contributor's License
+Agreement (CLA) which is managed by EasyCLA via https://project.lfcla.com/.
+
+Contributors are authorized and managed via the CommunityBridge EasyCLA GitHub app. The first time you
+contribute to a repo that is covered by this CLA, the bot will post a comment prompting you to login to EasyCLA
+and either sign an individual CLA or indicate your affilation with a company that has signed it (each company
+is in charge of managing how they verify that you are actually part of the company, for example often this is
+managed via the domain your email address).
+
+Members of [the governing board](governance.md) are authorized to administer the CDF CLA via the website and
+can control which repos it is applied to.

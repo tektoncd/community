@@ -150,8 +150,6 @@ Before a PR can be merged, it must have both `/lgtm` AND `/approve`:
   added to the repo itself
 * `/approve` can be added only by [OWNERS](#owners)
 
-[OWNERS](#owners) automatically get `/approve` but still will need an `/lgtm` to merge.
-
 The merge will happen automatically once the PR has both `/lgtm` and `/approve`,
 and all tests pass. If you don't want this to happen you should
 [`/hold`](#preventing-the-merge) the PR.

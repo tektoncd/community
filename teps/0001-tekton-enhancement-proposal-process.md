@@ -3,6 +3,7 @@ title: Tekton Enhancement Proposal Process
 authors:
   - "@vdemeester"
 creation-date: 2020-03-10
+last-updated: 2020-04-23
 status: proposed
 ---
 
@@ -11,28 +12,34 @@ status: proposed
 ## Table of Contents
 
 <!-- toc -->
+**Table of Contents**
+
 - [Summary](#summary)
 - [Motivation](#motivation)
 - [Stewardship](#stewardship)
 - [Reference-level explanation](#reference-level-explanation)
-  - [What type of work should be tracked by a
-    TEP](#what-type-of-work-should-be-tracked-by-a-tep)
+  - [What type of work should be tracked by a TEP](#what-type-of-work-should-be-tracked-by-a-tep)
   - [TEP Template](#tep-template)
   - [TEP Metadata](#tep-metadata)
   - [TEP Workflow](#tep-workflow)
   - [Git and GitHub Implementation](#git-and-github-implementation)
-  - [Important Metrics](#important-metrics)
   - [Prior Art](#prior-art)
+- [Examples](#examples)
+  - [Share Task and Pipeline as OCI artifact](#share-task-and-pipeline-as-oci-artifact)
+  - [PipelineResource re-design](#pipelineresource-re-design)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
-  - [GitHub issues vs. TEPs](#github-issues-vs-teps)
-- [Unresolved Questions](#unresolved-questions) <!-- /toc -->
+- [Unresolved Questions](#unresolved-questions)
+
+<!-- /toc -->
+
 
 ## Summary
 
 A standardized development process for Tekton is proposed in order to
 
-- provide a common structure for proposing changes to Tekton
+- provide a common structure and clear checkpoints for proposing
+  changes to Tekton
 - ensure that the motivation for a change is clear
 - allow for the enumeration stability milestones and stability
   graduation criteria
@@ -42,10 +49,6 @@ A standardized development process for Tekton is proposed in order to
   as:
   - an overall project development roadmap
   - motivation for impactful user facing changes
-- reserve GitHub issues for tracking work in flight rather than
-  creating "umbrella" issues (a.k.a. issues that stays open long and
-  track a bunch of other issues — usually the content of those issues
-  gets out-of-date quickly)
 - ensure community participants are successfully able to drive changes
   to completion across one or more releases while stakeholders are
   adequately represented throughout the process
@@ -62,6 +65,28 @@ into one file which is created incrementally in collaboration with one
 or more [Working
 Groups](https://github.com/tektoncd/community/blob/master/working-groups.md)
 (WGs).
+
+This process does not block authors from doing early design docs using
+any means. It does not block authors from sharing those design docs
+with the community (during Working groups, on Slack, GitHub, …).
+
+**This process acts as a requirement when a design docs is ready to be
+implemented or integrated in the `tektoncd` projects**. In other words,
+a change that impact other `tektoncd` projects or users cannot be
+merged if there is no `TEP` associated with it. Bug fixes and small
+changes like refactoring that do not affect the APIs (CRDs, REST APIs)
+are not concerned by this. Fixing the behaviour of a malfunctioning
+part of the project is also not concerned by this.
+
+This TEP process is related to
+- the generation of an architectural roadmap
+- the fact that the what constitutes a feature is still undefined
+- issue management
+- the difference between an accepted design and a proposal
+- the organization of design proposals
+
+This proposal attempts to place these concerns within a general
+framework.
 
 ## Motivation
 
@@ -95,38 +120,38 @@ with the proposal: updates on the proposal in reaction to comments,
 state of the proposal (when is it accepted, or rejected).
 
 The purpose of the TEP process is to reduce the amount of "tribal
-knowledge" in our community. By moving decisions from a smattering of
-mailing lists, video calls and hallway conversations into a well
-tracked artifact, this process aims to enhance communication and
-discoverability.
-
-A TEP is broken into sections which can be merged into source control
-incrementally in order to support an iterative development process. An
-important goal of the TEP process is ensuring that the process for
-submitting the content contained in [design proposals][] is both clear
-and efficient. The TEP process is intended to create high quality
+knowledge" in our community. This is done by putting in place a gate
+(submitting and getting a TEP merged) that mark a decision after
+having discussed the subject during video calls, on mailing list and
+other means. This process aims to enhance communication and
+discoverability. The TEP process is intended to create high quality
 uniform design and implementation documents for WGs to deliberate.
 
-[road to Go 2]: https://blog.golang.org/toward-go2)
-[design proposals]: https://github.com/kubernetes/community/tree/master/contributors/design-proposals
+A TEP is broken into sections which can be merged into source control
+incrementally in order to support an iterative development process. A
+number of section are required for a TEP to get merged in the
+`proposed` state (see the different states in the [TEP
+Metadata](#tep-metadata)). The rest of the section can be updated once
+being discussed more during Working Groups and agreed on.
+
+[road to Go 2]: https://blog.golang.org/toward-go2
 
 ## Stewardship
+
 The following
 [DACI](https://en.wikipedia.org/wiki/Responsibility_assignment_matrix#DACI)
 model indentifies the responsible parties for TEPs:
 
-| **Workstream**          | **Driver**          | **Approver**      | **Contributor**                                      | **Informed** |
-| ---                     | ---                 | ---               | ---                                                  | ---          |
-| TEP Process Stewardship | Tekton Contributors | TG members        | Tekton Contributors                                  | Community    |
-| Enhancement delivery    | Enhancement Owner   | Project(s) OWNERs | Enhancement Implementer(s) (may overlap with Driver) | Community    |
+| **Workstream**          | **Driver**          | **Approver**             | **Contributor**                                      | **Informed** |
+| ---                     | ---                 | ---                      | ---                                                  | ---          |
+| TEP Process Stewardship | Tekton Contributors | Tekton Governing members | Tekton Contributors                                  | Community    |
+| Enhancement delivery    | Enhancement Owner   | Project(s) OWNERs        | Enhancement Implementer(s) (may overlap with Driver) | Community    |
 
 In a nutshell, this means:
-- Updates on the TEP process are driven contributors and approved by
-  the tekton governing board.
+- Updates on the TEP process are driven by contributors and approved
+  by the tekton governing board.
 - Enhancement proposal are driven by contributors, and approved by the
   related project(s) owners.
-
-*TG members: Tekton Governing board members*
 
 ## Reference-level explanation
 
@@ -136,41 +161,40 @@ The definition of what constitutes an "enhancement" is a foundational
 concern for the Tekton project. Roughly any Tekton user or operator
 facing enhancement should follow the TEP process. If an enhancement
 would be described in either written or verbal communication to anyone
-besides the TEP author or developer, then consider creating a TEP.
+besides the TEP author or developer, then consider creating a
+TEP. This means any change that may impact any other community project
+in a way should be proposed as a TEP. Those changes can be for
+technical reason, adding or removing (deprecating then removing)
+features.
 
 Similarly, any technical effort (refactoring, major architectural
 change) that will impact a large section of the development community
 should also be communicated widely. The TEP process is suited for this
 even if it will have zero impact on the typical user or operator.
 
-As the local bodies of governance, WGs should have broad latitude in
-describing what constitutes an enhancement which should be tracked
-through the TEP process. WGs may find it helpful to enumerate what
-_does not_ require a TEP rather than what does. WGs also have the
-freedom to customize the TEP template according to their WG specific
-concerns. For example, the TEP template used to track API changes will
-likely have different subsections than the template for proposing
-governance changes. However, as changes start impacting other WGs or
-the larger developer communities outside of a WG, the TEP process
-should be used to coordinate and communicate.
+Let's list a few enhancement that happened before this process (or are
+happening), that would have required a TEP:
 
-Enhancements that have major impacts on multiple WGs should use the
-TEP process. A single WG will own the TEP but it is expected that
-the set of approvers will span the impacted WGs. The SEP process is
-the way that WGs can negotiate and communicate changes that cross
-boundaries.
+- Failure strategies using runOn 🎉 [tektoncd/pipeline#2094](https://github.com/tektoncd/pipeline/issues/2094)
+- Expose v1beta1 to the world ⛈ [tektoncd/pipeline#2035](https://github.com/tektoncd/pipeline/issues/2035)
+- Initial Implementation of conditionals [tektoncd/pipeline#1093](https://github.com/tektoncd/pipeline/issues/1093)
+- Adding new ways to resolve Task/Pipeline definition, using OCI
+  images or other means ([tektoncd/pipeline#2298](https://github.com/tektoncd/pipeline/issues/2298),
+  [tektoncd/pipeline#1839](https://github.com/tektoncd/pipeline/issues/1839))
+- Improve UX of getting credentials into Tasks ([tektoncd/pipeline#2343](https://github.com/tektoncd/pipeline/issues/2343))
 
-TEPs will also be used to drive large changes that will cut across all
-parts of the project. These TEPs will be owned by SIG-architecture
-and should be seen as a way to communicate the most fundamental
-aspects of what Tekton is.
+Let's also list some changes or features that are not yet in progress
+and could benefit from a TEP:
 
-Let's list a few enhancement that happened before this process, that
-would have required a TEP:
-
-- Failure strategies using runOn 🎉 tektoncd/pipeline#2094
-- Expose v1beta1 to the world ⛈ tektoncd/pipeline#2035
-- Initial Implementation of conditionals tektoncd/pipeline#1093
+- Pipeline Resources re-design, a.k.a. bring `PipelineResource` to
+  v1beta1
+- Bring `Conditions` to `v1beta1` or rewrite them differently
+- Automated releases across projects
+- CI setup using Tekton on Tekton (aka the /dogfooding/ project)
+- Serving new API version (v1beta2, v1, …) on `tektoncd/pipeline`
+- Beta APIs on `tektoncd/triggers`
+- Local-to-Tekton feature on `tektoncd/cli` (aka use local source to
+  execute a Pipeline in the cluster)
 
 Project creations *or* project promotion from the experimental project
 would also fall under the TEP process, deprecating the current
@@ -179,12 +203,18 @@ proposal](https://github.com/tektoncd/community/blob/master/process.md#proposing
 process (but not the [project
 requirements](https://github.com/tektoncd/community/blob/master/process.md#project-requirements)).
 
+
 ### TEP Template
 
 The template for a TEP is precisely defined
 [here](YYYYMMDD-tep-template.md)
 
-**TO-DO***
+For example, the TEP template used to track API changes will
+likely have different subsections than the template for proposing
+governance changes. However, as changes start impacting other WGs or
+the larger developer communities outside of a WG, the TEP process
+should be used to coordinate and communicate.
+
 
 ### TEP Metadata
 
@@ -200,20 +230,12 @@ Metadata items:
     details.
 * **status** Required
   * The current state of the TEP.
-  * Must be one of `provisional`, `implementable`, `implemented`,
-    `deferred`, `rejected`, `withdrawn`, or `replaced`.
+  * Must be one of `proposed`, `implementable`,
+    `implemented`,`withdrawn`, or `replaced`.
 * **authors** Required
   * A list of authors for the TEP. This is simply the github ID. In
     the future we may enhance this to include other types of
     identification.
-* **approvers** Required
-  * Approver(s) chosen after triage according to proposal process
-  * Approver(s) are drawn from the different Tekton projects owners
-  * The approvers are the individuals that make the call to move this
-    TEP to the `implementable` state.
-  * Approvers should be a distinct set from authors.
-  * If not yet chosen replace with `TBD`
-  * Same name/contact scheme as `authors`
 * **creation-date** Required
   * The date that the TEP was first submitted in a PR.
   * In the form `yyyy-mm-dd`
@@ -229,7 +251,7 @@ Metadata items:
   * A list of TEPs that this TEP replaces. Those TEPs should list
     this TEP in their `superseded-by`.
   * In the form `TEP-123`
-* **superseded-by**
+* **superseded-by** Optional
   * A list of TEPs that supersede this TEP. Use of this should be
     paired with this TEP moving into the `Replaced` status.
   * In the form `TEP-123`
@@ -245,14 +267,23 @@ A TEP has the following states
 - `implementable`: The approvers have approved this TEP for
   implementation.
 - `implemented`: The TEP has been implemented and is no longer
-  actively changed.
-- `deferred`: The TEP is proposed but not actively being worked on.
-- `rejected`: The approvers and authors have decided that this TEP is
-  not moving forward. The TEP is kept around as a historical
-  document.
-- `withdrawn`: The TEP has been withdrawn by the authors.
+  actively changed. From that point on, the TEP should be considered
+  *read-only*.
+- `withdrawn`: The TEP has been withdrawn by the authors or by the
+  community on agreement with the authors.
 - `replaced`: The TEP has been replaced by a new TEP. The
   `superseded-by` metadata value should point to the new TEP.
+
+When a TEP is merged with the `proposed` state, this means the
+project owners acknowledge this is something we need to work on *but*
+the proposal needs to be more detailed before we can go ahead and
+implement it in the main project(s). This state doesn't prevent using
+`tektoncd/experimental` to *experiment* and gather feedback.
+
+A TEP can be created with the `implementable` state if it doesn't need
+any more discussion and got approved as it.
+
+See [Examples](#examples) to see examples of TEP workflow on use cases.
 
 ### Git and GitHub Implementation
 
@@ -265,22 +296,6 @@ that PR so that it can be approved quickly and minimize merge
 conflicts. The TEP number can also be done as part of the initial
 submission if the PR is likely to be uncontested and merged quickly.
 
-### Important Metrics
-
-It is proposed that the primary metrics which would signal the success
-or failure of the TEP process are
-
-- how many "enhancements" are tracked with a TEP
-- distribution of time a TEP spends in each state
-- TEP rejection rate
-- PRs referencing a TEP merged per week
-- number of issues open which reference a TEP
-- number of contributors who authored a TEP
-- number of contributors who authored a TEP for the first time
-- number of orphaned TEPs
-- number of retired TEPs
-- number of superseded TEPs
-
 ### Prior Art
 
 The TEP process as proposed was essentially stolen from the
@@ -290,6 +305,135 @@ process][]
 
 [Rust RFC process]: https://github.com/rust-lang/rfcs
 [Kubernetes KEP process]: https://github.com/kubernetes/enhancements/tree/master/keps
+[Python PEP process]: https://www.python.org/dev/peps/
+
+
+## Examples
+
+Let's give some example of workflow to give reader a better
+understanding on how and when TEP should be created and how they are
+managed across time.
+
+Those are examples, and do not necessarily reflect what happened, or
+will happens on the particular subject they are about. They are here
+to give more context and ideas on different situation that could rise
+while following the TEP process.
+
+### Share Task and Pipeline as OCI artifact
+
+For more context, this is linked to the following:
+
+- [Feature: Versioning on Tasks/Pipelines](https://github.com/tektoncd/pipeline/issues/1839)
+- [Oci tool: makes use of oci-artifacts to store and retrieve Tekton resources](https://github.com/tektoncd/experimental/pull/461)
+
+1. An initial design doc is crafted (let's imagine it is [Tekton OCI
+Image
+Catalog](https://docs.google.com/document/d/1zUVrIbGZh2R9dawKQ9Hm1Cx3GevKIfOcRO3fFLdmBDc/edit#heading=h.tp9mko2koenr)).
+   An experimental project has already been created and a
+   proof-of-concept demoed during a working group. The next step is to
+   create a TEP (and continue work on the proof-of-concept if need be).
+2. From this design docs, a TEP is created with the content of the
+   design document.
+3. It is approved with a `proposed` state, which means :
+   - We acknowledge this is important for the project, and needs to be
+     worked on
+   - It needs some work and discussion based on the initial proposal
+4. The TEP is being disscussed during Working Group(s) — it can be the
+   main one, a specific one, the API Working Group.
+
+   During those discussion it is clear that some work needs to be
+   done:
+   - Define a Spec for the OCI image (layers, metadata, configuration)
+     The experimental project can be used to demo and validate that spec.
+   - Once the spec is agreed on
+   - Have a new TEP to add support for referencing Task and Pipeline
+     through alternative means than in clusters (OCI image is one,
+     using Git or an HTTP url are others)
+
+   The next action are :
+   - Create a new TEP on support for referencing Task and Pipeline.
+     As before, the TEP can be first discussed during Working group
+     and refined in Google Docs before being proposed as a TEP.
+   - Update the current TEP to define the spec (same thing as above
+     applies). A name is choosed for those : Tekton Bundles.
+   - Create a new TEP on implementing Tekton Bundles in tektoncd
+     projects (`pipeline` and `cli`)
+5. The current TEP, defining the spec, is *approved* and marked as
+   `implemented`. In this case `implemented` means it is available in
+   the documentation in `tektoncd` (most likely on the
+   `tektoncd/pipeline` repository)
+
+We are now switching to the "Implementing Tekton Bundles" TEP.
+
+1. It is proposed based on a design docs (discussed during working
+   group)
+2. It depends on the TEP on support for referencing Task and Pipeline
+   to be approved and in the `implementable` (aka we have agreed on
+   how it should be implemented more or less 😝).
+   It is also agreed (and most likely written in the TEP) that
+   "Implementing Tekton Bundle" would serve as the first
+   implementation of this TEP.
+3. The "Implementing Tekton Bundle" gets approved, and as it has been
+   discussed during working groups, it is ready for implementation, so
+   it gets merged directly into `implementable`.
+4. Work is happening in `tektoncd/pipeline` (and `tektoncd/cli` in
+   parallel) on implementing it.
+5. Implementation is done, we update the TEP to put it in
+   `implemented` state.
+
+### PipelineResource re-design
+
+For more context, this is linked to the PipelineResource work and more
+accurately the following:
+
+- [Tekton Pipeline Resource Extensibility](https://docs.google.com/document/d/1rcMG1cIFhhixMSmrT734MBxvH3Ghre9-4S2wbzodPiU/edit#)
+- [Why Aren't PipelineResources in Beta ?](https://github.com/tektoncd/pipeline/blob/master/docs/resources.md#why-arent-pipelineresources-in-beta)
+- [Pipeline Reosurces Redesign](https://github.com/tektoncd/pipeline/issues/1673)
+
+1. A TEP is proposed to add extensibility to PipelineResources. This
+   is based on [Tekton Pipeline Resource
+   Extensibility](https://docs.google.com/document/d/1rcMG1cIFhhixMSmrT734MBxvH3Ghre9-4S2wbzodPiU/edit#)
+   that has been discussed among the community. The initial idea is to
+   make the PipelineResource extensible and not be limited to built-in
+   options.
+2. The TEP is accepted as `proposed`, which means:
+   - We acknowledge this is important for the project, and needs to be
+     worked on
+   - It needs some work and discussion based on the initial proposal
+3. The TEP gets discussed at length during a special Working
+   Group. After multiple iteration, it becomes clear that:
+
+   - The current PipelineResource design has some limits and problems
+   - The current proposed TEP is way too complicated
+   - A life is possible without using PipelineResource, some
+     experimentation needs to be done around this
+
+   The next action are:
+   - Mark this TEP as withdrawn, we acknoledge it is not the way to
+     go. When marking this as `withdrawn`, add the reason why.
+   - Conduct experiment on not using PipelineResource
+   - Act that the `PipelineResource` needs a full re-design (and thus
+     removing it from the beta API for now)
+4. From the conducted experiment on "a life without PipelineResource",
+   two concept are being discussed:
+   - Workspace : to share data between tasks
+   - Results : to share results between tasks
+
+   A TEP for each is created, approved and implemented.
+5. Design discussion and docs are being created to re-design
+   PipelineResources using the above new concept. It gets discussed in
+   different working group.
+   A TEP is created to act that design work is going on on the
+   subject. The TEP is marked as `proposed`.
+6. A design is agreed after working group discussions, this new TEP
+   gets updated, and is marked as `implementable`.
+7. Work can start on the new `PipelineResource` design
+8. Once the work around this is done, the TEP gets updated to
+   `implemented` state.
+
+Later, some enhancement to the `PipelineResource` are proposed. Those
+will result in new `TEP`s.
+
 
 ## Drawbacks
 
@@ -299,12 +443,6 @@ will not sufficiently address the scaling challenges we face today. PR
 review bandwidth is already at a premium and we may find that the TEP
 process introduces an unreasonable bottleneck on our development
 velocity.
-
-It certainly can be argued that the lack of a dedicated issue/defect
-tracker beyond GitHub issues contributes to our challenges in managing
-a project as large as Tekton, however, given that other large
-organizations, including GitHub itself, make effective use of GitHub
-issues, perhaps the argument is overblown.
 
 The centrality of Git and GitHub within the TEP process also may place
 too high a barrier to potential contributors, however, given that both
@@ -317,43 +455,6 @@ to be part of
 or [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)
 google groups to see the design docs.
 
-## Alternatives
-
-This TEP process is related to
-- the generation of a architectural roadmap
-- the fact that the what constitutes a feature is still undefined
-- issue management
-- the difference between an accepted design and a proposal
-- the organization of design proposals
-
-This proposal attempts to place these concerns within a general
-framework.
-
-### GitHub issues vs. TEPs
-
-The use of GitHub issues when proposing changes does not provide SIGs
-good facilities for signaling approval or rejection of a proposed
-change to Kubernetes since anyone can open a GitHub issue at any
-time. Additionally managing a proposed change across multiple releases
-is somewhat cumbersome as labels and milestones need to be updated for
-every release that a change spans. These long lived GitHub issues lead
-to an ever increasing number of issues open against
-`kubernetes/features` which itself has become a management problem.
-
-In addition to the challenge of managing issues over time, searching
-for text within an issue can be challenging. The flat hierarchy of
-issues can also make navigation and categorization tricky. While not
-all community members might not be comfortable using Git directly, it
-is imperative that as a community we work to educate people on a
-standard set of tools so they can take their experience to other
-projects they may decide to work on in the future. While git is a
-fantastic version control system (VCS), it is not a project management
-tool nor a cogent way of managing an architectural catalog or backlog;
-this proposal is limited to motivating the creation of a standardized
-definition of work in order to facilitate project management. This
-primitive for describing a unit of work may also allow contributors to
-create their own personalized view of the state of the project while
-relying on Git and GitHub for consistency and durable storage.
 
 ## Unresolved Questions
 

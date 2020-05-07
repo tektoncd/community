@@ -133,7 +133,7 @@ repository that need to expose documentation.
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------                                                                                |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                            |
 | Community Meeting VC       | [https://meet.google.com/hyc-nunv-hts](https://meet.google.com/hyc-nunv-hts)                                                                                                                                                                 |
-| Community Meeting Calendar | Wednesdays every week, 01:00p-01:30p EST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=MW9oZzNpbmkxbHU5ZGtlN2hnMzVsYjNpcTJfMjAyMDAxMjlUMTgwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
+| Community Meeting Calendar | Wednesdays every week, 11:00a-11:30a EST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=MW9oZzNpbmkxbHU5ZGtlN2hnMzVsYjNpcTJfMjAyMDAxMjlUMTgwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 | Meeting Notes              | [Notes](https://www.google.com/url?q=https://docs.google.com/document/d/1nnJe4rWBFZORW9ScV9o-yk6BmvX419DDKKwIlORRhsY/edit%23&sa=D&ust=1575716141397000&usg=AOvVaw0IMqtfI1KeX8a6zq2ODl9n)                                                     |
 | Document Folder            | [Folder](https://drive.google.com/drive/folders/1dpGatrFh_Wykrs_tUkVK8hLNF1VaGHZd)                                                                                                                                                           |
 | Slack Channel              | [#docs](https://tektoncd.slack.com/messages/docs)                                                                                                                                                                                            |
@@ -146,6 +146,7 @@ repository that need to expose documentation.
 | <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |
 | <img width="30px" src="https://github.com/anneqm.png"> | Anne Michalak | IBM | [anneqm](https://github.com/anneqm) |
 | <img width="30px" src="https://github.com/popcor255.png"> | Napoleon Santana | IBM | [popcor255](https://github.com/popcor255) |
+| <img width="30px" src="https://github.com/AlanGreene.png">    | Alan Greene     | IBM     | [AlanGreene](https://github.com/AlanGreene)
 
 ## Productivity
 

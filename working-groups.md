@@ -35,6 +35,7 @@ The current working groups are:
 - [Productivity](#productivity)
 - [API](#api)
 - [Dashboard](#dashboard)
+- [Catalog and Hub](#catalog-and-hub)
 
 ## General
 
@@ -220,3 +221,21 @@ This is the [`tektoncd/dashboard`](https://github.com/tektoncd/dashboard) workin
 | <img width="30px" src="https://github.com/dibbles.png">       | Duane Appleby   | IBM     | [dibbles](https://github.com/dibbles)              |
 | <img width="30px" src="https://github.com/steveodonovan.png"> | Steve O'Donovan | IBM     | [steveodonovan](https://github.com/steveodonovan)  |
 | <img width="30px" src="https://github.com/AlanGreene.png">    | Alan Greene     | IBM     | [AlanGreene](https://github.com/AlanGreene)        |
+
+## Catalog and hub
+
+This is the working group for [`tektoncd/catalog`](https://github.com/tektoncd/catalog) and [`tektoncd/hub`](https://github.com/tektoncd/hub).
+
+| Artifact                   | Link                                                                                                                                                                                                                                      |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------                                                                             |
+| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                         |
+| Community Meeting VC       | [https://meet.google.com/nkt-mziz-ifz](https://meet.google.com/nkt-mziz-ifz)                                                                                                                                                              |
+| Community Meeting Calendar | Thursdays every week, 10:30am-11am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NzFzcWhkOGk2MWNzMTI0cGg3MDA4YmUzMHZfMjAyMDA1MTRUMTczMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/12180Mqmhoj5JK17zE07DG3OdqYHcUAWVBGydavoxhec/edit)                                                                                                                                             |
+| Slack Channels             | [#catalog](https://tektoncd.slack.com/messages/catalog) and [#hub](https://tektoncd.slack.com/messages/hub)                                                                                                                               |
+
+
+| &nbsp;                                                        | Facilitators    | Company | Profile                                            |
+| -----------------------------------------------------------   | ----------      | ------- | ------------------------------------------------   |
+| <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |
+| <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson | Google  | [bobcatfish](https://github.com/bobcatfish) |

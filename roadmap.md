@@ -12,7 +12,7 @@ for Tekton Pipelines but some sneak peeks at other projects as well.
   - [Triggers](https://github.com/tektoncd/triggers/blob/master/roadmap.md)
   - [Catalog](https://github.com/tektoncd/catalog/blob/master/roadmap.md)
   - [Dashboard](https://github.com/tektoncd/dashboard/blob/master/roadmap.md)
-  - CLI
+  - [CLI](https://github.com/tektoncd/cli/blob/master/ROADMAP.md)
 
 ## Mission and Vision
 

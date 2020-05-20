@@ -39,7 +39,7 @@ Groups](https://github.com/tektoncd/community/blob/master/working-groups.md)
 
 This process does not block authors from doing early design docs using
 any means. It does not block authors from sharing those design docs
-with the community (during Working groups, on Slack, GitHub, …**.
+with the community (during Working groups, on Slack, GitHub, ….
 
 **This process acts as a requirement when a design docs is ready to be
 implemented or integrated in the `tektoncd` projects**. In other words,

@@ -12,8 +12,6 @@ status: proposed
 ## Table of Contents
 
 <!-- toc -->
-**Table of Contents**
-
 - [Summary](#summary)
 - [Motivation](#motivation)
 - [Stewardship](#stewardship)
@@ -22,15 +20,13 @@ status: proposed
   - [TEP Template](#tep-template)
   - [TEP Metadata](#tep-metadata)
   - [TEP Workflow](#tep-workflow)
-  - [Git and GitHub Implementation](#git-and-github-implementation)
+  - [Git Implementation](#git-implementation)
   - [Prior Art](#prior-art)
 - [Examples](#examples)
   - [Share Task and Pipeline as OCI artifact](#share-task-and-pipeline-as-oci-artifact)
   - [PipelineResource re-design](#pipelineresource-re-design)
 - [Drawbacks](#drawbacks)
-- [Alternatives](#alternatives)
 - [Unresolved Questions](#unresolved-questions)
-
 <!-- /toc -->
 
 
@@ -72,7 +68,7 @@ with the community (during Working groups, on Slack, GitHub, …).
 
 **This process acts as a requirement when a design docs is ready to be
 implemented or integrated in the `tektoncd` projects**. In other words,
-a change that impact other `tektoncd` projects or users cannot be
+a change that impacts other `tektoncd` projects or users cannot be
 merged if there is no `TEP` associated with it. Bug fixes and small
 changes like refactoring that do not affect the APIs (CRDs, REST APIs)
 are not concerned by this. Fixing the behaviour of a malfunctioning
@@ -196,6 +192,19 @@ and could benefit from a TEP:
 - Local-to-Tekton feature on `tektoncd/cli` (aka use local source to
   execute a Pipeline in the cluster)
 
+Finally, let's take some examples of changes in `tektoncd/pipeline`
+that would, _most likely_ not require a TEP.
+
+- Propagate annotations from Conditions to TaskRuns/Pods:
+  [tektoncd/pipeline#2608](https://github.com/tektoncd/pipeline/issues/2608)
+- Improvments on Pipeline cancel:
+  [tektoncd/pipeline#2543](https://github.com/tektoncd/pipeline/issues/2543)
+- Add variable substitution for PVC name:
+  [tektoncd/pipeline#2506](https://github.com/tektoncd/pipeline/issues/2506)
+- Emit events when we fail to update the taskrun:
+  [tektoncd/pipeline#2526](https://github.com/tektoncd/pipeline/issues/2526)
+
+
 Project creations *or* project promotion from the experimental project
 would also fall under the TEP process, deprecating the current
 [project
@@ -207,7 +216,7 @@ requirements](https://github.com/tektoncd/community/blob/master/process.md#proje
 ### TEP Template
 
 The template for a TEP is precisely defined
-[here](YYYYMMDD-tep-template.md)
+[here](NNNN-tep-template/README.md)
 
 For example, the TEP template used to track API changes will
 likely have different subsections than the template for proposing
@@ -285,7 +294,7 @@ any more discussion and got approved as it.
 
 See [Examples](#examples) to see examples of TEP workflow on use cases.
 
-### Git and GitHub Implementation
+### Git Implementation
 
 TEPs are checked into the community repo under the `/teps` directory.
 
@@ -298,7 +307,7 @@ submission if the PR is likely to be uncontested and merged quickly.
 
 ### Prior Art
 
-The TEP process as proposed was essentially stolen from the
+The TEP process as proposed was essentially adapted from the
 [Kubernetes KEP process][], which itself is essentially stolen from the [Rust RFC
 process][] which itself seems to be very similar to the [Python PEP
 process][]
@@ -350,12 +359,12 @@ Catalog](https://docs.google.com/document/d/1zUVrIbGZh2R9dawKQ9Hm1Cx3GevKIfOcRO3
      through alternative means than in clusters (OCI image is one,
      using Git or an HTTP url are others)
 
-   The next action are :
+   The next actions are :
    - Create a new TEP on support for referencing Task and Pipeline.
      As before, the TEP can be first discussed during Working group
      and refined in Google Docs before being proposed as a TEP.
    - Update the current TEP to define the spec (same thing as above
-     applies). A name is choosed for those : Tekton Bundles.
+     applies). A name is choosed for those: Tekton Bundles.
    - Create a new TEP on implementing Tekton Bundles in tektoncd
      projects (`pipeline` and `cli`)
 5. The current TEP, defining the spec, is *approved* and marked as
@@ -412,8 +421,8 @@ accurately the following:
    - Mark this TEP as withdrawn, we acknoledge it is not the way to
      go. When marking this as `withdrawn`, add the reason why.
    - Conduct experiment on not using PipelineResource
-   - Act that the `PipelineResource` needs a full re-design (and thus
-     removing it from the beta API for now)
+   - Acknowledge that the `PipelineResource` needs a full re-design
+     (and thus removing it from the beta API for now)
 4. From the conducted experiment on "a life without PipelineResource",
    two concept are being discussed:
    - Workspace : to share data between tasks

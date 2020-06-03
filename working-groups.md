@@ -240,3 +240,21 @@ This is the working group for [`tektoncd/catalog`](https://github.com/tektoncd/c
 | -----------------------------------------------------------   | ----------      | ------- | ------------------------------------------------   |
 | <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |
 | <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson | Google  | [bobcatfish](https://github.com/bobcatfish) |
+
+## Operator and Deployment
+
+This is the working group for [`tektoncd/operator`](https://github.com/tektoncd/operator)
+
+| Artifact                   | Link                                                                                                                                                                                                                                      |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------                                                                             |
+| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                         |
+| Community Meeting VC       | [https://meet.google.com/zzp-gzmd-dys](https://meet.google.com/zzp-gzmd-dys)                                                                                                                                                              |
+| Community Meeting Calendar | Thursdays every week, 4am -4:30am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NzFzcWhkOGk2MWNzMTI0cGg3MDA4YmUzMHZfMjAyMDA1MTRUMTczMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1mMbwPCTzDCRgr0FNtv8TJaKDfiOfD9pgz1zFmncZReg/edit)                                                                                                                                             |
+| Slack Channels             | [#operator](https://tektoncd.slack.com/messages/operator)                                                                                                                              |
+
+
+| &nbsp;                                                        | Facilitators    | Company | Profile                                            |
+| -----------------------------------------------------------   | ----------      | ------- | ------------------------------------------------   |
+| <img width="30px" src="https://github.com/nikhil-thomas.png"> | Nikhil Thomas | Red Hat | [nikhil-thomas](https://github.com/nikhil-thomas) |
+| <img width="30px" src="https://github.com/houshengbo.png"> | Vincent Hou | IBM  | [houshengbo](https://github.com/houshengbo) |

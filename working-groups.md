@@ -36,6 +36,7 @@ The current working groups are:
 - [API](#api)
 - [Dashboard](#dashboard)
 - [Catalog and Hub](#catalog-and-hub)
+- [Operator and Deployment](#operator-and-deployment)
 
 ## General
 
@@ -249,7 +250,7 @@ This is the working group for [`tektoncd/operator`](https://github.com/tektoncd/
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------                                                                             |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                         |
 | Community Meeting VC       | [https://meet.google.com/zzp-gzmd-dys](https://meet.google.com/zzp-gzmd-dys)                                                                                                                                                              |
-| Community Meeting Calendar | Thursdays every week, 4am -4:30am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NzFzcWhkOGk2MWNzMTI0cGg3MDA4YmUzMHZfMjAyMDA1MTRUMTczMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
+| Community Meeting Calendar | Thursdays every week, 4am-4:30am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NzFzcWhkOGk2MWNzMTI0cGg3MDA4YmUzMHZfMjAyMDA1MTRUMTczMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/1mMbwPCTzDCRgr0FNtv8TJaKDfiOfD9pgz1zFmncZReg/edit)                                                                                                                                             |
 | Slack Channels             | [#operator](https://tektoncd.slack.com/messages/operator)                                                                                                                              |
 

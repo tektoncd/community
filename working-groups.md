@@ -36,6 +36,7 @@ The current working groups are:
 - [API](#api)
 - [Dashboard](#dashboard)
 - [Catalog and Hub](#catalog-and-hub)
+- [Operator and Deployment](#operator-and-deployment)
 
 ## General
 

@@ -59,6 +59,7 @@ tags, and then generate with `hack/update-toc.sh`.
 - [Motivation](#motivation)
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
+- [Requirements](#requirements)
 - [Proposal](#proposal)
   - [User Stories (optional)](#user-stories-optional)
     - [Story 1](#story-1)
@@ -66,8 +67,7 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Notes/Constraints/Caveats (optional)](#notesconstraintscaveats-optional)
   - [Risks and Mitigations](#risks-and-mitigations)
 - [Design Details](#design-details)
-  - [Test Plan (optional)](#test-plan-optional)
-- [Implementation History](#implementation-history)
+- [Test Plan](#test-plan)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
@@ -115,6 +115,13 @@ know that this has succeeded?
 <!--
 What is out of scope for this TEP?  Listing non-goals helps to focus discussion
 and make progress.
+-->
+
+
+## Requirements
+
+<!--
+List the requirements for this TEP.
 -->
 
 ## Proposal
@@ -172,7 +179,7 @@ required) or even code snippets.  If there's any ambiguity about HOW your
 proposal will be implemented, this is the place to discuss them.
 -->
 
-### Test Plan (optional)
+## Test Plan
 
 <!--
 **Note:** *Not required until targeted at a release.*
@@ -187,19 +194,6 @@ challenging to test should be called out.
 
 All code is expected to have adequate tests (eventually with coverage
 expectations).
--->
-
-## Implementation History
-
-<!--
-Major milestones in the life cycle of a TEP should be tracked in this section.
-Major milestones might include
-- the `Summary` and `Motivation` sections being merged signaling WG acceptance
-- the `Proposal` section being merged signaling agreement on a proposed design
-- the date implementation started
-- the first Tekton release where an initial version of the TEP was available
-- the version of Tekton where the TEP graduated to general availability
-- when the TEP was retired or superseded
 -->
 
 ## Drawbacks
@@ -222,4 +216,12 @@ information to express the idea and why it was not acceptable.
 Use this section if you need things from the project/SIG.  Examples include a
 new subproject, repos requested, github details.  Listing these here allows a
 SIG to get the process for these resources started right away.
+-->
+
+## Upgrade & Migration Strategy (optional)
+
+<!--
+Use this section to detail wether this feature needs an upgrade or
+migration strategy. This is especially useful when we modify a
+behavior or add a feature that may replace and deprecate a current one.
 -->

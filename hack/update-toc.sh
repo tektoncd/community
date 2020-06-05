@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # Copyright 2019 The Kubernetes Authors.
+# Copyright 2020 The Tekton Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +19,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-# keep in sync with hack/verify-toc.sh
 TOOL_VERSION=ee652eb78c047a7b6c7417d9324a97bb05689563
 
 # cd to the root path

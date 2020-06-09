@@ -61,19 +61,27 @@ This is for two main reasons:
 2. It's easier/cheaper to make changes before implementation (and you'll feel
    less emotionally invested!)
 
+In general, you should follow the [Tekton Enhancement Proposals
+(`TEP`)](./teps/) process. A Tekton Enhancement Proposal (TEP) is a
+way to propose, communicate and coordinate on new efforts for the
+Tekton project.  You can read the full details of the project in
+[TEP-1](./teps/0001-tekton-enhancement-proposal-process.md).
+
 Some suggestions for how to do this:
 
-1. Write up a design doc and share it with [the mailing list](contact.md#mailing-list)
+1. Write up a design doc and share it with [the mailing list](contact.md#mailing-list).
 2. Bring your design/ideas to [our working group meetings](working-groups.md) for
-   discussion
+   discussion.
+3. Write a [`TEP`](./teps/) from the initial design doc and working
+   group feedback.
 
 A great proposal will include:
 
 * **The use case(s) it solves** Who needs this and why?
 * **Requirements** What needs to be true about the solution?
-* **2+ alternative proposals** Even if alternatives aren't obvious, forcing
-  yourself to brainstorm a couple more approaches may give you new ideas or make
-  clear that your initial proposal is the best one
+* **Alternative proposals** Even if alternatives aren't obvious,
+  forcing yourself to brainstorm a couple more approaches may give you
+  new ideas or make clear that your initial proposal is the best one
 
 Also feel free to reach out to us on [slack](contact.md#slack) if you want any
 help/guidance.

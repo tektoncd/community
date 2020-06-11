@@ -1,3 +1,11 @@
+---
+title: tep-template
+authors:
+  - "@vdemeester"
+creation-date: 2020-03-10
+last-updated: 2020-06-11
+status: proposed
+---
 <!--
 **Note:** When your TEP is complete, all of these comment blocks should be removed.
 
@@ -71,6 +79,7 @@ tags, and then generate with `hack/update-toc.sh`.
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
+- [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
 <!-- /toc -->
 
 ## Summary

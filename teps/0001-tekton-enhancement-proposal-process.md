@@ -3,8 +3,8 @@ title: Tekton Enhancement Proposal Process
 authors:
   - "@vdemeester"
 creation-date: 2020-03-10
-last-updated: 2020-04-23
-status: proposed
+last-updated: 2020-06-11
+status: implemented
 ---
 
 # Tekton Enhancement Proposal Process

@@ -3,13 +3,11 @@ orgs:
     admins:
     - abayer
     - bobcatfish
-    - caniszczyk
-    - dlorenc
-    - googlebot
-    - mchmarny
     - tekton-robot
     - thelinuxfoundation
     - vdemeester
+    - imjasonh
+    - afrittoli
     billing_email: info@cd.foundation
     company: ""
     default_repository_permission: read
@@ -103,3 +101,6 @@ orgs:
     - wlynch
     - YolandaDu1997
     - yuege01
+    - dlorenc
+    - caniszczyk
+    - mchmarny

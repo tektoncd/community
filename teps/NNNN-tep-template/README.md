@@ -74,6 +74,8 @@ tags, and then generate with `hack/update-toc.sh`.
     - [Story 2](#story-2)
   - [Notes/Constraints/Caveats (optional)](#notesconstraintscaveats-optional)
   - [Risks and Mitigations](#risks-and-mitigations)
+  - [User Experience](#user-experience)
+  - [Performance](#performance)
 - [Design Details](#design-details)
 - [Test Plan](#test-plan)
 - [Drawbacks](#drawbacks)
@@ -168,7 +170,7 @@ This might be a good place to talk about core concepts and how they relate.
 ### Risks and Mitigations
 
 <!--
-What are the risks of this proposal and how do we mitigate.  Think broadly.
+What are the risks of this proposal and how do we mitigate. Think broadly.
 For example, consider both security and how this will impact the larger
 kubernetes ecosystem.
 
@@ -177,6 +179,29 @@ How will security be reviewed and by whom?
 How will UX be reviewed and by whom?
 
 Consider including folks that also work outside the WGs or subproject.
+-->
+
+### User Experience (optional)
+
+<!--
+Consideration about the user experience. Depending on the area of change,
+users may be task and pipeline editors, they may trigger task and pipeline
+runs or they may be responsible for monitoring the execution of runs,
+via CLI, dashboard or a monitoring system.
+
+Consider including folks that also work on CLI and dashboard.
+-->
+
+### Performance (optional)
+
+<!--
+Consideration about performance.
+What impact does this change have on the start-up time and execution time
+of task and pipeline runs? What impact does it have on the resource footprint
+of Tekton controllers as well as task and pipeline runs?
+
+Consider which use cases are impacted by this change and what are their
+performance requirements.
 -->
 
 ## Design Details

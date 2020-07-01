@@ -18,16 +18,21 @@ orgs:
     location: ""
     members:
     - 16yuki0702
-    - a-roberts
-    - afrittoli
-    - akihikokuroda
-    - arilivigni
     - AlanGreene
+    - CarolynMabbott
+    - EliZucker
+    - Megan-Wright
+    - PuneetPunamiya
+    - R2wenD2
+    - YolandaDu1997
+    - a-roberts
+    - akihikokuroda
     - ameyer-pivotal
+    - arilivigni
     - bigkevmcd
     - briandealwis
+    - caniszczyk
     - carlos-logro
-    - CarolynMabbott
     - chanseokoh
     - chetan-rns
     - chmouel
@@ -35,11 +40,11 @@ orgs:
     - dibbles
     - dibyom
     - divyansh42
+    - dlorenc
     - dorismeixing
     - dwnusbaum
     - eddycharly
     - ekcasey
-    - EliZucker
     - fhopfensperger
     - font
     - gabemontero
@@ -48,22 +53,21 @@ orgs:
     - houshengbo
     - hrishin
     - iancoffey
-    - imjasonh
-    - jjasghar
     - jerop
     - jessm12
+    - jjasghar
     - jkutner
     - jlpettersson
     - joseblas
     - jromero
     - khrm
-    - kimsterv
     - kimholmes
+    - kimsterv
     - loosebazooka
     - lukehinds
     - maneeshmehra
     - mattmoor
-    - Megan-Wright
+    - mchmarny
     - mnuttall
     - mpeters
     - n3wscott
@@ -76,13 +80,11 @@ orgs:
     - piyush-garg
     - popcor255
     - pradeepitm12
-    - praveen4g0
     - pratap0007
+    - praveen4g0
     - pritidesai
     - psschwei
-    - PuneetPunamiya
     - raffamendes
-    - R2wenD2
     - savitaashture
     - sbwsg
     - sclevine
@@ -101,8 +103,4 @@ orgs:
     - waveywaves
     - withlin
     - wlynch
-    - YolandaDu1997
     - yuege01
-    - dlorenc
-    - caniszczyk
-    - mchmarny

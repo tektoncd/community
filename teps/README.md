@@ -56,5 +56,14 @@ This TEP process is related to
 This proposal attempts to place these concerns within a general
 framework.
 
+See [TEP-1](0001-tekton-enhancement-proposal-process.md) for more
+details.
 
-See [TEP-1](0001-tekton-enhancement-proposal-process.md) for more details.
+The TEP `OWNERS` are the **main** owners of the following projects:
+- [`pipeline`](https://github.com/tektoncd/pipeline)
+- [`cli`](https://github.com/tektoncd/cli)
+- [`triggers`](https://github.com/tektoncd/triggers)
+- [`dashboard`](https://github.com/tektoncd/dashboard)
+- [`catalog`](https://github.com/tektoncd/catalog)
+- [`hub`](https://github.com/tektoncd/hub)
+- [`operator`](https://github.com/tektoncd/operator)

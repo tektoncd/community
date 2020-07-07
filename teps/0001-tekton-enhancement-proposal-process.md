@@ -283,13 +283,27 @@ A TEP has the following states
 - `replaced`: The TEP has been replaced by a new TEP. The
   `superseded-by` metadata value should point to the new TEP.
 
-When a TEP is merged with the `proposed` state, this means the project
-owners acknowledge this is something we need to work on *but* the
-proposal needs to be more detailed before we can go ahead and
-implement it in the main project(s). We might need more information
+The workflow starts with a PR that introduces a new TEP in `proposed`
+state. When the PR is merged, it means the project owners acknowledge
+this is something we might want to work on *but* the proposal needs
+to be discussed and detailed before it can be accepted. The review
+cycle on the initial PR should be short.
+
+Once the TEP is `proposed`, the owners of the TEP (or someone else on
+their behalf) shall submit a new PR that changes the status to
+`implementable`, and present the TEP at a relevant working group, or
+via the mailing list.
+
+The discussion on the TEP shall be tracked on the PR, regardless of
+the forum where it happens. We might need more information
 about the impact on users, or some time to socialize it with the
 Working Groups, etc. This state doesn't prevent using
 `tektoncd/experimental` to *experiment* and gather feedback.
+
+The outcome may be that the TEP is approved, and moves to
+`implementable`, or rejected, and moves to `withdrawn`. In case the
+TEP is `withdrawn` it's best practise to update it with the reason
+for withdrawal.
 
 A TEP can be moved to the `implementable` state if it doesn't need
 any more discussion and is approved as is.

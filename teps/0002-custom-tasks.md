@@ -3,8 +3,8 @@ title: tep-0002
 authors:
   - "@imjasonh"
 creation-date: 2020-06-18
-last-updated: 2020-06-25
-status: proposed
+last-updated: 2020-07-07
+status: implementable
 ---
 
 # TEP-0002: Enable Custom Tasks
@@ -414,3 +414,13 @@ None.
 ## Upgrade & Migration Strategy (optional)
 
 TBD. At this time, the proposal only covers adding new a type and documentating the contract. If changes to the types or contract are deemed necessary in the future, in response to feedback, then an upgrade/migration strategy might be necessary.
+
+# Open Questions
+
+* Should Tekton's controller be responsible for updating `Run`s' `.status.conditions` in the case of cancellation and timeout (as it does when enforcing [initial update timeout](#initial-update-timeout)), or should these updates be the sole responsibility of Custom Task authors?
+
+* Package name and helper methods included in `tektoncd/pipeline` repo to aid Custom Task authors writing their controllers in Go; and should we expect them to use `knative/pkg` helpers too?
+
+* Versioning and release cadence and ownership of `tektoncd/sample-task` repo; will it be released/versioned alongside `tektoncd/pipeline`?
+
+* Support for "unnamed" Tasks -- i.e., `Run`s that reference an `apiVersion` and `kind`, but not a `name`. A Custom Task author could either use this to provide "default" behavior where a Task CR doesn't need to be defined, or could not define a CRD at all and only support functionality specified by params. Examples of this are `CEL` and `Wait` tasks that just accept a param for `expression` or `duration`, and don't require defining a `CEL` or `Wait` CRD type.

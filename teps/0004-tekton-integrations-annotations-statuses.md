@@ -65,7 +65,6 @@ tags, and then generate with `hack/update-toc.sh`.
 -->
 
 <!-- toc -->
-
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goals](#goals)
@@ -76,10 +75,11 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Integration Status](#integration-status)
   - [User Stories (optional)](#user-stories-optional)
     - [Error updates on Pipeline failures](#error-updates-on-pipeline-failures)
-    - [Why didn't this Pipeline update my PR?](#why-didnt-this-pipeline-update-my-pr)
+    - [Why didn't this Run update my PR?](#why-didnt-this-run-update-my-pr)
     - [Multitentant / root secrets](#multitentant--root-secrets)
   - [Notes/Constraints/Caveats (optional)](#notesconstraintscaveats-optional)
     - [Integration Event Handling](#integration-event-handling)
+    - [Annotation-less integrations](#annotation-less-integrations)
     - [Triggers](#triggers)
   - [Risks and Mitigations](#risks-and-mitigations)
     - [External Integration Quotas](#external-integration-quotas)
@@ -91,12 +91,14 @@ tags, and then generate with `hack/update-toc.sh`.
 - [Test Plan](#test-plan)
 - [Drawbacks](#drawbacks)
   - [Tekton Chains](#tekton-chains)
+  - [Reconcile loops](#reconcile-loops)
 - [Alternatives](#alternatives)
   - [Automatically injecting Tasks](#automatically-injecting-tasks)
   - [Storing integration statuses outside of Run status](#storing-integration-statuses-outside-of-run-status)
+  - [Embedding all integration status data inside Conditions](#embedding-all-integration-status-data-inside-conditions)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
-  <!-- /toc -->
+<!-- /toc -->
 
 ## Summary
 
@@ -479,6 +481,23 @@ type IntegrationStatus struct {
 }
 ```
 
+This status, while included in the Task/PipelineRun status, should be separate from the Run conditions in order to make it clear where conditions originated from. This also allows for conditions to namespace themselves within the status by integration name.
+
+Example:
+
+```yaml
+status:
+  conditions: ... # <Task/PipelineRun conditions>
+  integrations:
+    - name: github.integrations.tekton.dev
+      observedGeneration: 1234
+      conditions:
+        - type: Succeeded
+          status: True
+      annotations:
+        check-run-id: 5678
+```
+
 ## Test Plan
 
 <!--
@@ -582,8 +601,10 @@ Another way to skirt API changes would be to encode all integration status
 information into the existing conditions type, encoding data into existing
 fields.
 
-I'd like to avoid this since this isn't really what these fields were meant for,
-and we would be overloading the meaning of the fields in many cases.
+I'd like to avoid this since for a few reasons:
+1. It's likely a cleaner interface to separate out data directly related to the Run from integrations that act on the Run (even though we want to store this data alongside for locality).
+2. This allows us to namespace conditions by integration type.
+3. 
 
 ## Infrastructure Needed (optional)
 

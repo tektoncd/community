@@ -3,7 +3,7 @@ title: tekton-integrations-annotations-status
 authors:
   - "@wlynch"
 creation-date: 2020-07-13
-last-updated: 2020-07-13
+last-updated: 2020-07-14
 status: proposed
 ---
 
@@ -81,6 +81,7 @@ tags, and then generate with `hack/update-toc.sh`.
     - [Integration Event Handling](#integration-event-handling)
     - [Annotation-less integrations](#annotation-less-integrations)
     - [Triggers](#triggers)
+    - [Notifications](#notifications)
   - [Risks and Mitigations](#risks-and-mitigations)
     - [External Integration Quotas](#external-integration-quotas)
   - [User Experience (optional)](#user-experience-optional)
@@ -274,6 +275,11 @@ Examples of what might be stored:
 - Tekton Result IDs
 - Integration error responses (unavailable, out of quota, etc.)
 
+This is a generalization of the existing
+[`CloudEventDelivery`](https://pkg.go.dev/github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1?tab=doc#CloudEventDelivery)
+status data that is stored in Run statuses today. [See below](#notifications)
+For more on how this to the ongoing notifications effort.
+
 ### User Stories (optional)
 
 <!--
@@ -342,7 +348,8 @@ installation to allow users to customize their installation.
 
 As a recommendation, integrations should rely on some form of reconciler in
 order to reliably process events, but it's also fine to rely on a push
-mechanism.
+mechanism, or even rely on PipelineTasks to handle and annotate integration
+status data.
 
 #### Annotation-less integrations
 
@@ -377,6 +384,50 @@ incremental improvements:
 While these are out of scope for this specific proposal, this proposal remains
 compatible with future changes to make configuring Triggers easier, since it is
 agnostic to the source of configuration.
+
+#### Notifications
+
+This relates heavily to existing work around
+[notifications](https://github.com/tektoncd/pipeline/issues/1740), and aims to
+build on it to support metadata for arbitrary integrations alongside the
+existing
+[Cloud Event notifications](https://github.com/tektoncd/pipeline/issues/2082).
+While this proposal is largely compatible with existing work, one change would
+be recommended - notably migrating `CloudEventDelivery` as an integration
+status.
+
+Cloud Events are effectively a common type of a specific integration, and would
+fit well into this model in order to support arbitrary integration data. The
+Pipeline controller would be able to continue to insert data just like any other
+integration, and would be able to continue to write existing CloudEventDelivery
+status data alongside IntegrationStatus data.
+
+Example:
+
+[CloudEventDelivery](https://pkg.go.dev/github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1?tab=doc#CloudEventDelivery):
+
+```yaml
+target: example.com
+status:
+  condition: Failed
+  sentAt: 123456789
+  error: "access denied"
+  retryCount: 1
+```
+
+IntegrationStatus:
+
+```yaml
+- name: cloudevent.integrations.tekton.dev
+  conditions:
+    - type: Succeeded
+      status: False
+      reason: "access denied"
+  lastTransitionTime: 123456789
+  annotations:
+    target: example.com
+    retryCount: 1
+```
 
 ### Risks and Mitigations
 
@@ -481,7 +532,10 @@ type IntegrationStatus struct {
 }
 ```
 
-This status, while included in the Task/PipelineRun status, should be separate from the Run conditions in order to make it clear where conditions originated from. This also allows for conditions to namespace themselves within the status by integration name.
+This status, while included in the Task/PipelineRun status, should be separate
+from the Run conditions in order to make it clear where conditions originated
+from. This also allows for conditions to namespace themselves within the status
+by integration name.
 
 Example:
 
@@ -602,9 +656,12 @@ information into the existing conditions type, encoding data into existing
 fields.
 
 I'd like to avoid this since for a few reasons:
-1. It's likely a cleaner interface to separate out data directly related to the Run from integrations that act on the Run (even though we want to store this data alongside for locality).
+
+1. It's likely a cleaner interface to separate out data directly related to the
+   Run from integrations that act on the Run (even though we want to store this
+   data alongside for locality).
 2. This allows us to namespace conditions by integration type.
-3. 
+3.
 
 ## Infrastructure Needed (optional)
 

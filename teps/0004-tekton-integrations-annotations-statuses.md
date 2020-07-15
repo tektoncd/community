@@ -176,7 +176,7 @@ What is out of scope for this TEP?  Listing non-goals helps to focus discussion
 and make progress.
 -->
 
-- While GitHub integrations will often be used as an example, I want to avoid
+- While GitHub integrations will often be used as an example, we want to avoid
   going into too much deep details into how a specific GitHub integration will
   be configured / what data will be rendered / what APIs will be used / etc,
   unless it has direct implications on integrations as a whole.
@@ -615,8 +615,11 @@ If integrators are not careful, they may accidentally trigger reconcile loops if
 they are constantly updating state based on resource updates (e.g. notice
 update, record new Generation version, update metadata with the version causing
 a new Generation). This is a risk for any pattern that is self-updating a
-resource, so no particular recommendations here beyond "don't do this", but it
-is something I want to call out in case there are known best practices here.
+resource, so no particular recommendations here beyond "don't do this".
+
+We should be on the lookout here for known best practices to avoid this (e.g.
+how does the Pipeline controller avoid reconcile loops when it updates the
+status of a PipelineRun today?)
 
 ## Alternatives
 
@@ -646,19 +649,23 @@ that references back to the run. The advantage of this is that it avoids making
 an API change to the Task/PipelineRun object directly and the consequences that
 may arise.
 
-I don't think this is compelling enough of a reason to separate this into its
-own type, since it makes the information harder to find. I suspect most users
-will look to the Task/PipelineRun for more details if their pull request isn't
-updated as expected. Since the data is tightly coupled to the underlying Run and
-is not shared among rungs, it makes the most sense for the data to exist with
-the Run itself.
+There are strong benefits of storing this data along side Task/PipelineRuns:
+
+- It makes the information easier to find - any user that inspects the Run
+  status will also be able to see this status data as well (e.g. it doesn't
+  matter if you use tkn, kubectl, Tekton Dashboard, etc.)
+- It makes the data strongly tied to the Run - anywhere Runs exist, this data
+  can exist too. This is important for instances where Run data is exported
+  (e.g. Tekton Results, Dashboard), and ensures deletion of the integration data
+  if the Run is deleted from the Cluster.
 
 Since this is a completely additive change, this will not require any sort of
 API deprecation.
 
-The main counterarguemnt for this is to avoid risks of reconcile loops, but I am
-not convinced the trade-off of adding a level of indirection to get integration
-data is worth it.
+One counterargument for this is to avoid risks of reconcile loops, but this
+seems like a common problem for all reconcilers (e.g. how does the Pipeline
+reconciler avoid reconcile loops for changes to the Pipeline status), and is
+something integrations can follow existing practices for.
 
 ### Embedding all integration status data inside Conditions
 
@@ -672,7 +679,6 @@ I'd like to avoid this since for a few reasons:
    Run from integrations that act on the Run (even though we want to store this
    data alongside for locality).
 2. This allows us to namespace conditions by integration type.
-3.
 
 ## Infrastructure Needed (optional)
 
@@ -682,7 +688,7 @@ new subproject, repos requested, github details.  Listing these here allows a
 SIG to get the process for these resources started right away.
 -->
 
-I suspect that this may be another component type to include in the catalog long
+This might make sense as another component type to include in the catalog long
 term, but for now this can be built in experimental. (In fact there is already a
 project there that helped inspired this proposal -
 https://github.com/tektoncd/experimental/tree/master/commit-status-tracker).

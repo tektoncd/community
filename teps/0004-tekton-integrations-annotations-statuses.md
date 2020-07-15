@@ -65,6 +65,7 @@ tags, and then generate with `hack/update-toc.sh`.
 -->
 
 <!-- toc -->
+
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goals](#goals)
@@ -99,7 +100,7 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Embedding all integration status data inside Conditions](#embedding-all-integration-status-data-inside-conditions)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
-<!-- /toc -->
+  <!-- /toc -->
 
 ## Summary
 
@@ -393,41 +394,15 @@ build on it to support metadata for arbitrary integrations alongside the
 existing
 [Cloud Event notifications](https://github.com/tektoncd/pipeline/issues/2082).
 While this proposal is largely compatible with existing work, one change would
-be recommended - notably migrating `CloudEventDelivery` as an integration
+be recommended - notably representing `CloudEventDelivery` as an integration
 status.
 
-Cloud Events are effectively a common type of a specific integration, and would
-fit well into this model in order to support arbitrary integration data. The
-Pipeline controller would be able to continue to insert data just like any other
+Cloud Events are effectively a specific type of integration, and would fit well
+into this model in order to support arbitrary integration data. The Pipeline
+controller would be able to continue to insert data just like any other
 integration, and would be able to continue to write existing CloudEventDelivery
-status data alongside IntegrationStatus data.
-
-Example:
-
-[CloudEventDelivery](https://pkg.go.dev/github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1?tab=doc#CloudEventDelivery):
-
-```yaml
-target: example.com
-status:
-  condition: Failed
-  sentAt: 123456789
-  error: "access denied"
-  retryCount: 1
-```
-
-IntegrationStatus:
-
-```yaml
-- name: cloudevent.integrations.tekton.dev
-  conditions:
-    - type: Succeeded
-      status: False
-      reason: "access denied"
-  lastTransitionTime: 123456789
-  annotations:
-    target: example.com
-    retryCount: 1
-```
+status data alongside integration status data. For more on this, see
+[CloudEventDelivery compatibility](#cloudeventdelivery-compatibility).
 
 ### Risks and Mitigations
 
@@ -550,6 +525,42 @@ status:
           status: True
       annotations:
         check-run-id: 5678
+```
+
+### CloudEventDelivery Compatibility
+
+As mentioned in [Notifications](#notifications), it would make sense to convert
+`CloudEventDelivery` statuses to fit into `IntegrationStatus` for consistency
+with other integrations.
+
+This should be a fairly easy mapping, and can be done in parallel during the
+transition from `CloudEventDelivery` to `IntegrationStatus`.
+
+Example:
+
+[CloudEventDelivery](https://pkg.go.dev/github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1?tab=doc#CloudEventDelivery):
+
+```yaml
+target: example.com
+status:
+  condition: Failed
+  sentAt: 123456789
+  error: "access denied"
+  retryCount: 1
+```
+
+IntegrationStatus:
+
+```yaml
+- name: cloudevent.integrations.tekton.dev
+  conditions:
+    - type: Succeeded
+      status: False
+      reason: "access denied"
+  lastTransitionTime: 123456789
+  annotations:
+    target: example.com
+    retryCount: 1
 ```
 
 ## Test Plan

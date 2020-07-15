@@ -90,6 +90,7 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Performance (optional)](#performance-optional)
 - [Design Details](#design-details)
   - [Integration Status](#integration-status-1)
+  - [Kubernetes Subresources](#kubernetes-subresources)
 - [Test Plan](#test-plan)
 - [Drawbacks](#drawbacks)
   - [Tekton Chains](#tekton-chains)
@@ -562,6 +563,38 @@ IntegrationStatus:
     target: example.com
     retryCount: 1
 ```
+
+### Kubernetes Subresources
+
+```
+<<[UNRESOLVED wlynch ]>>
+This section is WIP, but provides prior art for supporting storing this data within the Run CRDs directly.
+<<[/UNRESOLVED]>>
+```
+
+Kubernetes CRDs allows for defining subresources within a CRD.
+
+From the
+[Kubernetes docs](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#types-kinds):
+
+```
+Many simple resources are "subresources", which are rooted at API paths of specific resources. When resources wish to expose alternative actions or views that are closely coupled to a single resource, they should do so using new sub-resources. Common subresources include:
+
+...
+
+/status: Used to write just the status portion of a resource. For example, the /pods endpoint only allows updates to metadata and spec, since those reflect end-user intent. An automated process should be able to modify status for users to see by sending an updated Pod kind to the server to the "/pods/<name>/status" endpoint - the alternate endpoint allows different rules to be applied to the update, and access to be appropriately restricted.
+```
+
+This use case follows a similar pattern to what we want to define here with
+integration status data. This would enable us to define separate endpoints for
+status and spec data for Runs, which would allow us to define clearer
+separations for modifications to the Run spec.
+
+More Resources:
+
+- [Kubebuilder book](https://book-v1.book.kubebuilder.io/basics/status_subresource.html)
+- [API Conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#types-kinds)
+- [CRD docs](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#status-subresource)
 
 ## Test Plan
 

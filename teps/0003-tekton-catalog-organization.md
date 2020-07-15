@@ -62,9 +62,9 @@ can be used with any system that supports the Tekton API.
 
 *Discussion started in **[Tekton Catalog and Hub Design
 doc](https://docs.google.com/document/d/1pZY7ROLuW47ymZYqUgAbxskmirrmDg2dd8VPATYXrxI/edit)**,
-this is a split / follow-u. This is also a follow-up of **[Pipeline
+this is a split / follow-up. This is also a follow-up of **[Pipeline
 Catalog Integration
-Proposa*l](https://docs.google.com/document/d/1O8VHZ-7tNuuRjPNjPfdo8bD--WDrkcz-lbtJ3P8Wugs/edit#heading=h.iyqzt1brkg3o)**.
+Proposal](https://docs.google.com/document/d/1O8VHZ-7tNuuRjPNjPfdo8bD--WDrkcz-lbtJ3P8Wugs/edit#heading=h.iyqzt1brkg3o)**.
 
 
 ## Motivation

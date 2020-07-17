@@ -67,3 +67,14 @@ The TEP `OWNERS` are the **main** owners of the following projects:
 - [`catalog`](https://github.com/tektoncd/catalog)
 - [`hub`](https://github.com/tektoncd/hub)
 - [`operator`](https://github.com/tektoncd/operator)
+
+## Merging TEPs
+
+- TEP should be merge as soon as possible in the `proposed` state. As
+  soon as a general consensus is reached that the TEP, as described
+  (even if incomplete) make sense to pursue, the TEP can be
+  merged. The authors can then update the missing part in follow-up
+  pull requests and move it to `implementable`.
+- TEP should be approved by ***at least* two owners** from different
+  company. This should prevent a company to *force push* a TEP (and
+  thus a feature) in the tektoncd projects.

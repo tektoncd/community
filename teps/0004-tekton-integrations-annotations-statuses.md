@@ -1,5 +1,5 @@
 ---
-title: tekton-integrations-annotations-status
+title: tekton-integrations-status
 authors:
   - "@wlynch"
 creation-date: 2020-07-13
@@ -46,7 +46,7 @@ of this file) is [here](/teps/NNNN-TEP-template/README.md).
 
 -->
 
-# TEP-0004: Tekton Integrations: Annotations and Statuses
+# TEP-0004: Tekton Integration Statuses
 
 <!--
 This is the title of your TEP.  Keep it short, simple, and descriptive.  A good
@@ -65,43 +65,37 @@ tags, and then generate with `hack/update-toc.sh`.
 -->
 
 <!-- toc -->
-
 - [Summary](#summary)
+- [Background](#background)
 - [Motivation](#motivation)
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
-  - [Integration Annotations](#integration-annotations)
   - [Integration Status](#integration-status)
-  - [User Stories (optional)](#user-stories-optional)
-    - [Error updates on Pipeline failures](#error-updates-on-pipeline-failures)
-    - [Why didn't this Run update my PR?](#why-didnt-this-run-update-my-pr)
-    - [Multitentant / root secrets](#multitentant--root-secrets)
-  - [Notes/Constraints/Caveats (optional)](#notesconstraintscaveats-optional)
-    - [Integration Event Handling](#integration-event-handling)
-    - [Annotation-less integrations](#annotation-less-integrations)
-    - [Triggers](#triggers)
-    - [Notifications](#notifications)
   - [Risks and Mitigations](#risks-and-mitigations)
-    - [External Integration Quotas](#external-integration-quotas)
+    - [Malicious Actors / Accidental Overwritting](#malicious-actors--accidental-overwritting)
   - [User Experience (optional)](#user-experience-optional)
-    - [Storing data in Pipelines](#storing-data-in-pipelines)
   - [Performance (optional)](#performance-optional)
 - [Design Details](#design-details)
   - [Integration Status](#integration-status-1)
+  - [CloudEventDelivery Compatibility](#cloudeventdelivery-compatibility)
   - [Kubernetes Subresources](#kubernetes-subresources)
+- [User Stories (optional)](#user-stories-optional)
+  - [GitHub Integration Tracing - Why didn't this Run update my PR?](#github-integration-tracing---why-didnt-this-run-update-my-pr)
+  - [Tekton Results](#tekton-results)
+  - [Cloud Events](#cloud-events)
+  - [Notes/Constraints/Caveats (optional)](#notesconstraintscaveats-optional)
+    - [Notifications](#notifications)
 - [Test Plan](#test-plan)
 - [Drawbacks](#drawbacks)
   - [Tekton Chains](#tekton-chains)
-  - [Reconcile loops](#reconcile-loops)
 - [Alternatives](#alternatives)
-  - [Automatically injecting Tasks](#automatically-injecting-tasks)
   - [Storing integration statuses outside of Run status](#storing-integration-statuses-outside-of-run-status)
   - [Embedding all integration status data inside Conditions](#embedding-all-integration-status-data-inside-conditions)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
-  <!-- /toc -->
+<!-- /toc -->
 
 ## Summary
 
@@ -130,21 +124,35 @@ systems. Common integrations may include:
 - Email
 - Bug trackers (GitHub, Jira, etc.)
 - Webhook / Cloud Event
+- Results uploading (Tekton Results)
 
-Currently most integration solutions for Tekton Pipelines require users to embed
-update Tasks into their Pipelines. In practice, this ends up not being a good
-mechanism for ensuring that external integration notifications always occur, for
-example:
-
-- If the pipeline fails to start because of a configuration error, the external
-  integration is never notified.
-- If the pipeline fails a step and never reaches the notification step, the
-  external integration is never notified.
-- If a transient error (e.g. GitHub is down) prevents the task from completing
-  successfully, this may result in the pipeline failing.
+For each of these integrations, users/operators will want to know whether the
+integration for their Pipeline/TaskRun succeeded, failed, and why.
 
 This proposal details improvements to Task/PipelineRuns to annotate and store
 integration status information.
+
+## Background
+
+This proposal builds on the existing work for
+[Notifications/Actions](https://github.com/tektoncd/pipeline/issues/1740).
+
+In this document, "integrations" will refer to any execution in response to a
+Task/PipelineRun. This might be:
+
+- A TaskRun embedded directly in a user pipeline.
+- Execution in response to a notification (e.g. Cloud Events).
+- Exection in response to a controller reconcile event (either Tekton controlled
+  or third party).
+
+While Notifications/Actions as currently defined refer to user defined events
+within the Pipeline/Task spec, integrations aims to refer to a broader category
+of work to capture anything done in response to a Run, even if that work was not
+explicitly configured in the Run itself. For example, the ongoing work with
+[emitting CloudEvents](https://github.com/tektoncd/pipeline/issues/2082) relies
+on a controller to listen and respond to Pipeline/TaskRuns. This is currently
+configured cluster-wide via a ConfigMap, so while this is not a user-configured
+Notification/Action, this is still a form of integration.
 
 ## Motivation
 
@@ -159,9 +167,7 @@ demonstrate the interest in a TEP within the wider Tekton community.
 
 ### Goals
 
-- Define a mechanism for Tekton and other providers to hook in external
-  integrations for pipeline and task runs.
-- Allow integrations to report integration status for a pipeline for ease of
+- Allow integrations to report per-integration status for a pipeline for ease of
   debugging.
 - Minimize impact on pipeline/task execution spec.
 
@@ -177,10 +183,12 @@ What is out of scope for this TEP?  Listing non-goals helps to focus discussion
 and make progress.
 -->
 
+- Define the mechanism for how integration execution runs (e.g. reconciler,
+  webhook, CustomTasks, PipelineResources, etc.)
 - While GitHub integrations will often be used as an example, we want to avoid
   going into too much deep details into how a specific GitHub integration will
   be configured / what data will be rendered / what APIs will be used / etc,
-  unless it has direct implications on integrations as a whole.
+  unless it has direct implications to this proposal.
 
 ## Requirements
 
@@ -188,11 +196,12 @@ and make progress.
 List the requirements for this TEP.
 -->
 
-1. Integrations should be optional from core Tekton Pipelines functionality.
-2. Users should be able to pick and choose which integrations they have
-   installed in their cluster.
-3. Integration data should be stored as close to the PipelineRun as possible
-   (ideally alongside).
+1. Users should be able to view/identify errors with integrations for their
+   Pipeline/TaskRun.
+2. Users/Platforms should be able to hook in their own integrations without
+   needing to modify the core Tekton controller.
+3. Integration data should be discoverable from the Pipeline/TaskRun that its
+   related to.
 
 ## Proposal
 
@@ -204,53 +213,10 @@ implementation.  The "Design Details" section below is for the real
 nitty-gritty.
 -->
 
-### Integration Annotations
-
-[Annotations](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/)
-of the format `<name>.integrations.tekton.dev/<value>` to will be used to
-annotate PipelineRun and TaskRun objects with integration metadata. This will
-not be strictly enforced, in order to allow interoperability with other tools /
-annotation namespaces, but we should recommend this as a default by convention.
-
-This fits into the annotations model - from the Kubernetes docs:
-
-> Fields managed by a declarative configuration layer. Attaching these fields as
-> annotations distinguishes them from default values set by clients or servers,
-> and from auto-generated fields and fields set by auto-sizing or auto-scaling
-> systems.
->
-> Build, release, or image information like timestamps, release IDs, git branch,
-> PR numbers, image hashes, and registry address.
->
-> User or tool/system provenance information, such as URLs of related objects
-> from other ecosystem components.
-
-This allows for integrations to annotate arbitrary data without needing to
-modify the Pipeline execution spec, with the expectation that another reconciler
-/ tool will notice and act on these annotations.
-
-**Examples:**
-
-- GitHub
-  ```
-  github.integrations.tekton.dev/owner: wlynch
-  github.integrations.tekton.dev/repo: test
-  github.integrations.tekton.dev/sha: 4d2f673c600a0f08c3f6737bc3f5c6a6a15d62e6
-  ```
-- Webhook
-  ```
-  webhook.integrations.tekton.dev/url: https://example.com:8080
-  ```
-- Slack
-  ```
-  slack.integrations.tekton.dev/url: https://tektoncd.slack.com
-  slack.integrations.tekton.dev/channel: build-cop
-  ```
-
 ### Integration Status
 
-Key questions we will need to answer is - did an integration complete
-successfully for my pipeline? if not, why?
+Today, Tekton does not do a great job about answering - did an integration
+complete successfully for my pipeline? if not, why?
 
 In Tekton's
 [dogfooding cluster](https://github.com/tektoncd/plumbing/blob/master/docs/dogfooding.md)
@@ -264,8 +230,8 @@ To solve this, we should add additional status fields in
 TaskRunStatus/PipelineRunStatus, specifically for integration data. This should
 include information such as:
 
-- What integration the status is for (e.g. `github.integrations.tekton.dev`).
-- What object generation the status is for.
+- What integration the status is for (e.g. GitHub, Cloud Event, Tekton Results,
+  etc.).
 - What was the outcome of the integration for this object (e.g. success,
   failure).
 - (optional) More details of status outcome.
@@ -282,129 +248,6 @@ This is a generalization of the existing
 status data that is stored in Run statuses today. [See below](#notifications)
 For more on how this to the ongoing notifications effort.
 
-### User Stories (optional)
-
-<!--
-Detail the things that people will be able to do if this TEP is implemented.
-Include as much detail as possible so that people can understand the "how" of
-the system.  The goal here is to make this feel real for users without getting
-bogged down.
--->
-
-#### Error updates on Pipeline failures
-
-By making integration code independent of Pipeline execution, this enables us to
-respond to external integrations even in cases where the Pipeline/Task fails to
-start, as long as the Pipeline/TaskRun has been accepted by Tekton.
-
-This is particularly useful for validation / dereferencing errors that cannot be
-caught at the time of initial validation.
-
-#### Why didn't this Run update my PR?
-
-With integration statuses, we have a place to annotate data alongside the
-pipeline run itself. This gives us an easy mechanism for users to do the
-following:
-
-1. Push a commit, notice pull request wasn't updated for a run.
-2. Look for all Runs with Integration annotation for the repo / commit (if
-   empty, then you know there was no build kicked off).
-3. Find latest Run, `kubectl get` it, inspect integrations status field(s) for
-   why it the status didn't appear.
-
-#### Multitentant / root secrets
-
-Some integrations like require shared secrets that aren't appropriate to be
-shared with users in a multitenant environment since they may grant broad
-access. For example, GitHub Apps authenticate by generating a token from a
-private key. If you have access to this private key, you can access any
-installation of the App across any user/org with the permissions of the App.
-
-Separating pipeline execution from integration handling allows for integrators
-to have more control over how and where these types of secrets are used,
-independent of general user workloads. As long as you have the ability to read
-integration annotations and update the integration status, you have the ability
-to run the actual integration handling any where (e.g. different cluster, or
-even outside of kubernetes altogether) and have control over the authorization
-with external systems.
-
-### Notes/Constraints/Caveats (optional)
-
-<!--
-What are the caveats to the proposal?
-What are some important details that didn't come across above.
-Go in to as much detail as necessary here.
-This might be a good place to talk about core concepts and how they relate.
--->
-
-#### Integration Event Handling
-
-A key aspect of the proposal is that user Pipelines are not directly responsible
-for handling integration events, and mainly focuses on how integrations can
-configure itself and provide information back to users within the Run. It
-intentionally does not define how integrations should handle events.
-
-It is up to individual integrations to decide how and when to handle integration
-logic. Handlers should be installed independently of the core Pipeline
-installation to allow users to customize their installation.
-
-As a recommendation, integrations should rely on some form of reconciler in
-order to reliably process events, but it's also fine to rely on a push
-mechanism, or even rely on PipelineTasks to handle and annotate integration
-status data.
-
-#### Annotation-less integrations
-
-Defining annotations is an option, not a requirement. If you want an integration
-to apply to all Runs with no configuration needed (or provided by another source
-like a ConfigMap), that is okay. Integrations of this type will still able to
-use status fields.
-
-This is useful for use cases like webhook/pubsub notifications for all Run
-events.
-
-#### Triggers
-
-While this proposal mainly focuses on integrations with Pipeline and Task Run
-resources, Triggers are another important aspect to handle incoming integration
-events.
-
-To start, we can treat triggers the same as normal user requests - users will
-need to set relevant annotations in the created Task/PipelineRun. This is
-similar to the existing user experience today of needing to configure
-integration Tasks in their pipeline.
-
-There are Trigger related features being discussed that would lead to
-incremental improvements:
-
-- ObjectMeta Templating (e.g. be able to template annotations on created objects
-  per trigger) ([#618](https://github.com/tektoncd/triggers/issues/618))
-- Integration Specific Interceptors / Bindings / Templates
-  ([#504](https://github.com/tektoncd/triggers/issues/504),
-  [#584](https://github.com/tektoncd/triggers/issues/584))
-
-While these are out of scope for this specific proposal, this proposal remains
-compatible with future changes to make configuring Triggers easier, since it is
-agnostic to the source of configuration.
-
-#### Notifications
-
-This relates heavily to existing work around
-[notifications](https://github.com/tektoncd/pipeline/issues/1740), and aims to
-build on it to support metadata for arbitrary integrations alongside the
-existing
-[Cloud Event notifications](https://github.com/tektoncd/pipeline/issues/2082).
-While this proposal is largely compatible with existing work, one change would
-be recommended - notably representing `CloudEventDelivery` as an integration
-status.
-
-Cloud Events are effectively a specific type of integration, and would fit well
-into this model in order to support arbitrary integration data. The Pipeline
-controller would be able to continue to insert data just like any other
-integration, and would be able to continue to write existing CloudEventDelivery
-status data alongside integration status data. For more on this, see
-[CloudEventDelivery compatibility](#cloudeventdelivery-compatibility).
-
 ### Risks and Mitigations
 
 <!--
@@ -419,16 +262,18 @@ How will UX be reviewed and by whom?
 Consider including folks that also work outside the WGs or subproject.
 -->
 
-#### External Integration Quotas
+#### Malicious Actors / Accidental Overwritting
 
-If relying on reconcilers / events that trigger on every update, integration
-providers will need to be careful to stay within quotas external providers may
-impose.
+By inviting integrations to write data into status, there is a risk that
+integrations won't interact well with each other, either intentionally or not.
+e.g. overwritting data, modifying data they shouldn't, etc.
 
-While Tekton Pipelines will not impose specific throttling for integration
-providers, it will be a general best practice to use Status/Condition data (e.g.
-`ObservedGeneration`, `Conditions`, `LastTransitionTime`) as well as reconciler
-push back with `RequeueAfter` to stay within external quotas.
+This risk already exists today for any identity granted write access to Tekton
+objects, but there are a few things we can do to help mitigate risk:
+
+- Use subresources to minimize the scope of data integrations can modify.
+- Use `patchStrategy=merge` to prevent accidental overwrites of status data.
+  ([We already use this in a few places already](https://github.com/tektoncd/pipeline/search?q=patchStrategy&unscoped_q=patchStrategy))
 
 ### User Experience (optional)
 
@@ -441,13 +286,8 @@ via CLI, dashboard or a monitoring system.
 Consider including folks that also work on CLI and dashboard.
 -->
 
-#### Storing data in Pipelines
-
-Similar to `TaskRunResults` and `PipelineResourceResults`, integration statuses
-are another form of external artifact generated as a result of the Pipeline.
-Because of this, it makes sense to store these statuses as a part of the
-Pipeline/TaskRun status, so that it is easy to find and see this data when
-something goes wrong.
+The primary goal here is to increase visibility into related Pipeline/TaskRun
+integrations by making this data discoverable from the Run status itself.
 
 ### Performance (optional)
 
@@ -485,11 +325,11 @@ object, so we can likely take a similar approach here. e.g.:
 
 ```go
 type IntegrationStatus struct {
-  // Name of the integration namespace. Generally of the form
+  // Type of the integration. Generally of the form
   // <name>.integrations.tekton.dev
   Name string
 
-	// ObservedGeneration is the 'Generation' of the Service that
+  // ObservedGeneration is the 'Generation' of the Service that
 	// was last processed by the controller.
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
@@ -508,10 +348,18 @@ type IntegrationStatus struct {
 }
 ```
 
+```
+<<[UNRESOLVED wlynch ]>>
+This is one possible spec, which was mainly done to follow existing/familiar status structure elsewhere in the Run.
+We are by no means tied to this, and can modify this as needed.
+<<[/UNRESOLVED]>>
+```
+
 This status, while included in the Task/PipelineRun status, should be separate
 from the Run conditions in order to make it clear where conditions originated
 from. This also allows for conditions to namespace themselves within the status
-by integration name.
+by integration name. For cases where an integration may want to take multiple
+actions, it is valid for the same integration name to appear multiple times.
 
 Example:
 
@@ -520,7 +368,6 @@ status:
   conditions: ... # <Task/PipelineRun conditions>
   integrations:
     - name: github.integrations.tekton.dev
-      observedGeneration: 1234
       conditions:
         - type: Succeeded
           status: True
@@ -566,12 +413,6 @@ IntegrationStatus:
 
 ### Kubernetes Subresources
 
-```
-<<[UNRESOLVED wlynch ]>>
-This section is WIP, but provides prior art for supporting storing this data within the Run CRDs directly.
-<<[/UNRESOLVED]>>
-```
-
 Kubernetes CRDs allows for defining subresources within a CRD.
 
 From the
@@ -586,15 +427,157 @@ Many simple resources are "subresources", which are rooted at API paths of speci
 ```
 
 This use case follows a similar pattern to what we want to define here with
-integration status data. This would enable us to define separate endpoints for
-status and spec data for Runs, which would allow us to define clearer
-separations for modifications to the Run spec.
+integration status data. This would enable us to define separate endpoints and
+RBAC policies for status and spec data for Runs, which would allow us to define
+clearer separations for modifications to the Run spec. As a result of embedding
+this data with the Run, this also ensures data cleanup of dependent resources
+(e.g. if the Run is deleted, so are the integration statuses.)
+
+Looking ahead, there is
+[an open proposal in Kubernetes for custom subresources](https://github.com/kubernetes/kubernetes/issues/72637).
+Tekton would benefit from this since this would allow us to further isolate
+Integration statuses from Pipeline/TaskRun statuses by separating out the data
+as it's own custom subresource.
 
 More Resources:
 
 - [Kubebuilder book](https://book-v1.book.kubebuilder.io/basics/status_subresource.html)
 - [API Conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#types-kinds)
 - [CRD docs](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#status-subresource)
+- [kubernetes/kubernetes#72637: Support arbitrary subresources for custom resources](https://github.com/kubernetes/kubernetes/issues/72637)
+
+### Notes/Constraints/Caveats (optional)
+
+<!--
+What are the caveats to the proposal?
+What are some important details that didn't come across above.
+Go in to as much detail as necessary here.
+This might be a good place to talk about core concepts and how they relate.
+-->
+
+#### Notifications
+
+This relates heavily to existing work around
+[notifications](https://github.com/tektoncd/pipeline/issues/1740), and aims to
+build on it to support metadata for arbitrary integrations alongside the
+existing
+[Cloud Event notifications](https://github.com/tektoncd/pipeline/issues/2082).
+While this proposal is largely compatible with existing work, one change would
+be recommended - notably representing `CloudEventDelivery` as an integration
+status.
+
+Cloud Events are effectively a specific type of integration, and would fit well
+into this model in order to support arbitrary integration data. The Pipeline
+controller would be able to continue to insert data just like any other
+integration, and would be able to continue to write existing CloudEventDelivery
+status data alongside integration status data. For more on this, see
+[CloudEventDelivery compatibility](#cloudeventdelivery-compatibility).
+
+```
+<<[UNRESOLVED afrittoli ]>>
+Does this sound reasonable? Is this an accurate representation on how Cloud Events work today?
+<<[/UNRESOLVED]>>
+```
+
+## User Stories (optional)
+
+<!--
+Detail the things that people will be able to do if this TEP is implemented.
+Include as much detail as possible so that people can understand the "how" of
+the system.  The goal here is to make this feel real for users without getting
+bogged down.
+-->
+
+### GitHub Integration Tracing - Why didn't this Run update my PR?
+
+With integration statuses, we have a place to annotate data alongside the
+pipeline run itself. This gives us an easy mechanism for users to do the
+following:
+
+1. Push a commit, notice pull request wasn't updated for a run.
+2. Look for all Runs with Integration annotation for the repo / commit (if
+   empty, then you know there was no build kicked off).
+3. Find latest Run, `kubectl get` it (or retrieve it through some other means
+   like Tekton Results), inspect integrations status field(s) for why it the
+   status didn't appear.
+
+For a successful update, we might see a success status, plus some indication of
+an external identifier (e.g. commit status / CheckRun ID).
+
+```yaml
+status:
+  conditions: ... # <Task/PipelineRun conditions>
+  integrations:
+    - name: github.integrations.tekton.dev
+      conditions:
+        - type: Succeeded
+          status: True
+      annotations:
+        repo: "tektoncd/pipeline"
+        check-run-id: 5678
+```
+
+For an unsuccessful update, we might see a failed status, plus an error message
+indicating why things failed.
+
+```yaml
+status:
+  conditions: ... # <Task/PipelineRun conditions>
+  integrations:
+    - name: github.integrations.tekton.dev
+      conditions:
+        - type: Succeeded
+          status: False
+          reason: "HTTP 403: Forbidden"
+          message: "API Rate Limit Exceeded"
+      annotations:
+        repo: "tektoncd/pipeline"
+```
+
+### Tekton Results
+
+For a Tekton Result, we will want to attach a reference to the external Result
+ID corresponding to the Run.
+
+```yaml
+status:
+  conditions: ... # <Task/PipelineRun conditions>
+  integrations:
+    - name: results.integrations.tekton.dev
+      conditions:
+        - type: Succeeded
+          status: True
+      annotations:
+        result-id: 6ba7b814-9dad-11d1-80b4-00c04fd430c8
+```
+
+### Cloud Events
+
+For Cloud Events, we may want to attach the response we got from the remote URL.
+In the case of multiple events, we will want to allow users to distinguish these
+via the status annotation.
+
+```yaml
+status:
+  conditions: ... # <Task/PipelineRun conditions>
+  integrations:
+    - name: cloudevent.integrations.tekton.dev
+      conditions:
+        - type: Succeeded
+          status: True
+          reason: "200: OK"
+      annotations:
+        target: https://example.com
+        retryCount: 0
+    - name: cloudevent.integrations.tekton.dev
+      conditions:
+        - type: Succeeded
+          status: False
+          reason: "404: Not Found"
+      annotations:
+        target: https://otherhost.example.com
+        retryCount: 1
+```
 
 ## Test Plan
 
@@ -642,18 +625,6 @@ snapshots and signs TaskRun data.
 
 If `TaskRunStatus` is omitted, then there are no issues.
 
-### Reconcile loops
-
-If integrators are not careful, they may accidentally trigger reconcile loops if
-they are constantly updating state based on resource updates (e.g. notice
-update, record new Generation version, update metadata with the version causing
-a new Generation). This is a risk for any pattern that is self-updating a
-resource, so no particular recommendations here beyond "don't do this".
-
-We should be on the lookout here for known best practices to avoid this (e.g.
-how does the Pipeline controller avoid reconcile loops when it updates the
-status of a PipelineRun today?)
-
 ## Alternatives
 
 <!--
@@ -661,18 +632,6 @@ What other approaches did you consider and why did you rule them out?  These do
 not need to be as detailed as the proposal, but should include enough
 information to express the idea and why it was not acceptable.
 -->
-
-### Automatically injecting Tasks
-
-This alternative keeps the idea of running user tasks inside of the Pipeline,
-but we make it easier for users by automatically appending integration tasks to
-the end of their pipeline / adding them as finally tasks.
-
-This has a few drawbacks:
-
-- We can't call tasks if the pipeline never runs.
-- The user pipeline needs to have access to all secrets, which limits what we
-  can do with shared multitenant secrets.
 
 ### Storing integration statuses outside of Run status
 
@@ -721,10 +680,7 @@ new subproject, repos requested, github details.  Listing these here allows a
 SIG to get the process for these resources started right away.
 -->
 
-This might make sense as another component type to include in the catalog long
-term, but for now this can be built in experimental. (In fact there is already a
-project there that helped inspired this proposal -
-https://github.com/tektoncd/experimental/tree/master/commit-status-tracker).
+n/a
 
 ## Upgrade & Migration Strategy (optional)
 
@@ -735,5 +691,4 @@ behavior or add a feature that may replace and deprecate a current one.
 -->
 
 Integration providers will be responsible for handling upgrades and migrations
-for their own components. A `<name>.integrations.tekton.dev/version` annotation
-may be useful for identifying integration versions.
+for statuses of their own components. No

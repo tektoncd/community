@@ -408,8 +408,59 @@ For example (with Task and Pipelines):
       /samples/dummy-go-release.yaml |
 ```
 
-An example of a *freezed* catalog migrated to this layout is available
-[here](https://github.com/Pipelines-Marketplace/catalog).
+
+#### Example of a resource from catalog
+
+* An example of `git-clone` task from the catalog: [Git-Clone](https://github.com/tektoncd/catalog/tree/master/task/git-clone/0.1)
+
+* Fields added to the yaml file
+
+  ```yaml
+    labels:
+      app.kubernetes.io/version: "0.1"           👈 MUST: version of the resource
+    annotations:
+      tekton.dev/pipelines.minVersion: "0.12.1"  👈 MUST: version of pipeline
+      tekton.dev/tags: git                       👈 Optional: Comma separated list of tags
+      tekton.dev/displayName: "git clone"        👈 Optional: Display name of the task
+  spec:
+    description: >-
+      Git-clone clones git repositories (usually to a workspace)
+      for use with other tasks in a pipeline             👈 # MUST:  One line Summary of the task
+
+      Git-clone clones a git repository pointed by the param - URL
+      into an output workspace. By default, the repository will be
+      cloned into the root of the workspace. The location can be
+      changed by setting the param - subdirectory.       👈 # Optional: Description
+  ```
+
+
+* Structure of the task:
+
+  ```
+  $ tree git-clone
+
+  git-clone                       👈 # MUST: directory name must be the same as the resource name
+  └── README.md                   👈 # Optional: In case if there's a fallback of readme in any version's directory
+  └── 0.1                         👈 # MUST: the version must be same as the io.kubernetes/version label
+      ├── git-clone.yaml          👈 # MUST: filename must be the same as the resource name
+      ├── README.md               👈 # Recommended: README.md that's specific to the version of the resource
+      ├── samples                 👈 # MUST: all samples/examples must be in the samples directory
+      │   ├── git-cli
+      │   │   ├── pipeline.yaml
+      │   │   ├── pvc.yaml
+      │   │   ├── secret.yaml
+      │   │   └── service-account.yaml
+      │   ├── git-clone-checking-out-a-branch.yaml
+      │   ├── git-clone-checking-out-a-commit.yaml
+      │   ├── git-rebase
+      │   │   ├── run.yaml
+      │   │   ├── secret.yaml
+      │   │   └── service-account.yaml
+      │   └── using-git-clone-result.yaml
+      └── tests                          👈 # MUST: there must be a tests directory that contains tests
+          └── run.yaml
+
+  ```
 
 #### Open questions
 

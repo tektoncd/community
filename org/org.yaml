@@ -116,6 +116,7 @@ orgs:
         - kimsterv
         - dlorenc
         - sbwsg
+        - chmouel
         privacy: closed
         repos:
           catalog: write
@@ -123,10 +124,10 @@ orgs:
         description: "the chains maintainers"
         maintainers:
         - vdemeester
+        - dlorenc
         members:
         - mpeters
         - skelterjohn
-        - dlorenc
         - font
         - lukehinds
         privacy: closed
@@ -143,6 +144,7 @@ orgs:
         - piyush-garg
         - hrishin
         - danielhelfand
+        - pradeepitm12
         privacy: closed
         repos:
           cli: write
@@ -171,7 +173,10 @@ orgs:
         - AlanGreene
         - mnuttall
         - a-roberts
-        - kimholmes
+        - dibbles
+        - eddycharly
+        - steveodonovan
+        - carolynmabbott
         privacy: closed
         repos:
           dashboard: write
@@ -206,7 +211,6 @@ orgs:
         - vdemeester
         members:
         - sthaha
-        - chetan-rns
         - pratap0007
         - PuneetPunamiya
         - SM43
@@ -236,6 +240,7 @@ orgs:
         - kimsterv
         - dlorenc
         - dibyom
+        - sbwsg
         privacy: closed
         repos:
           plumbing: write

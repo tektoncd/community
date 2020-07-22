@@ -30,21 +30,19 @@ status: proposed
   - [Organization](#organization)
     - [Open questions](#open-questions-1)
   - [Requirements &amp; Guidelines](#requirements--guidelines)
-  - [Deprecation &amp; Removal
-    strategy](#deprecation--removal-strategy)
+  - [Deprecation &amp; Removal strategy](#deprecation--removal-strategy)
   - [Upstream catalogs](#upstream-catalogs)
   - [A look into the future](#a-look-into-the-future)
     - [The Hub and multiple catalogs](#the-hub-and-multiple-catalogs)
-  - [Notes/Constraints/Caveats
-    (optional)](#notesconstraintscaveats-optional)
+  - [Notes/Constraints/Caveats (optional)](#notesconstraintscaveats-optional)
   - [Risks and Mitigations](#risks-and-mitigations)
 - [Design Details](#design-details)
 - [Test Plan](#test-plan)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
-- [Upgrade &amp; Migration Strategy
-(optional)](#upgrade--migration-strategy-optional) <!-- /toc -->
+- [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
+<!-- /toc -->
 
 ## Summary
 
@@ -381,7 +379,6 @@ following organization is proposed.
 # Those samples would be used to run automated tests
 ./{resource-type}/{resource-name}/{version}/samples/… |
 ```
-
 
 For example (with Task and Pipelines):
 

@@ -82,6 +82,7 @@ tags, and then generate with `hack/update-toc.sh`.
 - [Alternatives](#alternatives)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
+- [References (optional)](#references-optional)
 <!-- /toc -->
 
 ## Summary
@@ -258,4 +259,12 @@ SIG to get the process for these resources started right away.
 Use this section to detail wether this feature needs an upgrade or
 migration strategy. This is especially useful when we modify a
 behavior or add a feature that may replace and deprecate a current one.
+-->
+
+## References (optional)
+
+<!--
+Use this section to add links to GitHub issues, other TEPs, design docs in Tekton
+shared drive, examples, etc. This is useful to refer back to any other related links
+to get more details.
 -->

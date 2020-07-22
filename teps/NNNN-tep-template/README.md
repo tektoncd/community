@@ -212,6 +212,11 @@ This section should contain enough information that the specifics of your
 change are understandable.  This may include API specs (though not always
 required) or even code snippets.  If there's any ambiguity about HOW your
 proposal will be implemented, this is the place to discuss them.
+
+If it's helpful to include workflow diagrams or any other related images,
+add them under "/teps/images/". It's upto the TEP author to choose the name
+of the file, but general guidance is to include at least TEP number in the
+file name, for example, "/teps/images/NNNN-workflow.jpg".
 -->
 
 ## Test Plan

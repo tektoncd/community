@@ -14,30 +14,32 @@ aka non-Pod Tasks, "duck-typed" Tasks 🦆
 Original Google Doc proposal, visible to members of tekton-dev@: https://docs.google.com/document/d/10nQSeIse7Ld4fLg4lhfgUmNKtewfaFNET3zlMdRnBuQ/edit
 
 <!-- toc -->
-- [Summary](#summary)
-- [Motivation](#motivation)
-  - [Goals](#goals)
-  - [Non-Goals](#non-goals)
-- [Requirements](#requirements)
-- [Proposal](#proposal)
-  - [Validation](#validation)
-  - [Status Reporting](#status-reporting)
-  - [Pipeline Integration](#pipeline-integration)
-  - [Initial Update Timeout](#initial-update-timeout)
-  - [Parameter Passing](#parameter-passing)
-  - [Result Reporting](#result-reporting)
-  - [Cancellation](#cancellation)
-  - [Timeout](#timeout)
-  - [CLI and Dashboard Support](#cli-and-dashboard-support)
-  - [Results API](#results-api)
-  - [Changes to Triggers](#changes-to-triggers)
-  - [User Stories (optional)](#user-stories-optional)
-    - [Story 1](#story-1)
-  - [Risks and Mitigations](#risks-and-mitigations)
-- [Test Plan](#test-plan)
-- [Drawbacks](#drawbacks)
-- [Alternatives](#alternatives)
-- [Infrastructure Needed (optional)](#infrastructure-needed-optional)
+  - [Summary](#summary)
+  - [Motivation](#motivation)
+    - [Goals](#goals)
+    - [Non-Goals](#non-goals)
+  - [Requirements](#requirements)
+  - [Proposal](#proposal)
+    - [Validation](#validation)
+    - [Status Reporting](#status-reporting)
+    - [Pipeline Integration](#pipeline-integration)
+    - [Initial Update Timeout](#initial-update-timeout)
+    - [Parameter Passing](#parameter-passing)
+    - [Result Reporting](#result-reporting)
+    - [Cancellation](#cancellation)
+    - [Timeout](#timeout)
+    - [CLI and Dashboard Support](#cli-and-dashboard-support)
+    - [Results API](#results-api)
+    - [Changes to Triggers](#changes-to-triggers)
+    - [User Stories (optional)](#user-stories-optional)
+      - [Task Author](#task-author)
+    - [Risks and Mitigations](#risks-and-mitigations)
+  - [Test Plan](#test-plan)
+  - [Drawbacks](#drawbacks)
+  - [Alternatives](#alternatives)
+  - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
+  - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
+- [Open Questions](#open-questions)
 <!-- /toc -->
 
 ## Summary
@@ -49,7 +51,7 @@ watches for creations of `Run` objects which reference their type, and
 which eventually updates its status to signal task completion.
 
 To achieve this, Tekton will define a new type, `Run`, first in
-`v1alpha1`, with the intention of iterating and, if there's support, bringing
+`v1alpha1`, with the intention of iterating and, if there's support, bringing
 this functionality to `v1beta1` and eventually `v1`. Tekton will also
 implement support for this new type in the PipelineRun CRD controller, as well
 as document the contract for integrating with this new type, and providing
@@ -196,7 +198,7 @@ status
     value: Smith
   arbitraryField: hello world
   arbitraryStructuredField:
-    listOfThings: ["a", "b", "c"] 
+    listOfThings: ["a", "b", "c"]
 ```
 
 ### Pipeline Integration

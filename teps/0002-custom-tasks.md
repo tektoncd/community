@@ -51,7 +51,7 @@ watches for creations of `Run` objects which reference their type, and
 which eventually updates its status to signal task completion.
 
 To achieve this, Tekton will define a new type, `Run`, first in
-`v1alpha1`, with the intention of iterating and, if there's support, bringing
+`v1alpha1`, with the intention of iterating and, if there's support, bringing
 this functionality to `v1beta1` and eventually `v1`. Tekton will also
 implement support for this new type in the PipelineRun CRD controller, as well
 as document the contract for integrating with this new type, and providing

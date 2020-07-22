@@ -105,3 +105,151 @@ orgs:
     - withlin
     - wlynch
     - yuege01
+    teams:
+      catalog.maintainers:
+        description: "the catalog maintainers"
+        maintainers:
+        - vdemeester
+        - ImJasonH
+        - bobcatfish
+        members:
+        - kimsterv
+        - dlorenc
+        - sbwsg
+        privacy: closed
+        repos:
+          catalog: write
+      chains.maintainers:
+        description: "the chains maintainers"
+        maintainers:
+        - vdemeester
+        members:
+        - mpeters
+        - skelterjohn
+        - dlorenc
+        - font
+        - lukehinds
+        privacy: closed
+        repos:
+          chains: write
+      cli.maintainers:
+        description: "the cli maintainers"
+        maintainers:
+        - vdemeester
+        - bobcatfish
+        members:
+        - chmouel
+        - sthaha
+        - piyush-garg
+        - hrishin
+        - danielhelfand
+        privacy: closed
+        repos:
+          cli: write
+          homebrew-tools: write
+      core.maintainers:
+        description: "the core maintainers team (pipeline)"
+        maintainers:
+        - vdemeester
+        - ImJasonH
+        - bobcatfish
+        - afrittoli
+        members:
+        - pritidesai
+        - dlorenc
+        - dibyom
+        - sbwsg
+        privacy: closed
+        repos:
+          pipeline: write
+      dashboard.maintainers:
+        description: "the dashboard mainatiners"
+        maintainers:
+        - bobcatfish
+        - skaegi
+        members:
+        - AlanGreene
+        - mnuttall
+        - a-roberts
+        - kimholmes
+        privacy: closed
+        repos:
+          dashboard: write
+      experimental.maintainers:
+        description: "the experimental maintainers"
+          github repo
+        maintainers:
+        - abayer
+        - bobcatfish
+        - mnuttall
+        members:
+        - skaegi
+        - dlorenc
+        - a-roberts
+        - dibbles
+        privacy: closed
+        repos:
+          experimental: write
+      homebrew.maintainers:
+        description: "the homebrew-tools maintainers"
+        maintainers:
+        - vdemeester
+        members:
+        - chmouel
+        - danielhelfand
+        privacy: closed
+        repos:
+          homebrew-tools: write
+      hub.maintainers:
+        description: "the hub maintainers"
+        maintainers:
+        - vdemeester
+        members:
+        - sthaha
+        - chetan-rns
+        - pratap0007
+        - PuneetPunamiya
+        - SM43
+        privacy: closed
+        repos:
+          hub: write
+      operator.maintainers:
+        description: "the operator maintainers"
+        maintainers:
+        - vdemeester
+        members:
+        - houshengbo
+        - sthaha
+        - nikhil-thomas
+        - vincent-pli
+        privacy: closed
+        repos:
+          operator: write
+      plumbing.maintainers:
+        description: "the plumbing maintainers"
+        maintainers:
+        - vdemeester
+        - abayer
+        - bobcatfish
+        - afrittoli
+        members:
+        - kimsterv
+        - dlorenc
+        - dibyom
+        privacy: closed
+        repos:
+          plumbing: write
+      triggers.maintainers:
+        description: "the triggers maintainers"
+        maintainers:
+        - bobcatfish
+        members:
+        - iancoffey
+        - dlorenc
+        - wlynch
+        - dibyom
+        - ncskier
+        - vtereso
+        privacy: closed
+        repos:
+          triggers: write

@@ -5,7 +5,7 @@ authors:
   - "@bobcatfish"
 creation-date: 2020-07-16
 last-updated: 2020-07-16
-status: proposed
+status: implementable
 ---
 
 # TEP-NNNN: Task Results in Final Tasks
@@ -22,6 +22,7 @@ status: proposed
 - [Test Plan](#test-plan)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
+- [References](#references)
 <!-- /toc -->
 
 ## Summary
@@ -133,10 +134,10 @@ spec:
          value:  $(tasks.boskos-acquire.results.leased-resource)
 ```
 
-**Note:** Today final tasks are executed all in parallel and can not depend on any other `Task` in the `Pipeline`.
-With adding support for `Task` `Results`, we are introducing dependencies to finally `Tasks` but that
-does not change scheduling of finally tasks. All final tasks will still be executed in parallel after
-all non-final tasks finishes.
+**Note:** Today final tasks are executed all in parallel and does not depend on any other `Task` in the `Pipeline`.
+With adding support for `Task` `Results` in finally `Tasks`, we are introducing implicit dependencies on non-final
+`Tasks` but that does not change scheduling of finally tasks. All final tasks will still be executed in parallel after
+all non-final tasks are done.
 
 **Q. What happens to `Pipeline` when the dependent task `boskos-acquire` either failed or not executed and
 the task result `leased-resource` is not initialized?**
@@ -154,31 +155,34 @@ substitution. The error handling of such empty `Task` `Result` is left to the fi
 
 **Q. Can a final `Task` produce `Task` `Results`?**
 
-**A.** Nope, this proposal does not enable final tasks to produce `Task` `Results`.
-
+**A.** Nope, this proposal does not enable final tasks to produce `Task` `Results`. This also implies that the final
+`Task` can not refer to the `Task` `Result` of other final `Task`.
 
 **Q. Explain the overall workflow.**
 
 **A.**
 
 ```
-                   ------------------------------------------
-                  |             Param Validation              |
-                  | (required params provided and their types)|
-                   ------------------------------------------
-                                    |
-                                    V
-                   -------------------------------------------
-                  | Retrieve Execution Queue (All Final Tasks)|
-                   -------------------------------------------
-                                    |
-                                    V
-                -------------------------------------------------
-               | Validate and Apply Results from Dependent Tasks |
-                -------------------------------------------------
-                                    | (if the validation fails, declare that task failure but
-                                    | continue executing rest of the final tasks)
-                                    V
+                 -----------------------------------------------
+                |        Validate Params to final Tasks         |
+                | (1) required params provided and their types) |
+                | (2) resolve param mapping and apply values    |
+                |     from PipelineRun/Pipeline                 |
+                 -----------------------------------------------
+                                      |
+                                      V
+               ---------------------------------------------------------
+              |       Retrieve Execution Queue (All Final Tasks)        |
+              | including failed final tasks without exhausting retires |
+               ---------------------------------------------------------
+                                      |
+                                      V
+               ---------------------------------------------------------
+              | Validate Task Results of Dependencies (non-final Tasks) |
+              |       Apply Task Results to final Task Params           |
+               ---------------------------------------------------------
+                                      | (if the validation fails, mark that final task as failure
+                                      V  but continue executing rest of the final tasks)
                     ------------------------------------
                    | Execute the Task and Create TaskRun |
                     ------------------------------------
@@ -298,6 +302,10 @@ validation failure if proj-name is not initialized.
 
 4. Allow finally tasks to depend on other Tasks; do not run if they fail
 
+## References
+
+* https://github.com/tektoncd/pipeline/issues/2557
+* [Design Doc](https://docs.google.com/document/d/10iEJqVstY6k3KNvAXgffIJLcHRbPQ-GIAfQk5Dlrf3c/edit)
 
 
 

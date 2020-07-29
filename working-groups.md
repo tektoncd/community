@@ -99,12 +99,12 @@ This is the [`tektoncd/triggers`](https://github.com/tektoncd/triggers) working 
 | Slack Channel              | [#triggers](https://tektoncd.slack.com/messages/triggers)                                                                                                                                                                                 |
 
 
-| &nbsp;                                                     | Facilitators    | Company | Profile                                     |
-| --------------------------------------------------------   | ----------      | ------- | ---------------------------------------     |
-| <img width="30px" src="https://github.com/wlynch.png">     | Billy Lynch     | Google  | [wlynch](https://github.com/wlynch)         |
-| <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee | Google  | [dibyom](https://github.com/dibyom)         |
-| <img width="30px" src="https://github.com/vtereso.png">    | Vincent Tereso  | IBM     | [vtereso](https://github.com/vtereso)       |
-| <img width="30px" src="https://github.com/ncskier.png">    | Brandon Walker  | IBM     | [ncskier](https://github.com/ncskier)       |
+| &nbsp;                                                           | Facilitators    | Company     | Profile                                                 |
+| --------------------------------------------------------         | ----------      | -------     | ---------------------------------------                 |
+| <img width="30px" src="https://github.com/wlynch.png">           | Billy Lynch     | Google      | [wlynch](https://github.com/wlynch)                     |
+| <img width="30px" src="https://github.com/dibyom.png">           | Dibyo Mukherjee | Google      | [dibyom](https://github.com/dibyom)                     |
+| <img width="30px" src="https://github.com/khrm.png">             | Khurram Baig    | Red Hat     | [khrm](https://github.com/khrm)                         |
+| <img width="30px" src="https://github.com/savitaashture.png">    | Savita Asthure  | Red Hat     | [savitaashture](https://github.com/savitaashture)       |
 
 ## CLI
 

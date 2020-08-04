@@ -47,7 +47,9 @@ Original Design Doc in Google Docs, visible to members of tekton-dev@: https://d
 
 ## Summary
 
-`Conditions` is a [CRD](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) used to specify a criteria to determine whether or not a `Task` executes. When other Tekton resources were migrated to [beta](https://github.com/tektoncd/pipeline/blob/master/api_compatibility_policy.md#alpha-beta-and-ga), it remained in [alpha](https://github.com/tektoncd/pipeline/blob/master/api_compatibility_policy.md#alpha-beta-and-ga) because it was missing features needed by users. After analyzing the feature requests and discussing with users, we have identified that the most critical gaps in `Conditions` are **simplicity**, **efficiency**, **skipping** and **status**. We want to address these gaps so that it can work well with the other `Pipeline` resources and users can count on its stability. 
+`Conditions` is a [CRD](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) used to specify a criteria to determine whether or not a `Task` executes. When other Tekton resources were migrated to [beta](https://github.com/tektoncd/pipeline/blob/master/api_compatibility_policy.md#alpha-beta-and-ga), it remained in [alpha](https://github.com/tektoncd/pipeline/blob/master/api_compatibility_policy.md#alpha-beta-and-ga) because it was missing features needed by users. 
+
+After analyzing the feature requests and discussing with users, we have identified that the most critical gaps in `Conditions` are **simplicity**, **efficiency**, **skipping** and **status**. We want to address these gaps so that it can work well with the other `Pipeline` resources and users can count on its stability. 
 
 We will refer to `Conditions` as `Guards` because they determine **if** a `Task` executes, not **if/else** as would be expected from a `Condition`; more details on `Guards` vs `Conditions` naming can be found in [this issue](https://github.com/tektoncd/pipeline/issues/2635). 
 
@@ -161,11 +163,15 @@ It is currently difficult to distinguish between a `Task` that was skipped due t
 
 ## Proposal
 
-For _simplicity_, we propose deprecating the separate `Conditions` CRD and using `Tasks` to produce the `Results` needed to evaluate whether a dependent `Task` executes. For _efficiency_, we propose using string expressions through `When Expressions` to perform simple checks without spinning up new `Pods`; they can operate on previous `Task's Results`, `Parameters`, among other Tekton resources. For _skipping_, we propose adding a field that allows users to specify whether to skip the guarded `Task` only or to skip the guarded `Task` and its ordering-dependent `Tasks`. By deprecating `Conditions` CRD and using `When Expressions`, we can distinguish failed _status_ from evaluating to `False`.  
+We propose: 
+- For _simplicity_, we propose deprecating the separate `Conditions` CRD and using `Tasks` to produce the `Results` needed to evaluate whether a dependent `Task` executes. 
+- For _efficiency_, we propose using string expressions through `When Expressions` to perform simple checks without spinning up new `Pods`; they can operate on previous `Task's Results`, `Parameters`, among other Tekton resources. 
+- For _skipping_, we propose adding a field that allows users to specify whether to skip the guarded `Task` only or to skip the guarded `Task` and its ordering-dependent `Tasks`. 
+- By deprecating `Conditions` CRD and using `When Expressions`, we can distinguish failed _status_ from evaluating to `False`.  
 
 ### Simplicity
 
-As discussed in the background section, `Conditions` manifest themselves as `Tasks`. We want to keep Tekton as simple as possible by reusing existing components. So we propose phasing out the separate `Conditions` CRD and eventually deprecating it. In place of `Conditions`, we want to use `Tasks` produce to `Results` that we can use to specify `Guards` using `When Expression` in subsequent `Tasks`, as described in [Efficiency](#efficiency) section below. Thus, we won’t have `Conditions` to migrate to beta and won’t have to maintain the separate `Conditions` CRD. 
+As discussed in the background section, `Conditions` manifest themselves as `Tasks`. We want to keep Tekton as simple as possible by reusing existing components. So we propose phasing out the separate `Conditions` CRD and eventually deprecating it. In place of `Conditions`, we propose using `Tasks` produce to `Results` that we can use to specify `Guards` using `When Expressions` in subsequent `Tasks`, as described in [Efficiency](#efficiency) section below. Thus, we won’t have `Conditions` to migrate to beta and won’t have to maintain the separate `Conditions` CRD. 
 
 In the example of checking whether a file exists, the `Task` that would replace the `Condition` would be specified as such:
 
@@ -280,19 +286,24 @@ operator: In
 values: [‘’]
 ```
 
-We can explore adding more [Operators](https://github.com/kubernetes/kubernetes/blob/7f23a743e8c23ac6489340bbb34fa6f1d392db9d/staging/src/k8s.io/apimachinery/pkg/selection/operator.go) later if needed, such as `IsTrue`, `IsFalse`, `IsEmpty` and `IsNotEmpty`. In Kubernetes' `Match Expressions` uses a comma separator as an `AND` operator but it won't be supported in Tekton's `When Expressions` (can be revisted later).
+We can explore adding more [Operators](https://github.com/kubernetes/kubernetes/blob/7f23a743e8c23ac6489340bbb34fa6f1d392db9d/staging/src/k8s.io/apimachinery/pkg/selection/operator.go) later if needed, such as `IsTrue`, `IsFalse`, `IsEmpty` and `IsNotEmpty`. Kubernetes' `Match Expressions` uses a comma separator as an `AND` operator but it won't be supported in Tekton's `When Expressions` (can be revisted later).
 
 ### Skipping
 
 As it is currently in `Conditions`, when a `Guard` evaluates to `False`, the `Task` and its dependent `Tasks` will be skipped by default while the rest of the `Pipeline` will execute. However, when the `Guard` is specified to operate on a missing resource (such as `Param` or `Result`), the Pipeline will exit with a failure. 
 
-To provide more flexibility when a `Guard` evaluates to `False`, we propose adding a field - `continueAfterSkip` - used to specify whether execute the `Tasks` that are ordering-dependent on the skipped guarded `Task`. The `continueAfterSkip` field defaults to `false`/`no` and users can set it to `true`/`yes` (case insensitive) to allow for execution of the rest of the branch. The field `continueAfterSkip` is only supported in guarded `Tasks`; there will be a validation error if `continueAfterSkip` is specified in unguarded `Tasks`. 
+To provide more flexibility when a `Guard` evaluates to `False`, we propose adding a field - `continueAfterSkip` - that:
+- is used to specify whether execute the `Tasks` that are ordering-dependent on the skipped guarded `Task`
+- defaults to `false`/`no` and users can set it to `true`/`yes` (case insensitive) to allow for execution of the rest of the branch
+- is only supported in guarded `Tasks`; there will be a validation error if `continueAfterSkip` is specified in unguarded `Tasks`
 
 A `Task` branch is made up of dependent `Tasks`, where there are two types of dependencies:
 - _Resource dependency_: based on resources needed from parent `Task`, which includes Workspaces, `Results` and Resources. 
 - _Ordering dependency_: based on runAfter which provides sequencing of `Tasks` when there may not be resource dependencies. 
 
 Setting `continueAfterSkip` on a guarded `Task` with ordering dependencies is valid and the subsequent `Tasks` should execute. However, setting `continueAfterSkip` on a guarded `Task` with resource dependencies is invalid because those dependent `Tasks` will have resource validation errors and fail the whole `Pipeline`. We will add validation to confirm the dependencies allow for passing in the `continueAfterSkip` field. 
+
+Here's how a user can use `continueAfterSkip` to execute ordering-dependent tasks:
 
 ```yaml
 api: tekton.dev/v1beta1
@@ -440,14 +451,13 @@ spec:
             resource: source
 ```
 
-And this is how the usage of the `Guards` would be translated in the `Pipelines`,
 ### Risks and Mitigations
 
 The `When Expressions` providing `In` and `NotIn` `Operators` may not cover some edge use cases of `Guards`, however the design will be flexible to support other `Operators`. Moreover, this design allows for exploring using `CEL` through `CustomTasks`. 
 
 ## Test Plan
 
-- Provide unit tests and e2e tests for `Guards` with varied `Inputs` and `Values`. 
+- Provide unit tests and e2e tests for `When Expressions` with varied `Inputs` and `Values`. 
 - Provide unit tests and e2e tests for `continueAfterSkips` with varied `Task` branches.
 
 ## Alternatives
@@ -455,7 +465,7 @@ The `When Expressions` providing `In` and `NotIn` `Operators` may not cover some
 ### Simplicity
 
 #### Tasks that produce Skip Result
-As discussed in the background section, `Conditions` manifest themselves as `Tasks`. We can phase out the separate `Conditions` CRD and eventually deprecating it. In place of `Conditions`, we can use `Tasks` produce a `Result` called `Skip` with string values `True` or `False` -- to indicate whether the `Task` it’s guarding will be executed or not. When a user provides another value, the `Task` will evaluate it as an error. Thus, we won’t have `Conditions` to migrate to beta and won’t have to maintain the separate `Conditions` CRD. Moreover, the features supported by `Tasks` become readily available to be used for guarded execution of `Tasks`. Using `Results` allows us to distinguish between when a `Task` fails and when the `Task` used as a `Guard` evaluates to `False`. 
+As discussed in the background section, `Conditions` manifest themselves as `Tasks`. We can phase out the separate `Conditions` CRD and eventually deprecate it. In place of `Conditions`, we can use `Tasks` produce a `Result` called `Skip` with string values `True` or `False` -- to indicate whether the `Task` it’s guarding will be executed or not. When a user provides another value, the `Task` will evaluate it as an error. Thus, we won’t have `Conditions` to migrate to beta and won’t have to maintain the separate `Conditions` CRD. Moreover, the features supported by `Tasks` become readily available to be used for guarded execution of `Tasks`. Using `Results` allows us to distinguish between when a `Task` fails and when the `Task` used as a `Guard` evaluates to `False`. 
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -515,7 +525,7 @@ Initially, while still supporting `Conditions`, we can use `Tasks` used as `Guar
 
 #### CelRun Custom Task
 
-If we implement guarded execution of `Tasks` is implemented using [Tasks that produce Skip Result](#tasks-that-produce-skip-result), we can then extend it to use [`CustomTasks`](https://docs.google.com/document/d/10nQSeIse7Ld4fLg4lhfgUmNKtewfaFNET3zlMdRnBuQ/edit#heading=h.nz0qjg4cmzp0) to build and experiment with using string expressions for simple `Guards`. In Triggers, we use [Common Expression Language](https://opensource.google/projects/cel) for filtering using a `CEL` interceptor. We can provide a `CelRun CustomTask`, so that we experiment with `CEL` without putting it into the Tekton API. After experimentation with `CelRun` `CustomTask` for a while, we will revisit whether we want to add it to the Tekton API.
+If guarded execution of `Tasks` is implemented using [Tasks that produce Skip Result](#tasks-that-produce-skip-result), we can then extend it to use [`CustomTasks`](https://docs.google.com/document/d/10nQSeIse7Ld4fLg4lhfgUmNKtewfaFNET3zlMdRnBuQ/edit#heading=h.nz0qjg4cmzp0) to build and experiment with using string expressions for simple `Guards`. In Triggers, we use [Common Expression Language](https://opensource.google/projects/cel) for filtering using a `CEL` interceptor. We can provide a `CelRun CustomTask`, so that we experiment with `CEL` without putting it into the Tekton API. After experimentation with `CelRun` `CustomTask` for a while, we will revisit whether we want to add it to the Tekton API.
 
 An example using a `CelRun` can be specified as shown below:
 ``` yaml
@@ -557,7 +567,7 @@ spec:
 ```
 When the `Pipeline` executes, it’ll create a `CelRun` object, and we’ll provide a `controller` to interpret and execute the `CelRun`. We can also experiment with using other languages, like `bash`, `scriptmode`, `jsonpath`. If we pursue this later, we'll write a separate TEP. 
 
-#### Expression Language
+#### Expression Language Interceptor
 In Triggers, we use CEL for filtering to avoid spinning up a new pod. Similarly, we can choose a particular expression language - [Common Expression Language](https://opensource.google/projects/cel) - and use it to evaluate simple `Guards` efficiently in the controller. 
 
 ```yaml

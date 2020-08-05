@@ -3,8 +3,8 @@ title: tep-0007
 authors:
   - "@jerop"
 creation-date: 2020-07-22
-last-updated: 2020-07-22
-status: proposed
+last-updated: 2020-08-05
+status: implementable
 ---
 # TEP-0007: Conditions Beta
 

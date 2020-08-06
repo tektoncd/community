@@ -183,7 +183,6 @@ orgs:
           dashboard: write
       experimental.maintainers:
         description: "the experimental maintainers"
-          github repo
         maintainers:
         - abayer
         - bobcatfish

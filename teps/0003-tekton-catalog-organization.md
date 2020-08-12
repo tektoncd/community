@@ -9,7 +9,7 @@ last-updated: 2020-07-07
 status: proposed
 ---
 
-# TEP-0002: Tekton Catalog Organization
+# TEP-0003: Tekton Catalog Organization
 
 <!-- toc -->
 - [Summary](#summary)
@@ -28,6 +28,7 @@ status: proposed
   - [Compatibility](#compatibility)
   - [Ownership](#ownership)
   - [Organization](#organization)
+    - [Example of a resource from catalog](#example-of-a-resource-from-catalog)
     - [Open questions](#open-questions-1)
   - [Requirements &amp; Guidelines](#requirements--guidelines)
   - [Deprecation &amp; Removal strategy](#deprecation--removal-strategy)

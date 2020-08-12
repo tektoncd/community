@@ -5,8 +5,8 @@ authors:
   - "@sthaha"
   - "@bobcatfish"
 creation-date: 2020-06-11
-last-updated: 2020-07-07
-status: proposed
+last-updated: 2020-08-12
+status: implementable
 ---
 
 # TEP-0002: Tekton Catalog Organization

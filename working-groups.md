@@ -238,10 +238,12 @@ This is the working group for [`tektoncd/catalog`](https://github.com/tektoncd/c
 | Slack Channels             | [#catalog](https://tektoncd.slack.com/messages/catalog) and [#hub](https://tektoncd.slack.com/messages/hub)                                                                                                                               |
 
 
-| &nbsp;                                                        | Facilitators    | Company | Profile                                            |
-| -----------------------------------------------------------   | ----------      | ------- | ------------------------------------------------   |
-| <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |
-| <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson | Google  | [bobcatfish](https://github.com/bobcatfish) |
+| &nbsp;                                                        | Facilitators      | Company | Profile                                            |
+| -----------------------------------------------------------   | ----------        | ------- | ------------------------------------------------   |
+| <img width="30px" src="https://github.com/vdemeester.png">    | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester)        |
+| <img width="30px" src="https://github.com/bobcatfish.png">    | Christie Wilson   | Google  | [bobcatfish](https://github.com/bobcatfish)        |
+| <img width="30px" src="https://github.com/chmouel.png">       | Chmouel Boudjnah  | Red Hat | [chmouel](https://github.com/chmouel)              |
+| <img width="30px" src="https://github.com/afrittoli.png">     | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli)          |
 
 ## Operator and Deployment
 

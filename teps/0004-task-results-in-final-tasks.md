@@ -8,7 +8,7 @@ last-updated: 2020-07-16
 status: implementable
 ---
 
-# TEP-NNNN: Task Results in Final Tasks
+# TEP-0004: Task Results in Final Tasks
 
 <!-- toc -->
 - [Summary](#summary)
@@ -306,6 +306,3 @@ validation failure if proj-name is not initialized.
 
 * https://github.com/tektoncd/pipeline/issues/2557
 * [Design Doc](https://docs.google.com/document/d/10iEJqVstY6k3KNvAXgffIJLcHRbPQ-GIAfQk5Dlrf3c/edit)
-
-
-

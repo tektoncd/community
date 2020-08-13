@@ -1,3 +1,12 @@
+---
+title: tekton-oci-bundles
+authors:
+  - "@vdemeest"
+  - "@pierretasci"
+creation-date: 2020-06-24
+last-updated: 2020-08-13
+status: proposed
+---
 # TEP-0005: Tekton OCI bundles
 
 <!-- toc -->

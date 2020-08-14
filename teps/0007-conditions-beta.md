@@ -23,21 +23,24 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Related Work](#related-work)
 - [Motivation](#motivation)
   - [Simplicity](#simplicity)
+  - [Efficiency](#efficiency)
+  - [Skipping](#skipping)
+  - [Status](#status)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [Simplicity](#simplicity-1)
-  - [Efficiency](#efficiency)
-  - [Skipping](#skipping)
+  - [Efficiency](#efficiency-1)
+  - [Skipping](#skipping-1)
   - [Examples](#examples)
   - [Risks and Mitigations](#risks-and-mitigations)
 - [Test Plan](#test-plan)
 - [Alternatives](#alternatives)
   - [Simplicity](#simplicity-2)
     - [Tasks that produce Skip Result](#tasks-that-produce-skip-result)
-  - [Efficiency](#efficiency-1)
+  - [Efficiency](#efficiency-2)
     - [CelRun Custom Task](#celrun-custom-task)
     - [Expression Language Interceptor](#expression-language-interceptor)
-  - [Skipping](#skipping-1)
+  - [Skipping](#skipping-2)
     - [Dependency Type](#dependency-type)
     - [Guard Location](#guard-location)
     - [Special runAfter](#special-runafter)
@@ -142,15 +145,15 @@ Tekton users have made many feature requests for `Conditions` that have been doc
 
 `Conditions` actually manifest themselves as `Tasks` but are implemented as a separate CRD which makes them complex. Maintaining the separate Condition CRD takes extra and unnecessary effort, given that it's really a `Task` underneath. We prefer to reuse existing components when possible.
 
-**Efficiency**
+### Efficiency
 
 Checking `Conditions` is slow and expensive because it spins up new `Pods` to evaluate each `Condition`. For example, Tekton dogfooding has been heavily using `Conditions` to decide what to run e.g only run this branch if it contains a specific type of file. These small checks add up such that many pods are used to check `Conditions` and it becomes slow and expensive. Even worse, we don't have a conditional branching construct (if/else or switch), so users have to implement and execute opposite `Conditions` which makes it even slower and more expensive. This can also be a problem in terms of the resource limits, requests, quotas and LimitRanges.
 
-**Skipping**
+### Skipping
 
 When a `Condition` fails, the guarded `Task` and its branch (dependent `Tasks`) are skipped. A `Task` is dependent on and in the branch of another `Task` as specified by ordering using `runAfter` or by resources using `Results`, `Workspaces` and `Resources`.  In some use cases of `Conditions`, when a `Condition` evaluates to `False`, users need to skip the guarded `Task` only and allow dependent `Tasks` to execute. An example use case is when there’s a particular `Task` that a Pipeline wants to execute when the git branch is dev/staging/qa, but not when it’s the main/master/prod branch. Another use case is when a user wants to send out a notification whether or not a parent guarded `Task` was executed, as described in [this issue](https://github.com/tektoncd/pipeline/issues/2937).
 
-**Status**
+### Status
 
 It is currently difficult to distinguish between a `Task` that was skipped due to `Condition` evaluating as `False` and a `Task` that failed. This is because we use exit codes in `Check` as described in [Conditions](#conditions) section above and reuse `ConditionSucceeded` from Knative which can have the following states: `True`, `False` or `Unknown`. When a `Task` either fails or is skipped from `Condition` evaluating to `False`, we mark `ConditionSucceeded` as `False`.
 

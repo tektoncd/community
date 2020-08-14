@@ -70,6 +70,15 @@ The TEP `OWNERS` are the **main** owners of the following projects:
 
 ## Merging TEPs
 
+- When creating a new TEP, pick a number for it, equal to the maximum
+  TEP available in the repo and open PRs.
+  A valid new number can be obtained via `./hack/tep-number.sh`. Note
+  that the picked number is not "locked" until a PR is created.
+  The TEP number shall be set
+  in the TEP file name, TEP title and PR title:
+  - file name in the format `teps/<XXXX>-<tep-title>.md`
+  - title in the format `# TEP-XXXX: <tep-title>`
+  - PR title in the format `TEP-XXXX: <tep-title>`
 - TEP should be merge as soon as possible in the `proposed` state. As
   soon as a general consensus is reached that the TEP, as described
   (even if incomplete) make sense to pursue, the TEP can be

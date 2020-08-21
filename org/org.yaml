@@ -110,6 +110,7 @@ orgs:
     - yaoxiaoqi
     - ywluogg
     - yuege01
+    - ziheng
     teams:
       catalog.maintainers:
         description: "the catalog maintainers"

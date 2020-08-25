@@ -4,8 +4,8 @@ authors:
   - "@savitaashture"
   - "@vdemeester"
 creation-date: 2020-07-28
-last-updated: 2020-07-28
-status: proposed
+last-updated: 2020-08-25
+status: implementable
 ---
 
 # TEP-0008: Support Knative Service for Triggers EventListener Pod
@@ -41,10 +41,12 @@ So to achieve all those triggers should be more flexible to support different ap
 
 ### Goals
 
-One goal is to get the benefits of serverless features.
+First goal is to get the benefits of serverless features.
 
 Second goal of this proposal is to provide flexibility to the user to bring their 
 own CRD with a specified spec, status contract to deploy triggers eventlistener pod.
+
+Third goal is to make use of [PodSpecable](https://github.com/knative/pkg/blob/master/apis/duck/v1/podspec_types.go#L49) for the existing kubernetes based deployment.
 
 ### Non-Goals
 
@@ -129,7 +131,7 @@ spec:
 #### Kubernetes Based 
 This is exactly the same whatever we have right now with default.
 The reason to move `serviceAccountName`, `podTemplate`, 
-to `typed` field is because those are part of [WithPod{}](https://github.com/knative/pkg/blob/master/apis/duck/v1/podspec_types.go#L41) duck type
+to `kubernetesResource` field is because those are part of [WithPodSpec{}](https://github.com/knative/pkg/blob/master/apis/duck/v1/podspec_types.go#L49) duck type
 and which helps to support any of the pod and container field without hardcoding in [podTemplate](https://github.com/tektoncd/triggers/blob/master/pkg/apis/triggers/v1alpha1/event_listener_types.go#L62).
 
 1.If user specify podSpec fields.  
@@ -152,8 +154,8 @@ spec:
        - ref: pipeline-binding
      template:
        name: pipeline-template
- service:
-   typed:
+ resources:
+   kubernetesResource:
      serviceType: NodePort
      spec:
        template:
@@ -171,7 +173,7 @@ spec:
              effect: NoSchedule
 ```
 
-2.If user wants go with default values of podSpec fields then no need to specify `service` in that case trigger deploy 
+2.If user wants go with default values of podSpec fields then no need to specify `resources` in that case trigger deploy 
 kubernetes deployment with default values and yaml looks something like below.
 ```yaml
 apiVersion: triggers.tekton.dev/v1alpha1
@@ -195,7 +197,7 @@ spec:
 ```
 
 #### Knative Service `OR any CRD`
-To support Knative Service along with Kubernetes Deployment we use dynamic `Raw` data so that it can be any CRD like `serving.knative.dev.` 
+To support Knative Service along with Kubernetes Deployment we use customResource `Raw` data so that it can be any CRD like `serving.knative.dev.` 
 
 ```yaml
 apiVersion: triggers.tekton.dev/v1alpha1
@@ -216,8 +218,8 @@ spec:
        - ref: pipeline-binding
      template:
        name: pipeline-template
- service:
-   dynamic:
+ resources:
+   customResource:
      apiVersion: serving.knative.dev/v1  #It can be any CRD (foo.bar.com)
      kind: Service
      metadata:
@@ -243,8 +245,8 @@ spec:
 
 The main goal of this TEP is to make triggers flexible enough to accept any CRD in order to create an eventlistener pod.
 
-Kubernetes Deployment, Knative Service both have [PodSpec](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3704) as a common sub-field so usage of
-[WithPod{}](https://github.com/knative/pkg/blob/master/apis/duck/v1/podspec_types.go#L41) [duck typing](https://en.wikipedia.org/wiki/Duck_typing) helps users to configure podSpec fields.
+Kubernetes Deployment, Knative Service(or any custom CRD) have [PodSpec](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3704) as a common sub-field so usage of
+[WithPodSpec](https://github.com/knative/pkg/blob/master/apis/duck/v1/podspec_types.go#L49), [WithPod{}](https://github.com/knative/pkg/blob/master/apis/duck/v1/podspec_types.go#L41) [duck typing](https://en.wikipedia.org/wiki/Duck_typing) respectively helps users to configure podSpec fields.
 ###### Note: Duck typing in computer programming is an application of the duck test—"If it walks like a duck and it quacks like a duck, then it must be a duck"... -Wikipedia 
 
 
@@ -255,6 +257,7 @@ So whoever implements a new CRD in order to support triggers that CRD should sat
 
 ### Contract
 
+For Knative or new custom should satisfy [WithPod{}](https://github.com/knative/pkg/blob/master/apis/duck/v1/podspec_types.go#L41)
 #### Spec
 
 ```Spec
@@ -278,11 +281,11 @@ type EventListenerStatus struct {
 ### Validation
 
 Below are the few basic high level validation 
-1. If no `service` field specified as part of `EventListener` the Kubernetes Deployment will be created with default values 
+1. If no `resources` field specified as part of `EventListener` the Kubernetes Deployment will be created with default values 
 like the existing behavior because now `serviceAccountName` is optional and if not provided `default` serviceaccount 
 will be used which is tracked by this [issue](https://github.com/tektoncd/triggers/issues/682)
 
-2. If `service` is provided then at a time it can have either `typed` or `dynamic` not both.
+2. If `resources` is provided then at a time it can have either `kubernetesResource` or `customResource` not both.
 
 3. Validation of all the podSpec and containerSpec fields.
     * If user provided podSpec and containerSpec fields are not supported triggers webhook can give an error like below
@@ -316,3 +319,13 @@ We can achieve above proposal based on
 [Annotation](https://docs.google.com/document/d/1GtCfpzgGFPt224A7xNE5sjN8REytytmNL8E9oXAk4Uc/edit#heading=h.614zfyaw8nmm)
 
 With all of the above implementation we should have `Knative` dependency as vendored and no way to support other CRD
+
+## Open Points
+
+As per the proposal `kubernetesResource` will have `serviceType` and `spec` which is [WithPodSpec{}](https://github.com/knative/pkg/blob/master/apis/duck/v1/podspec_types.go#L49) duck type
+so the created Deployment/Service will get the information of annotation/labels if provided as part of [EventListener](https://github.com/tektoncd/triggers/blob/master/pkg/apis/triggers/v1alpha1/event_listener_types.go#L42-L44).
+
+But there is discussion thread [here](https://github.com/tektoncd/community/pull/186#issuecomment-685250556) 
+where there is a point like user should get the way to specify annotation/labels to Deployment/Service.
+
+This is not a blocker to proceed with implementation but it can be considered and addressed if there is any real usecase in future or before moving to `beta` so adding this as part of open points.

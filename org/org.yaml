@@ -238,10 +238,14 @@ orgs:
         - bobcatfish
         - afrittoli
         members:
-        - kimsterv
-        - dlorenc
         - dibyom
+        - dlorenc
+        - jerop
+        - kimsterv
+        - nikhil-thomas
+        - savitaashture
         - sbwsg
+        - wlynch
         privacy: closed
         repos:
           plumbing: write

@@ -58,7 +58,7 @@ After analyzing the feature requests and discussing with users, we have identifi
 We will refer to `Conditions` as `Guards` because they determine **if** a `Task` executes, not **if/else** as would be expected from a `Condition`; more details on `Guards` vs `Conditions` naming can be found in [this issue](https://github.com/tektoncd/pipeline/issues/2635).
 
 We propose:
-- For _simplicity_, we propose deprecating the separate `Conditions` CRD and using `Tasks` to produce the `Results` needed to evaluate whether a dependent `Task` executes.
+- For _simplicity_, we propose **deprecating the separate `Conditions` CRD** and using `Tasks` to produce the `Results` needed to evaluate whether a dependent `Task` executes.
 - For _efficiency_, we propose using string expressions through `When Expressions` to perform simple checks without spinning up new `Pods`; they can operate on previous `Task's Results`, `Parameters`, among other Tekton resources.
 - For _skipping_, we propose adding a field that allows users to specify whether to skip the guarded `Task` only or to skip the guarded `Task` and its ordering-dependent `Tasks`.
 - By deprecating `Conditions` CRD and using `When Expressions`, we can distinguish failed _status_ from evaluating to `False`.

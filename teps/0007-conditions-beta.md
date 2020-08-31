@@ -31,6 +31,7 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Simplicity](#simplicity-1)
   - [Efficiency](#efficiency-1)
   - [Skipping](#skipping-1)
+  - [Status](#status-1)
   - [Examples](#examples)
   - [Risks and Mitigations](#risks-and-mitigations)
 - [Test Plan](#test-plan)
@@ -44,6 +45,10 @@ tags, and then generate with `hack/update-toc.sh`.
     - [Dependency Type](#dependency-type)
     - [Guard Location](#guard-location)
     - [Special runAfter](#special-runafter)
+  - [Status](#status-2)
+    - [Minimal Skipped](#minimal-skipped)
+    - [ConditionSucceeded](#conditionsucceeded)
+    - [ConditionSkipped](#conditionskipped)
 - [Upgrade &amp; Migration Strategy](#upgrade--migration-strategy)
 <!-- /toc -->
 
@@ -348,6 +353,111 @@ spec:
       - echo-file-does-not-exist
 ```
 
+### Status
+
+Add `Skipped Tasks` section to the `PipelineRunStatus` that contains a list of `SkippedTasks` that contains a `Name` field which has the `PipelineTaskName` and a `When Expressions` field which has a list of the resolved `WhenExpressions`. Thus, users can know why a particular `Task` was skipped. In addition, `TaskRuns` from guarded `Tasks` that execute because their `WhenExpressions` evaluate to true would have the resolved `WhenExpressions` included in the `TaskRun` status. 
+
+In this example, the `WhenExpressions` in `skip-this-task` evaluate to False while the `WhenExpressions` in `run-this-task` evaluate to True:   
+
+```yaml
+Status:
+  Completion Time:  2020-08-27T15:07:34Z
+  Conditions:
+    Last Transition Time:  2020-08-27T15:07:34Z
+    Message:               Tasks Completed: 1 (Failed: 0, Cancelled 0), Skipped: 1
+    Reason:                Completed
+    Status:                True
+    Type:                  Succeeded
+  Pipeline Spec:
+    Params:
+      Name: param
+      Type: string
+      Default: foo
+    Tasks:
+      Name:  skip-this-task
+      Task Spec:
+        Metadata:
+        Steps:
+          Image:  ubuntu
+          Name:   echo
+          Resources:
+          Script:  echo "Good Night!"
+      When:
+        Input:     $(params.param)
+        Operator:  in
+        Values:
+          bar
+        Input:     $(params.param)
+        Operator:  notin
+        Values:
+          $(params.param)
+      Name:  run-this-task
+      Task Spec:
+        Metadata:
+        Steps:
+          Image:  ubuntu
+          Name:   echo
+          Resources:
+          Script:  echo "Good Morning!"
+      When:
+        Input:     $(params.param)
+        Operator:  in
+        Values:
+          $(params.param)
+  Skipped Tasks:
+    Name: skip-this-task
+    When Expressions:
+      Input:     foo
+      Operator:  in
+      Values:
+        bar
+      Input:     foo
+      Operator:  notin
+      Values:
+        foo
+  Start Time:   2020-08-27T15:07:30Z
+  Task Runs:
+    pipelinerun-to-skip-task-run-this-task-r2djj:
+      Pipeline Task Name:  run-this-task
+      Status:
+        Completion Time:  2020-08-27T15:07:34Z
+        Conditions:
+          Last Transition Time:  2020-08-27T15:07:34Z
+          Message:               All Steps have completed executing
+          Reason:                Succeeded
+          Status:                True
+          Type:                  Succeeded
+        Pod Name:                pipelinerun-to-skip-task-run-this-task-r2djj-pod
+        Start Time:              2020-08-27T15:07:30Z
+        Steps:
+          Container:  step-echo
+          Image ID:   docker-pullable://ubuntu@sha256:6f2fb2f9fb5582f8b5
+          Name:       echo
+          Terminated:
+            Container ID:  docker://df348b8f64165fd15e3301095510
+            Exit Code:     0
+            Finished At:   2020-08-27T15:07:33Z
+            Reason:        Completed
+            Started At:    2020-08-27T15:07:33Z
+        Task Spec:
+          Steps:
+            Image:  ubuntu
+            Name:   echo
+            Resources:
+            Script:  echo "Good Morning!"
+      When Expressions:
+          Input:     foo
+          Operator:  in
+          Values:
+            foo
+Events:
+  Type    Reason     Age    From         Message
+  ----    ------     ----   ----         -------
+  Normal  Started    2m29s  PipelineRun  
+  Normal  Running    2m29s  PipelineRun  Tasks Completed: 0 (Failed: 0, Cancelled 0), Incomplete: 1, Skipped: 1
+  Normal  Succeeded  2m25s  PipelineRun  Tasks Completed: 1 (Failed: 0, Cancelled 0), Skipped: 1
+```
+
 ### Examples
 These are examples of how the [Conditions in Tekton dogfooding](https://github.com/tektoncd/plumbing/blob/45b8b6f9f0bf10bf1cf462ee37597d1b44524fd8/tekton/ci/conditions.yaml) and their [usage](https://github.com/tektoncd/plumbing/blob/58cb2a35a1d420788a9ae7672a5a2fc46dbb9ed0/tekton/ci/tekton-noop-check.yaml#L1-L51) would be translated and used in the new design:
 
@@ -628,6 +738,317 @@ However, the implicit behavior may be confusing to users.
 Provide a special kind of `runAfter` -- `runAfterEvenWhenSkipped` -- that users can use instead of `runAfter` to allow for the ordering-dependent `Task` to execute even when the `Task` has been skipped. Related ideas are discussed in [#2653](https://github.com/tektoncd/pipeline/issues/2635) as `runAfterUnconditionally` and [#1684](https://github.com/tektoncd/pipeline/issues/1684) as `runOn`.
 
 However, this would make what happens to the branch opaque to the guarded `Task` because its ordering-dependent `Tasks` could be executed or not be executed.
+
+### Status 
+
+#### Minimal Skipped 
+
+Add `Skipped Tasks` section to the `PipelineRunStatus` that contains a list of `SkippedTasks` that contains a `Name` field which has the `PipelineTaskName`. The `WhenExpressions` that made the `Task` skipped can be found in the `PipelineSpec`, the `Parameter` variables used can be found in the `PipelineSpec` and the `Results` used from previous `Tasks` can be found in the relevant `TaskRun`. It may be more work for users to reverse-engineer to identify why a `Task` was skipped, but gives us the benefit of significantly reducing the `PipelineRunStatus` compared to what we currently have with `Conditions`. 
+
+In this example, the `WhenExpressions` in `skip-this-task` evaluate to False while the `WhenExpressions` in `run-this-task` evaluate to True:   
+
+```yaml
+Status:
+  Completion Time:  2020-08-27T15:07:34Z
+  Conditions:
+    Last Transition Time:  2020-08-27T15:07:34Z
+    Message:               Tasks Completed: 1 (Failed: 0, Cancelled 0), Skipped: 1
+    Reason:                Completed
+    Status:                True
+    Type:                  Succeeded
+  Pipeline Spec:
+    Params:
+      Name: param
+      Type: string
+      Default: foo
+    Tasks:
+      Name:  skip-this-task
+      Task Spec:
+        Metadata:
+        Steps:
+          Image:  ubuntu
+          Name:   echo
+          Resources:
+          Script:  echo "Good Night!"
+      When:
+        Input:     $(params.param)
+        Operator:  in
+        Values:
+          bar
+        Input:     $(params.param)
+        Operator:  notin
+        Values:
+          $(params.param)
+      Name:  run-this-task
+      Task Spec:
+        Metadata:
+        Steps:
+          Image:  ubuntu
+          Name:   echo
+          Resources:
+          Script:  echo "Good Morning!"
+      When:
+        Input:     $(params.param)
+        Operator:  in
+        Values:
+          $(params.param)
+  Skipped Tasks:
+    Name: skip-this-task
+  Start Time:   2020-08-27T15:07:30Z
+  Task Runs:
+    pipelinerun-to-skip-task-run-this-task-r2djj:
+      Pipeline Task Name:  run-this-task
+      Status:
+        Completion Time:  2020-08-27T15:07:34Z
+        Conditions:
+          Last Transition Time:  2020-08-27T15:07:34Z
+          Message:               All Steps have completed executing
+          Reason:                Succeeded
+          Status:                True
+          Type:                  Succeeded
+        Pod Name:                pipelinerun-to-skip-task-run-this-task-r2djj-pod
+        Start Time:              2020-08-27T15:07:30Z
+        Steps:
+          Container:  step-echo
+          Image ID:   docker-pullable://ubuntu@sha256:6f2fb2f9fb5582f8b5
+          Name:       echo
+          Terminated:
+            Container ID:  docker://df348b8f64165fd15e3301095510
+            Exit Code:     0
+            Finished At:   2020-08-27T15:07:33Z
+            Reason:        Completed
+            Started At:    2020-08-27T15:07:33Z
+        Task Spec:
+          Steps:
+            Image:  ubuntu
+            Name:   echo
+            Resources:
+            Script:  echo "Good Morning!"
+Events:
+  Type    Reason     Age    From         Message
+  ----    ------     ----   ----         -------
+  Normal  Started    2m29s  PipelineRun  
+  Normal  Running    2m29s  PipelineRun  Tasks Completed: 0 (Failed: 0, Cancelled 0), Incomplete: 1, Skipped: 1
+  Normal  Succeeded  2m25s  PipelineRun  Tasks Completed: 1 (Failed: 0, Cancelled 0), Skipped: 1
+```
+
+#### ConditionSucceeded
+
+For skipped `Tasks`, create a `TaskRun` object with `ConditionType` `ConditionSucceeded` with status `ConditionTrue` and reason `Skipped` because it has successfully skipped the `Task` based on the `WhenExpressions`. The message would have further detail that the `Task` was skipped because `WhenExpressions` were evaluated to `False`. However, it might be confusing that we create a `TaskRun` object to record status for a `Task` that was skipped and it also creates a larger `PipelineRunStatus` than using `Skipped Tasks` section. 
+
+```yaml
+Status:
+  Completion Time:  2020-08-27T15:07:34Z
+  Conditions:
+    Last Transition Time:  2020-08-27T15:07:34Z
+    Message:               Tasks Completed: 1 (Failed: 0, Cancelled 0), Skipped: 1
+    Reason:                Completed
+    Status:                True
+    Type:                  Succeeded
+  Pipeline Spec:
+    Params:
+      Name: param
+      Type: string
+      Default: foo
+    Tasks:
+      Name:  skip-this-task
+      Task Spec:
+        Metadata:
+        Steps:
+          Image:  ubuntu
+          Name:   echo
+          Resources:
+          Script:  echo "Good Night!"
+      When:
+        Input:     $(params.param)
+        Operator:  in
+        Values:
+          bar
+        Input:     $(params.param)
+        Operator:  notin
+        Values:
+          $(params.param)
+      Name:  run-this-task
+      Task Spec:
+        Metadata:
+        Steps:
+          Image:  ubuntu
+          Name:   echo
+          Resources:
+          Script:  echo "Good Morning!"
+      When:
+        Input:     $(params.param)
+        Operator:  in
+        Values:
+          $(params.param)
+  Start Time:   2020-08-27T15:07:30Z
+  Task Runs:
+    pipelinerun-to-skip-task-run-this-task-r2djj:
+      Pipeline Task Name:  run-this-task
+      Status:
+        Completion Time:  2020-08-27T15:07:34Z
+        Conditions:
+          Last Transition Time:  2020-08-27T15:07:34Z
+          Message:               All Steps have completed executing
+          Reason:                Succeeded
+          Status:                True
+          Type:                  Succeeded
+        Pod Name:                pipelinerun-to-skip-task-run-this-task-r2djj-pod
+        Start Time:              2020-08-27T15:07:30Z
+        Steps:
+          Container:  step-echo
+          Image ID:   docker-pullable://ubuntu@sha256:6f2fb2f9fb5582f8b5
+          Name:       echo
+          Terminated:
+            Container ID:  docker://df348b8f64165fd15e3301095510
+            Exit Code:     0
+            Finished At:   2020-08-27T15:07:33Z
+            Reason:        Completed
+            Started At:    2020-08-27T15:07:33Z
+        Task Spec:
+          Steps:
+            Image:  ubuntu
+            Name:   echo
+            Resources:
+            Script:  echo "Good Morning!"
+      When Expressions:
+          Input:     foo
+          Operator:  in
+          Values:
+            foo
+    pipelinerun-to-skip-task-skip-this-task-r2djj:
+      Pipeline Task Name:  skip-this-task
+      Status:
+        Conditions:
+          Message:               WhenExpressions for pipeline task skip-this-task evaluated to false and was skipped 
+          Reason:                Skipped
+          Status:                True
+          Type:                  Succeeded
+      When Expressions:
+        Input:     foo
+        Operator:  in
+        Values:
+          bar
+        Input:     foo
+        Operator:  notin
+        Values:
+          foo
+Events:
+  Type    Reason     Age    From         Message
+  ----    ------     ----   ----         -------
+  Normal  Started    2m29s  PipelineRun  
+  Normal  Running    2m29s  PipelineRun  Tasks Completed: 0 (Failed: 0, Cancelled 0), Incomplete: 1, Skipped: 1
+  Normal  Succeeded  2m25s  PipelineRun  Tasks Completed: 1 (Failed: 0, Cancelled 0), Skipped: 1
+```
+
+#### ConditionSkipped
+
+Add a new `ConditionType` called `ConditionSkipped`. For skipped `Tasks`, create a `TaskRun` object with `ConditionType` `ConditionSkipped` with status `ConditionTrue` and reason `WhenExpressionsEvaluatedToFalse`. However, it might be confusing that we create a `TaskRun` object to record status for a `Task` that was skipped and it also creates a larger `PipelineRunStatus` than using `Skipped Tasks` section. 
+
+```yaml
+Status:
+  Completion Time:  2020-08-27T15:07:34Z
+  Conditions:
+    Last Transition Time:  2020-08-27T15:07:34Z
+    Message:               Tasks Completed: 1 (Failed: 0, Cancelled 0), Skipped: 1
+    Reason:                Completed
+    Status:                True
+    Type:                  Succeeded
+  Pipeline Spec:
+    Params:
+      Name: param
+      Type: string
+      Default: foo
+    Tasks:
+      Name:  skip-this-task
+      Task Spec:
+        Metadata:
+        Steps:
+          Image:  ubuntu
+          Name:   echo
+          Resources:
+          Script:  echo "Good Night!"
+      When:
+        Input:     $(params.param)
+        Operator:  in
+        Values:
+          bar
+        Input:     $(params.param)
+        Operator:  notin
+        Values:
+          $(params.param)
+      Name:  run-this-task
+      Task Spec:
+        Metadata:
+        Steps:
+          Image:  ubuntu
+          Name:   echo
+          Resources:
+          Script:  echo "Good Morning!"
+      When:
+        Input:     $(params.param)
+        Operator:  in
+        Values:
+          $(params.param)
+  Start Time:   2020-08-27T15:07:30Z
+  Task Runs:
+    pipelinerun-to-skip-task-run-this-task-r2djj:
+      Pipeline Task Name:  run-this-task
+      Status:
+        Completion Time:  2020-08-27T15:07:34Z
+        Conditions:
+          Last Transition Time:  2020-08-27T15:07:34Z
+          Message:               All Steps have completed executing
+          Reason:                Succeeded
+          Status:                True
+          Type:                  Succeeded
+        Pod Name:                pipelinerun-to-skip-task-run-this-task-r2djj-pod
+        Start Time:              2020-08-27T15:07:30Z
+        Steps:
+          Container:  step-echo
+          Image ID:   docker-pullable://ubuntu@sha256:6f2fb2f9fb5582f8b5
+          Name:       echo
+          Terminated:
+            Container ID:  docker://df348b8f64165fd15e3301095510
+            Exit Code:     0
+            Finished At:   2020-08-27T15:07:33Z
+            Reason:        Completed
+            Started At:    2020-08-27T15:07:33Z
+        Task Spec:
+          Steps:
+            Image:  ubuntu
+            Name:   echo
+            Resources:
+            Script:  echo "Good Morning!"
+      When Expressions:
+          Input:     foo
+          Operator:  in
+          Values:
+            foo
+    pipelinerun-to-skip-task-skip-this-task-r2djj:
+      Pipeline Task Name:  skip-this-task
+      Status:
+        Conditions:
+          Message:               WhenExpressions for pipeline task skip-this-task evaluated to false and was skipped 
+          Reason:                WhenExpressionsEvaluatedToFalse
+          Status:                True
+          Type:                  Skipped
+      When Expressions:
+        Input:     foo
+        Operator:  in
+        Values:
+          bar
+        Input:     foo
+        Operator:  notin
+        Values:
+          foo
+Events:
+  Type    Reason     Age    From         Message
+  ----    ------     ----   ----         -------
+  Normal  Started    2m29s  PipelineRun  
+  Normal  Running    2m29s  PipelineRun  Tasks Completed: 0 (Failed: 0, Cancelled 0), Incomplete: 1, Skipped: 1
+  Normal  Succeeded  2m25s  PipelineRun  Tasks Completed: 1 (Failed: 0, Cancelled 0), Skipped: 1
+```
 
 ## Upgrade & Migration Strategy
 - We will implement the design while still supporting the `Conditions` CRD.

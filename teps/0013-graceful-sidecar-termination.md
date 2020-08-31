@@ -1,7 +1,7 @@
 ---
 title: sidecar-termination-control-flag
 authors:
-  - "@rifatshahnewaz"
+  - "@shahnewazrifat"
 creation-date: 2020-08-31
 last-updated: 2020-08-31
 status: in pr review

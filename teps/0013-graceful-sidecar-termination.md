@@ -26,8 +26,8 @@ status: in pr review
 
 ## Summary
 
-Currently, the sidecar feature in a tekton pipeline/taskrun is not behaving like a typical kubernetes sidecar should. 
-The sidecar gets terminated immediately when the pipeline fails or completes without giving the sidecar enough time to 
+Currently, the sidecar feature in a tekton taskrun is not behaving like a typical kubernetes sidecar should. 
+The sidecar gets terminated immediately when the taskrun fails or completes without giving the sidecar enough time to 
 do what it originally intended to do (for example, upload logs, process artifacts etc.)
 In some cases the sidecar should be able to choose when to terminate itself. A sidecar is just a kubernetes container. 
 It's able to terminate itself with the command completion.
@@ -177,9 +177,13 @@ s.TektonTask.Spec.Sidecars = []pipelinev1beta1.Sidecar{
 
 ```
 
+What happens when the taskrun has reached a timeout but the sidecar is still running?
+- The sidecar should be terminated using a Nop Image in such case. 
+
 ## Advantages
 
 * No need to introduce another step for simpler tasks.
+* Support Task behaviours not yet provided for by Tekton: cleanup, uploading, report generation after Steps have succeeded or failed.
 
 ## Test Plan
 
@@ -191,6 +195,7 @@ Discussed in Cons.
 **Pros/Cons:**
 Pros:
 Discussed above.
+
 Cons:
 Can't think of any. Unless the pipeline author adds a sidecar with this flag enabled and the sidecars' cmd is an infinite one. Causing the pipeline to hang
 forever.

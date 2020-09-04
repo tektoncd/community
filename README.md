@@ -17,6 +17,8 @@ This is the central home for documentation on joining and contributing to the Te
 * [our shared document drive](contact.md#shared-drive)
 * [our shared calendar](contact.md#calendar)
 
+For October 2020: check out our [Hacktoberfest](./hacktoberfest-2020.md) ideas!
+
 See our standards regarding:
 
 * [Code of conduct](code-of-conduct.md)

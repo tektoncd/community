@@ -4,7 +4,7 @@ authors:
   - "@sbwsg"
 creation-date: 2020-08-03
 last-updated: 2020-08-12
-status: proposed
+status: implementable
 ---
 
 # TEP-0010: Optional Workspaces

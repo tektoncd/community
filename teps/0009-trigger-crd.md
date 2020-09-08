@@ -3,33 +3,33 @@ title: trigger-crd
 authors:
   - "@kbaig"
 creation-date: 2020-07-14
-last-updated: 2020-08-18
-status: proposed
+last-updated: 2020-09-08
+status: implementable
 ---
 # TEP-0009: Introducing TriggerCRD
 
 
 <!-- toc -->
-- [TEP-0009: Introducing TriggerCRD](#tep-0009-introducing-triggercrd)
-  - [Summary](#summary)
-  - [Motivation](#motivation)
-    - [Goals](#goals)
-    - [Non-Goals](#non-goals)
-  - [Requirements](#requirements)
-  - [Proposal](#proposal)
-    - [Trigger CRD](#trigger-crd)
-      - [Trigger Status](#trigger-status)
-    - [EventListener CRD](#eventlistener-crd)
-    - [Path based EventListener](#path-based-eventlistener)
-    - [User Stories](#user-stories)
-      - [End User handling Webhook Use Cases using TriggerCR](#end-user-handling-webhook-use-cases-using-triggercr)
-      - [Operator or Admin managing EventListener](#operator-or-admin-managing-eventlistener)
-    - [Risks and Mitigations](#risks-and-mitigations)
-    - [User Experience](#user-experience)
-    - [Performance](#performance)
-  - [Design Details](#design-details)
-  - [Alternatives](#alternatives)
-  - [Upgrade & Migration Strategy](#upgrade--migration-strategy)
+- [Summary](#summary)
+- [Motivation](#motivation)
+  - [Goals](#goals)
+  - [Non-Goals](#non-goals)
+- [Requirements](#requirements)
+- [Proposal](#proposal)
+  - [Trigger CRD](#trigger-crd)
+    - [Trigger Status](#trigger-status)
+  - [EventListener CRD](#eventlistener-crd)
+  - [Path based EventListener](#path-based-eventlistener)
+  - [User Stories](#user-stories)
+    - [End User handling Webhook Use Cases using TriggerCR](#end-user-handling-webhook-use-cases-using-triggercr)
+    - [Operator or Admin managing EventListener](#operator-or-admin-managing-eventlistener)
+  - [Risks and Mitigations](#risks-and-mitigations)
+  - [User Experience](#user-experience)
+  - [Performance](#performance)
+- [Design Details](#design-details)
+- [Alternatives](#alternatives)
+- [Upgrade &amp; Migration Strategy](#upgrade--migration-strategy)
+- [Open Questions](#open-questions)
 <!-- /toc -->
 
 ## Summary
@@ -267,3 +267,8 @@ existing definition in EventListener Spec. Later on definition will be deprecate
 2. Selector based EventListener will be implemented next. It will introduced along with existing implemention.
 3. Path based EventListener will be implemented along with existing implemention.
 4. Deprecating triggers section in EventListener.
+
+## Open Questions
+1. What kind of selectors do we need i.e do we need both `namespaceSelecor` and `triggerSelector`?
+2. What should the path for path based EventListener look like? Should they handle multiple triggers?
+3. Can multiple EventListeners point to the same Trigger?

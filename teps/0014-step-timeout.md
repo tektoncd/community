@@ -4,7 +4,7 @@ authors:
   - "@Peaorl"
 creation-date: 2020-09-10
 last-updated: 2020-09-10
-status: proposed
+status: implementable
 ---
 
 # TEP-0014: Step timeout
@@ -120,13 +120,11 @@ binary. This binary overrides the original entrypoint of the *container*
 associated with a `Step`. The Tekton entrypoint binary executes the command
 or script specified by a `Step`.
 
-To introduce `Step` timeouts, the Tekton entrypoint binary is passed a
-[context](https://golang.org/pkg/context/). Contexts can specify a
-[deadline](https://golang.org/pkg/context/#WithDeadline) after which the
-context is cancelled. The design in this TEP essentially wires a timeout
-annotation from a `Step` through to the context used by the Tekton entrypoint
-binary. Therefore, a `Step` is automatically terminated once the timeout is
-exceeded. Subsequently, Tekton writes a
+The design presented here essentially wires a timeout annotation from a
+`Step` through to the Tekton entrypoint binary. The Tekton entrypoint binary
+is modified to ensure it adheres to the specified timeout. Therefore, a
+`Step` is automatically terminated once the timeout is exceeded.
+Subsequently, Tekton writes a
 *PostFile* indicating the `Step` has been terminated, thereby cancelling any
 successive `Steps`.
 

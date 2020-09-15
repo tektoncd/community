@@ -5,7 +5,7 @@ authors:
   - "@pierretasci"
 creation-date: 2020-06-24
 last-updated: 2020-08-13
-status: proposed
+status: implementable
 ---
 # TEP-0005: Tekton OCI bundles
 
@@ -17,8 +17,9 @@ status: proposed
 - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [Contract](#contract)
+  - [API](#api)
   - [User Stories (optional)](#user-stories-optional)
-    - [Versionned <code>Task</code>s and <code>Pipeline</code>s and Pipeline-as-code](#versionned-s-and-s-and-pipeline-as-code)
+    - [Versioned <code>Task</code>s and <code>Pipeline</code>s and Pipeline-as-code](#versioned-s-and-s-and-pipeline-as-code)
     - [Shipping catalog resources as OCI images](#shipping-catalog-resources-as-oci-images)
     - [Tooling](#tooling)
   - [Risks and Mitigations](#risks-and-mitigations)
@@ -124,11 +125,8 @@ knowledge from our experiment, we have arrived at the following spec:
 - An image will store each resource as a new layer
   This allows us to quickly store and retrieve individual resources
   because we can key the layer they reside in against its metadata
-- Each layer will have a `org.opencontainers.image.title` annotation
-  (this a commonly used annotation:
-  [link](https://github.com/opencontainers/image-spec/blob/master/annotations.md#pre-defined-annotation-keys))
-  that contains the `ObjectMetadata.Name` field of the resource. Other
-  common annotations can be used like
+- Each layer will have a `dev.tekton.image.name` annotation that contains the 
+  `ObjectMetadata.Name` field of the resource. Other common annotations can be used like
   `org.opencontainers.image.authors`, etc.
 - Each layer will have a `dev.tekton.image.kind` annotation which
   specifies the Kind of the resource. For example Kind: Task would
@@ -167,7 +165,7 @@ Bundle used as a Tekton bundle reference. Each layer of the image must
 map 1:1 with a single Tekton resource. Each layer must contain the
 following annotations:
 
-- `org.opencontainers.image.title` =>`ObjectMeta.Name` of the resource
+- `dev.tekton.image.name` =>`ObjectMeta.Name` of the resource
 - `dev.tekton.image.kind` => `TypeMeta.Kind` of the resource, all lowercased (eg, `task`)
 - `dev.tekton.image.apiVersion` => `TypeMeta.APIVersion` of the resource (eg
   "tekton.dev/v1alpha1")
@@ -179,13 +177,31 @@ Each layer can optionally contain the following annotations:
 - `dev.tekton.image.tags` => `tekton.dev/tags` annotation.
 - `dev.tekton.image.displayName` => `tekton.dev/displayName` annotation.
 
-Each { `apiVersion`, `kind`, `title` } must be unique in the image. No resources of the
+Each { `apiVersion`, `kind`, `name` } must be unique in the image. No resources of the
 same version and kind can be named the same.
 
-The contents of each layer must be the parsed YAML of the corresponding Tekton
+The contents of each layer must be the parsed YAML/JSON of the corresponding Tekton
 resource. If the resource is missing any identifying fields (missing an `apiVersion` for
 instance) than it will not be parseable.
 
+### API
+
+To support the contract outlined above, we also propose a small change to the API. All
+`TaskRef` and `PipelineRef` objects will include a `bundle` field.
+
+```yaml
+spec:
+  pipeline:
+    name: foo
+    bundle: docker.io/myregistry/myimage:1.0
+```
+
+This bundle field will be the user's way of indicating that the "foo" pipeline should be
+looked up from a Tekton bundle pointed at by the provided URL rather than the default
+behavior of looking it up in the cluster.
+
+This field will be implicitely added into the `PipelineRun`'s pipeline ref and the
+`Pipeline` and `TaskRun`'s task ref.
 
 ### User Stories (optional)
 
@@ -196,11 +212,9 @@ the system.  The goal here is to make this feel real for users without getting
 bogged down.
 -->
 
-#### Versionned `Task`s and `Pipeline`s and Pipeline-as-code
+#### Versioned `Task`s and `Pipeline`s and Pipeline-as-code
 
-With tekton resources being shipped as OCI images, we could update the
-`TaskRef` and `PipelineRef` object to allow to refer to those
-images. This would have the following benefits:
+This proposal will have the following benefits:
 
 - The `Task` or the `Pipeline` referred doesn't need to be present
   when referring to it, the controller would have the responsability

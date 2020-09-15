@@ -15,7 +15,7 @@ status: proposed
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
 - [Requirements](#requirements)
-- [Proposal<a name="Proposal"></a>](#proposal)
+- [Proposal](#proposal)
   - [Risks and Mitigations](#risks-and-mitigations)
 - [Design Details](#design-details)
   - [Caveats](#caveats)

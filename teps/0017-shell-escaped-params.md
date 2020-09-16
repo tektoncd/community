@@ -1,5 +1,5 @@
 ---
-title: Provide shell-escaped parameters
+title: Provide Shell-Escaped Parameters
 authors:
   - "@coryrc"
 creation-date: 2020-09-15
@@ -7,7 +7,7 @@ last-updated: 2020-09-15
 status: in pr review
 ---
 
-# Tekton Enhancement Proposal Process
+# TEP-0017 Provide Shell-Escaped Parameters
 
 ## Table of Contents
 
@@ -26,7 +26,7 @@ status: in pr review
 - [Test Plan](#test-plan)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
-- [References](#references-optional)
+- [References](#references)
 <!-- /toc -->
 
 ## Summary

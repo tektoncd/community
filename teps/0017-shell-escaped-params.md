@@ -1,0 +1,133 @@
+---
+title: Provide shell-escaped parameters
+authors:
+  - "@coryrc"
+creation-date: 2020-09-15
+last-updated: 2020-09-15
+status: in pr review
+---
+
+# Tekton Enhancement Proposal Process
+
+## Table of Contents
+
+<!-- toc -->
+- [Summary](#summary)
+- [Motivation](#motivation)
+  - [Goals](#goals)
+  - [Non-Goals](#non-goals)
+- [Requirements](#requirements)
+- [Proposal](#proposal)
+  - [User Stories](#user-stories)
+    - [Story 1](#story-1)
+    - [Story 2](#story-2)
+  - [Risks and Mitigations](#risks-and-mitigations)
+- [Design Details](#design-details)
+- [Test Plan](#test-plan)
+- [Drawbacks](#drawbacks)
+- [Alternatives](#alternatives)
+- [References](#references-optional)
+<!-- /toc -->
+
+## Summary
+
+It is difficult to safely use parameters in a `script:` scalar. This TEP proposes
+offering a shell-escaped version of every parameter.
+
+## Motivation
+
+- More concise than the current workarounds
+- Help users create more robust Tasks by default
+- More clearly expresses intent
+
+### Goals
+
+Provide a way to place parameters directly into a `script:` without it being
+interpreted by the shell.
+
+### Non-Goals
+
+1. Prevent purposeful interpretation of parameters when intended
+2. Work with shells which are not the default for the `script:`
+3. Be perfectly secure against arbitrary data
+
+## Requirements
+
+## Proposal
+
+In a Task or Pipeline, for each parameter `foo`, provide `$(params.foo.shell-escaped)`.
+
+This variable shall be escaped according to `printf '%q'` rules as used in bash.
+
+### User Stories
+
+#### Story 1
+
+My Task allows users to specify a destination filename. The user could pass
+valid file names containing any of ` <>|\!*?;&"'` (or more) which would be
+impossible to robustly address all possibilities when used directly in the script.
+
+#### Story 2
+
+My Task has a `script:` to perform some function and I wish the user to be able
+to provide their own script to be called by my script. The most concise way to
+write my Task is to include the line:
+
+```
+printf '%s' "$(params.foo)" > included-script.sh
+```
+
+### Risks and Mitigations
+
+People could believe it means they can take unsanitized data from untrusted
+sources when we aren't supplying that guarantee.
+
+## Design Details
+
+Arrays will be treated as flattened strings.
+
+## Test Plan
+
+Unit tests checking behavior against a set of strings generated from bash's
+`printf '%q'`.
+
+An e2e TaskRun checking a couple parameters work as expected.
+
+## Drawbacks
+
+More code is added to Tekton and must be supported.
+
+## Alternatives
+
+There are existing workarounds:
+
+1. Place the value into an environment variable. I am unsure if this is safe for
+all possible valid inputs.
+
+   ```
+   steps:
+    - env:
+        - name: SCRIPT_CONTENTS
+          value: $(params.script)
+      script: |
+        printf '%s' "${SCRIPT_CONTENTS}" > input-script.sh
+        chmod +x input-script.sh
+        cd "$(params.package)"
+        runner.sh /input-script
+   ```
+
+2. Use it as an argument in a separate step. There are limits to argument size
+which could be met and break things.
+
+```yaml
+steps:
+  - command:
+    - executable-which-writes-args-to-a-file
+  - args:
+    - /tekton/workspace/some-file
+    - $(params.script)
+```
+
+## References
+
+[Provide shell-escaped parameters for `script:`](https://github.com/tektoncd/pipeline/issues/3226)

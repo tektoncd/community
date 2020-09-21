@@ -268,8 +268,7 @@ spec:
           workspace: source-repo
     - name: echo-file-exists
       when:
-        - name: check-file-exists
-          input: '$(tasks.file-exists.results.exists)'
+        - input: '$(tasks.file-exists.results.exists)'
           operator: In
           values: ['true']
       taskRef:
@@ -279,17 +278,14 @@ spec:
 Other examples of `Guards` using `When Expressions` are:
 
 ```yaml
-name: branch-is-main
 input: $(params.branch)
 operator: In
 values: [‘main’]
 ---
-name: branch-not-main
 input: $(params.branch)
 operator: NotIn
 values: [‘main’]
 ---
-name: always-false
 input: ‘false’
 operator: In
 values: [‘’]
@@ -340,8 +336,7 @@ spec:
           workspace: source-repo
     - name: echo-file-does-not-exist # skipped
       when:
-        - name: check-file-exists
-          input: '$(tasks.file-exists.results.exists)'
+        - input: '$(tasks.file-exists.results.exists)'
           operator: In
           values: ['false']
       continueAfterSkip: 'true'
@@ -544,12 +539,10 @@ spec:
         - name: check-git-files-changed
     - name: ci-job
       when:
-      - name: check-git-files-changed
-        input: "$(tasks.check-git-files-changed.results.changed)"
+      - input: "$(tasks.check-git-files-changed.results.changed)"
         key: In
         values: ["true"]
-      - name: check-name-matches
-        input: "$(params.githubCommand)"
+      - input: "$(params.githubCommand)"
         key: In
         values: ["", "/test $(params.checkName)"]
       taskRef:

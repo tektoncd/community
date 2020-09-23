@@ -1,0 +1,663 @@
+---
+title: Tekton Results API
+authors:
+  - "@wlynch"
+creation-date: 2020-09-23
+last-updated: 2020-09-28
+status: proposed
+---
+
+<!--
+**Note:** When your TEP is complete, all of these comment blocks should be removed.
+
+To get started with this template:
+
+- [ ] **Fill out this file as best you can.**
+  At minimum, you should fill in the "Summary", and "Motivation" sections.
+  These should be easy if you've preflighted the idea of the TEP with the
+  appropriate Working Group.
+- [ ] **Create a PR for this TEP.**
+  Assign it to people in the SIG that are sponsoring this process.
+- [ ] **Merge early and iterate.**
+  Avoid getting hung up on specific details and instead aim to get the goals of
+  the TEP clarified and merged quickly.  The best way to do this is to just
+  start with the high-level sections and fill out details incrementally in
+  subsequent PRs.
+
+Just because a TEP is merged does not mean it is complete or approved.  Any TEP
+marked as a `proposed` is a working document and subject to change.  You can
+denote sections that are under active debate as follows:
+
+```
+<<[UNRESOLVED optional short context or usernames ]>>
+Stuff that is being argued.
+<<[/UNRESOLVED]>>
+```
+
+When editing TEPS, aim for tightly-scoped, single-topic PRs to keep discussions
+focused.  If you disagree with what is already in a document, open a new PR
+with suggested changes.
+
+If there are new details that belong in the TEP, edit the TEP.  Once a
+feature has become "implemented", major changes should get new TEPs.
+
+The canonical place for the latest set of instructions (and the likely source
+of this file) is [here](/teps/NNNN-TEP-template/README.md).
+
+-->
+
+# TEP-0017: Tekton Results API
+
+<!--
+This is the title of your TEP.  Keep it short, simple, and descriptive.  A good
+title can help communicate what the TEP is and should be considered as part of
+any review.
+-->
+
+<!--
+A table of contents is helpful for quickly jumping to sections of a TEP and for
+highlighting any additional information provided beyond the standard TEP
+template.
+
+Ensure the TOC is wrapped with
+  <code>&lt;!-- toc --&rt;&lt;!-- /toc --&rt;</code>
+tags, and then generate with `hack/update-toc.sh`.
+-->
+
+<!-- toc -->
+
+- [Summary](#summary)
+- [Motivation](#motivation)
+  - [etcd](#etcd)
+  - [Querying](#querying)
+  - [Goals](#goals)
+  - [Non-Goals](#non-goals)
+- [Requirements](#requirements)
+- [Proposal](#proposal)
+  - [Result API Spec](#result-api-spec)
+  - [Reference Implementation](#reference-implementation)
+    - [API Server](#api-server)
+    - [Result Upload Controller](#result-upload-controller)
+  - [User Stories (optional)](#user-stories-optional)
+  - [Notes/Constraints/Caveats (optional)](#notesconstraintscaveats-optional)
+  - [Risks and Mitigations](#risks-and-mitigations)
+  - [User Experience (optional)](#user-experience-optional)
+  - [Performance (optional)](#performance-optional)
+- [Design Details](#design-details)
+- [Test Plan](#test-plan)
+- [Drawbacks](#drawbacks)
+- [Alternatives](#alternatives)
+- [Infrastructure Needed (optional)](#infrastructure-needed-optional)
+- [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
+- [References (optional)](#references-optional)
+- [Future Work](#future-work)
+
+  <!-- /toc -->
+
+## Summary
+
+<!--
+This section is incredibly important for producing high quality user-focused
+documentation such as release notes or a development roadmap.  It should be
+possible to collect this information before implementation begins in order to
+avoid requiring implementors to split their attention between writing release
+notes and implementing the feature itself.
+
+A good summary is probably at least a paragraph in length.
+
+Both in this section and below, follow the guidelines of the [documentation
+style guide]. In particular, wrap lines to a reasonable length, to make it
+easier for reviewers to cite specific portions, and to minimize diff churn on
+updates.
+
+[documentation style guide]: https://github.com/kubernetes/community/blob/master/contributors/guide/style-guide.md
+-->
+
+This TEP proposes a Results API to store long term Tekton results independent of
+on-cluster runtime data stored in etcd.
+
+## Motivation
+
+<!--
+This section is for explicitly listing the motivation, goals and non-goals of
+this TEP.  Describe why the change is important and the benefits to users.  The
+motivation section can optionally provide links to [experience reports][] to
+demonstrate the interest in a TEP within the wider Tekton community.
+
+[experience reports]: https://github.com/golang/go/wiki/ExperienceReports
+-->
+
+Original Project Proposal:
+https://docs.google.com/document/d/1-XBYQ4kBlCHIHSVoYAAf_iC01_by_KoK2aRVO0t8ZQ0
+
+Leveraging custom resources provides a number of benefits: an API server with
+integrated RBAC, a simple CLI (kubectl), generated client libraries, replicated
+on-cluster storage, and much more. But this also brings some limitations, which
+the project needs to work around to build a scalable and reliable CI/CD platform
+for users.
+
+### etcd
+
+All state described by a Kubernetes custom resource is stored, along with all
+Kubernetes cluster data, in etcd storage. etcd is a distributed key-value
+storage system that provides high availability and consistent reads and writes
+for Kubernetes API objects.
+
+Today, Tekton uses etcd to store the full execution history, which, if a user
+wants a permanent record of all previous executions, will eventually exhaust
+available storage. To avoid exhaustion, an operator can configure a garbage
+collection policy to delete old execution history to free up space on the
+cluster, but that means losing execution history. Storing execution history in
+the cluster also means that history disappears when the cluster disappears. Some
+cluster administrators prefer to think of clusters as cattle and not pets, and
+even accidental cluster deletions are a real possibility, so tying execution
+history to cluster storage can be problematic.
+
+etcd also provides no versioned history of Task and Pipeline objects, which
+might have been modified since they were run. This makes it impossible to know
+exactly what steps were executed by a previous run. There is work ongoing today
+to address this (versioned OCI image catalogs, storing the original TaskSpec in
+a TaskRunStatus, etc.)
+
+Tekton's API surface being limited to custom resource objects stored in a
+cluster's etcd also means that execution information not described as a CRD get
+dropped entirely. For example, triggering invocations (event received, k8s
+object created) are not stored in etcd, and so there's no way at all to query
+them.
+
+### Querying
+
+Being implemented as a set of Kubernetes custom resource objects stored in etcd,
+users can query the Kubernetes API server for the state of a single resource by
+name easily and efficiently. However, Kubernetes' support for listing/querying
+across many custom resources is severely lacking.
+
+Kubernetes allows users to request filtered lists of API resources using
+[field selectors and label selectors](https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/).
+For custom resources the only support field selectors are name and namespace.
+Label selectors are likewise limited, since we'd have to store any queryable
+information about a Run in a label for the Run to be able to query for it, and
+this grows large quickly. Together, these limitations make it pretty much
+impossible to query for anything actually useful today.
+
+### Goals
+
+<!--
+List the specific goals of the TEP.  What is it trying to achieve?  How will we
+know that this has succeeded?
+-->
+
+- Define a Result API spec to store and query Tekton results.
+- Decouple long-term Tekton result storage away from runtime storage in etcd.
+- Give clients flexibility to embed additional metadata associated with Tekton
+  Task/PipelineRuns.
+
+### Non-Goals
+
+<!--
+What is out of scope for this TEP?  Listing non-goals helps to focus discussion
+and make progress.
+-->
+
+- Log exporting - we will rely on
+  [existing projects](https://landscape.cncf.io/category=logging&format=card-mode&grouping=category)
+  to handle exporting of logs to remote systems.
+- Defining a system to automatically clean up completed Task/PipelineRuns.
+- Define specific authentatication/authorization mechanisms (this will likely be
+  implementation specific).
+
+## Requirements
+
+<!--
+List the requirements for this TEP.
+-->
+
+- Results integrations should be an optional add-on on top of Tekton. Tekton
+  Pipelines should be able to operate normally without the presense of a Result
+  server.
+- Result API Server hosts should be able to store multi-tenant results and share
+  the server among multiple namespaces or clusters.
+- Service providers can choose to provide their own controller and server
+  implementations to upload Results with additional service specific metadata or
+  implementation specific validation / field formats, so long as it conforms to
+  the Results API.
+
+## Proposal
+
+<!--
+This is where we get down to the specifics of what the proposal actually is.
+This should have enough detail that reviewers can understand exactly what
+you're proposing, but should not include things like API designs or
+implementation.  The "Design Details" section below is for the real
+nitty-gritty.
+-->
+
+### Result API Spec
+
+Tekton should document a versioned gRPC API (with
+[JSON/HTTP bindings](https://cloud.google.com/endpoints/docs/grpc/transcoding))
+to ingest execution and triggering details sent from a Tekton Pipelines
+controller and Triggering Event Listeners, and to serve a query API to end
+users.
+
+The query API should accept filters expressed in some query language. The choice
+of that specific query language (K8s field selectors? CEL? GraphQL? Something
+else?) is server dependent and should not block approval of this proposal.
+
+At a minimum, the API should be able to answer common queries about TaskRuns and
+PipelineRuns, such as what (if any) predefined Task or Pipeline they were
+running, what inputs were specified and which outputs were produced, how long
+each execution took, and so on.
+
+### Reference Implementation
+
+#### API Server
+
+Tekton should provide a reasonably performant and scalable API service
+implementation that runs on Kubernetes (using a replicated K8s Service), so that
+users wishing to run their own Results server can also benefit from the API.
+
+#### Result Upload Controller
+
+In addition to running a Pipelines controller to govern the execution of Tasks
+and Pipelines, a Tekton installation can also include a separate controller that
+watches Tekton resources (TaskRuns, PipelineRuns, etc.) and post updates to a
+configured API Server endpoint. This controller can be installed separately from
+the primary Pipelines controller, giving users flexibility over where/how
+results are stored.
+
+### User Stories (optional)
+
+<!--
+Detail the things that people will be able to do if this TEP is implemented.
+Include as much detail as possible so that people can understand the "how" of
+the system.  The goal here is to make this feel real for users without getting
+bogged down.
+-->
+
+#### Complex Filter Queries
+
+Currently, users can only filter results in the Pipeline API by using
+[field selectors](https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/).
+By abstracting this around a results API, we can now enable more complex queries
+other tools like CEL (or another implementation) to allow for queries like:
+
+```
+(taskrun.metadata.name = "foo" || taskrun.metadata.name = "bar") && taskrun.metadata.creation_timestamp >= timestamp("2020-01-01T10:00:20.021-05:00")
+```
+
+We will not enforce a particular filter spec for the API. It will be up to API
+implementers to define and handle filters.
+
+#### Deletion of Completed Resources
+
+Since the Pipeline API is currently how most users interact with execution
+results, this means that Task/PipelineRuns need to remain persisted in etcd.
+This comes at a tradeoff, since the more objects there are in etcd results in
+the Pipeline controller needing to handle more data at execution time, which can
+have a noticable impact on Pipeline API and scheduling latency
+(https://github.com/tektoncd/pipeline/issues/1302). Users address this by
+periodicly deleting completed resources from their cluster
+(https://github.com/tektoncd/plumbing/issues/439), but this at the cost of
+losing the execution history. Offloading long-term result storage to a separate
+system will enable us to add support to clean up these completed resources to
+help reduce the load on the Pipeline controller, without sacrificing historical
+results.
+
+### Notes/Constraints/Caveats (optional)
+
+<!--
+What are the caveats to the proposal?
+What are some important details that didn't come across above.
+Go in to as much detail as necessary here.
+This might be a good place to talk about core concepts and how they relate.
+-->
+
+#### Pipelines Source of Truth
+
+The Results API is intended for long term result storage for users - it is not
+meant to be a data plane replacement for the Pipeline controller. There should
+be an expectation of eventual consistency - clients that are sensitive to this
+should continue to rely on the Pipeline API directly.
+
+### Risks and Mitigations
+
+<!--
+What are the risks of this proposal and how do we mitigate. Think broadly.
+For example, consider both security and how this will impact the larger
+kubernetes ecosystem.
+
+How will security be reviewed and by whom?
+
+How will UX be reviewed and by whom?
+
+Consider including folks that also work outside the WGs or subproject.
+-->
+
+```
+<<[UNRESOLVED wlynch ]>>
+This section will be filled in based on feedback
+<<[/UNRESOLVED]>>
+```
+
+### User Experience (optional)
+
+<!--
+Consideration about the user experience. Depending on the area of change,
+users may be task and pipeline editors, they may trigger task and pipeline
+runs or they may be responsible for monitoring the execution of runs,
+via CLI, dashboard or a monitoring system.
+
+Consider including folks that also work on CLI and dashboard.
+-->
+
+#### Result Resources
+
+Users typically don't make large distinction between PipelineRuns or multiple
+TaskRuns that ran as part of a PipelineRun. Generally when looking at a
+dashboard, the most relevant information is what execution events happened.
+Results are intended to be this abstraction over execution types (i.e.
+PipelineRun, TaskRun) so that we can group this data for users and provide a
+mechanism to include additional metadata that does not fit neatly into TaskRuns
+or PipelineRuns.
+
+### Performance (optional)
+
+<!--
+Consideration about performance.
+What impact does this change have on the start-up time and execution time
+of task and pipeline runs? What impact does it have on the resource footprint
+of Tekton controllers as well as task and pipeline runs?
+
+Consider which use cases are impacted by this change and what are their
+performance requirements.
+-->
+
+Our goal is to make results have minimal impact on core Pipeline execution. By
+running a separate controller, while this does add some more overhead, this
+enables users to have optional installations of result uploading. Since these
+results are intended for long term storage, our expection is that results will
+be eventually consistent with the Pipeline data plane. For users that require
+the most up to date state of a Task/PipelineRun, the Pipeline API will remain to
+serve those users.
+
+## Design Details
+
+<!--
+This section should contain enough information that the specifics of your
+change are understandable.  This may include API specs (though not always
+required) or even code snippets.  If there's any ambiguity about HOW your
+proposal will be implemented, this is the place to discuss them.
+
+If it's helpful to include workflow diagrams or any other related images,
+add them under "/teps/images/". It's upto the TEP author to choose the name
+of the file, but general guidance is to include at least TEP number in the
+file name, for example, "/teps/images/NNNN-workflow.jpg".
+-->
+
+### Result API
+
+We propose implementing a full CRUD API, heavily influenced by API
+recommendations defined by https://aip.dev.
+
+The API would center around a new `Result` resource, which acts as a grouping
+mechanism for `Execution` data.
+
+This would include Create/Delete/Update/Get/List operations, with the ability
+for users to pass in a `filter` string to List to selectively filter results. To
+provide flexibility in filter mechanisms, it will be up to API Server
+implementations choose and document the filter spec supported by their
+implementation.
+
+API implementations should be able to have flexibility to partition results
+under client provided `parent`s to allow for operation in multi-tenant
+environments. API implementations are free to define service specific
+authentication and authorization mechanisms based on result identifiers.
+
+#### Results
+
+```proto
+message Result {
+  // Identifier of a Result, of the form <parent>/results/<identifier>.
+  // The identifier must by ASCII, and must not contain slashes or characters
+  // that require URL escaping. A random UUID is recommended.
+  //
+  // Examples: namespace/default/results/1234
+  //           cluster/<cluster-id>/namespace/tekton/results/1234
+  string name = 1;
+
+	// Server assigned timestamp for when the result was created.
+  google.protobuf.Timestamp created_time = 2
+      [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Arbitrary user provided labels for the result.
+  map<string, string> annotations = 3;
+
+  // Execution artifacts part of this result. Typically will be Tekton
+  // Task/PipelineRuns, but may also include other execution information
+  // (e.g. DSLs, etc.)
+  repeated Execution executions = 4;
+
+  // Other artifacts, etc that don't fit elsewhere can be added here until
+  // promoted to a top level type.
+  map<string, google.protobuf.Any> extensions = 5;
+
+  // The etag for this result.
+  // If this is provided on update, it must match the server's etag.
+  string etag = 6
+      [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+```
+
+Results are the main addressable resource in the Result API. They uniquely
+identify a single instance of a result, which can contain several executions
+(generally corresponding to Task/PipelineRuns).
+
+- `name` should uniquely identify a result within a API Server instance (it
+  should embed the parent value). See https://google.aip.dev/122 for more
+  details.
+  - Clients may use `name` as an identifier to group execution and other data
+    under a single result. Examples: TaskRuns with a common PipelineRun,
+    PipelineRun with a Trigger event ID.
+- `annotations` are arbitrary user labels - these do not correspond to any
+  Kubernetes Annotations that may be set in `Execution` types.
+- A result may specify any number of event executions (including 0). This is to
+  allow room to record why executions did _not_ occur (e.g. record why a trigger
+  may have filtered an event).
+- A generic `extensions` field is included to allow users to annotate custom
+  information into a result. This may include:
+  - Events that caused the result (e.g. trigger events)
+  - Actions that took place after execution (e.g. cloudevent notifications,
+    GitHub PR updates, etc.)
+  - Other custom information providers that wish to annotate data in results. Tekton may
+    choose to promote useful types from `extensions` as direct fields in the
+    Result message in the future.
+- `etags` are provided to detect concurrent writes of data. See
+  https://google.aip.dev/134#etags for more details.
+
+It is up to the server implementation to set and document any resource / quota
+limits (e.g. how many executions per result, how large can the result payload
+be, etc.)
+
+#### Executions
+
+```proto
+message Execution {
+  oneof execution {
+    tekton.pipeline.v1.TaskRun task_run = 1;
+    tekton.pipeline.v1.PipelineRun pipeline_run = 2;
+
+    // Additional execution types not covered above (e.g. DSLs, Custom Tasks).
+    google.protobuf.Any opaque = 3;
+  }
+}
+```
+
+`Execution`s contain Tekton execution types, namely TaskRuns or
+PipelineRuns. They may also contain opaque types, which can be useful for
+representing meta-configs of TaskRuns (i.e. DSLs, Custom Tasks, etc.), or other
+execution-like data that is not handled by Tekton directly.
+
+#### Example
+
+```proto
+results: {
+  name: "namespace/default/results/sample-tekton-result"
+  created_time: { seconds: 1234 }
+
+  annotations: {
+    "env": "ci"
+  }
+
+  executions: {
+    pipeline_run: {
+      # ...
+    }
+  }
+  executions: {
+    task_run: {
+      # ...
+    }
+  }
+  executions: {
+    task_run: {
+      # ...
+    }
+  }
+
+  # These aren't real types (yet), just examples of the kind of data we could expect.
+  extensions: {
+    key: "tekton-chains"
+    value: {
+      type_url: "tekton.chains.v1.SHA"
+      value: "aHVudGVyMg=="
+    }
+  }
+  extensions: {
+    key: "notifications"
+    value: {
+      type_url: "tekton.notifications.v1.Notification"
+      value: "{type: \"cloudevent\", url: "https://example.com", status: 200}"
+    }
+  }
+}
+```
+
+## Test Plan
+
+<!--
+**Note:** *Not required until targeted at a release.*
+
+Consider the following in developing a test plan for this enhancement:
+- Will there be e2e and integration tests, in addition to unit tests?
+- How will it be tested in isolation vs with other components?
+
+No need to outline all of the test cases, just the general strategy.  Anything
+that would count as tricky in the implementation and anything particularly
+challenging to test should be called out.
+
+All code is expected to have adequate tests (eventually with coverage
+expectations).
+-->
+
+We can easily start local gRPC servers for testing, allowing us to test
+realistic e2e workflows, even without running on a real Kubernetes cluster. See
+https://github.com/tektoncd/experimental/blob/4644ad14d92f958e83ae95743ff5d9e9eccd46e7/results/cmd/watcher/main_test.go
+for a functional example of this.
+
+We may desire more realistic E2E tests in the future to test other components
+like that can't be easily tested in a local environment (e.g. provider specific features, auth, etc.)
+
+## Drawbacks
+
+<!--
+Why should this TEP _not_ be implemented?
+-->
+
+```
+<<[UNRESOLVED wlynch ]>>
+This section will be filled in based on feedback
+<<[/UNRESOLVED]>>
+```
+
+## Alternatives
+
+<!--
+What other approaches did you consider and why did you rule them out?  These do
+not need to be as detailed as the proposal, but should include enough
+information to express the idea and why it was not acceptable.
+-->
+
+```
+<<[UNRESOLVED wlynch ]>>
+This section will be filled in based on feedback
+<<[/UNRESOLVED]>>
+```
+
+### Making Results part of the core Pipeline controller
+
+While we expect that this will be a commonly used component for many
+installations, we do not want to make this a requirement for every installation.
+Users should be able to enable / disable this component freely to fit their
+needs.
+
+## Infrastructure Needed (optional)
+
+<!--
+Use this section if you need things from the project/SIG.  Examples include a
+new subproject, repos requested, github details.  Listing these here allows a
+SIG to get the process for these resources started right away.
+-->
+
+- New repository: github.com/tektoncd/results
+
+## Upgrade & Migration Strategy (optional)
+
+<!--
+Use this section to detail wether this feature needs an upgrade or
+migration strategy. This is especially useful when we modify a
+behavior or add a feature that may replace and deprecate a current one.
+-->
+
+We will be consistent with the Pipelines
+[API compatibility policy](https://github.com/tektoncd/pipeline/blob/master/api_compatibility_policy.md) -
+tl;dr free to make breaking changes in alpha, breaking changes are allowed with
+a deprecation period in beta, and no breaking changes allowed in stable (i.e.
+v1).
+
+## References (optional)
+
+<!--
+Use this section to add links to GitHub issues, other TEPs, design docs in Tekton
+shared drive, examples, etc. This is useful to refer back to any other related links
+to get more details.
+-->
+
+- Original Project Proposal:
+  https://docs.google.com/document/d/1-XBYQ4kBlCHIHSVoYAAf_iC01_by_KoK2aRVO0t8ZQ0
+- Proof of Concept: https://github.com/tektoncd/experimental/tree/master/results
+
+## Future Work
+
+### Trigger Events
+
+We want to also support other types of non-execution events in the future,
+notably associating Trigger events and why a Trigger did or did not result in an
+execution. This was omitted from this TEP since will require more work to hook
+into the Triggering event flow, and we would like to create a separate TEP to
+discuss designs in more detail. Until then, associated Trigger data can be
+stored in `extensions`.
+
+### Automatic Completed Resource Cleanup
+
+Once results have been stored durably, this gives us the flexibilty to clean up
+completed TaskRuns to minimize the number of objects we store in etcd. This is a
+common problem that has come up for users (e.g.
+https://github.com/tektoncd/plumbing/issues/439,
+https://github.com/tektoncd/pipeline/issues/1302). While we do want to address
+this in the future, we are considering this out of scope for this TEP.
+
+## Special Thanks
+
+- @ImJasonH: For putting together the original project proposal.
+- @yuege01: For implementing the initial proof of concept.

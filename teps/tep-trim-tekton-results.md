@@ -35,7 +35,7 @@ The Tekton task is able to emit string results that can be viewed by users and p
 
 This TEP is for issue [#3146](https://github.com/tektoncd/pipeline/issues/3146) originated from a [bug](https://github.com/kubeflow/kfp-tekton/issues/273) of kubeflow/kfp-tekton. Using echo without -n command and > redirection operand write content into the result will lead to an extra \n or \c of the original value.
 
-Here is the example in issue #3146 to reproduce the bug.
+Here is the example in issue [#3146](https://github.com/tektoncd/pipeline/issues/3146) to reproduce the bug.
 
 On line 30, the container writes `params.project_name` to the file `(tasks.find-project.)results.project.path`. The command `echo` without flag `-n` brings an extra newline.
 
@@ -105,13 +105,13 @@ Add a new field `TrimRegex` in the struct [TaskResult](https://github.com/tekton
 
 ### User Story
 
-As for the example in the issue [#3146](https://github.com/tektoncd/pipeline/issues/3146), setting TrimRegex field as "^\s+|\s+$" can solve the problem.
+As for the example in the issue [#3146](https://github.com/tektoncd/pipeline/issues/3146), setting TrimRegex field as "\s+$" can solve the problem.
 
 ```yaml
 results:
 - description: /tmp/outputs/project/data
   name: project
-  trimRegex: '^\s+|\s+$'
+  trimRegex: '\s+$'
 ```
 
 ### Risks and Mitigations
@@ -120,7 +120,7 @@ This TEP will not effect the the existing system.
 
 
 ## Design Details
-#### 1 Add a new field `TrimRegex` to the struct [TaskResult
+#### 1 Add a new field `TrimRegex` to the struct [TaskResult](https://github.com/tektoncd/pipeline/blob/9c37fea9c19c7d4ed3bf222b45bb9019788e656c/pkg/apis/pipeline/v1beta1/task_types.go#L110) and [PipelineResourceResult](https://github.com/tektoncd/pipeline/blob/9c37fea9c19c7d4ed3bf222b45bb9019788e656c/pkg/apis/pipeline/v1beta1/resource_types.go#L122)
 
 ```go
 // TaskResult used to describe the results of a task
@@ -139,6 +139,20 @@ type TaskResult struct {
   //   trailing sub-strings that satisfying the pattern.
   // +optional
   TrimRegex	string `json:"trimRegex,omitempty"`
+}
+```
+
+```go
+// PipelineResourceResult used to export the image name and digest as json
+type PipelineResourceResult struct {
+	Key          string `json:"key"`
+	Value        string `json:"value"`
+	TrimRegex    string `json:"trimRegex,omitempty"`
+	ResourceName string `json:"resourceName,omitempty"`
+	// The field ResourceRef should be deprecated and removed in the next API version.
+	// See https://github.com/tektoncd/pipeline/issues/2694 for more information.
+	ResourceRef *PipelineResourceRef `json:"resourceRef,omitempty"`
+	ResultType  ResultType           `json:"type,omitempty"`
 }
 ```
 

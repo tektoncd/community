@@ -3,7 +3,7 @@ title: trim-tekton-results
 authors:
   - "@xinruzhang"
 creation-date: 2020-09-21
-last-updated: 2020-09-21
+last-updated: 2020-09-25
 status: proposed
 
 ---
@@ -26,31 +26,20 @@ status: proposed
 - [Test Plan](#test-plan)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
-- [References (optional)](#references-optional)
 
 ## Summary
 
-The Tekton task is able to emit string results that can be viewed by users and passed to other Tasks in a Pipeline. The current way of delivering result value produces an extra end of file new line. This TEP aims to strip the EOF new line, besides, provides a convenient way for user to trim unwanted leading and tailing characters of the result value.
+The Tekton task is able to emit string results that can be viewed by users and passed to other Tasks in a Pipeline. Some use cases of the current version can bring an extra newline to the result. This TEP aims to strip the EOF new line, besides, provides a convenient way for the user to trim unwanted leading and trailing characters of the result value.
 
 ## Motivation
 
-This TEP is for the issue [#3146](https://github.com/tektoncd/pipeline/issues/3146) which is originated from a [bug](https://github.com/kubeflow/kfp-tekton/issues/273) of kubeflow/kfp-tekton. 
-
-The current way of deliver result value is:
-- Save the result value to a file temporarily
-- Read the file content to retrieve the result([code here](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/termination/write.go#L36))
-
-This lead to that the read-out content contains an extra end of file new line.
+This TEP is for issue [#3146](https://github.com/tektoncd/pipeline/issues/3146) originated from a [bug](https://github.com/kubeflow/kfp-tekton/issues/273) of kubeflow/kfp-tekton. Using echo without -n command and > redirection operand write content into the result will lead to an extra \n or \c of the original value.
 
 Here is the example in issue #3146 to reproduce the bug.
 
-On line 31, the container writes `input.params.project_name` to the file `(tasks.find-project.)results.project.path` which stores the result `project` of Task `find-project`.
+On line 30, the container writes `params.project_name` to the file `(tasks.find-project.)results.project.path`. The command `echo` without flag `-n` brings an extra newline.
 
-Now the value of Task `find-project`'s result `project` is saved in the file `tasks.find-project.results.project.path`.
-
-On line 39, the next Task `find-asset` reads the content in the file `tasks.find-project.results.project.path`, and assign it to its parameter `find-project-project`. The content read from the file contains `End of File` new line, therefore the parameter `find-project-project` contains a new line that shouldn't be there.
-
-This is a common way to deliver value between Tasks, the Tekton should strip the new line by default.
+On line 34, the next Task `find-asset` reads the content from the file `tasks.find-project.results.project.path`, and assign it to its parameter `find-project-project`. The content read from the file contains an `End of File` new line. Therefore the parameter `find-project-project` includes a newline that shouldn't be there.
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -79,15 +68,10 @@ spec:
         - description: /tmp/outputs/project/data
           name: project
         steps:
-        - command:
-          - sh
-          - -ex
-          - -c
-          - "echo \"$0\" > \"$1\""
-          - $(inputs.params.project_name)
-          - $(results.project.path)
+        - name: main
           image: alpine:3.12
-          name: main
+          script: |
+            echo "$(params.project_name)" > "$(results.project.path)"
     - name: find-asset
       params:
       - name: find-project-project
@@ -99,51 +83,45 @@ spec:
         - name: find-project-project
         - name: notebook_name
         steps:
-        - command:
-          - sh
-          - -ex
-          - -c
-          - "echo \"'$0'\"\n echo \"'$1'\""
-          - $(inputs.params.find-project-project)
-          - $(inputs.params.notebook_name)
-          image: alpine:3.12
+        - image: alpine:3.12
           name: main
+          script: |
+            echo "$(params.find-project-project)" "$(inputs.params.notebook_name)"
 ```
 
 ### Goals
 **Goal 1**: Delete the unexpected new line of the result.
-**Goal 2**: Provide a flexible way to trim unwanted leading and tailing characters of the results.
+**Goal 2**: Provide a flexible way to trim unwanted leading and trailing characters of the results.
 
 ### Non-Goals
-- This TEP only trims unwanted characters in the leading and tailing part, doesn't tackle the middle part.
+This TEP only trims unwanted characters in the leading and trailing part, doesn't tackle the middle part.
 
 ## Proposal
-For **Goal 1**, drop the new line when [reading the result from file](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/termination/write.go#L36)
 
-For **Goal 2**, add a new field `TrimRegex` in the struct [TaskResult](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/apis/pipeline/v1beta1/task_types.go#L110).
-- If the `TrimRegex` is not set, then do nothing to the result.
-- If the `TrimRegex` is an empty string, then trim all leading and tailing whitespaces of the result
-- If the `TrimRegex` is not empty, then trim all leading and tailing string spans that satisfying the `TrimRegex` pattern.
+Add a new field `TrimRegex` in the struct [TaskResult](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/apis/pipeline/v1beta1/task_types.go#L110).
+
+- If the `TrimRegex` is not set or set as an empty string "", then do nothing to the result.
+- If the `TrimRegex` is not empty, then trim all leading and trailing string spans that satisfying the `TrimRegex` pattern.
+
+### User Story
+
+As for the example in the issue [#3146](https://github.com/tektoncd/pipeline/issues/3146), setting TrimRegex field as "^\s+|\s+$" can solve the problem.
+
+```yaml
+results:
+- description: /tmp/outputs/project/data
+  name: project
+  trimRegex: '^\s+|\s+$'
+```
 
 ### Risks and Mitigations
 
-#### Risk
-The **goal 1** may effect existing Tasks and Pipelines who tackle the problem by themself.
-
-#### Mitigations
-Inform the community on the change.
+This TEP will not effect the the existing system.
 
 
 ## Design Details
-### Delete the Extra EOF New Line
-Delete the new line when composing Termination Message in file `pkg/termination/write.go` at ine 36.
+#### 1 Add a new field `TrimRegex` to the struct [TaskResult
 
-```go
-fileContents = fileContents[:len(fileContents)-1]
-```
-
-### Provide TrimRegex to TaskResult for Unwanted Leading and Tailing Characters.
-#### 1 Add a new field `TrimRegex` to the struct [TaskResult](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/apis/pipeline/v1beta1/task_types.go#L110)
 ```go
 // TaskResult used to describe the results of a task
 type TaskResult struct {
@@ -153,114 +131,64 @@ type TaskResult struct {
 	// Description is a human-readable description of the result
 	// +optional
 	Description string `json:"description"`
-
-	// +optional
-	TrimRegex string `json:"trimCutSet,omitempty"`
+  
+  // TrimRegex is a regular expression used to trim the result.
+  // - If TrimRegex is unset or set as an empty string, then do
+  //   nothing to the result
+  // - If TrimRegex is not empty, then trim all leading and 
+  //   trailing sub-strings that satisfying the pattern.
+  // +optional
+  TrimRegex	string `json:"trimRegex,omitempty"`
 }
 ```
+
 #### 2 Update the Result Value When Making TaskRunStatus
+
 The update should happen in the file [pkg/pod/status.go](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/pod/status.go), at [line 161](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/pod/status.go#L161), in function [filterResultsAndResources](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/pod/status.go#L212).
-- If the `TrimRegex` is not set, then do nothing to the result.
-- If the `TrimRegex` is an empty string, then trim all leading and tailing whitespaces of the result
-- If the `TrimRegex` is not empty, then trim all leading and tailing string spans that satisfying the `TrimRegex` pattern.
+- If the `TrimRegex` is not set or set as an empty string, then do nothing to the result.\
+- If the `TrimRegex` is not empty, then trim all leading and trailing string spans that satisfying the `TrimRegex` pattern.
 
 
 ## Test Plan
-Build a pipeline contains three results need to be emitted.
-- **The first** result with the field `TrimRegex` unset is to test if the system is successfully trimmed the extra EOF new line.
-- **The second** result with the field `TrimRegex` set as an empty string aims to test whether the system successfully trimmed the leading and tailing whitespaces and new lines of the result.
-- **The third** result with the field `TrimRegex` set as an non-empty string aims to test whether the system successfully trimmed the leading and tailing string spans that satisfying the `TrimRegex` pattern.
+As the code below shows, the test case is a TaskRun contains three results. The `script` uses command `echo` and io redirection operand `>` writes  `"Hello Task Result! "`, whose length is `19`,  into these three values.
 
-Build a PipelineRun according to the following yaml file, then compare `len($tasks.use-result.params.param-from-result)` with `len($tasks.produce-result.params.task-param)`
+- **The first** result `unset-result` with the field `TrimRegex` unset. The  `unset-result` should be equal to `20`
+- **The second** result `empty-string-result` with the field `TrimRegex` set as an empty string. The length of the `empty-string-result` should be equal to `20`
+- **The third** result `nonempty-string-result` with the field `TrimRegex` set as a non-empty string `^\s+|\s$` that  matches all trailing whitespaces. Therefore, the `nonempty-string-result` should be equal to  `"Hello Task Result!"`(length: 18)
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
-kind: PipelineRun
+kind: TaskRun
 metadata:
   name: test-result-trim
 spec:
-  params:
-  - name: eof-param
-    value: 'eof-param-for-result'
-  - name: empty-string-param
-    value: '  empty-string-param-for-result\n'
-  - name: nonempty-string-param
-    value: 'nonempty-string-param-for-result-need-to-trim'
-  pipelineSpec:
-    params:
-    - name: eof-param
-    - name: empty-string-param
-    - name: nonempty-string-param
-    tasks:
-    - name: produce-result
-      params:
-      - name: eof-param
-        value: $(params.eof-param)
-      - name: empty-string-param
-        value: $(params.empty-string-param)
-      - name: nonempty-string-param
-        value: $(params.nonempty-string-param)
-      taskSpec:
-        params:
-        - name: eof-param
-        - name: empty-string-param
-        - name: nonempty-string-param
-        results:
-        - name: eof-result 
-        - name: empty-string-result
-        - name: nonempty-string-result
-        steps:
-        - command:
-          - sh
-          - -ex
-          - -c
-          - "echo \"$0\" > \"$1\" & echo \"$2\" > \"$3\" & echo \"$4\" > \"$5\""
-          - $(inputs.params.eof-param)
-          - $(results.eof-result.path)
-          - $(inputs.params.empty-string-param)
-          - $(results.empty-string-result.path)
-          - $(inputs.params.nonempty-string-param)
-          - $(results.nonempty-string-result.path)
-          image: ubuntu
-          name: main
-    - name: use-result
-      params:
-      - name: eof-from-result 
-        value: $(tasks.produce-result.results.eof-result)
-      - name: empty-string-from-result 
-        value: $(tasks.produce-result.results.empty-string-result)
-      - name: nonempty-string-from-result 
-        value: $(tasks.produce-result.results.nonempty-string-result)
-      taskSpec:
-        params:
-        - name: eof-from-result 
-        - name: empty-string-from-result 
-        - name: nonempty-string-from-result 
-        steps:
-        - command:
-          - sh
-          - -ex
-          - -c
-          - "echo \"$0\" \"$1\" \"$2\""
-          - $(inputs.params.eof-from-result)
-          - $(inputs.params.empty-string-from-result)
-          - $(inputs.params.nonempty-string-from-result)
-          image: ubuntu 
-          name: main
-
+  taskSpec:
+    results:
+    - name: unset-result
+    - name: empty-string-result
+      trimRegex: ''
+    - name: nonempty-string-result
+      trimRegex: '^\s+|\s+$'
+    steps:
+    - image: ubuntu
+      name: main
+      script: |
+        echo "Hello Task Result! " > "$(results.unset-result.path)"
+        echo "Hello Task Result! " > "$(results.empty-string-result.path)"
+        echo "Hello Task Result! " > "$(results.nonempty-string-result.path)"
 ```
 
 ## Drawbacks
-There might not be many use cases for **goal 2**.
+For the case showed in the example issue, It's simpler to add `-n` flag to the `echo` command than specify a `TrimRegex` field.
 
 ## Alternatives
 
-For **goal 2**, except for adding a new field to the TaskResult, we can provide a new argument for entrypoint ([code here](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/pod/entrypoint.go#L122)) named `--result-trim-regex`, the argument value should be a json formatted string.
+Except for adding a new field to the TaskResult, we can provide a new argument for entrypoint ([code here](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/pod/entrypoint.go#L122)) named `--result-trim-regex`, the argument value should be a json formatted string.
 ```json
 {
-	result_1: Regex_rule
-	result_2: Regex_rule
+	"result_1": "regex_rule_1",
+	"result_2": "regex_rule_2"
 }
 ```
-The key is result name
-The value is the same as `TrimRegex`, and accordingly, the related trim rule is the same as [s](#2-update-the-result-value-when-making-taskrunstatus)
+The key represents result's name.
+The value is the same as `TrimRegex`, and accordingly, the related trim rule is also the same as [the solution mentioned before](#2-update-the-result-value-when-making-taskrunstatus).

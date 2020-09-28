@@ -4,7 +4,7 @@ authors:
   - "@coryrc"
 creation-date: 2020-09-15
 last-updated: 2020-09-15
-status: in pr review
+status: proposed
 ---
 
 # TEP-0017 Provide Shell-Escaped Parameters
@@ -42,7 +42,7 @@ offering a shell-escaped version of every parameter.
 
 ### Goals
 
-Provide a way to place parameters directly into a `script:` without it being
+Provide a way to place parameters directly into the default `script:` without being
 interpreted by the shell.
 
 ### Non-Goals
@@ -59,13 +59,18 @@ In a Task or Pipeline, for each parameter `foo`, provide `$(params.foo.shell-esc
 
 This variable shall be escaped according to `printf '%q'` rules as used in bash.
 
+Support Bourne, Bourne-Again, Busybox, and Debian Almquist shells against
+injection, but don't purposefully prevent its usage in other scenarios.
+
 ### User Stories
 
 #### Story 1
 
 My Task allows users to specify a destination filename. The user could pass
 valid file names containing any of ` <>|\!*?;&"'` (or more) which would be
-impossible to robustly address all possibilities when used directly in the script.
+impossible to robustly address all possibilities when used directly in the
+script. For example, single-quoting parameters could not protect against
+`'; rm -fR *;'`.
 
 #### Story 2
 
@@ -79,8 +84,7 @@ printf '%s' "$(params.foo)" > included-script.sh
 
 ### Risks and Mitigations
 
-People could believe it means they can take unsanitized data from untrusted
-sources when we aren't supplying that guarantee.
+We may not have the resources to exhaustively test and security-harden this feature.
 
 ## Design Details
 
@@ -127,6 +131,11 @@ steps:
     - /tekton/workspace/some-file
     - $(params.script)
 ```
+
+The parameters could also be provided in the same way results are supplied:
+`/tekton/parameters/in` could be a file with the exact contents. I believe, in
+bash at least, `command "$(cat /tekton/parameters/in)"` is as safe as the
+environment variable approach.
 
 ## References
 

@@ -3,12 +3,9 @@ title: trim-tekton-results
 authors:
   - "@xinruzhang"
 creation-date: 2020-09-21
-last-updated: 2020-09-25
+last-updated: 2020-09-29
 status: proposed
-
 ---
-
-
 
 # TEP: Trim Tekton Results
 
@@ -29,7 +26,7 @@ status: proposed
 
 ## Summary
 
-The Tekton task is able to emit string results that can be viewed by users and passed to other Tasks in a Pipeline. Some use cases of the current version can bring an extra newline to the result. This TEP aims to strip the EOF new line, besides, provides a convenient way for the user to trim unwanted leading and trailing characters of the result value.
+The Tekton task is able to emit string results that can be viewed by users and passed to other Tasks in a Pipeline. Some use cases of the current version can bring an extra newline to the result. This TEP aims to strip the EOF new line and all the unwanted trailing whitespaces.
 
 ## Motivation
 
@@ -90,85 +87,79 @@ spec:
 ```
 
 ### Goals
-**Goal 1**: Delete the unexpected new line of the result.
-**Goal 2**: Provide a flexible way to trim unwanted leading and trailing characters of the results.
+Delete the unwanted trailing whitespaces of the result.
 
 ### Non-Goals
-This TEP only trims unwanted characters in the leading and trailing part, doesn't tackle the middle part.
+This TEP only trims unwanted characters in the trailing part, doesn't tackle the leading and middle part.
 
 ## Proposal
 
-Add a new field `TrimRegex` in the struct [TaskResult](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/apis/pipeline/v1beta1/task_types.go#L110).
+Add a new boolean field `TrimTrailingWhitespaces` in the struct [TaskResult](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/apis/pipeline/v1beta1/task_types.go#L110).
 
-- If the `TrimRegex` is not set or set as an empty string "", then do nothing to the result.
-- If the `TrimRegex` is not empty, then trim all leading and trailing string spans that satisfying the `TrimRegex` pattern.
+- If the `TrimTrailingWhitespaces` is not set or set as false, then do nothing to the result.
+- If the `TrimTrailingWhitespaces` is true, then trim all trailing whitespaces.
 
 ### User Story
 
-As for the example in the issue [#3146](https://github.com/tektoncd/pipeline/issues/3146), setting TrimRegex field as "\s+$" can solve the problem.
+As for the example in the issue [#3146](https://github.com/tektoncd/pipeline/issues/3146), setting `TrimTrailingWhitespaces` field as `true` can solve the problem.
 
 ```yaml
 results:
 - description: /tmp/outputs/project/data
   name: project
-  trimRegex: '\s+$'
+  TrimTrailingWhitespaces: true
 ```
 
 ### Risks and Mitigations
 
-This TEP will not effect the the existing system.
+#### Risk
+
+It might wrongly delete the whitespaces that user want to keep in the tail.
+
+#### Mitigations
+
+Inform users that if the field is set as true, the trailing whitespaces they want to keep in the result will also be deleted. For this kind of use case, they need to set their own trim strategy.
 
 
 ## Design Details
-#### 1 Add a new field `TrimRegex` to the struct [TaskResult](https://github.com/tektoncd/pipeline/blob/9c37fea9c19c7d4ed3bf222b45bb9019788e656c/pkg/apis/pipeline/v1beta1/task_types.go#L110) and [PipelineResourceResult](https://github.com/tektoncd/pipeline/blob/9c37fea9c19c7d4ed3bf222b45bb9019788e656c/pkg/apis/pipeline/v1beta1/resource_types.go#L122)
+#### 1 Add a new field `TrimTrailingWhitespaces` to the struct [TaskResult](https://github.com/tektoncd/pipeline/blob/9c37fea9c19c7d4ed3bf222b45bb9019788e656c/pkg/apis/pipeline/v1beta1/task_types.go#L110) and [PipelineResourceResult](https://github.com/tektoncd/pipeline/blob/9c37fea9c19c7d4ed3bf222b45bb9019788e656c/pkg/apis/pipeline/v1beta1/resource_types.go#L122)
 
 ```go
 // TaskResult used to describe the results of a task
 type TaskResult struct {
-	// Name the given name
-	Name string `json:"name"`
-
-	// Description is a human-readable description of the result
-	// +optional
-	Description string `json:"description"`
+  // Name the given name
+  Name string `json:"name"`
   
-  // TrimRegex is a regular expression used to trim the result.
-  // - If TrimRegex is unset or set as an empty string, then do
-  //   nothing to the result
-  // - If TrimRegex is not empty, then trim all leading and 
-  //   trailing sub-strings that satisfying the pattern.
+  // Description is a human-readable description of the result
   // +optional
-  TrimRegex	string `json:"trimRegex,omitempty"`
-}
-```
-
-```go
-// PipelineResourceResult used to export the image name and digest as json
-type PipelineResourceResult struct {
-	Key          string `json:"key"`
-	Value        string `json:"value"`
-	TrimRegex    string `json:"trimRegex,omitempty"`
-	ResourceName string `json:"resourceName,omitempty"`
-	// The field ResourceRef should be deprecated and removed in the next API version.
-	// See https://github.com/tektoncd/pipeline/issues/2694 for more information.
-	ResourceRef *PipelineResourceRef `json:"resourceRef,omitempty"`
-	ResultType  ResultType           `json:"type,omitempty"`
+  Description string `json:"description"`
+  
+  // TrimTrailingWhitespaces is a boolean variable to indicate whether the
+  // trailing whitespaces would be deleted.
+  // - If TrimTrailingWhitespaces is unset or set as false then do nothing
+  //   to the result
+  // - If TrimTrailingWhitespaces is true, then trim all trailing whitespaces.
+  //
+  // Please be mindful that If the field is set as true, the trailing whitespaces
+  // you want to keep in the result will also be deleted.
+  // +optional
+  TrimTrailingWhitespaces string `json:"trimTrailingWhitespaces,omitempty"`
 }
 ```
 
 #### 2 Update the Result Value When Making TaskRunStatus
 
 The update should happen in the file [pkg/pod/status.go](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/pod/status.go), at [line 161](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/pod/status.go#L161), in function [filterResultsAndResources](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/pod/status.go#L212).
-- If the `TrimRegex` is not set or set as an empty string, then do nothing to the result.\
-- If the `TrimRegex` is not empty, then trim all leading and trailing string spans that satisfying the `TrimRegex` pattern.
+- If the `TrimTrailingWhitespaces` is not set or set as false, then do nothing to the result.
+- If the `TrimTrailingWhitespaces` is set as true, then trim all trailing whitespaces
 
 
 ## Test Plan
 As the code below shows, the test case is a TaskRun contains three results. The `script` uses command `echo` and io redirection operand `>` writes  `"Hello Task Result! "`, whose length is `19`,  into these three values.
 
-- **The first** result `unset-result` with the field `TrimRegex` unset. The  `unset-result` should be equal to `20`
-- **The second** result `empty-string-result` with the field `TrimRegex` set as an empty string. The length of the `empty-string-result` should be equal to `20`
-- **The third** result `nonempty-string-result` with the field `TrimRegex` set as a non-empty string `^\s+|\s$` that  matches all trailing whitespaces. Therefore, the `nonempty-string-result` should be equal to  `"Hello Task Result!"`(length: 18)
+- **The first** result `unset-result` with the field `TrimTrailingWhitespaces` unset. The  `unset-result` should be equal to `20`
+- **The second** result `empty-string-result` with the field `TrimTrailingWhitespaces` set as `false`. The length of the `empty-string-result` should be equal to `20`
+- **The third** result `nonempty-string-result` with the field `TrimTrailingWhitespaces` set as `true`. Therefore, the `nonempty-string-result` should be equal to  `"Hello Task Result!"`(length: 18)
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -180,9 +171,9 @@ spec:
     results:
     - name: unset-result
     - name: empty-string-result
-      trimRegex: ''
+      TrimTrailingWhitespaces: ''
     - name: nonempty-string-result
-      trimRegex: '^\s+|\s+$'
+      TrimTrailingWhitespaces: '^\s+|\s+$'
     steps:
     - image: ubuntu
       name: main
@@ -193,16 +184,25 @@ spec:
 ```
 
 ## Drawbacks
-For the case showed in the example issue, It's simpler to add `-n` flag to the `echo` command than specify a `TrimRegex` field.
+It might wrongly delete the whitespaces that user want to keep in the tail.
 
 ## Alternatives
 
-Except for adding a new field to the TaskResult, we can provide a new argument for entrypoint ([code here](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/pod/entrypoint.go#L122)) named `--result-trim-regex`, the argument value should be a json formatted string.
+#### Entrypoint Argument
+
+Except for adding a new field to the TaskResult, we can provide a new argument for entrypoint ([code here](https://github.com/tektoncd/pipeline/blob/434c47daaf623a595e2010ec966a7e6dbedb2df6/pkg/pod/entrypoint.go#L122)) named `--result-trim-trailing-whitespaces`, the argument value should be a json formatted string.
+
 ```json
 {
-	"result_1": "regex_rule_1",
-	"result_2": "regex_rule_2"
+	"result_1": true,
+	"result_2": false
 }
 ```
 The key represents result's name.
-The value is the same as `TrimRegex`, and accordingly, the related trim rule is also the same as [the solution mentioned before](#2-update-the-result-value-when-making-taskrunstatus).
+The value is the same as `TrimTrailingWhitespaces`, and accordingly, the related trim rule is also the same as [the solution mentioned before](#2-update-the-result-value-when-making-taskrunstatus).
+
+#### Feature Flag
+
+Add a config field `trim-result-trailing-whitespaces` in the config file [config/config-feature-flags.yaml](https://github.com/tektoncd/pipeline/blob/master/config/config-feature-flags.yaml).
+
+This stategy is a little coarse that will effect all the task results.

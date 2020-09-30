@@ -130,7 +130,7 @@ List the requirements for this TEP.
   unmodified.
 - Provide backwards compatibility for at least 1 release.
 
-## Proposal and Design Details
+## Proposal
 
 <!--
 This is where we get down to the specifics of what the proposal actually is.
@@ -142,14 +142,12 @@ nitty-gritty.
 
 ### Webhook Interceptors
 
-#### Input Event Field
+#### Input Event Fields
 
-Instead of mixing input event fields with others (e.g. the `webhook.header`
-field) we will include the entire input event in a reserved body field named
-`input`. This field will not be mutated throughout trigger processing, so that
-inteceptors and trigger bindings can rely on assumptions on the incoming event
-type. Incoming event data will be stored within `input` as `body` and `headers`
-fields.
+We will now include explicit `headers` and `body` fields in Interceptor request
+payloads, populated with the data of the incoming request. These fields will not
+be mutated throughout trigger processing, so that inteceptors and trigger
+bindings can rely on assumptions on the incoming event type.
 
 ##### Example
 
@@ -197,37 +195,35 @@ POST /interceptor HTTP/1.1
 Host: my-interceptor:4567
 Tekton-Event-ID: abc123
 {
-  "input": {
-    "headers": [
-      "X-GitHub-Delivery": "72d3162e-cc78-11e3-81ab-4c9367dc0958",
-      "X-Hub-Signature": "sha1=7d38cdd689735b008b3c702edd92eea23791c5f6",
-      "User-Agent": "GitHub-Hookshot/044aadd",
-      "Content-Type": "application/json",
-      "Content-Length": "6615",
-      "X-GitHub-Event": "issues",
-    ],
-    "body": {
-      "action": "opened",
-      "issue": {
-        "url": "https://api.github.com/repos/octocat/Hello-World/issues/1347",
-        "number": 1347,
-        ...
-      },
-      "repository" : {
-        "id": 1296269,
-        "full_name": "octocat/Hello-World",
-        "owner": {
-          "login": "octocat",
-          "id": 1,
-          ...
-        },
-        ...
-      },
-      "sender": {
+  "headers": [
+    "X-GitHub-Delivery": "72d3162e-cc78-11e3-81ab-4c9367dc0958",
+    "X-Hub-Signature": "sha1=7d38cdd689735b008b3c702edd92eea23791c5f6",
+    "User-Agent": "GitHub-Hookshot/044aadd",
+    "Content-Type": "application/json",
+    "Content-Length": "6615",
+    "X-GitHub-Event": "issues",
+  ],
+  "body": {
+    "action": "opened",
+    "issue": {
+      "url": "https://api.github.com/repos/octocat/Hello-World/issues/1347",
+      "number": 1347,
+      ...
+    },
+    "repository" : {
+      "id": 1296269,
+      "full_name": "octocat/Hello-World",
+      "owner": {
         "login": "octocat",
         "id": 1,
         ...
-      }
+      },
+      ...
+    },
+    "sender": {
+      "login": "octocat",
+      "id": 1,
+      ...
     }
   }
 }
@@ -239,13 +235,15 @@ We propose that any responses returned from interceptors are now additive to the
 interceptor chain payload, and remove the ability to arbitrarily modify
 payloads.
 
-Any response received from interceptors will be included in following paylods
-under a new `interceptors` field, keyed by interceptor name for uniqueness.
+Response bodies are expected to be in JSON key-value format. Empty bodies are
+valid. Responses received from interceptors will be included in following
+payloads under a new `interceptors` field. Responses from multiple payloads will
+be merged together in the `interceptors` field. In cases where the response
+contains a key already present in the payload, the most recent response value
+will replace the existing value.
+
 Webhook interceptors may no longer modify headers as part of the interceptor
 chain.
-
-If no response body is returned by the interceptor, no `interceptors.<name>`
-field will be present.
 
 ##### Example
 
@@ -261,20 +259,62 @@ We expect the next request body to the following interceptor to look like:
 
 ```json
 {
-  "input": {...},
+  "headers": {...},
+  "body": {...},
   "interceptors": {
-    "foo": {
-      "bar": "baz"
-    }
+    "bar": "baz"
   }
 }
 ```
 
 ### CEL Interceptors and TriggerBindings
 
-To stay consistent with Webhook inteceptors, we will now key input event fields
-for CEL Interceptors and TriggerBindings on `input` instead of `body` and
-`header` - e.g. `body` => `input.body` and `header` => `input.header`.
+While there will be no syntax change to CEL Interceptors or Trigger Bindings,
+users will need to be aware that custom fields that might have been embeded may
+have moved to the `interceptors` field.
+
+CEL overlay keys will now be rooted from the `interceptors` field. e.g. given
+the existing example:
+
+```yaml
+- key: body.pull_request.head.short_sha
+  expression: "truncate(body.pull_request.head.sha, 7)"
+```
+
+This will write the data into `interceptors.body.pull_request.head.short_sha`.
+It is recommended that users use short keys instead e.g.
+
+```yaml
+- key: short_sha
+  expression: "truncate(body.pull_request.head.sha, 7)"
+```
+
+## Design Details
+
+### Inteceptor Interface
+
+We plan to follow changes to the Interceptor interface as proposed by the
+[Pluggable Interceptors Design Doc](https://docs.google.com/document/d/1zIG295nyWonCXhb8XcOC41q4YVP9o2Hgg8uAoL4NdPA/edit#).
+
+```go
+interface Interceptor {
+    ExecuteTrigger(req *InterceptorRequest) (*InterceptorResponse, error)
+}
+
+type InterceptorRequest struct {
+  Headers http.Headers
+  Body json.RawMessage
+  Interceptors map[string]interface{}
+}
+
+type InterceptorResponse struct {
+  Body map[string]interface{}
+}
+```
+
+This proposal will not cover adding the additional Trigger / status fields
+included in the Pluggable Interceptors proposal, but is compatible with those
+changes.
 
 ## Test Plan
 
@@ -323,6 +363,24 @@ TODO based on feedback
 <<[/UNRESOLVED]>>
 ```
 
+### Introduce `input` field
+
+In an earlier iteration, we proposed adding an explicit `input` field to group
+all immutable data into a single field e.g.
+
+```json
+{
+  "input": {
+    "headers": {...},
+    "body": {...},
+  },
+  "interceptors": {...},
+}
+```
+
+We decided not to go down this route to minimize the impact this change would
+have on existing simple interceptors / bindings.
+
 ## Upgrade and Migration Strategy
 
 <!--
@@ -333,19 +391,19 @@ behavior or add a feature that may replace and deprecate a current one.
 
 These changes to interceptors and bindings are breaking changes from existing
 Trigger behavior. We cannot transparently support these syntaxes in a backwards
-compatible way (e.g. assume `body` => `input.body`) since we do not know how
-interceptors may have mutated the events previously and the assumptions that may
-have been made in the interceptor chain.
+compatible way since we do not know how interceptors may have mutated the events
+previously and the assumptions that may have been made in the interceptor chain.
 
-To handle this, we will introduce a new flag in Trigger specs:
-`allow_legacy_unsafe_interceptor_input_events`. This is intentionally long and
-includes "unsafe" and "legacy" to deter people from using it. If set to `true`
-we will use the existing event interceptor / trigger binding behavior, if
-`false` we will use the logic described in this proposal.
+To handle this, we will introduce a new flag to Triggers that can be specified
+by an annotation:
+`triggers.tekton.dev/allow_legacy_unsafe_interceptor_input_events`. This is
+intentionally long and includes "unsafe" and "legacy" to deter people from using
+it. If set to `true` we will use the existing event interceptor / trigger
+binding behavior, if `false` we will use the logic described in this proposal.
 
 Since Triggers are currently in Alpha, we are not bound by a backwards
 compatibility policy, but we wish to offer a transition period for existing
-users - in the first minor `v0.N` release this feature will be included as a feature
-flag and will default to `true`, in `v0.N+1` this flag will default to `false`, and
-in `v0.N+2` this flag will be removed altogether and the old behavior will be
-removed.
+users - in the first minor `v0.N` release this feature will be included as a
+feature flag and will default to `true`, in `v0.N+1` this flag will default to
+`false`, and in `v0.N+2` this flag will be removed altogether and the old
+behavior will be removed.

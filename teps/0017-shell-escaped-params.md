@@ -58,9 +58,13 @@ interpreted by the shell.
 In a Task or Pipeline, for each parameter `foo`, provide `$(params.foo.shell-escaped)`.
 
 This variable shall be escaped according to `printf '%q'` rules as used in bash.
+For example, the literal string `Hello '\!"` becomes `Hello\ \'\\\!\"`. A script
+which ran `echo $(params.foo.shell-escaped)` would print the literal string. The
+escaped value would do the wrong thing when placed inside double or single quotes.
 
 Support Bourne, Bourne-Again, Busybox, and Debian Almquist shells against
-injection, but don't purposefully prevent its usage in other scenarios.
+injection, but don't purposefully prevent its usage in other scenarios. This
+does not require runtime analysis.
 
 ### User Stories
 
@@ -79,7 +83,7 @@ to provide their own script to be called by my script. The most concise way to
 write my Task is to include the line:
 
 ```
-printf '%s' "$(params.foo)" > included-script.sh
+printf '%s' $(params.foo.shell-escaped) > included-script.sh
 ```
 
 ### Risks and Mitigations
@@ -105,8 +109,10 @@ More code is added to Tekton and must be supported.
 
 There are existing workarounds:
 
-1. Place the value into an environment variable. I am unsure if this is safe for
-all possible valid inputs.
+1. Place the value into an environment variable, explicitly or implicitly. I am
+unsure if this is safe for all possible valid inputs but I have not been able to
+break it. We should ensure any implicit environment variables cannot be any
+special name (i.e. LD_PRELOAD); a `TKN_` prefix would probably be sufficient.
 
    ```
    steps:
@@ -121,7 +127,7 @@ all possible valid inputs.
    ```
 
 2. Use it as an argument in a separate step. There are limits to argument size
-which could be met and break things.
+which could be met and break things, but that is a rather high number.
 
 ```yaml
 steps:
@@ -132,10 +138,13 @@ steps:
     - $(params.script)
 ```
 
-The parameters could also be provided in the same way results are supplied:
+3. The parameters could also be provided in the same way results are supplied:
 `/tekton/parameters/in` could be a file with the exact contents. I believe, in
 bash at least, `command "$(cat /tekton/parameters/in)"` is as safe as the
 environment variable approach.
+
+Environment variables and files have the downside of possible hidden
+dependencies in the image executables.
 
 ## References
 

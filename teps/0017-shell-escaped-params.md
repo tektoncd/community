@@ -146,6 +146,30 @@ environment variable approach.
 Environment variables and files have the downside of possible hidden
 dependencies in the image executables.
 
+4. Alternative 1 could be made more concise by providing the expansion
+`$(params.in.env)`; when used, the parameter's value is placed in an arbitrary
+environment variable whose name is provided by that expansion. i.e.
+
+```yaml
+steps:
+   script: |
+        printf '%s' "${$(params.script.env)}" > input-script.sh
+```
+
+This name wouldn't be limited to scripts either and could be supplied as an
+arg to any command, though the use case for that is very limited.
+
+5. Keep being unsafe. For example, is param `in` is `'; rm -fR /;` and used:
+
+```yaml
+steps:
+   script: |
+        printf '%q' '$(params.in)'
+```
+
+it'll expand to `printf '%q' ''; rm -fR /;` deleting from the root, though you
+can imagine worse things it could do.
+
 ## References
 
 [Provide shell-escaped parameters for `script:`](https://github.com/tektoncd/pipeline/issues/3226)

@@ -92,7 +92,7 @@ We may not have the resources to exhaustively test and security-harden this feat
 
 ## Design Details
 
-Arrays will be treated as flattened strings.
+If the parameter type is an array, it will fail validation.
 
 ## Test Plan
 

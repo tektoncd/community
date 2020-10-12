@@ -15,7 +15,7 @@ status: proposed
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
 - [Proposal](#proposal)
-  - [Bulding](#building)
+  - [Building](#building)
   - [Testing](#testing)
   - [Requirements](#requirements)
   - [Risks and Mitigations](#risks-and-mitigations)

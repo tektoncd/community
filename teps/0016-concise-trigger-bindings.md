@@ -12,18 +12,17 @@ status: implementable
 
 
 <!-- toc -->
-- [TEP-0016: Concise Embedded TriggerBindings](#tep-0016-concise-embedded-triggerbindings)
-  - [Summary](#summary)
-  - [Motivation](#motivation)
-  - [Goal](#goal)
-  - [Non-Goals](#non-goals)
-  - [Proposal](#proposal)
-    - [Notes/Constraints/Caveats](#notesconstraintscaveats)
-    - [Risks and Mitigations](#risks-and-mitigations)
-    - [User Experience](#user-experience)
-  - [Alternatives](#alternatives)
-  - [Upgrade & Migration Strategy](#upgrade--migration-strategy)
-  - [References](#references)
+- [Summary](#summary)
+- [Motivation](#motivation)
+- [Goal](#goal)
+- [Non-Goals](#non-goals)
+- [Proposal](#proposal)
+  - [Notes/Constraints/Caveats](#notesconstraintscaveats)
+  - [Risks and Mitigations](#risks-and-mitigations)
+  - [User Experience](#user-experience)
+- [Alternatives](#alternatives)
+- [Upgrade &amp; Migration Strategy](#upgrade--migration-strategy)
+- [References](#references)
 <!-- /toc -->
 
 ## Summary

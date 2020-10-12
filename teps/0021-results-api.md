@@ -426,7 +426,7 @@ message Result {
   //           cluster/<cluster-id>/namespace/tekton/results/1234
   string name = 1;
 
-	// Server assigned timestamp for when the result was created.
+  // Server assigned timestamp for when the result was created.
   google.protobuf.Timestamp created_time = 2
       [(google.api.field_behavior) = OUTPUT_ONLY];
 

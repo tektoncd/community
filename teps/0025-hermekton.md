@@ -1,5 +1,5 @@
 ---
-title: TEP-NNNN-Hermetic-Builds
+title: TEP-0025-Hermetic-Builds
 authors:
   - "@dlorenc"
 creation-date: 2020-09-11
@@ -7,7 +7,7 @@ last-updated: 2020-09-11
 status: proposed
 ---
 
-# TEP-NNNN: Hermekton: Hermetic Builds in Tekton Pipelines
+# TEP-0025: Hermekton: Hermetic Builds in Tekton Pipelines
 
 <!-- toc -->
 - [Summary](#summary)

@@ -469,9 +469,9 @@ identify a single instance of a result, which can contain several executions
   - Events that caused the result (e.g. trigger events)
   - Actions that took place after execution (e.g. cloudevent notifications,
     GitHub PR updates, etc.)
-  - Other custom information providers that wish to annotate data in results. Tekton may
-    choose to promote useful types from `extensions` as direct fields in the
-    Result message in the future.
+  - Other custom information providers that wish to annotate data in results.
+    Tekton may choose to promote useful types from `extensions` as direct fields
+    in the Result message in the future.
 - `etags` are provided to detect concurrent writes of data. See
   https://google.aip.dev/134#etags for more details.
 
@@ -493,9 +493,9 @@ message Execution {
 }
 ```
 
-`Execution`s contain Tekton execution types, namely TaskRuns or
-PipelineRuns. They may also contain opaque types, which can be useful for
-representing meta-configs of TaskRuns (i.e. DSLs, Custom Tasks, etc.), or other
+`Execution`s contain Tekton execution types, namely TaskRuns or PipelineRuns.
+They may also contain opaque types, which can be useful for representing
+meta-configs of TaskRuns (i.e. DSLs, Custom Tasks, etc.), or other
 execution-like data that is not handled by Tekton directly.
 
 #### Example
@@ -566,7 +566,8 @@ https://github.com/tektoncd/experimental/blob/4644ad14d92f958e83ae95743ff5d9e9ec
 for a functional example of this.
 
 We may desire more realistic E2E tests in the future to test other components
-like that can't be easily tested in a local environment (e.g. provider specific features, auth, etc.)
+like that can't be easily tested in a local environment (e.g. provider specific
+features, auth, etc.)
 
 ## Drawbacks
 
@@ -574,11 +575,20 @@ like that can't be easily tested in a local environment (e.g. provider specific 
 Why should this TEP _not_ be implemented?
 -->
 
-```
-<<[UNRESOLVED wlynch ]>>
-This section will be filled in based on feedback
-<<[/UNRESOLVED]>>
-```
+### Eventually Consistent Results
+
+Since the Results API would be a different server from the Tekton controller and
+upload results in response to events, the data in the Results API will
+inherently be eventually consistent, and might fall behind from the true state
+in the core pipeline controller.
+
+The Results API is intended for long term results storage, and shouldn't be
+trusted as the primary source of truth for data plane and scheduling operations
+by the controller. Users who are sensitive to this may continue to use the
+Task/PipelineRun APIs directly.
+
+We should provide metrics to track errors and latencies of uploads to allow for
+operators to detect any problems that might arise.
 
 ## Alternatives
 
@@ -588,11 +598,54 @@ not need to be as detailed as the proposal, but should include enough
 information to express the idea and why it was not acceptable.
 -->
 
-```
-<<[UNRESOLVED wlynch ]>>
-This section will be filled in based on feedback
-<<[/UNRESOLVED]>>
-```
+### Continue using TaskRun/PipelineRun APIs for results
+
+This option isn't sustainable. Users (including Tekton's own dogfooding cluster)
+often encounter performance issues with etcd persisting TaskRun/PipelineRun
+results indefinitely, leading to homegrown solutions like periodic cron jobs to
+delete runs to free up resources. At minimum we need a solution to store long
+term results outside of the etcd data plane.
+
+### Serve TaskRun/PipelineRun APIs
+
+Instead of defining a new Result API, we could implement a subset of the
+existing TaskRun/PipelineRun API backed by durable storage. While this
+would use the existing Tekton Pipelines types and make it easier to have
+existing clients (dashboard, tkn) migrate to the new service, this would not
+cover the everything that happens as part of an event:
+
+- User configured DSLs may not fit neatly into the TaskRun / PipelineRun format,
+  but they are useful to retain to describe what the user requested.
+- Incoming Trigger events do not have a home in Task/PipelineRuns today. We
+  likely do not want to add this due to
+  [restrictions on Kubernetes object sizes](https://stackoverflow.com/a/53015758) -
+  as an example,
+  [GitHub webhook events can be up to 25 MB](https://developer.github.com/webhooks/event-payloads/#webhook-payload-object-common-properties).
+- This does not allow for post-run operation statuses like Cloud Event
+  publishing, Pull Request updates, etc. to be associated to their execution
+  events. It's unclear whether we would want to store this information in Runs,
+  since it is a different resource / execution.
+
+We may choose to provide a facade of the Task/Pipeline APIs in the future for
+convenience, but this would be a layer in addition to the Results API.
+
+### REST/Open API
+
+One alternative to using gRPC would be to define an Open API spec and implement
+a REST API as the surface.
+
+We are choosing to go with gRPC to take advantage of protobuf serialization,
+multi-language client/server library generation, and other performance features
+baked in to gRPC by default.
+
+For clients that require a REST API, we can configure a
+[gateway](https://github.com/grpc-ecosystem/grpc-gateway) to handle HTTP <->
+gRPC transcoding.
+
+More Reading:
+
+- https://www.redhat.com/en/blog/comparing-openapi-grpc
+- https://cloud.google.com/blog/products/api-management/understanding-grpc-openapi-and-rest-and-when-to-use-them
 
 ### Making Results part of the core Pipeline controller
 

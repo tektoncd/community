@@ -65,21 +65,25 @@ tags, and then generate with `hack/update-toc.sh`.
 -->
 
 <!-- toc -->
-
 - [Summary and Motivation](#summary-and-motivation)
 - [Requirements](#requirements)
-- [Proposal and Design Details](#proposal-and-design-details)
+- [Proposal](#proposal)
   - [Webhook Interceptors](#webhook-interceptors)
-    - [Input Event Field](#input-event-field)
+    - [Input Event Fields](#input-event-fields)
       - [Example](#example)
     - [Interceptor Field](#interceptor-field)
       - [Example](#example-1)
   - [CEL Interceptors and TriggerBindings](#cel-interceptors-and-triggerbindings)
+- [Design Details](#design-details)
+  - [Inteceptor Interface](#inteceptor-interface)
 - [Test Plan](#test-plan)
 - [Drawbacks](#drawbacks)
+  - [Payload redaction](#payload-redaction)
 - [Alternatives](#alternatives)
+  - [Introduce <code>input</code> field](#introduce--field)
+  - [Keep mutable behavior](#keep-mutable-behavior)
 - [Upgrade and Migration Strategy](#upgrade-and-migration-strategy)
-  <!-- /toc -->
+<!-- /toc -->
 
 ## Summary and Motivation
 
@@ -343,11 +347,15 @@ test both new and legacy paths.
 Why should this TEP _not_ be implemented?
 -->
 
-```
-<<[UNRESOLVED wlynch ]>>
-TODO based on feedback
-<<[/UNRESOLVED]>>
-```
+### Payload redaction
+
+One feature this would take away is the ability to redact data prior to trigger
+binding. We are not targeting this as a necessary feature for Tekton Triggers,
+and we are not aware of anyone actively doing this today. Users can still freely
+modify events prior to the event reaching the Tekton Event Listener.
+
+There may be value in this if/when we store incoming events in long term event
+storage, but this is out of scope of this proposal.
 
 ## Alternatives
 
@@ -356,12 +364,6 @@ What other approaches did you consider and why did you rule them out?  These do
 not need to be as detailed as the proposal, but should include enough
 information to express the idea and why it was not acceptable.
 -->
-
-```
-<<[UNRESOLVED wlynch ]>>
-TODO based on feedback
-<<[/UNRESOLVED]>>
-```
 
 ### Introduce `input` field
 
@@ -380,6 +382,29 @@ all immutable data into a single field e.g.
 
 We decided not to go down this route to minimize the impact this change would
 have on existing simple interceptors / bindings.
+
+### Keep mutable behavior
+
+We could decide that the existing mutable behavior is okay, or allow some degree
+of mutable behavior on a per trigger basis.
+
+We likely do not want to support this for a few reasons:
+
+1. It makes it hard to audit received events later on. We suspect that this will
+   be useful functionality when storing incoming events, and it will create a
+   clear division between the event received vs additional data adding during
+   trigger processing.
+2. It makes it harder for interceptor creators to make interceptors that work
+   well with others. Any time an interceptor modifies the original event
+   payload, it risks invalidating assumptions others may have made about the
+   original event type based on the interceptor ordering. While we will not be
+   able to make interceptors completely independent / composable (since most are
+   inherently tied to specific event types), enforcing immutable events allows
+   for interceptors to make base assumptions about event types - e.g. if all
+   interceptors in a chain only act on GitHub Push events, interceptors can
+   assume that they will get at least the initial event (even if other
+   interceptors in the chain added additional data) regardless of interceptor
+   ordering.
 
 ## Upgrade and Migration Strategy
 

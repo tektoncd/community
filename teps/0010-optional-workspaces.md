@@ -3,8 +3,8 @@ title: TEP-0010-Optional-Workspaces
 authors:
   - "@sbwsg"
 creation-date: 2020-08-03
-last-updated: 2020-08-12
-status: implementable
+last-updated: 2020-10-15
+status: implemented
 ---
 
 # TEP-0010: Optional Workspaces

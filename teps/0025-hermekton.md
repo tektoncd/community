@@ -4,7 +4,7 @@ authors:
   - "@dlorenc"
 creation-date: 2020-09-11
 last-updated: 2020-09-11
-status: proposed
+status: implementable
 ---
 
 # TEP-0025: Hermekton: Hermetic Builds in Tekton Pipelines
@@ -171,6 +171,9 @@ We also only want to disable networking if we are running in a hermetic `Executi
 Unfortunately, the entrypointer does not know if it is running a Task step or a system container today.
 
 We'll add support for that via environment variables.
+The Pipeline controller will create `Resource` containers with a specific Environment variable (`TEKTON_RESOURCE_NAME`),
+and ensure user-specified containers cannot have this variable set.
+**Note**: This variable is already used on several resources. Support will be extended to the rest.
 
 ### Implementation Plan
 

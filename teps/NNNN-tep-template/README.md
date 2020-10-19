@@ -72,7 +72,7 @@ tags, and then generate with `hack/update-toc.sh`.
   - [User Stories (optional)](#user-stories-optional)
     - [Story 1](#story-1)
     - [Story 2](#story-2)
-  - [Notes/Constraints/Caveats (optional)](#notesconstraintscaveats-optional)
+  - [Notes/Caveats (optional)](#notescaveats-optional)
   - [Risks and Mitigations](#risks-and-mitigations)
   - [User Experience (optional)](#user-experience-optional)
   - [Performance (optional)](#performance-optional)
@@ -133,7 +133,9 @@ and make progress.
 ## Requirements
 
 <!--
-List the requirements for this TEP.
+Describe constraints on the solution that must be met. Examples might include
+performance characteristics that must be met, specific edge cases that must
+be handled, or user scenarios that will be affected and must be accomodated.
 -->
 
 ## Proposal
@@ -159,7 +161,7 @@ bogged down.
 
 #### Story 2
 
-### Notes/Constraints/Caveats (optional)
+### Notes/Caveats (optional)
 
 <!--
 What are the caveats to the proposal?

@@ -176,6 +176,7 @@ This is the complete list of Tekton teps:
 |[TEP-0045](0045-whenexpressions-in-finally-tasks.md) | WhenExpressions in Finally Tasks | implemented | 2021-06-03 |
 |[TEP-0046](0046-finallytask-execution-post-timeout.md) | Finally tasks execution post pipelinerun timeout | implementable | 2021-04-14 |
 |[TEP-0047](0047-pipeline-task-display-name.md) | Pipeline Task Display Name | proposed | 2021-02-10 |
+|[TEP-0048](0048-task-results-without-results.md) | Task Results without Results | proposed | 2021-06-11 |
 |[TEP-0049](0049-aggregate-status-of-dag-tasks.md) | Aggregate Status of DAG Tasks | implemented | 2021-06-03 |
 |[TEP-0050](0050-ignore-task-failures.md) | Ignore Task Failures | proposed | 2021-02-19 |
 |[TEP-0051](0051-ppc64le-architecture-support.md) | ppc64le Support | proposed | 2021-01-28 |

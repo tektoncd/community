@@ -238,6 +238,12 @@ All code is expected to have adequate tests (eventually with coverage
 expectations).
 -->
 
+# Design Evaluation
+<!--
+How does this proposal affect the reusability, simplicity, flexibility 
+and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/master/design-principles.md)
+-->
+
 ## Drawbacks
 
 <!--

@@ -3,7 +3,7 @@ title: Tekton Results API
 authors:
   - "@wlynch"
 creation-date: 2020-09-23
-last-updated: 2020-09-28
+last-updated: 2020-10-26
 status: proposed
 ---
 
@@ -65,7 +65,6 @@ tags, and then generate with `hack/update-toc.sh`.
 -->
 
 <!-- toc -->
-
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [etcd](#etcd)
@@ -79,20 +78,35 @@ tags, and then generate with `hack/update-toc.sh`.
     - [API Server](#api-server)
     - [Result Upload Controller](#result-upload-controller)
   - [User Stories (optional)](#user-stories-optional)
+    - [Complex Filter Queries](#complex-filter-queries)
+    - [Deletion of Completed Resources](#deletion-of-completed-resources)
   - [Notes/Constraints/Caveats (optional)](#notesconstraintscaveats-optional)
+    - [Pipelines Source of Truth](#pipelines-source-of-truth)
   - [Risks and Mitigations](#risks-and-mitigations)
   - [User Experience (optional)](#user-experience-optional)
+    - [Result Resources](#result-resources)
   - [Performance (optional)](#performance-optional)
 - [Design Details](#design-details)
+  - [Result API](#result-api)
+    - [Results](#results)
+    - [Events](#events)
+    - [Example](#example)
 - [Test Plan](#test-plan)
 - [Drawbacks](#drawbacks)
+  - [Eventually Consistent Results](#eventually-consistent-results)
 - [Alternatives](#alternatives)
+  - [Continue using TaskRun/PipelineRun APIs for results](#continue-using-taskrunpipelinerun-apis-for-results)
+  - [Serve TaskRun/PipelineRun APIs](#serve-taskrunpipelinerun-apis)
+  - [REST/Open API](#restopen-api)
+  - [Making Results part of the core Pipeline controller](#making-results-part-of-the-core-pipeline-controller)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
 - [References (optional)](#references-optional)
 - [Future Work](#future-work)
-
-  <!-- /toc -->
+  - [Trigger Events](#trigger-events)
+  - [Automatic Completed Resource Cleanup](#automatic-completed-resource-cleanup)
+- [Special Thanks](#special-thanks)
+<!-- /toc -->
 
 ## Summary
 
@@ -401,7 +415,7 @@ We propose implementing a full CRUD API, heavily influenced by API
 recommendations defined by https://aip.dev.
 
 The API would center around a new `Result` resource, which acts as a grouping
-mechanism for `Execution` data.
+mechanism for `Event` data.
 
 This would include Create/Delete/Update/Get/List operations, with the ability
 for users to pass in a `filter` string to List to selectively filter results. To
@@ -436,11 +450,7 @@ message Result {
   // Execution artifacts part of this result. Typically will be Tekton
   // Task/PipelineRuns, but may also include other execution information
   // (e.g. DSLs, etc.)
-  repeated Execution executions = 4;
-
-  // Other artifacts, etc that don't fit elsewhere can be added here until
-  // promoted to a top level type.
-  map<string, google.protobuf.Any> extensions = 5;
+  repeated Event events = 4;
 
   // The etag for this result.
   // If this is provided on update, it must match the server's etag.
@@ -460,12 +470,11 @@ identify a single instance of a result, which can contain several executions
     under a single result. Examples: TaskRuns with a common PipelineRun,
     PipelineRun with a Trigger event ID.
 - `annotations` are arbitrary user labels - these do not correspond to any
-  Kubernetes Annotations that may be set in `Execution` types.
-- A result may specify any number of event executions (including 0). This is to
-  allow room to record why executions did _not_ occur (e.g. record why a trigger
-  may have filtered an event).
-- A generic `extensions` field is included to allow users to annotate custom
-  information into a result. This may include:
+  Kubernetes Annotations that may be set in `Event` types.
+- A result may specify any number of event executions. This is to
+  allow room to record why run executions did _not_ occur (e.g. record why a trigger
+  may have filtered an event). Events may also be used by users to include
+  custom information in a result. Examples:
   - Events that caused the result (e.g. trigger events)
   - Actions that took place after execution (e.g. cloudevent notifications,
     GitHub PR updates, etc.)
@@ -476,27 +485,29 @@ identify a single instance of a result, which can contain several executions
   https://google.aip.dev/134#etags for more details.
 
 It is up to the server implementation to set and document any resource / quota
-limits (e.g. how many executions per result, how large can the result payload
+limits (e.g. how many events per result, how large can the result payload
 be, etc.)
 
-#### Executions
+#### Events
 
 ```proto
-message Execution {
-  oneof execution {
-    tekton.pipeline.v1.TaskRun task_run = 1;
-    tekton.pipeline.v1.PipelineRun pipeline_run = 2;
+message Event {
+  // Identifier of an execution. Must be nested within a Result.
+  string name = 1;
 
-    // Additional execution types not covered above (e.g. DSLs, Custom Tasks).
-    google.protobuf.Any opaque = 3;
-  }
+  // Typed data of the event.
+  google.protobuf.Any data = 2;
 }
 ```
 
-`Execution`s contain Tekton execution types, namely TaskRuns or PipelineRuns.
+`Events`s can contain Tekton execution types, namely TaskRuns or PipelineRuns.
 They may also contain opaque types, which can be useful for representing
 meta-configs of TaskRuns (i.e. DSLs, Custom Tasks, etc.), or other
 execution-like data that is not handled by Tekton directly.
+
+API Server implementations should document what event types are filterable in
+their implementation. For the reference implementation, we will support
+Tekton TaskRun and PipelineRun types by default.
 
 #### Example
 
@@ -509,26 +520,32 @@ results: {
     "env": "ci"
   }
 
-  executions: {
-    pipeline_run: {
-      # ...
+  event: {
+    name: "namespace/default/results/sample-tekton-result/events/a"
+    data: {
+      type_url: "tekton.pipelines.v1.PipelineRun"
+      value: pipeline_run{...}
     }
   }
-  executions: {
-    task_run: {
-      # ...
+  event: {
+    name: "namespace/default/results/sample-tekton-result/events/b"
+    data: {
+      type_url: "tekton.pipelines.v1.TaskRun"
+      value: task_run{...}
     }
   }
-  executions: {
-    task_run: {
-      # ...
+  event: {
+    name: "namespace/default/results/sample-tekton-result/events/c"
+    data: {
+      type_url: "tekton.pipelines.v1.TaskRun"
+      value: task_run{...}
     }
   }
 
   # These aren't real types (yet), just examples of the kind of data we could expect.
-  extensions: {
-    key: "tekton-chains"
-    value: {
+  event: {
+    name: "namespace/default/results/sample-tekton-result/events/tekton-chains"
+    data: {
       type_url: "tekton.chains.v1.SHA"
       value: "aHVudGVyMg=="
     }

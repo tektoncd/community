@@ -99,6 +99,7 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Serve TaskRun/PipelineRun APIs](#serve-taskrunpipelinerun-apis)
   - [REST/Open API](#restopen-api)
   - [Making Results part of the core Pipeline controller](#making-results-part-of-the-core-pipeline-controller)
+  - [Naming overlap with Task results](#naming-overlap-with-task-results)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
 - [References (optional)](#references-optional)
@@ -170,8 +171,7 @@ history to cluster storage can be problematic.
 etcd also provides no versioned history of Task and Pipeline objects, which
 might have been modified since they were run. This makes it impossible to know
 exactly what steps were executed by a previous run. There is work ongoing today
-to address this (versioned OCI image catalogs, storing the original TaskSpec in
-a TaskRunStatus, etc.)
+to address this (e.g. versioned OCI image catalogs).
 
 Tekton's API surface being limited to custom resource objects stored in a
 cluster's etcd also means that execution information not described as a CRD get
@@ -202,6 +202,10 @@ know that this has succeeded?
 -->
 
 - Define a Result API spec to store and query Tekton results.
+  - Tekton results are any data about or related to TaskRuns or PipelineRuns. At
+    minimum this includes the full TaskRun and PipelineRun status/spec, but may
+    include other data about the Runs (events that triggered it, artifacts
+    produced, post-run tasks, etc.)
 - Decouple long-term Tekton result storage away from runtime storage in etcd.
 - Give clients flexibility to embed additional metadata associated with Tekton
   Task/PipelineRuns.
@@ -388,12 +392,13 @@ performance requirements.
 -->
 
 Our goal is to make results have minimal impact on core Pipeline execution. By
-running a separate controller, while this does add some more overhead, this
-enables users to have optional installations of result uploading. Since these
-results are intended for long term storage, our expection is that results will
-be eventually consistent with the Pipeline data plane. For users that require
-the most up to date state of a Task/PipelineRun, the Pipeline API will remain to
-serve those users.
+running a separate controller, while this does add some more overhead (i.e. at
+minimum we would need to run another pod per cluster to watch TaskRuns and
+update results), this enables users to have optional installations of result
+uploading. Since these results are intended for long term storage, our expectation
+is that results will be eventually consistent with the Pipeline data plane. For
+users that require the most up to date state of a Task/PipelineRun, the Pipeline
+API will remain to serve those users.
 
 ## Design Details
 
@@ -471,10 +476,10 @@ identify a single instance of a result, which can contain several executions
     PipelineRun with a Trigger event ID.
 - `annotations` are arbitrary user labels - these do not correspond to any
   Kubernetes Annotations that may be set in `Event` types.
-- A result may specify any number of event executions. This is to
-  allow room to record why run executions did _not_ occur (e.g. record why a trigger
-  may have filtered an event). Events may also be used by users to include
-  custom information in a result. Examples:
+- A result may specify any number of event executions. This is to allow room to
+  record why run executions did _not_ occur (e.g. record why a trigger may have
+  filtered an event). Events may also be used by users to include custom
+  information in a result. Examples:
   - Events that caused the result (e.g. trigger events)
   - Actions that took place after execution (e.g. cloudevent notifications,
     GitHub PR updates, etc.)
@@ -485,8 +490,8 @@ identify a single instance of a result, which can contain several executions
   https://google.aip.dev/134#etags for more details.
 
 It is up to the server implementation to set and document any resource / quota
-limits (e.g. how many events per result, how large can the result payload
-be, etc.)
+limits (e.g. how many events per result, how large can the result payload be,
+etc.)
 
 #### Events
 
@@ -506,8 +511,8 @@ meta-configs of TaskRuns (i.e. DSLs, Custom Tasks, etc.), or other
 execution-like data that is not handled by Tekton directly.
 
 API Server implementations should document what event types are filterable in
-their implementation. For the reference implementation, we will support
-Tekton TaskRun and PipelineRun types by default.
+their implementation. For the reference implementation, we will support Tekton
+TaskRun and PipelineRun types by default.
 
 #### Example
 
@@ -626,10 +631,10 @@ term results outside of the etcd data plane.
 ### Serve TaskRun/PipelineRun APIs
 
 Instead of defining a new Result API, we could implement a subset of the
-existing TaskRun/PipelineRun API backed by durable storage. While this
-would use the existing Tekton Pipelines types and make it easier to have
-existing clients (dashboard, tkn) migrate to the new service, this would not
-cover the everything that happens as part of an event:
+existing TaskRun/PipelineRun API backed by durable storage. While this would use
+the existing Tekton Pipelines types and make it easier to have existing clients
+(dashboard, tkn) migrate to the new service, this would not cover the everything
+that happens as part of an event:
 
 - User configured DSLs may not fit neatly into the TaskRun / PipelineRun format,
   but they are useful to retain to describe what the user requested.
@@ -670,6 +675,36 @@ While we expect that this will be a commonly used component for many
 installations, we do not want to make this a requirement for every installation.
 Users should be able to enable / disable this component freely to fit their
 needs.
+
+### Naming overlap with Task results
+
+There is naming overlap with
+[Task outputs](https://github.com/tektoncd/pipeline/blob/master/docs/tasks.md#emitting-results),
+called Task results. There is a risk that users may confuse Tekton Results with
+Task results.
+
+This is a particularly messy history, because the original proposal for the
+Results API came out before
+[Task results were introduced to the codebase](https://github.com/tektoncd/pipeline/pull/1921)
+and the
+[initial mention](https://github.com/tektoncd/pipeline/issues/1273#issuecomment-546494832)
+of the Task results field (named results to not conflict with PipelineResource
+outputs) was suggested the same week as the original Results API design doc.
+Both of these predated the current TEP process.
+
+At this time, we think that Results are still the best fit name for this project
+(though suggestions welcome!). Alternatives considered:
+
+- Outcome API : Likely our best candidate if we think result should reserved for
+  Task outputs. Doesn't quite capture that results maybe updated throughout the
+  lifecycle of an event (i.e. outcome feels inherently post-execution), and IMO
+  overall doesn't feel as natural as result.
+- Result History API : Similar issue to outcome in that it doesn't capture that
+  results may change over time, but might be enough of a distinction to separate
+  the project from Task output results.
+- Event API : While event is general enough to fill a similar role, this takes
+  away our usage of event as a field of the current Result resource, which then
+  leaves us with a different naming problem.
 
 ## Infrastructure Needed (optional)
 
@@ -720,9 +755,13 @@ stored in `extensions`.
 
 ### Automatic Completed Resource Cleanup
 
-Once results have been stored durably, this gives us the flexibilty to clean up
-completed TaskRuns to minimize the number of objects we store in etcd. This is a
-common problem that has come up for users (e.g.
+Once results have been stored durably, this gives us the flexibility to clean up
+completed resources to minimize the number of objects we store in etcd. This
+would likely be a feature of the Results controller - e.g. once my TaskRun has
+been uploaded to the Results API, automatically delete the TaskRun on the
+cluster to free up resources.
+
+This is a common problem that has come up for users (e.g.
 https://github.com/tektoncd/plumbing/issues/439,
 https://github.com/tektoncd/pipeline/issues/1302). While we do want to address
 this in the future, we are considering this out of scope for this TEP.

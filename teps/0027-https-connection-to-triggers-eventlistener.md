@@ -3,8 +3,8 @@ title: HTTPS Connection to Triggers EventListener
 authors:
   - "@savitaashture"
 creation-date: 2020-10-19
-last-updated: 2020-10-19
-status: proposed
+last-updated: 2020-11-01
+status: implementable
 ---
 
 # TEP-0027: HTTPS Connection To Triggers EventListener
@@ -18,6 +18,7 @@ status: proposed
   - [User Stories](#user-stories)
   - [Usage examples](#usage-examples)
 - [Design Details](#design-details)  
+- [Implementation Details](#implementation-details)  
 - [Upgrade &amp; Migration Strategy](#upgrade--migration-strategy)
 - [References](#references)
 <!-- /toc -->
@@ -79,53 +80,49 @@ spec:
         template:
           spec:
             serviceAccountName: tekton-triggers-github-sa
-            volumes:
-              - name: https-connection
-                secret:
-                  secretName: ssh-key-secret
             containers:
-            - volumeMounts:
-                - name: https-connection
-                  mountPath: "/etc/triggers/ssl/"
-                  readOnly: true
-              env:
-              - name: SSL_CERT_FILE
-                value: "/etc/triggers/ssl/tls.crt"
-              - name: SSL_KEY_FILE
-                value: "/etc/triggers/ssl/tls.key"
+            - env:
+              - name: TLS_SECRET_NAME
+                value: "tls-key-secret"
+              - name: TLS_CERT_NAME
+                value: "tls.crt"
+              - name: TLS_KEY_NAME
+                value: "tls.key"
 ```
 
 ## Design Details
 
 The main goal of this TEP is to make triggers flexible enough to configure both `HTTPS` and `HTTP` connections with simple configuration changes to EventListener.
 
-With the help of `podtemplate` as part of `kubernetesResource` user mount their certificates using volumes
+With the help of `podtemplate` as part of `kubernetesResource` user specify following env
+* secret name(where certificates are stored) with env key as **TLS_SECRET_NAME**
+* cert file name with env key as **TLS_CERT_NAME**
+* key file name with env key as **TLS_KEY_NAME**
 
 ex:
 ```yaml
-volumes:
-  - name: https-connection
-    secret:
-      secretName: ssh-key-secret
-containers:
-- volumeMounts:
-    - name: https-connection
-      mountPath: "/etc/triggers/ssl/"
-      readOnly: true
-```
-and provide location of mounted certs using Env.
-```yaml
 env:
-- name: SSL_CERT_FILE
-  value: "/etc/triggers/ssl/tls.crt"
-- name: SSL_KEY_FILE
-  value: "/etc/triggers/ssl/tls.key"
+- name: TLS_SECRET_NAME
+  value: "tls-key-secret"
+- name: TLS_CERT_NAME
+  value: "tls-cert.pem"
+- name: TLS_KEY_NAME
+  value: "tls-key.pem"
 ```
-There are 2 env var reserved for `HTTPS` connection to read `key` and `cert`
-1. **SSL_CERT_FILE**: specify the location of mounted cert file.
-2. **SSL_KEY_FILE**: specify the location of mounted key file.
+Where
 
-**Note:** Triggers is not responsible for creating and managing certificates.
+1. `TLS_SECRET_NAME` env is mandatory to achieve `HTTPS` connection.
+1. `TLS_CERT_NAME` and `TLS_KEY_NAME` envs are optional, if not provided default file name used for those env are `tls.crt` and `tls.key` respectively.
+
+**Note:** 
+* Trigger use `/etc/triggers/tls` as mounting location and this path is not configurable by the user.
+* Triggers is not responsible for creating and managing certificates.
+
+## Implementation Details
+At high level below are few implementation details
+* EventListener reconciler checks for env key `TLS_SECRET_NAME` where user specify created secret name which contains certificates.
+* Triggers eventlistener reconciler is responsible to mount provided secret inside container filesystem at particular location called `/etc/triggers/tls`(which is constant) using `Volume` and `VolumeMount`.
+* EvenListener reconciler get cert and key name info from `TLS_CERT_NAME` and `TLS_KEY_NAME` env respectively, if not provided trigger use `tls.cert` and `tls.key` as default file names.
 
 ## Alternatives
 * Using thirdparty solutions like service mesh.

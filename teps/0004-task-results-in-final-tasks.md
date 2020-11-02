@@ -1,5 +1,5 @@
 ---
-title: task-results-in-final-tasks
+title: Task Results in Final Tasks
 authors:
   - "@pritidesai"
   - "@bobcatfish"

@@ -1,5 +1,5 @@
 ---
-title: https-connection-to-triggers-eventlistener
+title: HTTPS Connection to Triggers EventListener
 authors:
   - "@savitaashture"
 creation-date: 2020-10-19

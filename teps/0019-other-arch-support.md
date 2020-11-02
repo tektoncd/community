@@ -1,5 +1,5 @@
 ---
-title: other-arch-support
+title: Other Arch Support
 authors:
   - "@barthy1"
 creation-date: 2020-09-18

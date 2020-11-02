@@ -1,6 +1,6 @@
-# IDEs
+# IDE files
 .idea/
 .vscode/
 
-# Python
-hack/__pycache__/
+# Python files
+**/__pycache__/

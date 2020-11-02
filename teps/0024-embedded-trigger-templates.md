@@ -1,5 +1,5 @@
 ---
-title: embedded-trigger-templates
+title: Embedded TriggerTemplates
 authors:
   - "@dibyom"
 creation-date: 2020-10-01

@@ -1,5 +1,5 @@
 ---
-title: s390x-support
+title: s390x Support
 authors:
   - "@barthy1"
 creation-date: 2020-09-21

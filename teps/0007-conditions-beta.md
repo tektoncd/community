@@ -3,7 +3,7 @@ title: tep-0007
 authors:
   - "@jerop"
 creation-date: 2020-07-22
-last-updated: 2020-08-05
+last-updated: 2020-11-02
 status: implementable
 ---
 
@@ -295,20 +295,20 @@ We can explore adding more [Operators](https://github.com/kubernetes/kubernetes/
 
 ### Skipping
 
-As it is currently in `Conditions`, when a `Guard` evaluates to `False`, the `Task` and its dependent `Tasks` will be skipped by default while the rest of the `Pipeline` will execute. However, when the `Guard` is specified to operate on a missing resource (such as `Param` or `Result`), the Pipeline will exit with a failure.
-
-To provide more flexibility when a `Guard` evaluates to `False`, we propose adding a field - `continueAfterSkip` - that:
-- is used to specify whether execute the `Tasks` that are ordering-dependent on the skipped guarded `Task`
-- defaults to `false`/`no` and users can set it to `true`/`yes` (case insensitive) to allow for execution of the rest of the branch
-- is only supported in guarded `Tasks`; there will be a validation error if `continueAfterSkip` is specified in unguarded `Tasks`
+As it is currently in `Conditions`, when `WhenExpressions` evaluate to `False`, the `Task` and its branch (of dependent `Tasks`) will be skipped by default while the rest of the `Pipeline` will execute.
 
 A `Task` branch is made up of dependent `Tasks`, where there are two types of dependencies:
-- _Resource dependency_: based on resources needed from parent `Task`, which includes Workspaces, `Results` and Resources.
-- _Ordering dependency_: based on runAfter which provides sequencing of `Tasks` when there may not be resource dependencies.
+- _Resource dependency_: based on resources needed from parent `Task`, which includes `Results` and `Resources`.
+- _Ordering dependency_: based on `runAfter` which provides sequencing of `Tasks` when there may not be resource dependencies.
 
-Setting `continueAfterSkip` on a guarded `Task` with ordering dependencies is valid and the subsequent `Tasks` should execute. However, setting `continueAfterSkip` on a guarded `Task` with resource dependencies is invalid because those dependent `Tasks` will have resource validation errors and fail the whole `Pipeline`. We will add validation to confirm the dependencies allow for passing in the `continueAfterSkip` field.
+To provide more flexibility when `WhenExpressions` evaluate to `False`, we propose adding a field - `whenSkipped` - that:
+- is used to specify whether to execute `Tasks` that are ordering-dependent on the skipped guarded `Task`
+- defaults to `skipBranch` and users can set it to `runBranch` to allow execution of the rest of the branch
+- can be specified in `Tasks` guarded with `WhenExpressions` only; there will be a validation error if `whenSkipped` is specified in `Tasks` without `WhenExpressions`
+- can take the values `skipBranch` or `runBranch` only; there will be a validation error if anything else is passed to `whenSkipped`
+- can be specified guarded `Tasks` with ordering dependencies only; there will be a validation error if `whenSkipped` is specified in `Tasks` with resource dependencies
 
-Here's how a user can use `continueAfterSkip` to execute ordering-dependent tasks:
+Here's how a user can use `whenSkipped` to execute ordering-dependent tasks:
 
 ```yaml
 api: tekton.dev/v1beta1
@@ -339,7 +339,7 @@ spec:
         - input: '$(tasks.file-exists.results.exists)'
           operator: In
           values: ['false']
-      continueAfterSkip: 'true'
+      whenSkipped: runBranch
       taskRef:
         name: echo-file-exists
     - name: echo-hello # executed
@@ -565,7 +565,7 @@ The `When Expressions` providing `In` and `NotIn` `Operators` may not cover some
 ## Test Plan
 
 - Provide unit tests and e2e tests for `When Expressions` with varied `Inputs` and `Values`.
-- Provide unit tests and e2e tests for `continueAfterSkips` with varied `Task` branches.
+- Provide unit tests and e2e tests for `whenSkipped` with varied `Task` branches.
 
 ## Alternatives
 

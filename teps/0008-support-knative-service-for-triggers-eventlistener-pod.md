@@ -1,5 +1,5 @@
 ---
-title: support-knative-service-for-triggers-eventlistener-pod
+title: Support Knative Service for Triggers EventListener Pod
 authors:
   - "@savitaashture"
   - "@vdemeester"

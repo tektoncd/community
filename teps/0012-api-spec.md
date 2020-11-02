@@ -1,5 +1,5 @@
 ---
-title: api-spepc
+title: API Specification
 authors:
   - "@imjasonh"
 creation-date: 2020-08-10
@@ -7,7 +7,7 @@ last-updated: 2020-08-10
 status: implementable
 ---
 
-# TEP-0008: Tekton Pipelines API Spec
+# TEP-0012: Tekton Pipelines API Spec
 
 <!-- toc -->
 - [Summary](#summary)

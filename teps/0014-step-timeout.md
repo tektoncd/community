@@ -1,5 +1,5 @@
 ---
-title: step-timeout
+title: Step Timeout
 authors:
   - "@Peaorl"
 creation-date: 2020-09-10

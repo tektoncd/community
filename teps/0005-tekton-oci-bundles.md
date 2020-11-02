@@ -1,5 +1,5 @@
 ---
-title: tekton-oci-bundles
+title: Tekton OCI Bundles
 authors:
   - "@vdemeest"
   - "@pierretasci"

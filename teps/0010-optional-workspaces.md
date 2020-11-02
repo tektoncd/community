@@ -1,5 +1,5 @@
 ---
-title: TEP-0010-Optional-Workspaces
+title: Optional Workspaces
 authors:
   - "@sbwsg"
 creation-date: 2020-08-03

@@ -7,7 +7,7 @@ last-updated: 2020-06-11
 status: implemented
 ---
 
-# Tekton Enhancement Proposal Process
+# TEP-0001: Tekton Enhancement Proposal Process
 
 ## Table of Contents
 

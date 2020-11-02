@@ -1,5 +1,5 @@
 ---
-title: tekton-catalog-organization
+title: Tekton Catalog Organization
 authors:
   - "@vdemeester"
   - "@sthaha"

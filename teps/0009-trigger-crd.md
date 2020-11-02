@@ -1,5 +1,5 @@
 ---
-title: trigger-crd
+title: Trigger CRD
 authors:
   - "@kbaig"
 creation-date: 2020-07-14

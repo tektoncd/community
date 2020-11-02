@@ -1,5 +1,5 @@
 ---
-title: TEP-0025-Hermetic-Builds
+title: Hermetic Builds
 authors:
   - "@dlorenc"
 creation-date: 2020-09-11

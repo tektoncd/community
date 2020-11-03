@@ -5,16 +5,21 @@ The purpose of this doc is to:
 * Outline for contributors what we expect to see in a pull request
 * Establish a baseline for reviewers so they know at a minimum what to look for
 
+Design: Most designs should be first proposed via an issue and possibly a
+[TEP](https://github.com/tektoncd/community/tree/master/teps#tekton-enhancement-proposals-teps).
+API changes should be evaluated according to
+[Tekton Design Principles](https://github.com/tektoncd/community/blob/master/design-principles.md).
+
 Each Pull Request is expected to meet the following expectations around:
 
 * [Pull Request Description](#pull-request-description)
 * [Commits](#commits)
 * [Docs](#docs)
-* [Tests](#tests)
-* [API Design](#api-design)
 * [Functionality](#functionality)
 * [Content](#content)
 * [Code](#code)
+  * [Tests](#tests)
+  * [Reconciler/Controller Changes](#reconcilercontroller-changes)
 
 _See also [the Tekton review process](https://github.com/tektoncd/community/blob/master/process.md#reviews)._
 
@@ -24,9 +29,10 @@ _See also [the Tekton review process](https://github.com/tektoncd/community/blob
   * If there is no issue, consider whether there should be one:
     * New functionality must be designed and approved, may require a TEP
     * Bugs should be reported in detail
-  * Release notes filled in for user visible changes (bugs + features),
-    or removed if not applicable (refactoring, updating tests)
   * If the template contains a checklist, it should be checked off
+  * Release notes filled in for user visible changes (bugs + features),
+    or removed if not applicable (refactoring, updating tests) (may be enforced
+    via the [release-note Prow plugin](https://github.com/tektoncd/plumbing/blob/master/prow/plugins.yaml))
 
 ## Commits
 
@@ -55,14 +61,52 @@ _See also [the Tekton review process](https://github.com/tektoncd/community/blob
 * Follow [content](https://github.com/tektoncd/website/blob/master/content/en/doc-con-content.md)
   and [formatting](https://github.com/tektoncd/website/blob/master/content/en/doc-con-formatting.md) guidelines
 * Should explain thoroughly how the new feature works
+* If possible, in addition to code snippets, include a reference to an end to end example
+* Ensure that all links and references are valid
 
-## Tests
+## Functionality
 
-* New features (and often/whenever possible bug fixes) have one or both of:
+* It should be safe to cut a release at any time, i.e. merging this PR should not
+  put us into an unreleasable state
+    * When incrementally adding new features, this may mean that a release could contain
+      a partial feature, i.e. the type specification only but no functionality
+    * When introducting a partial feature, the documentation should include updates that
+      indicates clearly that this functionality is not expected to work and point the reader
+      toward how to follow progress (e.g. via an issue)
+
+## Content
+
+* Whenever logic is added that uses a container image that wasn’t used before, the image used should
+  be configurable on the command line so that distributors can build images that meet their
+  support and licensing requirements
+* Refactoring should be merged separately from bug fixes and features
+  * i.e. if you refactor as part of implementing something, commit it and merge it before merging the change
+* Prefer small pull requests; if you can think of a way to break up the pull request into multiple, do it
+
+## Code
+
+* Reviewers are expected to understand the changes well enough that they would feel confident
+  saying the understand what is changing and why:
+  * Read through all the code changes
+  * Read through linked issues and pull requests, including the discussions
+* Prefer small well factored packages with unit tests
+* Pass kubernetes and tekton client functions into functions that need them as params so
+  they can be easily mocked in unit tests
+* [Go Code Review comments](https://github.com/golang/go/wiki/CodeReviewComments)
+  * All public functions and attributes have docstrings
+  * Don’t panic
+  * Error strings are not capitalized
+  * Handle all errors ([gracefully](https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully))
+    * When returning errors, add more context with `fmt.Errorf` and `%v`
+  * Use meaningful package names (avoid util, helper, lib)
+  * Prefer short variable names
+
+### Tests
+
+* New features (and often/whenever possible bug fixes) have one or all of:
   * Examples (i.e. yaml tests)
   * End to end tests
-  * Reconciler tests
-* New types have:
+* When API changes are introduced (e.g. changes to  `_types.go` files) corresponding changes are made to:
   * Validation + validation tests
 * Unit tests:
   * Coverage should remain the same or increase
@@ -77,50 +121,14 @@ _See also [the Tekton review process](https://github.com/tektoncd/community/blob
   * Table driven tests: do not use the same test for success and fail cases if the logic is different
     (e.g. do not have two sets of test logic, gated with `wantErr`)
 
-## API Design
+### Reconciler/Controller changes
 
-* Avoid kubernetes specific feature in our APIs as much as possible
-* If we don’t definitely need the feature, don’t add it
-  * Must be backed up with [CI/CD specific use cases](https://github.com/tektoncd/community/blob/master/roadmap.md#mission-and-vision)
-* Prefer keeping the API simple:
-  * If you can avoid adding a new feature, don’t add it
-  * Prefer reusing existing features to adding new ones
+For projects that have [CRD controllers](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#custom-controllers)
+(also known as "reconcilers"):
 
-## Functionality
-
-* It should be safe to cut a release at any time, i.e. merging this PR should not
-  put us into an unreleasable state
-    * When incrementally adding new features, this may mean that a release could contain
-      a partial feature, i.e. the type specification only but no functionality
-
-## Content
-
-* Whenever logic is added that uses an image that wasn’t used before, the image used should
-  be configurable on the command line so that distributors can build images that meet their
-  support and licensing requirements
-* Refactoring should be merged separately from bug fixes and features
-  * i.e. if you refactor as part of implementing something, commit it and merge it before merging the change
-* Prefer small pull requests; if you can think of a way to break up the pull request into multiple, do it
-
-## Code
-* Reviewers are expected to understand the changes well enough that they would feel confident
-  saying the understand what is changing and why:
-  * Read through all the code changes
-  * Read through linked issues and pull requests, including the discussions
-* Reconciler changes:
-  * Avoid adding functions to the reconciler struct
-  * Avoid adding functions to the reconciler package
-  * Return an error if you want the change to be re-queued, otherwise do not
-    (better yet, use [permanent errors](https://github.com/tektoncd/pipeline/issues/2474))
-* Prefer small well factored packages with unit tests
-* Pass kubernetes and tekton client functions into functions that need them as params so
-  they can be easily mocked in unit tests
-* [Go Code Review comments](https://github.com/golang/go/wiki/CodeReviewComments)
-  * All public functions and attributes have docstrings
-  * Don’t panic
-  * Error strings are not capitalized
-  * Handle all errors ([gracefully](https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully))
-    * When returning errors, add more context with `fmt.Errorf` and `%v`
-  * Use meaningful package names (avoid util, helper, lib)
-  * Prefer short variable names
-
+* Avoid adding functions to the reconciler struct
+* Avoid adding functions to the reconciler package
+* [Return an error if you want the change to be re-queued](https://github.com/knative/pkg/blob/master/injection/README.md#generated-reconciler-responsibilities),
+  otherwise [return an permanent error](https://github.com/knative/pkg/blob/5358179e7499b1a3a4581d9d3673f391240ec86d/controller/controller.go#L516-L521)
+* Be sparing with the number of "reconciler" level tests as these are a kind of integration test
+  (they pull in all components in the reconciler) and tend to be slow (on the order of seconds)

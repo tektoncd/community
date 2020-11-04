@@ -20,7 +20,7 @@ member of the Tekton GitHub organization in order to have tests run against your
 pull requests without requiring [`ok-to-test`](process.md#prow-commands) and to be
 able to [`lgtm`](process.md#prow-commands) pull requests.
 
-To be eligible to become a member of the org you must (not that this is at the
+To be eligible to become a member of the org you must (note that this is at the
 discretion of [the governing board members](governance.md)) do both of:
 
 * Opened 5 pull requests against projects in tektoncd

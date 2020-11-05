@@ -26,11 +26,24 @@ GITHUB_EVENTS_API = "https://api.github.com/users/{}/events"
 
 
 def read_users(filename: str) -> List[str]:
+    """
+    Read a list of users from file.
+
+    Args:
+        filename: (str): write your description
+    """
   with open(filename) as f:
     return [x.strip() for x in f.readlines()]
 
 
 def query_github(users: List[str], token: str) -> Dict[str, Dict]:
+    """
+    Perform github query on github
+
+    Args:
+        users: (str): write your description
+        token: (str): write your description
+    """
   results = {}
   for user in users:
     print("Getting events for {}".format(user))
@@ -46,6 +59,12 @@ def query_github(users: List[str], token: str) -> Dict[str, Dict]:
 
 
 def extract_emails(results: Dict[str, Dict]) -> Dict[str, List[str]]:
+    """
+    Extract emails from the emails dictionary.
+
+    Args:
+        results: (dict): write your description
+    """
   emails = {}
   for user, result in results.items():
     emails[user] = set()
@@ -61,6 +80,13 @@ def extract_emails(results: Dict[str, Dict]) -> Dict[str, List[str]]:
 
 
 def make_csv(csvfile: str, emails: Dict[str, List[str]]) -> None:
+    """
+    Make csv file
+
+    Args:
+        csvfile: (str): write your description
+        emails: (dict): write your description
+    """
   with open(csvfile, 'w') as f:
     w = csv.writer(f, delimiter=',')
     for user, emails in emails.items():

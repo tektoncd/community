@@ -282,6 +282,12 @@ bump is necessary (taken Task as example) :
 
 * New image(s) is(/are) used for the Task
 
+  * For images that we own we should only bump the version if the new version breaks CI or if release notes include changes on the Tekton image
+
+  * For images that we do not own: it should be the responsibility of the author of the task to verify if changing an image version requires a new Task version
+
+  * When the image for a step is specified via an input params, we should treat changes to the default value of that param in the same way as changes to a step image
+
 * New fields are added to the Task (new parameters, new results, new
   workspace, new input, new output, …)
 

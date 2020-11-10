@@ -53,10 +53,10 @@ def tep_from_file(tep_filename):
     # Only use files that use the TEPs filename format
     # that matches NNNN-some-name.md
     filename = os.path.basename(tep_filename)
-    tep_num_match = RE_TEP_NUMBER_FILENAME.match(filename)
-    if not tep_num_match:
-        tep_nonnum_match = RE_TEP_NONUMBER_FILENAME.match(filename)
-        if not tep_nonnum_match:
+    tep_match = RE_TEP_NUMBER_FILENAME.match(filename)
+    if not tep_match:
+        tep_match = RE_TEP_NONUMBER_FILENAME.match(filename)
+        if not tep_match:
             return None
 
     # Start with the TEP link
@@ -64,7 +64,7 @@ def tep_from_file(tep_filename):
 
     # Try to get a TEP number from the files name
     # and fallback to none otherwise
-    tep_file_number = tep_num_match.groups()[0]
+    tep_file_number = tep_match.groups()[0]
     try:
         int(tep_file_number)
         tep_file_number = 'TEP-' + tep_file_number

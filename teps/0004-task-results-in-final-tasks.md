@@ -4,7 +4,7 @@ authors:
   - "@pritidesai"
   - "@bobcatfish"
 creation-date: 2020-07-16
-last-updated: 2020-07-16
+last-updated: 2020-11-10
 status: implementable
 ---
 
@@ -70,11 +70,9 @@ This proposal is also not enabling final `Tasks` to produce `Task` `Results`.
 ## Proposal
 
 Allow a finally `Task` to get a value from a non-finally `Task` via a `Task` `Result`.
-If the `Task` producing the value fails, the finally `Task` that requires that value will be marked as failed.
-That final `Task` will be `attempted` i.e. evaluated by the `Pipeline Controller` for execution,
-but the validation will fail before the `TaskRun` is created since the required `Result` is not available.
-However if the `Task` being attempted has a default value for that parameter, it can still run,
-using the default when result is not available.
+If the `Task` producing the value fails, the finally `Task` that requires that value will be included in the list of
+`pipelineStatus.skippedTasks`. That final `Task` will be `attempted` i.e. evaluated by the `Pipeline Controller` for
+execution, but the validation will fail before the `TaskRun` is created since the required `Result` is not available.
 
 ### User Stories
 
@@ -108,7 +106,7 @@ spec:
           value: $(tasks.boskos-acquire.results.leased-resource)
 ```
 
-No need to specify explicit runAfter here, `Tekton` infers the execution order by setting `boskos-acquire`
+No need to specify explicit `runAfter` here, `Tekton` infers the execution order by setting `boskos-acquire`
 as a dependency so that the task emitting the referenced results executes before the task that consumes them.
 
 Similar to non-final tasks, final task use `Results` through variable substitution:
@@ -139,12 +137,13 @@ With adding support for `Task` `Results` in finally `Tasks`, we are introducing 
 `Tasks` but that does not change scheduling of finally tasks. All final tasks will still be executed in parallel after
 all non-final tasks are done.
 
-**Q. What happens to `Pipeline` when the dependent task `boskos-acquire` either failed or not executed and
+**Q. What happens to `Pipeline` when the dependent task `boskos-acquire` either failed or not executed, and
 the task result `leased-resource` is not initialized?**
 
-**A.** The finally `Task` `boskos-release` is attempted but declared failure since the task result
-`leased-resource` is not initialized. Pipeline controller logs the reason of this failure as invalid result
-reference `InvalidTaskResultReference`. `Pipeline` continues executing rest of the final tasks and exits with failure.
+**A.** The finally `Task` `boskos-release` is attempted and included in the list of `skippedTasks` since the task result
+`leased-resource` is not initialized. Pipeline controller logs this validation failure including param name
+`leased-resource` of the finally task `boskos-release` with the result reference `leased-resource` and result producing
+task `boskos-acquire`. `Pipeline` continues executing rest of the final tasks and exits with `completion`.
 
 **Q. What happens when the dependent `Task` succeeds but the `Task` `Result` is empty?**
 
@@ -181,7 +180,7 @@ substitution. The error handling of such empty `Task` `Result` is left to the fi
               | Validate Task Results of Dependencies (non-final Tasks) |
               |       Apply Task Results to final Task Params           |
                ---------------------------------------------------------
-                                      | (if the validation fails, mark that final task as failure
+                                      | (if the validation fails, add that final task in the list of skippedTasks
                                       V  but continue executing rest of the final tasks)
                     ------------------------------------
                    | Execute the Task and Create TaskRun |
@@ -250,8 +249,12 @@ parameters associated with `Task` `Results`, the default values will be used fro
 
 * One could argue that this proposal breaks the finally contract, no longer means "finally tasks always run",
 it now means "finally tasks always run unless they depend on something and that fails". But `PipelineRun`
-does attempt such finally task which we explicitly fail with the validation failure so it is considered
+does attempt such finally task which we explicitly skip with the validation failure so it is considered
 `ran` by the `PipelineRun` Controller.
+
+* When a providing task fails, the finally task referring to that task result is evaluated but not executed with this
+proposal. If you still want to continue executing without any result, or a default value, refer to additional
+[proposal](https://github.com/tektoncd/community/pull/240) on how to specify defauls for task results.
 
 ## Alternatives
 
@@ -306,3 +309,5 @@ validation failure if proj-name is not initialized.
 
 * https://github.com/tektoncd/pipeline/issues/2557
 * [Design Doc](https://docs.google.com/document/d/10iEJqVstY6k3KNvAXgffIJLcHRbPQ-GIAfQk5Dlrf3c/edit)
+* [Design Doc 2](https://docs.google.com/document/d/1tV1LgPOINnmlDV-oSNdLB39IlLcQRGaYAxYZjVwVWcs/edit#)
+* https://github.com/tektoncd/pipeline/pull/3242

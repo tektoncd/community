@@ -36,6 +36,7 @@ from ruamel.yaml import YAML
 
 
 ORG_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'org.yaml')
+GOVERNANCE_TEAM = ['abayer', 'afrittoli', 'bobcatfish', 'ImJasonH', 'vdemeester']
 
 def get_contributors_maintainers(github_token):
     g = github.Github(github_token)
@@ -50,7 +51,7 @@ def get_contributors_maintainers(github_token):
 
     # Get stats/contributors for each repo with 5+ commits
     contributors = {}
-    maintainers = {}
+    maintainers = set()
     for repo in repos:
         logging.info(f'Searching contributors to {repo.name}')
         # Get the list of contributors that have 5+ commits and are members
@@ -63,16 +64,15 @@ def get_contributors_maintainers(github_token):
         _maintainers = [x for x in repo.get_teams()
             if x.name.endswith('.maintainers')]
         if len(_maintainers) > 0:
-            maintainers[repo.name] = set([x.login for x in _maintainers[0].get_members()])
+            maintainers.update([x.login for x in _maintainers[0].get_members()])
 
     # Any maintainer on any repo is allowed to lgtm on community (for TEPs)
-    for repo in repos:
-        contributors['community'] |= maintainers.get(repo.name, set())
+    contributors['community'] = maintainers
 
-    return contributors, maintainers
+    return contributors
 
 
-def update_collaborator_teams(contributors, maintainers):
+def update_collaborator_teams(contributors):
     yaml = YAML()
 
     # Load the YAML config
@@ -84,10 +84,14 @@ def update_collaborator_teams(contributors, maintainers):
     for repo, collaborators in contributors.items():
         repo_name = repo if repo != 'pipeline' else 'core'
         team_name = f'{repo_name}.collaborators'
+        # The least maintainers does not matter too much, because we're
+        # maintaining the configuration via periobolos and not via GitHub
+        # Setting the governance team as default as a backup.
+        maintainers = [m for m in GOVERNANCE_TEAM if m not in collaborators] or ['bobcatfish']
         team = dict(
             description=f'The {repo_name} collaborators',
-            maintainers=list(maintainers.get(repo, ['bobcatfish'])),
-            members = list(collaborators) or ['bobcatfish'],
+            maintainers=maintainers,
+            members = [c for c in collaborators if c not in maintainers],
             privacy = 'closed',
             repos = {repo: 'read'}
         )
@@ -104,5 +108,5 @@ if __name__ == '__main__':
     if not github_token:
         logging.error('GITHUB_TOKEN must be set')
         sys.exit(1)
-    contributors, maintainers = get_contributors_maintainers(github_token)
-    update_collaborator_teams(contributors, maintainers)
+    contributors = get_contributors_maintainers(github_token)
+    update_collaborator_teams(contributors)

@@ -102,15 +102,19 @@ This is the complete list of Tekton teps:
 |[TEP-0004](0004-task-results-in-final-tasks.md) | Task Results in Final Tasks | implementable | 2020-07-16 |
 |[TEP-0005](0005-tekton-oci-bundles.md) | Tekton OCI Bundles | implementable | 2020-08-13 |
 |[TEP-0006](0006-tekton-metrics.md) | Tekton Metrics | proposed | 2020-07-13 |
-|[TEP-0007](0007-conditions-beta.md) | Conditions Beta | implementable | 2020-08-05 |
+|[TEP-0007](0007-conditions-beta.md) | Conditions Beta | implementable | 2020-11-02 |
 |[TEP-0008](0008-support-knative-service-for-triggers-eventlistener-pod.md) | Support Knative Service for Triggers EventListener Pod | implementable | 2020-08-25 |
 |[TEP-0009](0009-trigger-crd.md) | Trigger CRD | implementable | 2020-09-08 |
 |[TEP-0010](0010-optional-workspaces.md) | Optional Workspaces | implemented | 2020-10-15 |
+|[TEP-0011](0011-redirecting-step-output-streams.md) | redirecting-step-output-streams | implementable | 2020-11-02 |
 |[TEP-0012](0012-api-spec.md) | API Specification | implementable | 2020-08-10 |
 |[TEP-0014](0014-step-timeout.md) | Step Timeout | implementable | 2020-09-10 |
 |[TEP-0016](0016-concise-trigger-bindings.md) | Concise Embedded TriggerBindings | implementable | 2020-09-15 |
 |[TEP-0019](0019-other-arch-support.md) | Other Arch Support | proposed | 2020-09-30 |
 |[TEP-0020](0020-s390x-support.md) | s390x Support | proposed | 2020-09-21 |
+|[TEP-0022](0022-trigger-immutable-input.md) | Triggers - Immutable Input Events | proposed | 2020-09-29 |
 |[TEP-0024](0024-embedded-trigger-templates.md) | Embedded TriggerTemplates | implementable | 2020-10-01 |
-|[TEP-0025](0025-hermekton.md) | Hermetic Builds | proposed | 2020-09-11 |
+|[TEP-0025](0025-hermekton.md) | Hermetic Builds | implementable | 2020-09-11 |
+|[TEP-0027](0028-task-execution-status-at-runtime.md) | task-exec-status-at-runtime | implementable | 2020-11-02 |
 |[TEP-0027](0027-https-connection-to-triggers-eventlistener.md) | HTTPS Connection to Triggers EventListener | proposed | 2020-10-19 |
+|[TEP-NNNN](XXXX-step-workspaces.md) | step-and-sidecar-workspaces | proposed | 2020-10-02 |

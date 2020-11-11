@@ -10,7 +10,7 @@ orgs:
     - afrittoli
     billing_email: info@cd.foundation
     company: ''
-    default_repository_permission: read
+    default_repository_permission: none
     description: ''
     email: ''
     has_organization_projects: true

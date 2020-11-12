@@ -65,6 +65,7 @@ tags, and then generate with `hack/update-toc.sh`.
 -->
 
 <!-- toc -->
+
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [etcd](#etcd)
@@ -107,7 +108,7 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Trigger Events](#trigger-events)
   - [Automatic Completed Resource Cleanup](#automatic-completed-resource-cleanup)
 - [Special Thanks](#special-thanks)
-<!-- /toc -->
+  <!-- /toc -->
 
 ## Summary
 
@@ -239,6 +240,10 @@ List the requirements for this TEP.
   implementations to upload Results with additional service specific metadata or
   implementation specific validation / field formats, so long as it conforms to
   the Results API.
+- Result API implementations should be able to make choices to customize
+  behavior, so long as they conform to the API spec. This can include (but is
+  not limited to) custom filter specs, enhanced validation for custom types, and
+  custom authentication/authorization.
 
 ## Proposal
 
@@ -254,9 +259,9 @@ nitty-gritty.
 
 Tekton should document a versioned gRPC API (with
 [JSON/HTTP bindings](https://cloud.google.com/endpoints/docs/grpc/transcoding))
-to ingest execution and triggering details sent from a Tekton Pipelines
-controller and Triggering Event Listeners, and to serve a query API to end
-users.
+(see [REST/Open API](#restopen-api) for more discussion on gRPC vs REST) to
+ingest execution and triggering details sent from a Tekton Pipelines controller
+and Triggering Event Listeners, and to serve a query API to end users.
 
 The query API should accept filters expressed in some query language. The choice
 of that specific query language (K8s field selectors? CEL? GraphQL? Something
@@ -375,9 +380,9 @@ Users typically don't make large distinction between PipelineRuns or multiple
 TaskRuns that ran as part of a PipelineRun. Generally when looking at a
 dashboard, the most relevant information is what execution events happened.
 Results are intended to be this abstraction over execution types (i.e.
-PipelineRun, TaskRun) so that we can group this data for users and provide a
-mechanism to include additional metadata that does not fit neatly into TaskRuns
-or PipelineRuns.
+PipelineRun, TaskRun) to store this data together to provide a logical grouping
+mechanism as well as a place to include additional metadata that does not fit
+neatly into the execution types.
 
 ### Performance (optional)
 
@@ -395,10 +400,10 @@ Our goal is to make results have minimal impact on core Pipeline execution. By
 running a separate controller, while this does add some more overhead (i.e. at
 minimum we would need to run another pod per cluster to watch TaskRuns and
 update results), this enables users to have optional installations of result
-uploading. Since these results are intended for long term storage, our expectation
-is that results will be eventually consistent with the Pipeline data plane. For
-users that require the most up to date state of a Task/PipelineRun, the Pipeline
-API will remain to serve those users.
+uploading. Since these results are intended for long term storage, our
+expectation is that results will be eventually consistent with the Pipeline data
+plane. For users that require the most up to date state of a Task/PipelineRun,
+the Pipeline API will remain to serve those users.
 
 ## Design Details
 
@@ -555,9 +560,9 @@ results: {
       value: "aHVudGVyMg=="
     }
   }
-  extensions: {
-    key: "notifications"
-    value: {
+  event: {
+    name: "namespace/default/results/sample-tekton-result/events/cloudevent"
+    data: {
       type_url: "tekton.notifications.v1.Notification"
       value: "{type: \"cloudevent\", url: "https://example.com", status: 200}"
     }

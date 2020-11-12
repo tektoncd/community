@@ -18,5 +18,6 @@ COPY requirements.txt .
 
 RUN pip3 install --no-cache -r requirements.txt
 COPY ./teps.py .
+COPY ./tep-template.md.mustache .
 
 CMD [ "python3", "./teps.py" ]

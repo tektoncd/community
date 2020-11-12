@@ -7,6 +7,8 @@ last-updated: 2020-09-29
 status: proposed
 ---
 
+# TEP-0022: Triggers - Immutable Input Event
+
 <!--
 **Note:** When your TEP is complete, all of these comment blocks should be removed.
 
@@ -45,8 +47,6 @@ The canonical place for the latest set of instructions (and the likely source
 of this file) is [here](/teps/NNNN-TEP-template/README.md).
 
 -->
-
-# TEP-00021: Triggers - Immutable Input Event
 
 <!--
 This is the title of your TEP.  Keep it short, simple, and descriptive.  A good

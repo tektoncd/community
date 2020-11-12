@@ -78,6 +78,7 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Performance (optional)](#performance-optional)
 - [Design Details](#design-details)
 - [Test Plan](#test-plan)
+- [Design Evaluation](#design-evaluation)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
@@ -238,7 +239,7 @@ All code is expected to have adequate tests (eventually with coverage
 expectations).
 -->
 
-# Design Evaluation
+## Design Evaluation
 <!--
 How does this proposal affect the reusability, simplicity, flexibility 
 and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/master/design-principles.md)

@@ -42,6 +42,8 @@ tags, and then generate with `hack/update-toc.sh`.
     - [CelRun Custom Task](#celrun-custom-task)
     - [Expression Language Interceptor](#expression-language-interceptor)
   - [Skipping](#skipping-2)
+    - [whenSkipped](#whenskipped)
+    - [continueAfterSkip](#continueafterskip)
     - [Dependency Type](#dependency-type)
     - [Guard Location](#guard-location)
     - [Special runAfter](#special-runafter)
@@ -297,56 +299,88 @@ We can explore adding more [Operators](https://github.com/kubernetes/kubernetes/
 
 As it is currently in `Conditions`, when `WhenExpressions` evaluate to `False`, the `Task` and its branch (of dependent `Tasks`) will be skipped by default while the rest of the `Pipeline` will execute.
 
-A `Task` branch is made up of dependent `Tasks`, where there are two types of dependencies:
-- _Resource dependency_: based on resources needed from parent `Task`, which includes `Results` and `Resources`.
-- _Ordering dependency_: based on `runAfter` which provides sequencing of `Tasks` when there may not be resource dependencies.
+Tekton `Pipelines` are structured as `Directed Acyclic Graphs` where:
+- a `Node` is a `Task` or `Run` (`Custom Task`) 
+- two `Nodes` are linked when there's a dependency between them, which can be:
+  - a _resource dependency_: based on resources needed by the child `Node` from the parent `Node`, such as `Results`
+  - an _ordering dependency_: based on `runAfter` which provides sequencing of `Nodes` when there may not be resource dependencies
+- a `Branch` is a `Node` and its dependent `Nodes`
 
-To provide more flexibility when `WhenExpressions` evaluate to `False`, we propose adding a field - `whenSkipped` - that:
-- is used to specify whether to execute `Tasks` that are ordering-dependent on the skipped guarded `Task`
-- defaults to `skipBranch` and users can set it to `runBranch` to allow execution of the rest of the branch
-- can be specified in `Tasks` guarded with `WhenExpressions` only; there will be a validation error if `whenSkipped` is specified in `Tasks` without `WhenExpressions`
-- can take the values `skipBranch` or `runBranch` only; there will be a validation error if anything else is passed to `whenSkipped`
-- can be specified guarded `Tasks` with ordering dependencies only; there will be a validation error if `whenSkipped` is specified in `Tasks` with resource dependencies
-
-Here's how a user can use `whenSkipped` to execute ordering-dependent tasks:
+We already support specifying a list of `WhenExpressions` through the `when` field, as described in [Efficiency](#efficiency), with the following syntax:
 
 ```yaml
-api: tekton.dev/v1beta1
-kind: Pipeline
-metadata:
-    name: generate-file
-spec:
-  workspaces:
-    - name: source-repo
-  params:
-    - name: path
-      default: 'README.md'
-  tasks:
-    - name: create-file # executed
-      taskRef:
-        name: create-readme-file
-      workspaces:
-        - name: source
-          workspace: source-repo
-    - name: file-exists # executed
-      taskRef:
-        name: file-exists
-      workspaces:
-        - name: source
-          workspace: source-repo
-    - name: echo-file-does-not-exist # skipped
-      when:
+when:
+  - input: 'foo'
+    operator: in
+    values: ['bar']
+```
+
+To provide more flexibility when `WhenExpressions` evaluate to `False`, we propose adding `expressions` and `scope` fields under the `when` field where:
+- The `expressions` field will contain the list of `WhenExpressions` as described in [Efficiency](#efficiency)
+- The `scope` fields will contain the scope of the `WhenExpressions`, that is whether the `WhenExpressions` guard the `Node` only or the whole `Branch`
+
+The syntax would be:
+
+```yaml
+when:
+  scope: Node/Branch
+  expressions:
+    - input: 'foo'
+      operator: in
+      values: ['bar']
+```
+
+The `scope` field is optional, defaults to `Branch` and can be set to `Branch` to specify that the `Node`'s `WhenExpressions` guard the execution of the `Branch` (the `Node` and its dependent `Nodes`). However, when `Node` has ordering dependencies only, users can set the `scope` field to `Node` to specify that the `Node`'s `WhenExpressions` guard the execution of the `Node` only, thus the all dependent nodes (which are ordering dependent tasks only) can be executed. 
+
+Note that the `scope` field:
+- can take the values `Branch` or `Node` only; there will be a validation error if anything else is passed to `scope`
+- can take the value `Node` in guarded `Nodes` with ordering dependencies only; there will be a validation error if `scope` is set to `Node` in `Nodes` with resource dependencies
+
+The latter syntax allows us to make it explicit that the skipping policy, as specified by `WhenScope`, is related to the `WhenExpressions`. We can support both the former and latter syntaxes initially then give users 9 months to migrate to the new syntax, per [the beta api policy](https://github.com/tektoncd/pipeline/blob/master/api_compatibility_policy.md). 
+
+Here's an example of how a user can use `scoped WhenExpressions` to execute ordering-dependent `Nodes` when the parent `Node` is skipped:
+
+```yaml
+tasks:
+  - name: echo-file-does-not-exist # skipped
+    when:
+      scope: Node
+      expressions:
         - input: '$(tasks.file-exists.results.exists)'
           operator: In
           values: ['false']
-      whenSkipped: runBranch
-      taskRef:
-        name: echo-file-exists
-    - name: echo-hello # executed
-      taskRef: echo-hello
-      runAfter:
+    taskRef:
+      name: echo-file-exists
+  - name: echo-hello # executed
+    runAfter:
       - echo-file-does-not-exist
+    taskRef: 
+      name: echo-hello
 ```
+
+Here's an abstract example to demonstrate different scenarios: 
+
+```
+            (c)
+           / 
+        (b) 
+       //  \
+    (a)     (d)
+      \
+       (e)
+         \\
+          (f) - (g)
+```
+Assuming all the nodes have guards (`WhenExpressions`), the double line is a _resource dependency_ and the single line is a _ordering dependency_:
+- the `WhenScope` in `a` and `e` can be `Branch` only
+- the `WhenScope` in `b`, `c`, `d`, `f` and `g` can be either `Node` or `Branch`
+
+And if the `WhenExpressions` in:
+- `a` evaluate to `False` and is skipped, all other nodes will be skipped as well
+- `b` evaluate to `False` and is skipped:
+  - if `WhenScope` is set to `Node`, `c` and `d` will be executed
+  - if `WhenScope` is not set or is set to `Branch`, `c` and `d` will be skipped as well
+- `e` evaluate to `False` and is skipped, `f` and `g` will be skipped as well
 
 ### Status
 
@@ -565,7 +599,7 @@ The `When Expressions` providing `In` and `NotIn` `Operators` may not cover some
 ## Test Plan
 
 - Provide unit tests and e2e tests for `When Expressions` with varied `Inputs` and `Values`.
-- Provide unit tests and e2e tests for `whenSkipped` with varied `Task` branches.
+- Provide unit tests and e2e tests for `When Scope` with varied `Task` branches.
 
 ## Alternatives
 
@@ -714,6 +748,26 @@ spec:
 To make it flexible, similarly to Triggers which uses language interceptors that's pluggable, we can provide a `CEL` interceptor out of the box and, if needed, users can add or bring their own interceptors to use other languages.
 
 ### Skipping
+
+#### whenSkipped
+
+To provide more flexibility when `WhenExpressions` evaluate to `False`, we could add a field - `whenSkipped` - that:
+- is used to specify whether to execute `Tasks` that are ordering-dependent on the skipped guarded `Task`
+- defaults to `skipBranch` and users can set it to `runBranch` to allow execution of the rest of the branch
+- can be specified in `Tasks` guarded with `WhenExpressions` only; there will be a validation error if `whenSkipped` is specified in `Tasks` without `WhenExpressions`
+- can take the values `skipBranch` or `runBranch` only; there will be a validation error if anything else is passed to `whenSkipped`
+- can be specified guarded `Tasks` with ordering dependencies only; there will be a validation error if `whenSkipped` is specified in `Tasks` with resource dependencies
+
+However, this field is separate from `WhenExpressions` definition and could be unclear that it's related to the `WhenExpressions`.
+
+#### continueAfterSkip
+
+To provide more flexibility when a `Guard` evaluates to `False`, we propose adding a field - `continueAfterSkip` - that:	
+- is used to specify whether execute the `Tasks` that are ordering-dependent on the skipped guarded `Task`	
+- defaults to `false` and users can set it to `true` to allow execution of the rest of the branch	
+- is only supported in guarded `Tasks`; there will be a validation error if `continueAfterSkip` is specified in unguarded `Tasks`
+
+However, per the [Kubernetes API policy](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md), "Think twice about bool fields. Many ideas start as boolean but eventually trend towards a small set of mutually exclusive options. Plan for future expansions by describing the policy options explicitly as a string type alias."
 
 #### Dependency Type
 As described in [Skipping](#skipping) section above, a `Task` can have _resource dependency_ or _ordering dependency_ on a parent `Task`. Executing resource-dependent `Tasks` is invalid since because they'll have resource resolution errors. Thus, we could execute the ordering-dependent `Tasks` and terminate the resource-dependent `Tasks`.

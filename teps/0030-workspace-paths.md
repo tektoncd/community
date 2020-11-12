@@ -6,7 +6,7 @@ creation-date: 2020-10-07
 last-updated: 2020-10-18
 status: proposed
 ---
-# TEP-XXXX: Workspace Paths
+# TEP-0030: Workspace Paths
 
 <!-- toc -->
 - [Summary](#summary)

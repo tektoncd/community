@@ -7,7 +7,7 @@ last-updated: 2020-10-02
 status: proposed
 ---
 
-# TEP-XXXX: Step and Sidecar Workspaces
+# TEP-0029: Step and Sidecar Workspaces
 
 <!--
 Ensure the TOC is wrapped with

@@ -20,12 +20,14 @@
 
 # This scripts provide automation for the TEPs
 
+from datetime import date
 import json
 import logging
 import os
 import re
 import sys
 from urllib import parse
+from urllib import request
 
 import chevron
 import click
@@ -33,8 +35,15 @@ import click
 LOCAL_TEP_FOLDER = os.path.normpath(
     os.path.join(os.path.dirname(
         os.path.abspath(__file__)), '..'))
+TEP_TEMPLATE = os.path.normpath(
+    os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), 'tep-template.md.mustache'))
+
 README_TEMPLATE = 'README.md.mustache'
 README = 'README.md'
+PR_URL = 'https://api.github.com/repos/tektoncd/community/pulls'
+PR_HEADER = {'Accept': 'application/vnd.github.v3.full+json',
+             'User-Agent': 'tekton-teps-client'}
 
 # Header and body matches
 RE_MATCHERS = {
@@ -48,6 +57,7 @@ RE_MATCHERS = {
 # File and body matches
 RE_TEP_NUMBER_FILENAME = re.compile(r'([0-9]{4})-.*.md')
 RE_TEP_NONUMBER_FILENAME = re.compile(r'([A-Za-z]{4})-.*.md')
+RE_TEP_NUMBER_PR = re.compile(r'TEP[ -]([0-9]{4})')
 
 EXCLUDED_FILENAMES = set(['README.md',
                           'README.md.mustache',
@@ -132,19 +142,45 @@ def read_tep(tep_io, ignore_errors=False):
 
 def tep_from_file(tep_filename, ignore_errors=False):
     """ returns a TEP dict for valid input files or None """
-
     with open(tep_filename, 'r') as tep_file:
         tep, issues = read_tep(tep_file, ignore_errors=ignore_errors)
-
     if issues:
         logging.warning(f'{issues}')
-
     return tep
 
 
 def teps_in_folder(teps_folder):
     return [f for f in os.listdir(LOCAL_TEP_FOLDER) if os.path.isfile(
         os.path.join(LOCAL_TEP_FOLDER, f)) and f not in EXCLUDED_FILENAMES]
+
+
+def next_tep_number(teps_folder):
+    tep_files = teps_in_folder(teps_folder)
+    tep_numbers = set()
+    # Get all tep numbers from local files
+    for tep_file in tep_files:
+        tep = tep_from_file(os.path.join(LOCAL_TEP_FOLDER, tep_file),
+                            ignore_errors=True)
+        if tep:
+            tep_numbers.add(tep['number'])
+    # Get all tep numbers from open PRs
+    # Assuming the PR title starts with TEP-
+    prs_request = request.Request(PR_URL, headers=PR_HEADER)
+    with request.urlopen(prs_request) as prs_response:
+        prs = json.loads(prs_response.read())
+    for pr in prs:
+        title = pr['title']
+        match = RE_TEP_NUMBER_PR.match(title)
+        if match:
+            number = match.groups()[0]
+            tep_numbers.add(f'TEP-{number}')
+    for tep_number in sorted(tep_numbers, reverse=True):
+        try:
+            last = int(tep_number.split('-')[1])
+            return last+1
+        except ValueError:
+            continue
+    return 1
 
 
 @click.group()
@@ -180,16 +216,46 @@ def validate(teps_folder):
         logging.error(f'Invalid TEP folder {teps_folder}')
         sys.exit(1)
     errors =[]
+    tep_numbers = set()
     tep_files = teps_in_folder(teps_folder)
 
     for tep_file in tep_files:
         try:
-            tep_from_file(os.path.join(LOCAL_TEP_FOLDER, tep_file))
+            tep = tep_from_file(os.path.join(LOCAL_TEP_FOLDER, tep_file))
+            if (number := tep.get('number', '')) in tep_numbers:
+                errors.append(InvalidTep(f'{tep_file} uses {number} which was already in use'))
         except ValidationErrors as ve:
             errors.append(ve)
     if errors:
         logging.error('\n'.join([str(e) for e in errors]))
         sys.exit(1)
+
+
+@teps.command()
+@click.option('--teps-folder', default=LOCAL_TEP_FOLDER,
+              help='the folder that contains the TEP files')
+@click.option('--title', '-t',
+              help='the title for the TEP in a few words')
+@click.option('--author', '-a', multiple=True,
+              help='the title for the TEP in a few words')
+def new(teps_folder, title, author):
+    if not os.path.isdir(teps_folder):
+        logging.error(f'Invalid TEP folder {teps_folder}')
+        sys.exit(1)
+    tep_number = next_tep_number(teps_folder)
+    title_slug = "".join(x for x in title if x.isalnum() or x == ' ')
+    title_slug = title_slug.replace(' ', '-')
+    tep_filename = f'{tep_number:04d}-{title_slug}.md'
+    tep = dict(title=title, authors=author,
+               created=str(date.today()),
+               lastupdated=str(date.today()),
+               status='proposed',
+               number=f'TEP-{tep_number}')
+    with open(TEP_TEMPLATE, 'r') as template:
+        with open(os.path.join(LOCAL_TEP_FOLDER, tep_filename), 'w+') as new_tep:
+            new_tep.write(chevron.render(template, tep))
+    print(f'{os.path.join(LOCAL_TEP_FOLDER, tep_filename)}')
+
 
 if __name__ == '__main__':
     teps()

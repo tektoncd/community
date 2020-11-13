@@ -31,13 +31,14 @@ from urllib import request
 
 import chevron
 import click
+from ruamel.yaml import YAML, YAMLError
 
 LOCAL_TEP_FOLDER = os.path.normpath(
     os.path.join(os.path.dirname(
         os.path.abspath(__file__)), '..'))
 TEP_TEMPLATE = os.path.normpath(
     os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), 'tep-template.md.mustache'))
+        os.path.abspath(__file__)), 'tep-template.md.template'))
 
 README_TEMPLATE = 'README.md.mustache'
 README = 'README.md'
@@ -45,25 +46,31 @@ PR_URL = 'https://api.github.com/repos/tektoncd/community/pulls'
 PR_HEADER = {'Accept': 'application/vnd.github.v3.full+json',
              'User-Agent': 'tekton-teps-client'}
 
-# Header and body matches
-RE_MATCHERS = {
-    'title': re.compile(r'^title: (.+)$'),
-    'status': re.compile(r'^status: ([a-zA-Z]+)$'),
-    'created': re.compile(r'^creation-date: ([0-9\-\./]+)$'),
-    'lastupdated': re.compile(r'^last-updated: ([0-9\-\./]+)$'),
-    'number': re.compile(r'^# (TEP-[0-9]{4}): .*$')
-}
-
 # File and body matches
+RE_TEP_NUMBER_TITLE = re.compile(r'^# (TEP-[0-9]{4}): .*$')
 RE_TEP_NUMBER_FILENAME = re.compile(r'([0-9]{4})-.*.md')
 RE_TEP_NONUMBER_FILENAME = re.compile(r'([A-Za-z]{4})-.*.md')
+RE_TEP_4ALPHANUM_FILENAME = re.compile(r'[A-Za-z0-9]{4}-(.*.md)')
 RE_TEP_NUMBER_PR = re.compile(r'TEP[ -]([0-9]{4})')
+YAML_SEPARATOR = '---\n'
 
+REQUIRED_FIELDS = ['title', 'authors', 'creation-date', 'status']
 EXCLUDED_FILENAMES = set(['README.md',
                           'README.md.mustache',
                           'OWNERS'])
 
 class InvalidTep(Exception):
+    pass
+
+
+class InvalidTepNumber(InvalidTep):
+    """ InvalidTepNumber TEP Number
+
+    This exception means something related to TEP numbers
+    is wrong. Either that the number in the filename
+    does not match the inside the TEP, or there is no number
+    in the filename or in the content.
+    """
     pass
 
 
@@ -77,12 +84,31 @@ class ValidationErrors(Exception):
         return '\n'.join([str(e) for e in self.errors])
 
 
-def read_tep(tep_io, ignore_errors=False):
+def write_tep_header(tep, tep_io):
+    # Build the header dict
+    tep_header = {
+        'status': tep['status'],
+        'title': tep['title'],
+        'creation-date': tep['creation-date'],
+        'last-updated': tep.get('last-updated', tep['creation-date'])
+    }
+    tep_header['authors'] = [f'@{a}' for a in tep['authors']]
+    # First write the YAML header
+    tep_io.write(YAML_SEPARATOR)
+    YAML().dump(tep_header, tep_io)
+    tep_io.write(YAML_SEPARATOR)
+    # Then write the title
+    tep_number = int(tep["number"])
+    tep_io.write(f'\n# TEP-{tep_number:04d}: {tep_header["title"]}\n')
+
+
+def read_tep(tep_io, with_body=True, ignore_errors=False):
     """ Read a TEP and validate its format
 
     :param tep: a TextIO with the TEP content and a name
+    :param with_body: whether to return the body
     :param ignore_errors: return a tep dict even in case of errors
-    :returns:  a tuple (dict, list). If the tep is not valid, and
+    :returns:  a tuple (header, body, list). If the tep is not valid, and
       ignore_errors==True, the list includes all Errors encountered.
     """
     issues = []
@@ -92,61 +118,79 @@ def read_tep(tep_io, ignore_errors=False):
     tep_match = RE_TEP_NUMBER_FILENAME.match(tep_name)
     tep_file_number = None
     if not tep_match:
-        issues.append(InvalidTep(
+        issues.append(InvalidTepNumber(
             f'TEP filenames should match /^[0-9]{4}-/. Found: {tep_name}'))
     else:
         # Get a TEP number from the files name
         tep_file_number = int(tep_match.groups()[0])
 
     tep = dict(link = tep_name)
+    section = ''
+    header = []
+    body = ''
     for i, line in enumerate(tep_io):
-        # With one author, the title should be in L10
-        # Allow for a long list of authors and some padding
-        if i > 30:
-            break
         # Try to match with all expected fields on this line
-        for k, regexp in RE_MATCHERS.items():
-            _match = regexp.match(line)
+        if line == YAML_SEPARATOR and section == '':
+            section = 'header'
+        elif line != YAML_SEPARATOR and section == 'header':
+            header.append(line)
+        elif line == YAML_SEPARATOR and section == 'header':
+            section = 'body'
+            try:
+                tep.update(YAML().load('\n'.join(header)))
+            except YAMLError as ye:
+                issues.append(InvalidTep(ye))
+        if section == 'body':
+            _match = RE_TEP_NUMBER_TITLE.match(line)
             if _match:
-                # If we already found this, log a warning
-                # and ignore the new value
-                if tep.get(k):
+                key = 'number'
+                if tep.get(key):
                     issues.append(
-                        InvalidTep(f'{key} found more than once in {filename}'))
+                        InvalidTepNumber(f'"{key}" found more than once in {filename}'))
                 else:
-                    tep[k] = _match.groups()[0]
-                # If we had a match, continue on the next line
-                break
+                    tep[key] = _match.groups()[0]
+            else:
+                if with_body:
+                    body += f'{line}'
 
     # Some post-processing to handle missing fields
     tep_number = tep.get('number')
     tep_file_number = f'TEP-{tep_file_number:04d}' if tep_file_number is not None else 'TEP-XXXX'
     if not tep_number:
         issues.append(
-            InvalidTep(f'No TEP number title (# TEP-NNNN) in {filename}'))
+            InvalidTepNumber(f'No TEP number title (# TEP-NNNN) in {filename}'))
         tep['number'] = tep_file_number
     elif tep_file_number != tep_number:
-        issues.append(InvalidTep(
+        issues.append(InvalidTepNumber(
             f'TEP number {tep_file_number} from filename does '
             f'not match TEP number {tep_number} from title '
             f'(# TEP-NNNN) in {filename}'))
     # Set last updated to creation date if missing
-    if not tep.get('lastupdated'):
-        tep['lastupdated'] = tep.get('created')
+    if not tep.get('last-updated'):
+        tep['last-updated'] = tep.get('creation-date')
 
     if issues and not ignore_errors:
         raise ValidationErrors(issues)
 
-    return tep, issues
+    return tep, body, issues
 
 
-def tep_from_file(tep_filename, ignore_errors=False):
+def tep_from_file(tep_filename, with_body):
     """ returns a TEP dict for valid input files or None """
     with open(tep_filename, 'r') as tep_file:
-        tep, issues = read_tep(tep_file, ignore_errors=ignore_errors)
+        tep, body, _ = read_tep(
+            tep_file, ignore_errors=False, with_body=with_body)
+    return tep, body
+
+
+def safe_tep_from_file(tep_filename):
+    """ returns a TEP dict for valid input files or None """
+    with open(tep_filename, 'r') as tep_file:
+        header, _, issues = read_tep(
+            tep_file, ignore_errors=True, with_body=False)
     if issues:
         logging.warning(f'{issues}')
-    return tep
+    return header
 
 
 def teps_in_folder(teps_folder):
@@ -159,8 +203,7 @@ def next_tep_number(teps_folder):
     tep_numbers = set()
     # Get all tep numbers from local files
     for tep_file in tep_files:
-        tep = tep_from_file(os.path.join(LOCAL_TEP_FOLDER, tep_file),
-                            ignore_errors=True)
+        tep = safe_tep_from_file(os.path.join(LOCAL_TEP_FOLDER, tep_file))
         if tep:
             tep_numbers.add(tep['number'])
     # Get all tep numbers from open PRs
@@ -183,22 +226,11 @@ def next_tep_number(teps_folder):
     return 1
 
 
-@click.group()
-def teps():
-    pass
-
-@teps.command()
-@click.option('--teps-folder', default=LOCAL_TEP_FOLDER,
-              help='the folder that contains the TEP files')
-def table(teps_folder):
-    if not os.path.isdir(teps_folder):
-        logging.error(f'Invalid TEP folder {teps_folder}')
-        sys.exit(1)
+def generate_tep_table(teps_folder):
     teps = dict(teps = [])
     tep_files = teps_in_folder(teps_folder)
     for tep_file in tep_files:
-        tep = tep_from_file(os.path.join(LOCAL_TEP_FOLDER, tep_file),
-                            ignore_errors=True)
+        tep = safe_tep_from_file(os.path.join(LOCAL_TEP_FOLDER, tep_file))
         if tep:
             teps['teps'].append(tep)
 
@@ -208,10 +240,28 @@ def table(teps_folder):
         with open(os.path.join(LOCAL_TEP_FOLDER, README), 'w+') as readme:
             readme.write(chevron.render(template, teps))
 
+
+@click.group()
+def teps():
+    pass
+
+
+@teps.command()
+@click.option('--teps-folder', default=LOCAL_TEP_FOLDER,
+              help='the folder that contains the TEP files')
+def table(teps_folder):
+    """ Generate a table of TEPs from the teps in a folder """
+    if not os.path.isdir(teps_folder):
+        logging.error(f'Invalid TEP folder {teps_folder}: folder could not be found')
+        sys.exit(1)
+    generate_tep_table(teps_folder)
+
+
 @teps.command()
 @click.option('--teps-folder', default=LOCAL_TEP_FOLDER,
               help='the folder that contains the TEP files')
 def validate(teps_folder):
+    """ Validate all the TEPs in a tep """
     if not os.path.isdir(teps_folder):
         logging.error(f'Invalid TEP folder {teps_folder}')
         sys.exit(1)
@@ -221,9 +271,13 @@ def validate(teps_folder):
 
     for tep_file in tep_files:
         try:
-            tep = tep_from_file(os.path.join(LOCAL_TEP_FOLDER, tep_file))
+            tep, _ = tep_from_file(
+                os.path.join(LOCAL_TEP_FOLDER, tep_file), with_body=False)
+            for field in REQUIRED_FIELDS:
+                if tep.get(field, None) is None:
+                    errors.append(InvalidTep(f'{field} missing in {tep_file}'))
             if (number := tep.get('number', '')) in tep_numbers:
-                errors.append(InvalidTep(f'{tep_file} uses {number} which was already in use'))
+                errors.append(InvalidTepNumber(f'{tep_file} uses {number} which was already in use'))
         except ValidationErrors as ve:
             errors.append(ve)
     if errors:
@@ -238,23 +292,95 @@ def validate(teps_folder):
               help='the title for the TEP in a few words')
 @click.option('--author', '-a', multiple=True,
               help='the title for the TEP in a few words')
-def new(teps_folder, title, author):
+@click.option('--update-table/--no-update-table', default=True,
+              help='whether to refresh the table of TEPs')
+def new(teps_folder, title, author, update_table):
+    """ Create a new TEP with a new valid number from the template """
     if not os.path.isdir(teps_folder):
         logging.error(f'Invalid TEP folder {teps_folder}')
         sys.exit(1)
     tep_number = next_tep_number(teps_folder)
     title_slug = "".join(x for x in title if x.isalnum() or x == ' ')
-    title_slug = title_slug.replace(' ', '-')
+    title_slug = title_slug.replace(' ', '-').lower()
     tep_filename = f'{tep_number:04d}-{title_slug}.md'
     tep = dict(title=title, authors=author,
-               created=str(date.today()),
-               lastupdated=str(date.today()),
                status='proposed',
-               number=f'TEP-{tep_number}')
-    with open(TEP_TEMPLATE, 'r') as template:
-        with open(os.path.join(LOCAL_TEP_FOLDER, tep_filename), 'w+') as new_tep:
-            new_tep.write(chevron.render(template, tep))
-    print(f'{os.path.join(LOCAL_TEP_FOLDER, tep_filename)}')
+               number=tep_number)
+    tep['creation-date'] = str(date.today())
+    tep['last-updated'] =str(date.today())
+    with open(os.path.join(LOCAL_TEP_FOLDER, tep_filename), 'w+') as new_tep:
+        write_tep_header(tep, new_tep)
+        with open(TEP_TEMPLATE, 'r') as template:
+            new_tep.write(template.read())
+
+    # By default, regenerate the TEP folder
+    if update_table:
+        generate_tep_table(teps_folder)
+
+    # Return git help to execute
+    print(f'\n\nTo stage the new TEP please run:\n\n'
+          f'git status    # optional\n'
+          f'git add {os.path.join(LOCAL_TEP_FOLDER, tep_filename)}\n')
+
+
+@teps.command()
+@click.option('--teps-folder', default=LOCAL_TEP_FOLDER,
+              help='the folder that contains the TEP files')
+@click.option('--filename', '-f', default=None,
+              help='the filename of the TEP to refresh')
+@click.option('--update-table/--no-update-table', default=True,
+              help='whether to refresh the table of TEPs')
+def renumber(teps_folder, filename, update_table):
+    """ Obtain a fresh TEP number and refresh the TEP and TEPs table """
+    if not os.path.isdir(teps_folder):
+        logging.error(f'Invalid TEP folder {teps_folder}')
+        sys.exit(1)
+
+    # Load the TEP header first
+    source_filename = os.path.join(LOCAL_TEP_FOLDER, filename)
+    try:
+        tep, body = tep_from_file(source_filename, with_body=True)
+    except ValidationErrors as ve:
+        # If validation errors are related to the TEP number
+        # we may be able to fix them
+        non_number_errors = [e for e in ve is not isinstance(ve, InvalidTepNumber)]
+        logging.warning(f'Validation issues found. Please fix them '
+                        f'before updating the PR: {non_number_errors}')
+        if len(ve) == len(non_number_errors):
+            logging.warning('No number issues found, refreshing anyways')
+
+    # Obtain a new TEP number
+    tep_number = next_tep_number(teps_folder)
+    tep['number'] = tep_number
+
+    # Build the target TEP filename
+    filename_match = RE_TEP_4ALPHANUM_FILENAME.match(filename)
+    base_filename = filename
+    if filename_match:
+        base_filename = filename_match.groups()[0]
+    target_filename = f'{tep_number:04d}-{base_filename}'
+    target_filename = os.path.join(LOCAL_TEP_FOLDER, target_filename)
+
+    with open(target_filename, 'w+') as target:
+        # First re-write the header that was parsed
+        write_tep_header(tep, target)
+        # Write the parsed body
+        target.write(body)
+
+    logging.info(f'New TEP {target_filename} created')
+
+    # By default, regenerate the TEP folder
+    if update_table:
+        generate_tep_table(teps_folder)
+
+    # Return git commands to execute
+    print(f'\n\nTo complete the PR please run:\n\n'
+          f'git status    # optional\n'
+          f'git diff      # optional\n'
+          f'git add {target_filename}\n'
+          f'git rm {source_filename}\n'
+          f'git add -u\n'
+          f'git commit --amend\n')
 
 
 if __name__ == '__main__':

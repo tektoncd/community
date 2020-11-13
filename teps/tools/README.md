@@ -4,16 +4,17 @@ The `teps.py` tool implements automation for TEPs.
 The tool support a few different commands, as well as online help:
 
 ```shell
- ./teps.py --help
+$ ./teps.py
 Usage: teps.py [OPTIONS] COMMAND [ARGS]...
 
 Options:
   --help  Show this message and exit.
 
 Commands:
-  new
-  table
-  validate
+  new       Create a new TEP with a new valid number from the template
+  renumber  Obtain a fresh TEP number and refresh the TEP and TEPs table
+  table     Generate a table of TEPs from the teps in a folder
+  validate  Validate all the TEPs in a tep
 ```
 
 ## `new`
@@ -26,11 +27,15 @@ dates and status based on the inputs provided.
 $ ./teps.py new --help
 Usage: teps.py new [OPTIONS]
 
+  Create a new TEP with a new valid number from the template
+
 Options:
-  --teps-folder TEXT  the folder that contains the TEP files
-  -t, --title TEXT    the title for the TEP in a few words
-  -a, --author TEXT   the title for the TEP in a few words
-  --help              Show this message and exit.
+  --teps-folder TEXT              the folder that contains the TEP files
+  -t, --title TEXT                the title for the TEP in a few words
+  -a, --author TEXT               the title for the TEP in a few words
+  --update-table / --no-update-table
+                                  whether to refresh the table of TEPs
+  --help                          Show this message and exit.
 ```
 
 Example:
@@ -55,7 +60,6 @@ last-updated: 2020-11-12
 status: proposed
 ---
 
-(...)
 # TEP-34: My brand new tep
 ```
 
@@ -66,6 +70,8 @@ The `table` command updates the TEP table in the README.md from the list of TEPs
 ```shell
 $ ./teps.py table --help
 Usage: teps.py table [OPTIONS]
+
+  Generate a table of TEPs from the teps in a folder
 
 Options:
   --teps-folder TEXT  the folder that contains the TEP files
@@ -82,6 +88,8 @@ The `validate` command attempts to parse all TEP files, regardless of errors, to
 ```shell
 $ ./teps.py validate --help
 Usage: teps.py validate [OPTIONS]
+
+  Validate all the TEPs in a tep
 
 Options:
   --teps-folder TEXT  the folder that contains the TEP files
@@ -104,4 +112,22 @@ No TEP number title (# TEP-NNNN) in /System/Volumes/Data/go/src/github.com/tekto
 
 $ echo $?
 1
+```
+
+## `renumber`
+
+The `renumber` obtains a new number and updates the specified TEP accordingly. This command changes the TEP filename as well as the number in the content. It optionally updates the table of TEPs too.
+
+```shell
+$ ./teps.py renumber --help
+Usage: teps.py renumber [OPTIONS]
+
+  Obtain a fresh TEP number and refresh the TEP and TEPs table
+
+Options:
+  --teps-folder TEXT              the folder that contains the TEP files
+  -f, --filename TEXT             the filename of the TEP to refresh
+  --update-table / --no-update-table
+                                  whether to refresh the table of TEPs
+  --help                          Show this message and exit.
 ```

@@ -4,7 +4,7 @@ authors:
   - "@wlynch"
 creation-date: 2020-09-29
 last-updated: 2020-09-29
-status: proposed
+status: implementable
 ---
 
 # TEP-0022: Triggers - Immutable Input Event

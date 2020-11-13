@@ -4,7 +4,7 @@ authors:
   - "@dibyom"
 creation-date: 2020-10-01
 last-updated: 2020-10-01
-status: implementable
+status: implemented
 ---
 
 # TEP-0024: Embedded TriggerTemplates

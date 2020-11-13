@@ -70,16 +70,46 @@ The TEP `OWNERS` are the **main** owners of the following projects:
 - [`hub`](https://github.com/tektoncd/hub)
 - [`operator`](https://github.com/tektoncd/operator)
 
-## Merging TEPs
+## Creating and Merging TEPs
 
-- TEP should be merge as soon as possible in the `proposed` state. As
-  soon as a general consensus is reached that the TEP, as described
-  (even if incomplete) make sense to pursue, the TEP can be
-  merged. The authors can then update the missing part in follow-up
-  pull requests and move it to `implementable`.
-- TEP should be approved by ***at least two owners*** from different
-  company. This should prevent a company to *force push* a TEP (and
-  thus a feature) in the tektoncd projects.
+To create a new TEP, use the [teps script](./tools/README.md):
+
+```shell
+$ ./teps.py new --title "The title of the TEP" -author nick1 -author nick2
+```
+
+The script will allocate a new valid TEP number, set the status
+to "proposed" and set the start and last updated dates.
+
+**Note that the picked number is not "locked" until a PR is created.
+The PR title shall be in the format `TEP-XXXX: <tep-title>`**.
+
+The initial content of the TEP should include the high level
+description and use cases, but no design. This helps for the TEP
+to be approved quickly.
+
+TEP should be merged as soon as possible in the `proposed` state. As
+soon as a general consensus is reached that the TEP, as described
+make sense to pursue, the TEP can be merged.
+The authors can then add the design and update the missing part in follow-up pull requests which moves the TEP to `implementable`.
+
+TEP should be approved by ***at least two owners*** from different
+company. This should prevent a company to *force push* a TEP (and
+thus a feature) in the tektoncd projects.
+
+### Solving TEP number conflicts
+
+The TEP PR might fail CI if a TEP number conflict is detected, or if
+there is a merge conflict in the TEP table. In case that happens, use
+the `teps.py renumber` command to refresh your PR:
+
+```
+./teps.py renumber --update-table <path-to-tep-file>
+```
+
+The command will update the TEP in the file name and content with a new
+available TEP number, it will refresh the TEPs table and it will present
+a list of git commands that can be used to update the commit.
 
 ## TEPs
 
@@ -88,5 +118,5 @@ This is the complete list of Tekton teps:
 | TEP  | Title  | Status   | Last Updated  |
 |------|--------|----------|---------------|
 {{#teps}}
-|[{{number}}]({{link}}) | {{title}} | {{status}} | {{lastupdated}} |
+|[{{number}}]({{link}}) | {{title}} | {{status}} | {{last-updated}} |
 {{/teps}}

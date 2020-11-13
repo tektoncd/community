@@ -1,13 +1,4 @@
----
-title: {{ title }}
-authors:
-{{#authors}}
-  - @{{.}}
-{{/authors}}
-creation-date: {{ created }}
-last-updated: {{ lastupdated }}
-status: {{ status }}
----
+
 <!--
 **Note:** When your TEP is complete, all of these comment blocks should be removed.
 
@@ -46,7 +37,6 @@ The canonical place for the latest set of instructions (and the likely source
 of this file) is [here](/teps/NNNN-TEP-template/README.md).
 
 -->
-# {{ number }}: {{ title }}
 
 <!--
 This is the title of your TEP.  Keep it short, simple, and descriptive.  A good

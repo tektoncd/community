@@ -90,7 +90,7 @@ tags, and then generate with `hack/update-toc.sh`.
 - [Design Details](#design-details)
   - [Result API](#result-api)
     - [Results](#results)
-    - [Events](#events)
+    - [Records](#records)
     - [Example](#example)
 - [Test Plan](#test-plan)
 - [Drawbacks](#drawbacks)
@@ -425,7 +425,7 @@ We propose implementing a full CRUD API, heavily influenced by API
 recommendations defined by https://aip.dev.
 
 The API would center around a new `Result` resource, which acts as a grouping
-mechanism for `Event` data.
+mechanism for `Record` data.
 
 This would include Create/Delete/Update/Get/List operations, with the ability
 for users to pass in a `filter` string to List to selectively filter results. To
@@ -457,11 +457,6 @@ message Result {
   // Arbitrary user provided labels for the result.
   map<string, string> annotations = 3;
 
-  // Execution artifacts part of this result. Typically will be Tekton
-  // Task/PipelineRuns, but may also include other execution information
-  // (e.g. DSLs, etc.)
-  repeated Event events = 4;
-
   // The etag for this result.
   // If this is provided on update, it must match the server's etag.
   string etag = 6
@@ -470,8 +465,10 @@ message Result {
 ```
 
 Results are the main addressable resource in the Result API. They uniquely
-identify a single instance of a result, which can contain several executions
-(generally corresponding to Task/PipelineRuns).
+identify a single instance of a result. While the Result resource itself does
+not contain much information, it is primarily used as a logical grouping
+mechanism for underlying `Records` that will store the bulk of the Result
+details (e.g Task/PipelineRuns).
 
 - `name` should uniquely identify a result within a API Server instance (it
   should embed the parent value). See https://google.aip.dev/122 for more
@@ -480,29 +477,23 @@ identify a single instance of a result, which can contain several executions
     under a single result. Examples: TaskRuns with a common PipelineRun,
     PipelineRun with a Trigger event ID.
 - `annotations` are arbitrary user labels - these do not correspond to any
-  Kubernetes Annotations that may be set in `Event` types.
-- A result may specify any number of event executions. This is to allow room to
-  record why run executions did _not_ occur (e.g. record why a trigger may have
-  filtered an event). Events may also be used by users to include custom
-  information in a result. Examples:
-  - Events that caused the result (e.g. trigger events)
-  - Actions that took place after execution (e.g. cloudevent notifications,
-    GitHub PR updates, etc.)
-  - Other custom information providers that wish to annotate data in results.
-    Tekton may choose to promote useful types from `extensions` as direct fields
-    in the Result message in the future.
+  Kubernetes Annotations, but can be used for a similar purpose.
 - `etags` are provided to detect concurrent writes of data. See
   https://google.aip.dev/134#etags for more details.
 
+Additional Result level fields may be added in the future.
+
 It is up to the server implementation to set and document any resource / quota
-limits (e.g. how many events per result, how large can the result payload be,
+limits (e.g. how many records per result, how large can the result payload be,
 etc.)
 
-#### Events
+#### Records
+
+(formerly known as `Events` and `Executions`)
 
 ```proto
-message Event {
-  // Identifier of an execution. Must be nested within a Result.
+message Record {
+  // Identifier of an execution. Must be nested within a Result (e.g. results/foo/records/bar
   string name = 1;
 
   // Typed data of the event.
@@ -510,12 +501,22 @@ message Event {
 }
 ```
 
-`Events`s can contain Tekton execution types, namely TaskRuns or PipelineRuns.
-They may also contain opaque types, which can be useful for representing
-meta-configs of TaskRuns (i.e. DSLs, Custom Tasks, etc.), or other
-execution-like data that is not handled by Tekton directly.
+`Records`s are sub-resources of Results. They contain details of the actions and
+events associated with a Result. Records can be Tekton execution types (i.e.
+TaskRuns or PipelineRuns), or they may contain other related metadata about the
+Result - e.g. meta-configs (i.e. DSLs, Custom Tasks, etc.), input event
+payloads, trigger decisions, etc. It is not a requirement for a Result to
+contain specific types of Records (e.g. you can have a result without a
+Task/PipelineRun). It is up to clients to infer any special meaning from the
+included result records.
 
-API Server implementations should document what event types are filterable in
+As a subresource, Records will expose their own CRUD API nested under Results.
+This has scaling benefits since we can paginate Records belonging to a Result,
+as well as enables us to define fine grain permissions for clients (e.g. allow
+adding Records to an existing Result, but denying creation of new Results, or
+modification of existing Records).
+
+API Server implementations should document what record types are filterable in
 their implementation. For the reference implementation, we will support Tekton
 TaskRun and PipelineRun types by default.
 
@@ -530,22 +531,22 @@ results: {
     "env": "ci"
   }
 
-  event: {
-    name: "namespace/default/results/sample-tekton-result/events/a"
+  record: {
+    name: "namespace/default/results/sample-tekton-result/records/a"
     data: {
       type_url: "tekton.pipelines.v1.PipelineRun"
       value: pipeline_run{...}
     }
   }
-  event: {
-    name: "namespace/default/results/sample-tekton-result/events/b"
+  record: {
+    name: "namespace/default/results/sample-tekton-result/records/b"
     data: {
       type_url: "tekton.pipelines.v1.TaskRun"
       value: task_run{...}
     }
   }
-  event: {
-    name: "namespace/default/results/sample-tekton-result/events/c"
+  record: {
+    name: "namespace/default/results/sample-tekton-result/records/c"
     data: {
       type_url: "tekton.pipelines.v1.TaskRun"
       value: task_run{...}
@@ -553,15 +554,15 @@ results: {
   }
 
   # These aren't real types (yet), just examples of the kind of data we could expect.
-  event: {
-    name: "namespace/default/results/sample-tekton-result/events/tekton-chains"
+  record: {
+    name: "namespace/default/results/sample-tekton-result/records/tekton-chains"
     data: {
       type_url: "tekton.chains.v1.SHA"
       value: "aHVudGVyMg=="
     }
   }
-  event: {
-    name: "namespace/default/results/sample-tekton-result/events/cloudevent"
+  record: {
+    name: "namespace/default/results/sample-tekton-result/records/cloudevent"
     data: {
       type_url: "tekton.notifications.v1.Notification"
       value: "{type: \"cloudevent\", url: "https://example.com", status: 200}"

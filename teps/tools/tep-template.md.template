@@ -59,6 +59,7 @@ tags, and then generate with `hack/update-toc.sh`.
 - [Motivation](#motivation)
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
+  - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [User Stories (optional)](#user-stories-optional)
@@ -122,6 +123,16 @@ What is out of scope for this TEP?  Listing non-goals helps to focus discussion
 and make progress.
 -->
 
+### Use Cases (optional)
+
+<!--
+Describe the concrete improvement specific groups of users will see if the
+Motivations in this doc result in a fix or feature.
+
+Consider both the user's role (are they a Task author? Catalog Task user?
+Cluster Admin? etc...) and experience (what workflows or actions are enhanced
+if this problem is solved?).
+-->
 
 ## Requirements
 

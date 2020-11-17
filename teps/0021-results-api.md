@@ -7,6 +7,8 @@ last-updated: 2020-10-26
 status: proposed
 ---
 
+# TEP-0021: Tekton Results API
+
 <!--
 **Note:** When your TEP is complete, all of these comment blocks should be removed.
 
@@ -45,8 +47,6 @@ The canonical place for the latest set of instructions (and the likely source
 of this file) is [here](/teps/NNNN-TEP-template/README.md).
 
 -->
-
-# TEP-0017: Tekton Results API
 
 <!--
 This is the title of your TEP.  Keep it short, simple, and descriptive.  A good

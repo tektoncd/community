@@ -75,14 +75,7 @@ The TEP `OWNERS` are the **main** owners of the following projects:
 To create a new TEP, use the [teps script](./tools/README.md):
 
 ```shell
-$ ./teps.py new --help
-Usage: teps.py new [OPTIONS]
-
-Options:
-  --teps-folder TEXT  the folder that contains the TEP files
-  -t, --title TEXT    the title for the TEP in a few words
-  -a, --author TEXT   the title for the TEP in a few words
-  --help
+$ ./teps.py new --title "The title of the TEP" -author nick1 -author nick2
 ```
 
 The script will allocate a new valid TEP number, set the status
@@ -104,6 +97,20 @@ TEP should be approved by ***at least two owners*** from different
 company. This should prevent a company to *force push* a TEP (and
 thus a feature) in the tektoncd projects.
 
+### Solving TEP number conflicts
+
+The TEP PR might fail CI if a TEP number conflict is detected, or if
+there is a merge conflict in the TEP table. In case that happens, use
+the `teps.py renumber` command to refresh your PR:
+
+```
+./teps.py renumber --update-table <path-to-tep-file>
+```
+
+The command will update the TEP in the file name and content with a new
+available TEP number, it will refresh the TEPs table and it will present
+a list of git commands that can be used to update the commit.
+
 ## TEPs
 
 This is the complete list of Tekton teps:
@@ -124,11 +131,12 @@ This is the complete list of Tekton teps:
 |[TEP-0012](0012-api-spec.md) | API Specification | implementable | 2020-08-10 |
 |[TEP-0014](0014-step-timeout.md) | Step Timeout | implementable | 2020-09-10 |
 |[TEP-0015](0015-pending-pipeline.md) | pending-pipeline-run | implementable | 2020-09-10 |
-|[TEP-0016](0016-concise-trigger-bindings.md) | Concise Embedded TriggerBindings | implementable | 2020-09-15 |
+|[TEP-0016](0016-concise-trigger-bindings.md) | Concise Embedded TriggerBindings | implemented | 2020-09-15 |
 |[TEP-0019](0019-other-arch-support.md) | Other Arch Support | proposed | 2020-09-30 |
 |[TEP-0020](0020-s390x-support.md) | s390x Support | proposed | 2020-09-21 |
-|[TEP-0022](0022-trigger-immutable-input.md) | Triggers - Immutable Input Events | proposed | 2020-09-29 |
-|[TEP-0024](0024-embedded-trigger-templates.md) | Embedded TriggerTemplates | implementable | 2020-10-01 |
+|[TEP-0021](0021-results-api.md) | Tekton Results API | proposed | 2020-10-26 |
+|[TEP-0022](0022-trigger-immutable-input.md) | Triggers - Immutable Input Events | implementable | 2020-09-29 |
+|[TEP-0024](0024-embedded-trigger-templates.md) | Embedded TriggerTemplates | implemented | 2020-10-01 |
 |[TEP-0025](0025-hermekton.md) | Hermetic Builds | implementable | 2020-09-11 |
 |[TEP-0026](0026-interceptor-plugins.md) | interceptor-plugins | implementable | 2020-10-08 |
 |[TEP-0027](0027-https-connection-to-triggers-eventlistener.md) | HTTPS Connection to Triggers EventListener | proposed | 2020-10-19 |

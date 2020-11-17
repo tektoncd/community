@@ -194,8 +194,8 @@ def safe_tep_from_file(tep_filename):
 
 
 def teps_in_folder(teps_folder):
-    return [f for f in os.listdir(LOCAL_TEP_FOLDER) if os.path.isfile(
-        os.path.join(LOCAL_TEP_FOLDER, f)) and f not in EXCLUDED_FILENAMES]
+    return [f for f in os.listdir(teps_folder) if os.path.isfile(
+        os.path.join(teps_folder, f)) and f not in EXCLUDED_FILENAMES]
 
 
 def next_tep_number(teps_folder):
@@ -203,7 +203,7 @@ def next_tep_number(teps_folder):
     tep_numbers = set()
     # Get all tep numbers from local files
     for tep_file in tep_files:
-        tep = safe_tep_from_file(os.path.join(LOCAL_TEP_FOLDER, tep_file))
+        tep = safe_tep_from_file(os.path.join(teps_folder, tep_file))
         if tep:
             tep_numbers.add(tep['number'])
     # Get all tep numbers from open PRs
@@ -230,14 +230,16 @@ def generate_tep_table(teps_folder):
     teps = dict(teps = [])
     tep_files = teps_in_folder(teps_folder)
     for tep_file in tep_files:
-        tep = safe_tep_from_file(os.path.join(LOCAL_TEP_FOLDER, tep_file))
+        tep = safe_tep_from_file(os.path.join(teps_folder, tep_file))
         if tep:
+            # mustache doesn't link variables with a dash
+            tep['lastupdated'] = tep['last-updated']
             teps['teps'].append(tep)
 
     # Sort by TEP number
     teps['teps'] = sorted(teps['teps'], key=lambda k: k['number'])
-    with open(os.path.join(LOCAL_TEP_FOLDER, README_TEMPLATE), 'r') as template:
-        with open(os.path.join(LOCAL_TEP_FOLDER, README), 'w+') as readme:
+    with open(os.path.join(teps_folder, README_TEMPLATE), 'r') as template:
+        with open(os.path.join(teps_folder, README), 'w+') as readme:
             readme.write(chevron.render(template, teps))
 
 
@@ -272,7 +274,7 @@ def validate(teps_folder):
     for tep_file in tep_files:
         try:
             tep, _ = tep_from_file(
-                os.path.join(LOCAL_TEP_FOLDER, tep_file), with_body=False)
+                os.path.join(teps_folder, tep_file), with_body=False)
             for field in REQUIRED_FIELDS:
                 if tep.get(field, None) is None:
                     errors.append(InvalidTep(f'{field} missing in {tep_file}'))
@@ -308,7 +310,7 @@ def new(teps_folder, title, author, update_table):
                number=tep_number)
     tep['creation-date'] = str(date.today())
     tep['last-updated'] =str(date.today())
-    with open(os.path.join(LOCAL_TEP_FOLDER, tep_filename), 'w+') as new_tep:
+    with open(os.path.join(teps_folder, tep_filename), 'w+') as new_tep:
         write_tep_header(tep, new_tep)
         with open(TEP_TEMPLATE, 'r') as template:
             new_tep.write(template.read())
@@ -320,7 +322,7 @@ def new(teps_folder, title, author, update_table):
     # Return git help to execute
     print(f'\n\nTo stage the new TEP please run:\n\n'
           f'git status    # optional\n'
-          f'git add {os.path.join(LOCAL_TEP_FOLDER, tep_filename)}\n')
+          f'git add {os.path.join(teps_folder, tep_filename)}\n')
 
 
 @teps.command()
@@ -337,7 +339,7 @@ def renumber(teps_folder, filename, update_table):
         sys.exit(1)
 
     # Load the TEP header first
-    source_filename = os.path.join(LOCAL_TEP_FOLDER, filename)
+    source_filename = os.path.join(teps_folder, filename)
     try:
         tep, body = tep_from_file(source_filename, with_body=True)
     except ValidationErrors as ve:
@@ -359,7 +361,7 @@ def renumber(teps_folder, filename, update_table):
     if filename_match:
         base_filename = filename_match.groups()[0]
     target_filename = f'{tep_number:04d}-{base_filename}'
-    target_filename = os.path.join(LOCAL_TEP_FOLDER, target_filename)
+    target_filename = os.path.join(teps_folder, target_filename)
 
     with open(target_filename, 'w+') as target:
         # First re-write the header that was parsed

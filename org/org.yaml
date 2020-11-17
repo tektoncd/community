@@ -453,6 +453,7 @@ orgs:
         - vdemeester
         - jessm12
         - PuneetPunamiya
+        - dibyom
         privacy: closed
         repos:
           experimental: read

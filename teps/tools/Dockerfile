@@ -20,4 +20,5 @@ RUN pip3 install --no-cache -r requirements.txt
 COPY ./teps.py .
 COPY ./tep-template.md.template .
 
-CMD [ "python3", "./teps.py" ]
+ENTRYPOINT [ "/teps.py" ]
+CMD [ "--help" ]

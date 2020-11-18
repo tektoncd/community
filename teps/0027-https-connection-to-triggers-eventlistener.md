@@ -17,9 +17,9 @@ status: implementable
 - [Proposal](#proposal)
   - [User Stories](#user-stories)
   - [Usage examples](#usage-examples)
-- [Design Details](#design-details)  
-- [Implementation Details](#implementation-details)  
-- [Upgrade &amp; Migration Strategy](#upgrade--migration-strategy)
+- [Design Details](#design-details)
+- [Implementation Details](#implementation-details)
+- [Alternatives](#alternatives)
 - [References](#references)
 <!-- /toc -->
 

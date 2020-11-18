@@ -17,6 +17,24 @@ Commands:
   validate  Validate all the TEPs in a tep
 ```
 
+## Installation
+
+The `teps.py` tool is a python script, it requires python 3.6+ to run.
+To install its dependencies and execute the script, run the following
+commands from the root of the tektoncd/community repo:
+
+```shell
+# Create a Virtual Environment
+python3 -m venv .venv
+. .venv/bin/activate
+
+# Install the requirements
+pip3 install -r ./teps/tools/requirements.txt
+
+# Test the script
+./teps/tools/teps.py
+```
+
 ## `new`
 
 The new command creates a new TEP from the template.

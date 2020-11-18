@@ -62,9 +62,6 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
-  - [User Stories (optional)](#user-stories-optional)
-    - [Story 1](#story-1)
-    - [Story 2](#story-2)
   - [Notes/Caveats (optional)](#notescaveats-optional)
   - [Risks and Mitigations](#risks-and-mitigations)
   - [User Experience (optional)](#user-experience-optional)
@@ -151,19 +148,6 @@ you're proposing, but should not include things like API designs or
 implementation.  The "Design Details" section below is for the real
 nitty-gritty.
 -->
-
-### User Stories (optional)
-
-<!--
-Detail the things that people will be able to do if this TEP is implemented.
-Include as much detail as possible so that people can understand the "how" of
-the system.  The goal here is to make this feel real for users without getting
-bogged down.
--->
-
-#### Story 1
-
-#### Story 2
 
 ### Notes/Caveats (optional)
 

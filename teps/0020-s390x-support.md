@@ -15,9 +15,9 @@ status: proposed
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
 - [Proposal](#proposal)
-  - [Design Details](#design-details)
-    - [Diagram for pipeline test with s390x hardware](#diagram-for-pipeline-test-with-s390x-hardware)
-- [Risks and Mitigations](#risks-and-mitigations)
+  - [Design details](#design-details)
+    - [Diagram for pipelinetest with s390x hardware](#diagram-for-pipelinetest-with-s390x-hardware)
+  - [Risks and Mitigations](#risks-and-mitigations)
 - [Test Plan](#test-plan)
 - [References](#references)
 <!-- /toc -->

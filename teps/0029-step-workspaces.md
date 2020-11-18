@@ -19,7 +19,6 @@ tags, and then generate with `hack/update-toc.sh`.
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goals](#goals)
-  - [Non-Goals](#non-goals)
 - [Requirements](#requirements)
   - [User Stories](#user-stories)
     - [Story 1](#story-1)

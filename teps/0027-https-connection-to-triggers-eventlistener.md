@@ -82,12 +82,16 @@ spec:
             serviceAccountName: tekton-triggers-github-sa
             containers:
             - env:
-              - name: TLS_SECRET_NAME
-                value: "tls-key-secret"
-              - name: TLS_CERT_NAME
-                value: "tls.crt"
-              - name: TLS_KEY_NAME
-                value: "tls.key"
+              - name: TLS_CERT
+                valueFrom:
+                  secretKeyRef:
+                    name: "tls-key-secret"
+                    key: tls.crt
+              - name: TLS_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: "tls-key-secret"
+                    key: tls.key
 ```
 
 ## Design Details
@@ -95,24 +99,43 @@ spec:
 The main goal of this TEP is to make triggers flexible enough to configure both `HTTPS` and `HTTP` connections with simple configuration changes to EventListener.
 
 With the help of `podtemplate` as part of `kubernetesResource` user specify following env
-* secret name(where certificates are stored) with env key as **TLS_SECRET_NAME**
-* cert file name with env key as **TLS_CERT_NAME**
-* key file name with env key as **TLS_KEY_NAME**
+* **TLS_CERT**
+* **TLS_KEY**
 
 ex:
 ```yaml
 env:
-- name: TLS_SECRET_NAME
-  value: "tls-key-secret"
-- name: TLS_CERT_NAME
-  value: "tls-cert.pem"
-- name: TLS_KEY_NAME
-  value: "tls-key.pem"
+- name: TLS_CERT
+  valueFrom:
+    secretKeyRef:
+      name: "tls-key-secret"
+      key: tls.crt
+- name: TLS_KEY
+  valueFrom:
+    secretKeyRef:
+      name: "tls-key-secret"
+      key: tls.key
+```
+
+1 . **TLS_CERT** is the reserved env where user specify value in the form of `valueForm` to reference `secretKeyRef` as
+```yaml
+    secretKeyRef:
+      name: "tls-key-secret"
+      key: tls.crt
 ```
 Where
+* `name` is the secret name.
+* `key` is the file name for certificate cert.
 
-1. `TLS_SECRET_NAME` env is mandatory to achieve `HTTPS` connection.
-1. `TLS_CERT_NAME` and `TLS_KEY_NAME` envs are optional, if not provided default file name used for those env are `tls.crt` and `tls.key` respectively.
+2 . **TLS_KEY** is the reserved env where user specify value in the form of `valueForm` to reference `secretKeyRef` as
+```yaml
+    secretKeyRef:
+      name: "tls-key-secret"
+      key: tls.key
+```
+Where
+* `name` is the secret name.
+* `key` is the file name for certificate key.
 
 **Note:** 
 * Trigger use `/etc/triggers/tls` as mounting location and this path is not configurable by the user.
@@ -120,9 +143,8 @@ Where
 
 ## Implementation Details
 At high level below are few implementation details
-* EventListener reconciler checks for env key `TLS_SECRET_NAME` where user specify created secret name which contains certificates.
+* EventListener reconciler checks for env key `TLS_CERT` and `TLS_KEY` where user specify created secret name which contains certificates.
 * Triggers eventlistener reconciler is responsible to mount provided secret inside container filesystem at particular location called `/etc/triggers/tls`(which is constant) using `Volume` and `VolumeMount`.
-* EvenListener reconciler get cert and key name info from `TLS_CERT_NAME` and `TLS_KEY_NAME` env respectively, if not provided trigger use `tls.cert` and `tls.key` as default file names.
 
 ## Alternatives
 * Using thirdparty solutions like service mesh.

@@ -56,7 +56,7 @@ Provide a way for users to...
 
 ### Non-Goals
 
-- Provide an API for interacting with Tekton Bundles that users can extend. This is meant to be self-contained through
+- Provide an API for interacting with Tekton Bundles that users can extend. This is meant to be self-contained though
   users may consider it a "reference implementation".
 
 ## Requirements

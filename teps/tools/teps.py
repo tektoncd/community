@@ -278,7 +278,8 @@ def validate(teps_folder):
             for field in REQUIRED_FIELDS:
                 if tep.get(field, None) is None:
                     errors.append(InvalidTep(f'{field} missing in {tep_file}'))
-            if (number := tep.get('number', '')) in tep_numbers:
+            number = tep.get('number', '')
+            if number in tep_numbers:
                 errors.append(InvalidTepNumber(f'{tep_file} uses {number} which was already in use'))
         except ValidationErrors as ve:
             errors.append(ve)

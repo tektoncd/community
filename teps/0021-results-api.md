@@ -4,7 +4,7 @@ authors:
   - "@wlynch"
 creation-date: 2020-09-23
 last-updated: 2020-10-26
-status: proposed
+status: implementable
 ---
 
 # TEP-0021: Tekton Results API

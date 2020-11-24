@@ -290,7 +290,7 @@ def validate(teps_folder):
 @teps.command()
 @click.option('--teps-folder', default=LOCAL_TEP_FOLDER,
               help='the folder that contains the TEP files')
-@click.option('--title', '-t',
+@click.option('--title', '-t', required=True,
               help='the title for the TEP in a few words')
 @click.option('--author', '-a', multiple=True,
               help='the title for the TEP in a few words')

@@ -562,7 +562,7 @@ A resource can be remove in the following cases (and only for those)
 * The resource has a license issue (incompatible with sharing it, …)
 
 The deprecated state of a resource is done through the
-tekton.dev/deprecated: true label.
+`tekton.dev/deprecated: "true"` annotation.
 
 ### Upstream catalogs
 

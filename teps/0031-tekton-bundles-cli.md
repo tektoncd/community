@@ -3,7 +3,7 @@ title: tekton-bundles-cli
 authors:
   - "@pierretasci"
 creation-date: 2020-11-18
-last-updated: 2020-11-20
+last-updated: 2020-12-04
 status: implementable
 ---
 # TEP-0031: Tekton Bundles CLI
@@ -77,20 +77,20 @@ Provide a way for users to...
 Amend the Tekton CLI to provide the following commands (more detail later):
 
 ```shell
-# REF = Docker-like Tekton Bundle reference, eg. docker.io/myworkspace/mybundle:1.0
+# REF = OCI reference, eg. docker.io/myworkspace/mybundle:1.0
 # BUNDLE_OBJECT = path to a file or directory or STDIN of a valid Tekton Task or Pipeline object to be included in the
 # bundle.
 
 # Generates a Tekton Bundle from a set of 1+ bundle objects. Like `docker`, tags the object with the specified reference
 # locally.
-tkn remote build <REF> [BUNDLE_OBJECT...]
+tkn bundle build <REF> [BUNDLE_OBJECT...]
 
 # Like docker, publishing the locally referenced Tekton Bundle to a remote repository.
-tkn remote push <REF>
+tkn bundle push <REF>
 
 # Fetches a Tekton Bundle and prints its contents in a configurable format. If KIND is specified, will print only
-# objects of the specified kind. If KIND and NAME are specified, will retrieve a specific object.
-tkn remote get <REF> [KIND] [NAME] --output=[FORMAT]
+# objects of the specified kind (eg, Pipeline or Task). If KIND and NAME are specified, will retrieve a specific object.
+tkn bundle get <REF> [KIND] [NAME] --output=[FORMAT]
 
 # The following are amendments to existing commands.
 

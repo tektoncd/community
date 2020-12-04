@@ -81,12 +81,10 @@ Amend the Tekton CLI to provide the following commands (more detail later):
 # BUNDLE_OBJECT = path to a file or directory or STDIN of a valid Tekton Task or Pipeline object to be included in the
 # bundle.
 
-# Generates a Tekton Bundle from a set of 1+ bundle objects. Like `docker`, tags the object with the specified reference
-# locally.
-tkn bundle build <REF> [BUNDLE_OBJECT...]
-
-# Like docker, publishing the locally referenced Tekton Bundle to a remote repository.
-tkn bundle push <REF>
+# Generates a Tekton Bundle from a set of 1+ bundle objects. Publishes the bundle to a remote repository using the
+# specified reference. Will properly split and parse input files that have multiple objects and rejects any input that
+# isn't a known and supported Tekton KIND.
+tkn bundle push <REF> [BUNDLE_OBJECT...]
 
 # Fetches a Tekton Bundle and prints its contents in a configurable format. If KIND is specified, will print only
 # objects of the specified kind (eg, Pipeline or Task). If KIND and NAME are specified, will retrieve a specific object.
@@ -94,50 +92,38 @@ tkn bundle get <REF> [KIND] [NAME] --output=[FORMAT]
 
 # The following are amendments to existing commands.
 
-# Retrieves from an image the requested task(s) rather than from the cluster.
-tkn task list --image=<REF>
-tkn task get --image=<REF> [NAME]
-
-# Adds the specified BUNDLE_OBJECT to the referenced Tekton Bundle.
-tkn task create --image=<REF> [BUNDLE_OBJECT]
-
-# Removes a named Task from the referenced Tekton Bundle.
-tkn task delete --image=<REF> [NAME]
-
-# Starts a new TaskRun using the Task referenced by this image.
-tkn task start --image=<REF> [NAME]
+# Retrieves from an image the requested task(s) rather than from the cluster. Will print the result in the specified
+# format, such as yaml or json.
+tkn task list --image=<REF> --output=[FORMAT]
+tkn task get --image=<REF> --output=[FORMAT] [NAME]
 
 # ... the pipeline command receives these changes as well
 ```
 
 ### Detailed Design
 
-To offer a developer experience that users are familiar with, we structure the commands similar to the process of
-building and publishing a Docker image. Namely, we introduce the concept of a "local" Tekton Bundle that is "tagged".
-This enables the user to continue manipulating (adding/removing Tekton Tasks and Pipelines) a Tekton Bundle before
-publishing. This differs from a "remote" Tekton Bundle which has been published to a remote repository like Docker Hub.
-
-This requires the addition of caching to "tkn" to store a certain amount of the Tekton Bundles locally so the user
-doesn't have to fetch them every time. This can be done in a variety of ways (eg printing out the full OCI spec to 
-files).
+To offer a simple developer experience we provide an API for users to publish Tekton Bundles given their full set of
+input Pipelines and Tasks. To keep things simple, we only offer methods to create full bundles, not edit or modify them.
 
 To accomodate some of the authentication requirements of pushing to a remote repository, we will add global
 configuration options and sensible defaults (like using the common Docker `config.json`) to authenticate into image
-repositories, including private ones. At the top level we will add the following flags (which will only be used when
-Tekton Bundles are the target):
+repositories, including private ones. We will add the following flags:
 
 ```shell
 # Skips https checks for interacting with remote repositories, ONLY.
-tkn --insecure-skip-verify
+tkn bundle --insecure
+tkn [SUBCOMMAND] --image=<REF> --insecure-registry
 
-# Adds the cert and key to the TLS config used to establish a TLS connection to the repository.
-tkn --repository-client-cert --repository-client-key
+# Adds the cert and key to the TLS config used to establish a TLS connection to the registry.
+tkn bundle --client-cert --client-key
+tkn [SUBCOMMAND] --image=<REF> --registry-client-cert --registry-client-key
 
 # Flags to override the default authentication mechanism which is to use the user's docker config in the default
 # location.
-tkn --repository-auth "bearer=<token">
+tkn bundle --auth "bearer=<token">
 # ... or ...
-tkn --repository-auth "basic=<username>:<password"
+tkn bundle --auth "basic=<username>:<password"
+tkn [SUBCOMMAND] --image=<REF> --registry-auth "basic=<username>:<password"
 ```
 
 ### Risks and Mitigations
@@ -157,9 +143,11 @@ so we should continue with this change but cautiously.
 
 ## Alternatives
 
-1. There is a case to be made for not introducing the docker-like "local" and "remote" concept. Instead, we would treat
-bundles as immutable objects where you could create one or fetch its contents but not mutate its contents.
+1. We could provide a more complex API that is more "Docker"-like, perhaps even with Docker files. Perhaps it would also
+mimic the "build" and "push" concept allowing users to mutate a bundle locally before publishing it. The current
+approach is perferred for its simplicity and because it is the quickest and easiest way to allow a user to immediately
+try out Tekton Bundles.
 
-   This is unideal and might hinder usefulness and adoption of the Tekton Bundles. Furthermore, it would require users
-   to have all of the objects that they want to add in a Bundle up front which limits the ability to programmatically
-   generate Tekton Bundles using `tkn`.
+2. We could forgo making our own API and just offer specs, examples, and/or documentation for user's to build their own
+APIs. This is a risky prospect because the community might diverge in the way bundles are used and created if there
+isn't at least one official, minimal tool for creating them. It might also hurt the adoption of the feature.

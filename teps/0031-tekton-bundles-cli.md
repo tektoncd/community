@@ -3,7 +3,7 @@ title: tekton-bundles-cli
 authors:
   - "@pierretasci"
 creation-date: 2020-11-18
-last-updated: 2020-12-04
+last-updated: 2020-12-07
 status: implementable
 ---
 # TEP-0031: Tekton Bundles CLI
@@ -78,13 +78,14 @@ Amend the Tekton CLI to provide the following commands (more detail later):
 
 ```shell
 # REF = OCI reference, eg. docker.io/myworkspace/mybundle:1.0
-# BUNDLE_OBJECT = path to a file or directory or STDIN of a valid Tekton Task or Pipeline object to be included in the
-# bundle.
+# BUNDLE_OBJECT = path to a file or directory or STDIN of valid YAML/JSON that contains Tekton Tasks and/or Pipeline
+# to be included in the final bundle.
 
-# Generates a Tekton Bundle from a set of 1+ bundle objects. Publishes the bundle to a remote repository using the
-# specified reference. Will properly split and parse input files that have multiple objects and rejects any input that
-# isn't a known and supported Tekton KIND.
-tkn bundle push <REF> [BUNDLE_OBJECT...]
+# Generates a Tekton Bundle from a set of 1+ bundle objects. Will read all of the objects out of STDIN and/or from 
+# `kubectl` style `-f` file paths. Publishes the bundle to a remote repository using the specified reference. Will
+# properly split and parse input files that have multiple objects and rejects any input that isn't a known and supported
+# Tekton KIND.
+tkn bundle push <REF> [BUNDLE_OBJECT] -f [BUNDLE_OBJECT]
 
 # Fetches a Tekton Bundle and prints its contents in a configurable format. If KIND is specified, will print only
 # objects of the specified kind (eg, Pipeline or Task). If KIND and NAME are specified, will retrieve a specific object.

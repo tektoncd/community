@@ -263,6 +263,36 @@ orgs:
         privacy: closed
         repos:
           plumbing: write
+      results.maintainers:
+        description: the results maintainers
+        maintainers:
+        - abayer
+        - afrittoli
+        - bobcatfish
+        - ImJasonH
+        - vdemeester
+        - wlynch
+        members:
+        - dibyom
+        - ImJasonH
+        - wlynch
+        privacy: closed
+        repos:
+          results: write
+      results.collaborators:
+        description: The results collaborators
+        maintainers:
+        - abayer
+        - afrittoli
+        - bobcatfish
+        - ImJasonH
+        - vdemeester
+        - wlynch
+        members:
+        - XinruZhang
+        privacy: closed
+        repos:
+          results: read
       triggers.maintainers:
         description: the triggers maintainers
         maintainers:
@@ -631,3 +661,4 @@ orgs:
         privacy: closed
         repos:
           chains: read
+

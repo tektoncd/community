@@ -121,9 +121,10 @@ To become an OWNER of one of these repositores, you must either:
 
 Repositories currently using this simpler mechanism are:
 
-* tektoncd/plumbing
-* tektoncd/friends
 * tektoncd/community
+* tektoncd/friends
+* tektoncd/plumbing
+* tektoncd/results
 * tektoncd/website
 
 ## Reviews

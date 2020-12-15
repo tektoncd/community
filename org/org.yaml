@@ -177,6 +177,7 @@ orgs:
         - dlorenc
         - dibyom
         - sbwsg
+        - jerop
         privacy: closed
         repos:
           pipeline: write

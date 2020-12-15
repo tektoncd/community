@@ -269,9 +269,7 @@ orgs:
         - abayer
         - afrittoli
         - bobcatfish
-        - ImJasonH
         - vdemeester
-        - wlynch
         members:
         - dibyom
         - ImJasonH
@@ -283,12 +281,12 @@ orgs:
         description: The results collaborators
         maintainers:
         - abayer
-        - afrittoli
         - bobcatfish
-        - ImJasonH
         - vdemeester
-        - wlynch
+        - afrittoli
         members:
+        - wlynch
+        - ImJasonH
         - XinruZhang
         privacy: closed
         repos:

@@ -25,14 +25,16 @@ The vision for this is:
 * Tekton API conformance across as many CI/CD platforms as possible
 * A rich catalog of high quality, reusable `Tasks` which work with Tekton conformant systems
 
-What this vision looks like differs across different users:
+What this vision looks like differs across different [users](user-profiles.md):
 
-* **Engineers building CI/CD systems**: These users will be motivated to use Tekton
-  and integrate it into the CI/CD systems they are using because building on top
-  of Tekton means they don't have to re-invent the wheel and out of the box they get
-  scalable, serverless cloud native execution
-* **Engineers who need CI/CD**: (aka all software engineers!) These users will benefit
-  from the rich high quality catalog of reusable components:
+* **Engineers building CI/CD systems**: [These users](user-profiles.md#3-platform-builder)
+  will be motivated to use Tekton and integrate it into the CI/CD systems they are using
+  because building on top of Tekton means they don't have to re-invent the wheel and out
+  of the box they get scalable, serverless cloud native execution
+* **Engineers who need CI/CD**: (aka all software engineers!) These users
+  (including [Pipeline and Task authors](user-profiles.md#2-pipeline-and-task-authors)
+  and [Pipeline and Task users](user-profiles.md#2-pipeline-and-task-users)
+  will benefit from the rich high quality catalog of reusable components:
 
   * Quickly build and interact with sophisticated `Pipelines`
   * Be able to port `Pipelines` to any Tekton conformant system

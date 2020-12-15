@@ -23,7 +23,7 @@ See our standards regarding:
 
 * [Code of conduct](code-of-conduct.md)
 * [Development principles](standards.md#principles)
-* [Design principles](design-principles.md)
+* [Design principles](design-principles.md) and [User Profiles](user-profiles.md)
 * [Commit messages](standards.md#commit-messages)
 * [Go coding standards](standards.md#go)
 * [User profiles](user-profiles.md)

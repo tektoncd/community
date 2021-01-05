@@ -36,9 +36,18 @@ For example:
 * [Jenkins X](https://github.com/jenkins-x/jx)
 * A platform team at a company who chooses to create their own bespoke user experience on top of Tekton
 
+#### 3a. Platform Builder Implementing the Tekton API
+
+Some platform builders may wish to create their own systems which comply to Tekton API specs (e.g.
+[the Tekton Pipelines API spec](https://github.com/tektoncd/pipeline/blob/master/docs/api-spec.md)) but use their own
+implementations.
+
+For example:
+* Someone who wants to use Tekton Tasks but does not want to use Kubernetes
+
 ### 4. Tekton Installation Operator
 
-A Tekton installation operator administers the an installation of Tekton in a kubernetes cluster (e.g. maybe via [the Tekton Operator](https://github.com/tektoncd/operator)).
+A Tekton installation operator administers an installation of Tekton in a kubernetes cluster (e.g. maybe via [the Tekton Operator](https://github.com/tektoncd/operator)).
 
 ### 5. Supporting Tool Developer
 

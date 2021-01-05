@@ -242,9 +242,9 @@ This is the working group for [`tektoncd/catalog`](https://github.com/tektoncd/c
 | &nbsp;                                                        | Facilitators      | Company | Profile                                            |
 | -----------------------------------------------------------   | ----------        | ------- | ------------------------------------------------   |
 | <img width="30px" src="https://github.com/vdemeester.png">    | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester)        |
-| <img width="30px" src="https://github.com/bobcatfish.png">    | Christie Wilson   | Google  | [bobcatfish](https://github.com/bobcatfish)        |
 | <img width="30px" src="https://github.com/chmouel.png">       | Chmouel Boudjnah  | Red Hat | [chmouel](https://github.com/chmouel)              |
 | <img width="30px" src="https://github.com/afrittoli.png">     | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli)          |
+| <img width="30px" src="https://github.com/piyush-garg.png">   | Piyush Garg       | Red Hat | [piyush-garg](https://github.com/piyush-garg)      |
 
 ## Operator and Deployment
 

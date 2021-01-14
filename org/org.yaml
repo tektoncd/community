@@ -590,6 +590,7 @@ orgs:
         - dorismeixing
         - afrittoli
         - gabemontero
+        - marcelmue
         privacy: closed
         repos:
           triggers: read

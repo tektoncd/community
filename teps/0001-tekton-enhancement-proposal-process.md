@@ -216,7 +216,7 @@ requirements](https://github.com/tektoncd/community/blob/master/process.md#proje
 ### TEP Template
 
 The template for a TEP is precisely defined
-[here](NNNN-tep-template/README.md)
+[here](tools/tep-template.md.template)
 
 It's worth noting, the TEP template used to track API changes will
 likely have different subsections than the template for proposing

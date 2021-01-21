@@ -39,6 +39,7 @@ orgs:
     - chanseokoh
     - chetan-rns
     - chmouel
+    - concaf
     - danielhelfand
     - dibbles
     - dibyom
@@ -96,6 +97,7 @@ orgs:
     - psschwei
     - raffamendes
     - rhuss
+    - rupalibehera
     - savitaashture
     - sbwsg
     - sclevine
@@ -670,4 +672,3 @@ orgs:
         privacy: closed
         repos:
           chains: read
-

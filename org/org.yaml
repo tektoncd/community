@@ -457,6 +457,7 @@ orgs:
         - vdemeester
         - skaegi
         - jessm12
+        - ziheng
         privacy: closed
         repos:
           dashboard: read

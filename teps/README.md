@@ -147,3 +147,4 @@ This is the complete list of Tekton teps:
 |[TEP-0032](0032-tekton-notifications.md) | Tekton Notifications | proposed | 2020-11-18 |
 |[TEP-0035](0035-document-tekton-position-around-policy-authentication-authorization.md) | document-tekton-position-around-policy-authentication-authorization | implementable | 2020-12-09 |
 |[TEP-0036](0036-start-measuring-tekton-pipelines-performance.md) | Start Measuring Tekton Pipelines Performance | proposed | 2020-11-20 |
+|[TEP-0037](0037-simplify-metrics.md) | Simplify metrics | proposed | 2020-12-11 |

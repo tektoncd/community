@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: WhenExpressions in Finally Tasks
 creation-date: '2021-01-21'
-last-updated: '2021-01-27'
+last-updated: '2021-01-28'
 authors:
 - '@jerop'
 ---
@@ -177,7 +177,8 @@ the other `Tasks` are done.
 ### Using Execution Status
 
 Users would be able to solve for the example use case described in [Motivation](#motivation), where a user wants to send
-a Slack notification using an `Execution Status` (when a `Task` fails), as such:
+a Slack notification using an `Execution Status` (when a `Task` fails), as demonstrated using [`golang-build`](https://github.com/tektoncd/catalog/tree/master/task/golang-build/0.1)
+and [`send-to-channel-slack`](https://github.com/tektoncd/catalog/tree/master/task/send-to-channel-slack/0.1) Catalog `Tasks`:
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -187,14 +188,14 @@ metadata:
 spec:
   pipelineSpec:
     tasks:
-      - name: build
+      - name: golang-build
         taskRef:
-          name: build
+          name: golang-build
       # […]
     finally:
-      - name: notify-failure # executed only when build task fails
+      - name: notify-build-failure # executed only when build task fails
         when:
-          - input: $(tasks.build.status)
+          - input: $(tasks.golang-build.status)
             operator: in
             values: ["Failed"]
         taskRef:
@@ -204,7 +205,8 @@ spec:
 
 ### Using Results
 
-Users can use `Results` in the `WhenExpressions` in `Finally Tasks` as such:
+Users can use `Results` in the `WhenExpressions` in `Finally Tasks`, as demonstrated using [`boskos-acquire`](https://github.com/tektoncd/catalog/tree/master/task/boskos-acquire/0.1)
+and [`boskos-release`](https://github.com/tektoncd/catalog/tree/master/task/boskos-release/0.1) Catalog `Tasks`:
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -214,18 +216,19 @@ metadata:
 spec:
   pipelineSpec:
     tasks:
-      - name: check-image-exists
+      - name: boskos-acquire
         taskRef:
-          name: check-image-exists
+          name: boskos-acquire
+      - name: use-resource
       # […]
     finally:
-      - name: notify-existence # executed only when image existed
+      - name: boskos-release # executed only when leased resource is phonetic-project
         when:
-          - input: $(tasks.check-image-exists.results.exists)
+          - input: $(tasks.boskos-acquire.results.leased-resource)
             operator: in
-            values: ["true"]
+            values: ["phonetic-project"]
         taskRef:
-          name: send-to-slack-channel
+          name: boskos-release
       # […]
 ```
 
@@ -238,7 +241,9 @@ exist or there's a typo), the `Pipeline` validation will fail upfront.
 
 ### Using Parameters
 
-Users can use `Parameters` in the `WhenExpressions` in `Finally Tasks` as such:
+Users can use `Parameters` in the `WhenExpressions` in `Finally Tasks`, as demonstrated using [`golang-build`](https://github.com/tektoncd/catalog/tree/master/task/golang-build/0.1)
+and [`send-to-channel-slack`](https://github.com/tektoncd/catalog/tree/master/task/send-to-channel-slack/0.1) Catalog `Tasks`:
+
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -248,26 +253,29 @@ metadata:
 spec:
   pipelineSpec:
     params:
-    - name: branch
+    - name: enable-notifications
       type: string
-      description: the github branch
+      description: a boolean indicating whether the notifications should be sent
     tasks:
-      - name: build
+      - name: golang-build
         taskRef:
-          name: build
+          name: golang-build
       # […]
     finally:
-      - name: create-github-issue # executed only when branch was main
+      - name: notify-build-failure # executed only when build task fails and notifications are enabled
         when:
-          - input: $(params.branch)
+          - input: $(tasks.golang-build.status)
             operator: in
-            values: ["main"]
+            values: ["Failed"]
+          - input: $(params.enable-notifications)
+            operator: in
+            values: ["true"]  
         taskRef:
-          name: create-github-issue
+          name: send-to-slack-channel
       # […]
   params:
-    - name: branch
-      value: main
+    - name: enable-notifications
+      value: true
 ```
 
 We will validate the `Parameters` references in the `WhenExpressions` beforehand. If they are invalid (e.g. they don't

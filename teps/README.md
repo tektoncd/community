@@ -148,4 +148,5 @@ This is the complete list of Tekton teps:
 |[TEP-0035](0035-document-tekton-position-around-policy-authentication-authorization.md) | document-tekton-position-around-policy-authentication-authorization | implementable | 2020-12-09 |
 |[TEP-0036](0036-start-measuring-tekton-pipelines-performance.md) | Start Measuring Tekton Pipelines Performance | proposed | 2020-11-20 |
 |[TEP-0037](0037-remove-gcs-fetcher.md) | Remove `gcs-fetcher` image | proposed | 2021-01-27 |
+|[TEP-0043](0043-common-expression-language-custom-task-celrun.md) | Common Expression Language Custom Task (CELRun) | proposed | 2021-01-21 |
 |[TEP-0045](0045-whenexpressions-in-finally-tasks.md) | WhenExpressions in Finally Tasks | proposed | 2021-01-27 |

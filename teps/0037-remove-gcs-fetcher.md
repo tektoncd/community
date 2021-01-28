@@ -4,7 +4,7 @@ authors:
   - "@ImJasonH"
 creation-date: 2021-01-27
 last-updated: 2021-01-27
-status: proposed
+status: implementing
 ---
 
 # TEP-0037: Remove `gcs-fetcher` image

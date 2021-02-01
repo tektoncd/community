@@ -137,6 +137,7 @@ orgs:
         - dlorenc
         - sbwsg
         - chmouel
+        - vinamra28
         privacy: closed
         repos:
           catalog: write

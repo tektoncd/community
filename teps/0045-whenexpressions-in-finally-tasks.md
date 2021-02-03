@@ -124,7 +124,7 @@ Users may want to guard the execution of `Finally Tasks` based on [`Results` fro
 Moreover, now that [the execution status of `Tasks` is accessible in `Finally Tasks`](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#using-execution-status-of-pipelinetask),
 they may also want to guard the execution of `Finally Tasks` based on the execution status of other `Tasks`.
 
-An example use case is a `Pipeline` author wants to send a notification, such as posting on Slack using [this catalog task](https://github.com/tektoncd/catalog/tree/master/task/send-to-channel-slack/0.1#post-a-message-to-slack),
+An example use case is a `Pipeline` author wants to send a notification, such as posting on Slack using [this catalog task](https://github.com/tektoncd/catalog/tree/main/task/send-to-channel-slack/0.1#post-a-message-to-slack),
 when a certain `Task` in the `Pipeline` failed. To do this, one user has had to use a workaround using `Workspaces` that
 they describe [in this thread](https://tektoncd.slack.com/archives/CK3HBG7CM/p1603399989171300?thread_ts=1603376439.161500&cid=CK3HBG7CM).
 In addition, needing the workaround prevents the user from reusing the Slack catalog task as further described in [this issue](https://github.com/tektoncd/pipeline/issues/3438).
@@ -177,8 +177,8 @@ the other `Tasks` are done.
 ### Using Execution Status
 
 Users would be able to solve for the example use case described in [Motivation](#motivation), where a user wants to send
-a Slack notification using an `Execution Status` (when a `Task` fails), as demonstrated using [`golang-build`](https://github.com/tektoncd/catalog/tree/master/task/golang-build/0.1)
-and [`send-to-channel-slack`](https://github.com/tektoncd/catalog/tree/master/task/send-to-channel-slack/0.1) Catalog `Tasks`:
+a Slack notification using an `Execution Status` (when a `Task` fails), as demonstrated using [`golang-build`](https://github.com/tektoncd/catalog/tree/main/task/golang-build/0.1)
+and [`send-to-channel-slack`](https://github.com/tektoncd/catalog/tree/main/task/send-to-channel-slack/0.1) Catalog `Tasks`:
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -205,8 +205,8 @@ spec:
 
 ### Using Results
 
-Users can use `Results` in the `WhenExpressions` in `Finally Tasks`, as demonstrated using [`boskos-acquire`](https://github.com/tektoncd/catalog/tree/master/task/boskos-acquire/0.1)
-and [`boskos-release`](https://github.com/tektoncd/catalog/tree/master/task/boskos-release/0.1) Catalog `Tasks`:
+Users can use `Results` in the `WhenExpressions` in `Finally Tasks`, as demonstrated using [`boskos-acquire`](https://github.com/tektoncd/catalog/tree/main/task/boskos-acquire/0.1)
+and [`boskos-release`](https://github.com/tektoncd/catalog/tree/main/task/boskos-release/0.1) Catalog `Tasks`:
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -241,8 +241,8 @@ exist or there's a typo), the `Pipeline` validation will fail upfront.
 
 ### Using Parameters
 
-Users can use `Parameters` in the `WhenExpressions` in `Finally Tasks`, as demonstrated using [`golang-build`](https://github.com/tektoncd/catalog/tree/master/task/golang-build/0.1)
-and [`send-to-channel-slack`](https://github.com/tektoncd/catalog/tree/master/task/send-to-channel-slack/0.1) Catalog `Tasks`:
+Users can use `Parameters` in the `WhenExpressions` in `Finally Tasks`, as demonstrated using [`golang-build`](https://github.com/tektoncd/catalog/tree/main/task/golang-build/0.1)
+and [`send-to-channel-slack`](https://github.com/tektoncd/catalog/tree/main/task/send-to-channel-slack/0.1) Catalog `Tasks`:
 
 
 ```yaml

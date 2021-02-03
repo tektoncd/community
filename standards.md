@@ -58,8 +58,8 @@ _See also [the Tekton review process](https://github.com/tektoncd/community/blob
 * Include Markdown doc updates for user visible features
 * Spelling and grammar should be correct
 * Try to make formatting look as good as possible (use preview mode to check)
-* Follow [content](https://github.com/tektoncd/website/blob/master/content/en/doc-con-content.md)
-  and [formatting](https://github.com/tektoncd/website/blob/master/content/en/doc-con-formatting.md) guidelines
+* Follow [content](https://github.com/tektoncd/website/blob/main/content/en/doc-con-content.md)
+  and [formatting](https://github.com/tektoncd/website/blob/main/content/en/doc-con-formatting.md) guidelines
 * Should explain thoroughly how the new feature works
 * If possible, in addition to code snippets, include a reference to an end to end example
 * Ensure that all links and references are valid

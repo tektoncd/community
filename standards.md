@@ -117,7 +117,7 @@ _See also [the Tekton review process](https://github.com/tektoncd/community/blob
       it would make sense to move the test into another package and export it
 * Test code
   * When using cmp.Diff the argument order is always (want, got) and in the error message include (-want +got)
-    (and/or use a lib like [PrintWantGot](https://github.com/tektoncd/pipeline/blob/master/test/diff/print.go))
+    (and/or use a lib like [PrintWantGot](https://github.com/tektoncd/pipeline/blob/main/test/diff/print.go))
   * Table driven tests: do not use the same test for success and fail cases if the logic is different
     (e.g. do not have two sets of test logic, gated with `wantErr`)
 

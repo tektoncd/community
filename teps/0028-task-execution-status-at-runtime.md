@@ -102,7 +102,7 @@ All necessary e2e and unit tests will be added.
 ## Alternatives
 
 * If the states defined in this [Proposal](#proposal) are not clear, one alternative is to change these states and align them
-to `pipelineRun` [execution status](https://github.com/tektoncd/pipeline/blob/master/docs/pipelineruns.md#monitoring-execution-status) (`Unknown`, `True`, `False`). Also change the proposed variable pattern to match these states.
+to `pipelineRun` [execution status](https://github.com/tektoncd/pipeline/blob/main/docs/pipelineruns.md#monitoring-execution-status) (`Unknown`, `True`, `False`). Also change the proposed variable pattern to match these states.
 
 * Another alternative is to add more states such as `Started`, `Running`, and `Cancelled` if the proposed states are
 not sufficient for your use cases.

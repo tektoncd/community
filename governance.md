@@ -160,7 +160,7 @@ Members of the governing board will be given access to these resources:
   which is used for [test and release infrastructure](https://github.com/tektoncd/plumbing)
 * [The GCP project `tekton-nightly`](http://console.cloud.google.com/home/dashboard?project=tekton-nightly)
   which is used for publishing nightly releases for Tekton projects
-* [The GCP projects used by boskos](https://github.com/tektoncd/plumbing/blob/master/boskos/boskos-config.yaml)
+* [The GCP projects used by boskos](https://github.com/tektoncd/plumbing/blob/main/boskos/boskos-config.yaml)
   which are used to test against
 
-They have the permissions added through a [script](https://github.com/tektoncd/plumbing/blob/master/addpermissions.py).
+They have the permissions added through a [script](https://github.com/tektoncd/plumbing/blob/main/addpermissions.py).

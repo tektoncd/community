@@ -8,7 +8,7 @@ to manage the org configuration.
 
 Changes to this configuration are applied automatically via a GitHub trigger:
 
-* https://github.com/tektoncd/plumbing/tree/master/tekton/resources/org-permissions
+* https://github.com/tektoncd/plumbing/tree/main/tekton/resources/org-permissions
 
 ## Requirements
 

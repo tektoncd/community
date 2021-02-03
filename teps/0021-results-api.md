@@ -746,7 +746,7 @@ to get more details.
 
 - Original Project Proposal:
   https://docs.google.com/document/d/1-XBYQ4kBlCHIHSVoYAAf_iC01_by_KoK2aRVO0t8ZQ0
-- Proof of Concept: https://github.com/tektoncd/experimental/tree/master/results
+- Proof of Concept: https://github.com/tektoncd/experimental/tree/main/results
 
 ## Future Work
 

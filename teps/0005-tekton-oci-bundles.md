@@ -43,7 +43,7 @@ discussed in the following docs:
 - [Tekton OCI Image Design](https://docs.google.com/document/d/1lXF_SvLwl6OqqGy8JbpSXRj4hWJ6CSImlxlIl4V9rnM/edit?pl=1#)
 
 This will be based from the knowledge acquired on the [experimental oci
-project](https://github.com/tektoncd/experimental/tree/master/oci) we ran.
+project](https://github.com/tektoncd/experimental/tree/main/oci) we ran.
 
 ## Motivation
 
@@ -405,7 +405,7 @@ expectations).
 
 We need a tool to be able to package, push and pull images to and from
 any OCI registries. The
-[`oci`](https://github.com/tektoncd/experimental/tree/master/oci)
+[`oci`](https://github.com/tektoncd/experimental/tree/main/oci)
 experimental project would be a good fit for this — before we discuss
 and integrate Tekton OCI bundles in `tkn` and the `tektoncd/pipeline`
 types.

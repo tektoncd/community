@@ -418,7 +418,7 @@ For example (with Task and Pipelines):
 
 #### Example of a resource from catalog
 
-* An example of `git-clone` task from the catalog: [Git-Clone](https://github.com/tektoncd/catalog/tree/master/task/git-clone/0.1)
+* An example of `git-clone` task from the catalog: [Git-Clone](https://github.com/tektoncd/catalog/tree/main/task/git-clone/0.1)
 
 * Fields added to the yaml file
 

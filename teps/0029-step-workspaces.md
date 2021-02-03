@@ -195,7 +195,7 @@ sidecars:
 
 #### Story 1
 
-An author of the [`buildpacks-phases`](https://github.com/tektoncd/catalog/blob/master/task/buildpacks-phases/0.1/buildpacks-phases.yaml)
+An author of the [`buildpacks-phases`](https://github.com/tektoncd/catalog/blob/main/task/buildpacks-phases/0.1/buildpacks-phases.yaml)
 Catalog task may want to rewrite the Task to reduce the possible blast radius of
 running untrusted images by limiting exposure of Docker credentials to only
 the Step which needs them to push images.

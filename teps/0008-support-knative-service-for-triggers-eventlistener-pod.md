@@ -146,7 +146,7 @@ spec:
 This is exactly the same whatever we have right now with default.
 The reason to move `serviceAccountName`, `podTemplate`, 
 to `kubernetesResource` field is because those are part of [WithPodSpec{}](https://github.com/knative/pkg/blob/master/apis/duck/v1/podspec_types.go#L49) duck type
-and which helps to support any of the pod and container field without hardcoding in [podTemplate](https://github.com/tektoncd/triggers/blob/master/pkg/apis/triggers/v1alpha1/event_listener_types.go#L62).
+and which helps to support any of the pod and container field without hardcoding in [podTemplate](https://github.com/tektoncd/triggers/blob/main/pkg/apis/triggers/v1alpha1/event_listener_types.go#L62).
 
 1.If user specify podSpec fields.  
 ```yaml
@@ -337,7 +337,7 @@ With all of the above implementation we should have `Knative` dependency as vend
 ## Open Points
 
 As per the proposal `kubernetesResource` will have `serviceType` and `spec` which is [WithPodSpec{}](https://github.com/knative/pkg/blob/master/apis/duck/v1/podspec_types.go#L49) duck type
-so the created Deployment/Service will get the information of annotation/labels if provided as part of [EventListener](https://github.com/tektoncd/triggers/blob/master/pkg/apis/triggers/v1alpha1/event_listener_types.go#L42-L44).
+so the created Deployment/Service will get the information of annotation/labels if provided as part of [EventListener](https://github.com/tektoncd/triggers/blob/main/pkg/apis/triggers/v1alpha1/event_listener_types.go#L42-L44).
 
 But there is discussion thread [here](https://github.com/tektoncd/community/pull/186#issuecomment-685250556) 
 where there is a point like user should get the way to specify annotation/labels to Deployment/Service.

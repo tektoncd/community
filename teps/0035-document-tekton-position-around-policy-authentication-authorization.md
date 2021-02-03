@@ -483,8 +483,8 @@ Namespace has sufficient permissions via Kubernetes RBAC to access the `ClusterT
 As mentioned in the Summary, [this Tekton Triggers issue](https://github.com/tektoncd/triggers/issues/610) is the 
 source for raising this scenario here, and has a bunch of good detailed discussion.
 
-In that issue, an approach using the [Tekton Trigger (Custom) Webhook Interceptor](https://github.com/tektoncd/triggers/blob/master/docs/eventlisteners.md#webhook-interceptors)
-could serve as the means to engage with [OPA's support for validating JWT Token (e.g OpenID Connect)](https://github.com/tektoncd/triggers/blob/master/docs/eventlisteners.md#webhook-interceptors)
+In that issue, an approach using the [Tekton Trigger (Custom) Webhook Interceptor](https://github.com/tektoncd/triggers/blob/main/docs/eventlisteners.md#webhook-interceptors)
+could serve as the means to engage with [OPA's support for validating JWT Token (e.g OpenID Connect)](https://github.com/tektoncd/triggers/blob/main/docs/eventlisteners.md#webhook-interceptors)
 to validate whether the user's tokens in incoming HTTP payload can access the referenced Trigger and the Task/TaskRuns etc.
 the Trigger can initiate.
 

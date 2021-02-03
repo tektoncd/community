@@ -100,7 +100,7 @@ Today with overlays, users have the ability to modify incoming event payloads
 either with CEL or Webhook interceptors.
 
 For example, the following
-[CEL Interceptor](https://github.com/tektoncd/triggers/blob/master/docs/eventlisteners.md#CEL-Interceptors)
+[CEL Interceptor](https://github.com/tektoncd/triggers/blob/main/docs/eventlisteners.md#CEL-Interceptors)
 can modify the incoming event payload to include a shortened SHA:
 
 ```yaml
@@ -108,7 +108,7 @@ can modify the incoming event payload to include a shortened SHA:
   expression: "truncate(body.pull_request.head.sha, 7)"
 ```
 
-[Webhook Interceptors](https://github.com/tektoncd/triggers/blob/master/docs/eventlisteners.md#Webhook-Interceptors)
+[Webhook Interceptors](https://github.com/tektoncd/triggers/blob/main/docs/eventlisteners.md#Webhook-Interceptors)
 can provide similar functionality with their own custom code, but they are also
 required to pass back bodies in responses if they wish to preserve data.
 

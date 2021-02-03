@@ -402,7 +402,7 @@ This requires integrators to write CRD types and controllers in order to impleme
 
 1.  As in previous iterations of this design (documented more fully in the Google Doc), require implementors to define and support two CRD types, instead of one. See the doc for full explanation of the trade-offs.
 
-1. Allow users to instantiate arbitrary kubernetes objects by providing their entire content inline. In this approach, users would be create instances of their own custom CRDs, e.g. `CELRun`, by providing the entire body inline, much like [triggertemplates](https://github.com/tektoncd/triggers/blob/master/docs/triggertemplates.md).
+1. Allow users to instantiate arbitrary kubernetes objects by providing their entire content inline. In this approach, users would be create instances of their own custom CRDs, e.g. `CELRun`, by providing the entire body inline, much like [triggertemplates](https://github.com/tektoncd/triggers/blob/main/docs/triggertemplates.md).
 
    * pros: ultimiate flexibility
 

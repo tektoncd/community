@@ -6,7 +6,7 @@ This doc describes Tekton's mission and the 2020 roadmap.
 - [2021 Roadmap](#2021-roadmap)
 - Tekton Project Roadmaps
   - [Pipeline](https://github.com/tektoncd/pipeline/blob/master/roadmap.md)
-  - [Triggers](https://github.com/tektoncd/triggers/blob/master/roadmap.md)
+  - [Triggers](https://github.com/tektoncd/triggers/blob/main/roadmap.md)
   - [Catalog](https://github.com/tektoncd/catalog/blob/master/roadmap.md)
   - [Dashboard](https://github.com/tektoncd/dashboard/blob/main/roadmap.md)
   - [CLI](https://github.com/tektoncd/cli/blob/master/ROADMAP.md)

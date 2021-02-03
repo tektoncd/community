@@ -32,7 +32,7 @@ _See also [the Tekton review process](https://github.com/tektoncd/community/blob
   * If the template contains a checklist, it should be checked off
   * Release notes filled in for user visible changes (bugs + features),
     or removed if not applicable (refactoring, updating tests) (may be enforced
-    via the [release-note Prow plugin](https://github.com/tektoncd/plumbing/blob/master/prow/plugins.yaml))
+    via the [release-note Prow plugin](https://github.com/tektoncd/plumbing/blob/main/prow/plugins.yaml))
 
 ## Commits
 

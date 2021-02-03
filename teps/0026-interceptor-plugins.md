@@ -59,17 +59,17 @@ Interceptors have two API surfaces:
 1. Configuration: This is the part of the EventListener spec where users
 configure the interceptor to use (e.g. the CEL interceptor) along with
 addition configuration e.g. a CEL filter expression
-([example](https://github.com/tektoncd/triggers/blob/master/examples/github/github-eventlistener-interceptor.yaml#L10))
+([example](https://github.com/tektoncd/triggers/blob/main/examples/github/github-eventlistener-interceptor.yaml#L10))
 2. The [runtime
-interface](https://github.com/tektoncd/triggers/blob/master/pkg/interceptors/interceptors.go#L30)
+interface](https://github.com/tektoncd/triggers/blob/main/pkg/interceptors/interceptors.go#L30)
 that defines what information gets passed on to the interceptor code for
 processing and what information the interceptor has to return (e.g a modified
 event body, a yes/no on whether to continue processing etc.)
 
 Today, interceptors come in two flavors -
-[built-in](https://github.com/tektoncd/triggers/blob/master/docs/eventlisteners.md#interceptors)
+[built-in](https://github.com/tektoncd/triggers/blob/main/docs/eventlisteners.md#interceptors)
 and
-[webhook](https://github.com/tektoncd/triggers/blob/master/docs/eventlisteners.md#Webhook-Interceptors).
+[webhook](https://github.com/tektoncd/triggers/blob/main/docs/eventlisteners.md#Webhook-Interceptors).
 They differ both in the end user interface as well as the runtime interface.
 Built in interceptors are part of the Triggers source tree and are executed
 as in process function calls. Users can provide additional configuration
@@ -169,7 +169,7 @@ See the [Design Details](#design-details) section below for more.
 
 3. Backwards Compatibility
 
-    This model [diverges](#http-interface) from the existing WebHookInterceptor model. For backwards compatibility, we can keep supporting the existing [WebhookInterceptor interface](https://github.com/tektoncd/triggers/blob/master/docs/eventlisteners.md#event-interceptor-services) for a few releases or until beta.
+    This model [diverges](#http-interface) from the existing WebHookInterceptor model. For backwards compatibility, we can keep supporting the existing [WebhookInterceptor interface](https://github.com/tektoncd/triggers/blob/main/docs/eventlisteners.md#event-interceptor-services) for a few releases or until beta.
 
 4. Secrets and RBAC concerns 
 
@@ -513,7 +513,7 @@ migration strategy. This is especially useful when we modify a
 behavior or add a feature that may replace and deprecate a current one.
 -->
 
-* We'll keep supporting the current [webhook interface](https://github.com/tektoncd/triggers/blob/master/docs/eventlisteners.md#event-interceptor-services) until beta.
+* We'll keep supporting the current [webhook interface](https://github.com/tektoncd/triggers/blob/main/docs/eventlisteners.md#event-interceptor-services) until beta.
 
 ## Work Plan
 

@@ -39,7 +39,7 @@ For example:
 #### 3a. Platform Builder Implementing the Tekton API
 
 Some platform builders may wish to create their own systems which comply to Tekton API specs (e.g.
-[the Tekton Pipelines API spec](https://github.com/tektoncd/pipeline/blob/master/docs/api-spec.md)) but use their own
+[the Tekton Pipelines API spec](https://github.com/tektoncd/pipeline/blob/main/docs/api-spec.md)) but use their own
 implementations.
 
 For example:

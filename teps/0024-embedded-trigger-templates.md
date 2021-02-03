@@ -33,7 +33,7 @@ resources makes it simple (and less verbose) to express workflows in Tekton.
 This is especially true for simple use cases, examples, and documentation where
 reusability is less of a concern. For instance, Task specs can be embedded
 inside TaskRuns (see the
-[examples](https://github.com/tektoncd/pipeline/tree/master/examples/v1beta1/taskruns)).
+[examples](https://github.com/tektoncd/pipeline/tree/main/examples/v1beta1/taskruns)).
 
 Within a Trigger, at the moment, only `bindings` can be embedded while Templates
 always have to be referenced. Allowing embedded templates will make it easier

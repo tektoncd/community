@@ -685,7 +685,7 @@ needs.
 ### Naming overlap with Task results
 
 There is naming overlap with
-[Task outputs](https://github.com/tektoncd/pipeline/blob/master/docs/tasks.md#emitting-results),
+[Task outputs](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#emitting-results),
 called Task results. There is a risk that users may confuse Tekton Results with
 Task results.
 
@@ -731,7 +731,7 @@ behavior or add a feature that may replace and deprecate a current one.
 -->
 
 We will be consistent with the Pipelines
-[API compatibility policy](https://github.com/tektoncd/pipeline/blob/master/api_compatibility_policy.md) -
+[API compatibility policy](https://github.com/tektoncd/pipeline/blob/main/api_compatibility_policy.md) -
 tl;dr free to make breaking changes in alpha, breaking changes are allowed with
 a deprecation period in beta, and no breaking changes allowed in stable (i.e.
 v1).

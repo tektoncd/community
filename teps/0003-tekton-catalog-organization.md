@@ -5,8 +5,8 @@ authors:
   - "@sthaha"
   - "@bobcatfish"
 creation-date: 2020-06-11
-last-updated: 2020-08-12
-status: implementable
+last-updated: 2021-02-09
+status: implemented
 ---
 
 # TEP-0003: Tekton Catalog Organization
@@ -145,8 +145,8 @@ this](https://docs.google.com/document/d/1-czjvjfpuIqYKsfkvZ5RxIbtoFNLTEtOxaZB71
     3. Existing users of the resource can choose what versions of the
        resources they can use
 
-3. Updates to already published resources should be a new versioned
-   release instead of updating the existing released version.
+3. If an update change the behavior of an already published task, the updated
+   task should be a released as a new version.
 
 4. Users of the catalog can reference Tasks in the catalog in their
    TaskRuns and Pipelines including the version they would like to use
@@ -289,7 +289,7 @@ bump is necessary (taken Task as example) :
   * When the image for a step is specified via an input params, we should treat changes to the default value of that param in the same way as changes to a step image
 
 * New fields are added to the Task (new parameters, new results, new
-  workspace, new input, new output, …)
+  workspace, new input, new output, …) and they are going to affect behaviour of the task which might break the pipeline created with existing version.
 
 * The command+arg or script is changed (and the behavior) changes
 
@@ -300,7 +300,10 @@ Changes to an existing version may however be permitted to
 non-functional parts like the metadata.annotations, labels of the
 resource, README, samples, but we should strive to keep that minimal
 so that the resource definition is independent of the time it was
-applied by the user.
+applied by the user. Also, new fields can be added to existing 
+version with default values if it is not going to break pipeline 
+created with existing version. This can be ensured by running tests 
+on the updated resource.
 
 #### Open questions
 

@@ -88,17 +88,24 @@ help/guidance.
 
 Thanks so much!!
 
-## OWNERS
+## OWNERS and Collaborators
 
 Our contributors are made up of:
 
-* A core group of OWNERS (defined in `OWNERS` files)) who can
-  [approve PRs](#getting-sign-off)
-* Any and all other contributors!
+* A core group of OWNERS who can [approve PRs](#prow-commands)
+* A group of collaborators who can [lgtm PRs](#prow-commands)
+* Any and all other contributors, who can review PRs, but not approve them.
 
-If you are interested in becoming an OWNER of a project, take a look at the
-[requirements](#requirements) and follow up with an existing OWNER
-[on slack](#contact).
+If you are interested in becoming an OWNER or a collaborator of a project,
+take a look at the [requirements](#requirements) and follow up with an existing
+OWNER [on slack](#contact).
+
+ONWERS are defined in `OWNERS` files of each repository as well as in the `<repo>.maintainers`
+GitHub teams, where `<repo>` is the name of the GitHub repository. The only exception is `pipeline`
+whose maintainer team is name `core.maintainers`. Collaborators are defined in the
+`<repo>.collaborators` GitHub teams and `core.collaborators` for the pipeline project.
+The definition of the team is stored in the [community repository](https://github.com/tektoncd/community/blob/main/org/org.yaml)
+and sync'ed to GitHub automatically. Teams can be addressed in GitHub comments via `@<team-name>`.
 
 ### Requirements
 
@@ -114,7 +121,7 @@ The final change will be made via a PR to update the OWNERS file.
 
 To facilitate productivity, small repositories, or repositories that do not contain production
 code may decide to use a simpler OWNERs process.
-To become an OWNER of one of these repositores, you must either:
+To become an OWNER of one of these repositories, you must either:
 
 * Be an OWNER on any other repository in the Tekton project, and ask an existing OWNER to add you.
 * Or, Be nominated by another OWNER (with no objections from other OWNERs)
@@ -126,6 +133,37 @@ Repositories currently using this simpler mechanism are:
 * tektoncd/plumbing
 * tektoncd/results
 * tektoncd/website
+* tektoncd/experimental
+
+#### Requirements for Collaborators
+
+To be added as collaborator of most repositories, you must:
+
+* Have been actively participating in reviews for at least 2 months or
+  50% of the project lifetime, whichever is shorter
+* Have been the primary reviewer for at least 5 substantial PRs to the codebase.
+* Have reviewed at least 15 PRs to the codebase.
+* Be nominated by an OWNER (with no objections from other OWNERS)
+
+The final change will be made via a PR to update the [org file](https://github.com/tektoncd/community/blob/main/org/org.yaml)
+in the community repository.
+
+To facilitate productivity, small repositories, or repositories that do not contain production
+code may decide to use a simpler OWNERs process.
+To become a collaborator of one of these repositories, you must either:
+
+* Be an OWNER on any other repository in the Tekton project, and ask an existing OWNER to add you.
+* Or, Be nominated by another OWNER (with no objections from other OWNERs)
+
+Repositories currently using this simpler mechanism are:
+
+* tektoncd/community
+* tektoncd/friends
+* tektoncd/plumbing
+* tektoncd/results
+* tektoncd/website
+* tektoncd/experimental
+
 
 ## Reviews
 
@@ -155,8 +193,7 @@ use to interact with it.
 Before a PR can be merged, it must have both `/lgtm` AND `/approve`:
 
 * `/lgtm` can be added by ["collaborators"](https://developer.github.com/v3/repos/collaborators/),
-  aka anyone in [the tektoncd org](https://github.com/orgs/tektoncd/people) and/or collaborators
-  added to the repo itself
+  aka anyone in collaborator team specific to the repo
 * `/approve` can be added only by [OWNERS](#owners)
 
 The merge will happen automatically once the PR has both `/lgtm` and `/approve`,

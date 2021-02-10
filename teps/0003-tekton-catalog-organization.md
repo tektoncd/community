@@ -146,7 +146,7 @@ this](https://docs.google.com/document/d/1-czjvjfpuIqYKsfkvZ5RxIbtoFNLTEtOxaZB71
        resources they can use
 
 3. If an update change the behavior of an already published task, the updated
-   task should be a released as a new version.
+   task should be released as a new version.
 
 4. Users of the catalog can reference Tasks in the catalog in their
    TaskRuns and Pipelines including the version they would like to use
@@ -289,7 +289,7 @@ bump is necessary (taken Task as example) :
   * When the image for a step is specified via an input params, we should treat changes to the default value of that param in the same way as changes to a step image
 
 * New fields are added to the Task (new parameters, new results, new
-  workspace, new input, new output, …) and they are going to affect behaviour of the task which might break the pipeline created with existing version.
+  workspace, new input, new output, …) and they are going to affect the behaviour of the task which might break the pipeline created with existing version.
 
 * The command+arg or script is changed (and the behavior) changes
 
@@ -427,6 +427,7 @@ For example (with Task and Pipelines):
       app.kubernetes.io/version: "0.1"           👈 MUST: version of the resource
     annotations:
       tekton.dev/pipelines.minVersion: "0.12.1"  👈 MUST: version of pipeline
+      tekton.dev/category: "git"                 👈 MUST: category of a resource
       tekton.dev/tags: git                       👈 Optional: Comma separated list of tags
       tekton.dev/displayName: "git clone"        👈 Optional: Display name of the task
   spec:
@@ -498,30 +499,42 @@ Infrastructure](https://docs.google.com/document/d/1-czjvjfpuIqYKsfkvZ5RxIbtoFNL
    indicate the name to display in the Tekton Hub, otherwise the name
    will be computed based on the task file name.
 
-4. Resources can include annotation "tekton.dev/tags" which is a comma
+4. Resources must include the annotaion "tekton.dev/category" to indicate the category associated with the resource e.g. git-clone task can have a category as tekton.dev/category: "git"
+
+    1. There should be only one category for a resource. Multiple categories are not allowed.
+
+    2. CI/Catlin should make sure that category is added for the task and there is only one category. Maintaining the category is the responsibility of the author.
+
+    3. If category is not added,Catlin should throw an error to add a category
+
+    4. The category should be added from the predefined category list
+
+    5. If users wants to add new categories to the predefined category list, the user should create a pull request to [config.yaml](https://github.com/tektoncd/hub/blob/master/config.yaml)
+
+5. Resources can include annotation "tekton.dev/tags" which is a comma
    separated tags associated with it e.g. kaniko task can have a tag:
    container-image, build-tool
 
-5. Resources should include an annotation indicating the minimum
+6. Resources should include an annotation indicating the minimum
    version of Tekton Pipelines they are expected to be compatible with
    (format TBD)
 
-6. Include a README, though they should defer to the resource’s
+7. Include a README, though they should defer to the resource’s
    description fields to do most of the heavy lifting. The first line
    of the description could be the summary, followed by a blank line
    and then the body akin to a git commit message.
 
-7. They pass
+8. They pass
    [yamllint](https://github.com/tektoncd/catalog/issues/101)
 
-8. Additional yaml requirements can be enforced with
+9. Additional yaml requirements can be enforced with
    [conftest](https://garethr.dev/2019/06/introducing-conftest/) as
    they are discovered
 
-9. Referenced images are published to public registries and do not
+10. Referenced images are published to public registries and do not
    contain major known vulnerabilities
 
-10. A [working
+11. A [working
    example](https://docs.google.com/document/d/1pZY7ROLuW47ymZYqUgAbxskmirrmDg2dd8VPATYXrxI/edit?ts=5e559121#heading=h.e9bh8qes6kh6)
    is included which uses all parameters and configurable values of
    the resource.

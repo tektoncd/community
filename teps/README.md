@@ -151,3 +151,4 @@ This is the complete list of Tekton teps:
 |[TEP-0037](0037-remove-gcs-fetcher.md) | Remove `gcs-fetcher` image | implementing | 2021-01-27 |
 |[TEP-0039](0039-add-variable-retries-and-retrycount.md) | Add Variable `retries` and `retry-count` | proposed | 2021-01-31 |
 |[TEP-0045](0045-whenexpressions-in-finally-tasks.md) | WhenExpressions in Finally Tasks | implementable | 2021-01-28 |
+|[TEP-0048](0048-task-results-without-results.md) | Task Results without Results | proposed | 2021-02-02 |

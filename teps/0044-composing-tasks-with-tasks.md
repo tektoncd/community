@@ -21,8 +21,7 @@ authors:
 
 ## Summary
 
-This TEP describes a gap in composability that isn't currently fully solved by Tasks or Pipelines
-(tho PipelineResources do solve some of it!). 
+This TEP describes a gap in composability that isn't currently fully solved by Tasks or Pipelines.
 
 Ideally by addressing the issues described here we'd make it possible to create more efficient
 Pipelines and make it easier to use a Task easily via a TaskRun, and we'd address some of
@@ -36,17 +35,13 @@ making it more clear whether or not they are an abstraction we want to keep.
 Currently the only way to combine Tasks together is in a Pipeline. If you combine
 Tasks in a Pipeline and they need to share data (beyond a simple
 [result](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#using-results)),
-you'll need to provision a PVC or do some other similar, cloud specific thing,
+you'll need to provision a PVC or do some other similar, cloud specific storage,
 to [make a volume available](https://github.com/tektoncd/pipeline/blob/master/docs/workspaces.md#specifying-volumesources-in-workspaces)
 that can be shared between them.
 
-Some problems with this:
-* PVCs add additional overhead, both in speed and in management (somewhat
-  mitigated by
-  [letting tekton create and delete volumes for you](https://github.com/tektoncd/pipeline/blob/master/docs/workspaces.md#volumeclaimtemplate)
-* Sometimes you just want to run a Task with a teeny bit more functionality,
-  e.g. you want to use a task to build images, but you want to clone source
-  with git first, and it seems like overkill to have to construct a pipeline
+PVCs add additional overhead, both in speed and in management (somewhat
+mitigated by [letting tekton create and delete volumes for you](https://github.com/tektoncd/pipeline/blob/master/docs/workspaces.md#volumeclaimtemplate)
+but the PVCs still slow down the overall execution.
 
 ### PipelineResources
 
@@ -74,11 +69,10 @@ Issues that don't let PipelineResources (as is) solve these problems are:
 ### Goals
 
 - Make it possible to combine Tasks together so that you can run multiple
-  Tasks as "one unit" (see [Requirements](#requirements):
-  - At runtime in a TaskRun
-  - At Pipeline authoring time
+  Tasks as "one unit" (see [Requirements](#requirements) at authoring time
+  in a way that can be reused (e.g. in a Pipeline)
 - Add some of [the features we don't have without PipelineResources](https://docs.google.com/document/d/1KpVyWi-etX00J3hIz_9HlbaNNEyuzP6S986Wjhl3ZnA/edit#)
-  to Tekton Pipelines (without requiring use of PipelineResources)
+  to Tekton Pipelines (without requiring use of PipelineResources), specifically **Task adapters/specialization**
   - If possible we can provide a migration path from PipelineResources to the solution proposed here, where applicable
 
 ### Non-Goals
@@ -90,6 +84,13 @@ Issues that don't let PipelineResources (as is) solve these problems are:
 - Completely replacing PipelineResources: we could decide to solve this by improving PipelineResources,
   or we could add a new feature via this TEP and still continue to support PipelineResources
   (since they provide [more functionality than just composition](https://docs.google.com/document/d/1KpVyWi-etX00J3hIz_9HlbaNNEyuzP6S986Wjhl3ZnA/edit#))
+- This was previously a use case we were targetting but we've decided to descope the TEP slightly,
+  though if we end up solving this problem as well, that's a bonus:
+  * A user wants to use a Task from the catalog with a git repo and doesn't want the extra
+    overhead of using a Pipeline, they just want to make a TaskRun,
+    e.g. [@mattmoor's feedback on PipelineResources and the Pipeline beta](https://twitter.com/mattomata/status/1251378751515922432))
+    where he wants to checkout some code and [use the kaniko task](https://github.com/tektoncd/catalog/tree/master/task/kaniko/0.1)
+    without having to fiddle with volumes
 
 ### Use Cases (optional)
 
@@ -99,11 +100,6 @@ Issues that don't let PipelineResources (as is) solve these problems are:
   cloning with [git-clone](https://github.com/tektoncd/catalog/tree/master/task/git-clone/0.2),
   running tests with [golang-test](https://github.com/tektoncd/catalog/tree/master/task/golang-test/0.1)
   and uploading results with [gcs-upload](https://github.com/tektoncd/catalog/tree/master/task/gcs-upload/0.1).
-- A user wants to use a Task from the catalog with a git repo and doesn't want the extra
-  overhead of using a Pipeline, they just want to make a TaskRun,
-  e.g. [@mattmoor's feedback on PipelineResources and the Pipeline beta](https://twitter.com/mattomata/status/1251378751515922432))
-  where he wants to checkout some code and [use the kaniko task](https://github.com/tektoncd/catalog/tree/master/task/kaniko/0.1)
-  without having to fiddle with volumes
 - An organziation does not want to use PVCs at all; for example perhaps they have decided
   on uploading to and downloading from buckets in the cloud (e.g. GCS)
 - An organization is willing to use PVCs to some extent but needs to put limits on their use
@@ -111,12 +107,14 @@ Issues that don't let PipelineResources (as is) solve these problems are:
 ## Requirements
 
 - Tasks can be composed together run as "one unit":
-  - Must be able to share data without requiring
-    an external volume (i.e. probably the containers that make them up are run within
-    the same pod)
-- It should be possible to have Tasks that run even if others fail
+  - Must be able to share data without requiring a volume external to the pod
+- It should be possible to have Tasks that run even if others fail; i.e. the Task
+  can be run on the same pod as another Task that fails
   - This is to support use cases such as uploading test results, even if the test
     Task failed
+    - This requirement is being included because we could choose a solution that doesn't
+      address the above use case; for example in PipelineResources, you can have a
+      storage "output" but if the steps fail, the "output" pipelineresource will not run
 
 ## References (optional)
 

@@ -189,3 +189,4 @@ This is the complete list of Tekton teps:
 |[TEP-0061](0061-allow-custom-task-to-be-embedded-in-pipeline.md) | Allow custom task to be embedded in pipeline | implemented | 2021-05-26 |
 |[TEP-0062](0062-catalog-tags-and-hub-categories-management.md) | Catalog Tags and Hub Categories Management | proposed | 2021-03-30 |
 |[TEP-0063](0063-workspace-dependencies.md) | Workspace Dependencies | proposed | 2021-04-23 |
+|[TEP-0067](0067-tekton-catalog-pipeline-organization.md) | Tekton Catalog Pipeline Organization | implementable | 2021-02-22 |

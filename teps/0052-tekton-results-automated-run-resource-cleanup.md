@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: implementable
 title: "Tekton Results: Automated Run Resource Cleanup"
 creation-date: "2021-02-11"
 last-updated: "2021-02-11"

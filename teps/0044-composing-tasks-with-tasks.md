@@ -16,6 +16,7 @@ authors:
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
   - [Use Cases (optional)](#use-cases-optional)
+  - [Overlap with TEP-0046](#overlap-with-tep-0046)
 - [Requirements](#requirements)
 - [References (optional)](#references-optional)
 
@@ -103,6 +104,43 @@ Issues that don't let PipelineResources (as is) solve these problems are:
 - An organziation does not want to use PVCs at all; for example perhaps they have decided
   on uploading to and downloading from buckets in the cloud (e.g. GCS)
 - An organization is willing to use PVCs to some extent but needs to put limits on their use
+
+### Overlap with TEP-0046
+
+This TEP covers very similar ground as
+[TEP-0046 (colocation of tasks and workspaces)](https://github.com/tektoncd/community/pull/318), and it may be that we
+choose one solution to address both, but we have kept them separate because they are approaching the problem from
+slightly different angles.
+
+Where they are similar:
+* **Sharing data between Tasks efficiently** is the core problem at the heart of both (in this TEP, we talk about how
+  combining Tasks requires a PVC, in the other we talk about challenges around co-locating pods to share data and
+  inefficiencies of PVCs)
+
+Where they differ:
+
+* **Concurrency** (running of Tasks in parallel) is a big concern in TEP-0046 but isn't directly in the scope of this
+  problem (we could imagine a solution to this problem that only applies when running Tasks serially)
+* **The Affinity Assistant** is another focus of TEP-0046 (i.e. revisiting it before v1) but isn't directly relevant to
+  this TEP (we might solve this without changing or discussing the affinity assistant at all)
+* **Pipelines** - TEP-0046 is specifically concerned with Pipelines; there's a good chance the solution to this TEP
+  will also involve Pipelines, but there are possible solutions that could involve introducing a new type
+* **Controller configuration vs. Authoring time** - This TEP assumes that we'd want to express this kind of composition
+  at "authoring time", i.e. make it [reusable](https://github.com/tektoncd/community/blob/main/design-principles.md#reusability)
+  vs configured at runtime or at the controller level., while TEP-0046 is suggesting to configure this at the controller
+  level.
+  * _Why not configure at the controller level?_ If we only allow this to be configured at the controller level,
+  users will not be able to control which Tasks are co-located with which: it will be all or nothing. This TEP assumes
+  that users will want to have at least some control, i.e. will want to take advantage of both k8s scheduling to execute
+  a Pipeline across multiple nodes AND might sometimes want to co-locate Tasks
+  * _Why not configure in the PipelineRun only? (vs the Pipeline)_ If we only allow this to be configured at runtime,
+  this means that:
+    * When looking at a Pipeline definition, or writing it, you can't predict or control how the Tasks will be
+    co-located (e.g. what if you want to isolate some data such that it's only available to particular Tasks)
+    * If you want to run a Pipeline, you'll need to make decisions at that point about what to co-locate. I can imagine
+    scenarios where folks want to make complex Pipelines and want to have some parts co-located and some parts not; if
+    we only allow for this at runtime, the Pipeline authors will only be able to provide docs or scripts (or 
+    TriggerTemplates) to show folks how they are expected to be run.
 
 ## Requirements
 

@@ -1,13 +1,10 @@
 # Tekton Mission and Roadmap
 
-This doc describes Tekton's mission and the 2020 roadmap primarily
-for Tekton Pipelines but some sneak peeks at other projects as well.
+This doc describes Tekton's mission and the 2020 roadmap.
 
 - [Mission and Vision](#mission-and-vision)
-- [GA releases](#ga-releases)
-- [Release and dogfooding](#release-and-dogfooding)
-- [Results](#results)
-- Tekton Projects
+- [2021 Roadmap](#2021-roadmap)
+- Tekton Project Roadmaps
   - [Pipeline](https://github.com/tektoncd/pipeline/blob/master/roadmap.md)
   - [Triggers](https://github.com/tektoncd/triggers/blob/master/roadmap.md)
   - [Catalog](https://github.com/tektoncd/catalog/blob/master/roadmap.md)
@@ -43,39 +40,25 @@ What this vision looks like differs across different [users](user-profiles.md):
   * Use an ecosystem of tools that know how to interact with Tekton components, e.g.
     IDE integrations, linting, CLIs, security and policy systems
 
-## GA releases
+## 2021 Roadmap
 
-In 2019 we got to the point where we had several projects built on top of Tekton
-that were craving additional API stability, so we started a push toward having
-a beta release of Tekton. We have
-[created a plan](https://docs.google.com/document/d/1H8I2Rk4kLdQaR4mV0A71Qbk-1FxXFrmvisEAjLKT6H0/edit)
-which defines what Beta means for Tekton Pipelines, and
-[through our beta working group](https://github.com/tektoncd/community/blob/master/working-groups.md#beta-release)
-we are working towared a beta release in early 2020.
+These are the things we want to work toward in 2021! They are concerns that either impact multiple projects or may
+result in the creation of new projects!
 
-After our initial Tekton Pipelines beta release, which
-[does not include all Tekton Pipeline components](https://docs.google.com/document/d/1H8I2Rk4kLdQaR4mV0A71Qbk-1FxXFrmvisEAjLKT6H0/edit#heading=h.t0sc4hdrr5yq),
-we will work toward:
-
-1. Beta and GA for all _core_ Tekton Projects, where "core" means: pipeline, triggers, cli, dashboard
-1. Deciding our release policy going forward: e.g do we want all projects to release at the same time,
-   with the same verison
-
-As the project matures, we also require [via tekton.dev](https://github.com/tektoncd/website):
-
-1. A website that provides a good landing page for users
-1. Solid, high quality onboarding and documentation
-
-### Release and Dogfooding
-
-In 2020 we should keep the momentum going we started in 2019 and switch as much
-of our CI infrastructure as possible to being purely Tekton, including running our
-linting, unit tests, integration tests, etc.
-
-### Results
-
-One of the benefits of [defining specifications around CI/CD](#mission-and-vision)
-is that we can start to create tools around inspecting what is moving through our
-Pipelienes. In 2019 we started some design work around a result storage system for
-Tekton, and we want to make progress on this in 2020 by designing reporting to
-results store: https://github.com/tektoncd/pipeline/issues/454
+*  Beta and GA for all _core_ Tekton Projects, where "core" means: pipeline, triggers, cli, dashboard
+*  Deciding our release policy going forward with regard to:
+  * [Coordinated releases](https://github.com/tektoncd/plumbing/issues/413)
+  * [LTS policy](https://github.com/tektoncd/pipeline/issues/2746)
+* Release and dogfooding: completely switched to Tekton components where reasonable
+* [Migrate all repos to use `main` as the default branch](https://github.com/tektoncd/plumbing/issues/681)
+* Define the scopes and responsibilities of Tekton broadly and specifically projects (e.g. Pipelines and Triggers)
+  ([discussion](https://github.com/tektoncd/pipeline/issues/2298#issuecomment-724755790),
+  some initial thoughts in [Tekton Scope Questions](https://docs.google.com/document/d/1azKp-OimMqVYSwUKoPpFQ5A0QtpE4ZbL5_E12IO-gpI/edit)))
+* [CELRun Custom Task as a top level project](https://github.com/tektoncd/community/issues/304),
+  also the process for future custom tasks (see also
+  [the pipelines roadmap](https://github.com/tektoncd/pipeline/blob/master/roadmap.md))
+* Opinionated solutions / guidance based on Tekton
+  * Documentation, tools, examples for how to handle specific problems using Tekton
+    * Best practice getting started example repo(s)
+    * E.g. being able to answer questions like “I want to setup a CI pipeline for my repo using Tekton,
+      how do I do that in two steps?”

@@ -1,4 +1,4 @@
-#!/user/bin/env python3
+#!/usr/bin/env python3
 
 """get_emails.py queries GitHub for the email addresses to use for usernames.
 

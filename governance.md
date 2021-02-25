@@ -163,4 +163,4 @@ Members of the governing board will be given access to these resources:
 * [The GCP projects used by boskos](https://github.com/tektoncd/plumbing/blob/main/boskos/boskos-config.yaml)
   which are used to test against
 
-They have the permissions added through a [script](https://github.com/tektoncd/plumbing/blob/main/addpermissions.py).
+They have the permissions added through a [script](https://github.com/tektoncd/plumbing/blob/main/adjustpermissions.py).

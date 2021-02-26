@@ -97,6 +97,24 @@ TEP should be approved by ***at least two owners*** from different
 company. This should prevent a company to *force push* a TEP (and
 thus a feature) in the tektoncd projects.
 
+### TEP Review SLOs
+
+1. After a TEP PR has been created, in
+   [the next API working group meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#api),
+   we will try to find 2 qualified assignees to review (from 2 different companies as described above) and will
+   [assign](https://docs.github.com/en/github/managing-your-work-on-github/assigning-issues-and-pull-requests-to-other-github-users)
+   them to the PR.
+   * If we cannot find 2 reviewers in the meeting, someone in the meeting will be take the action to find reviewers
+     offline (e.g. over [slack](https://github.com/tektoncd/community/blob/main/contact.md#slack) or
+     [tekton-dev](https://github.com/tektoncd/community/blob/main/contact.md#mailing-list)).
+2. Once reviewers have been assigned, they should give initial feedback on the PR by
+   [the next API working group meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#api)
+   at the latest.
+
+_Why don't we use GitHub reviewers instead of assignees? If we want to do that we need to turn off Prow's auto
+assignment of reviewers; there is no guarantee the auto assigned reviewers are the appropriate reviewers.
+See [discussion](https://github.com/tektoncd/community/discussions/362)._
+
 ### Solving TEP number conflicts
 
 The TEP PR might fail CI if a TEP number conflict is detected, or if

@@ -130,7 +130,7 @@ Existing unit and e2e tests will be executed on s390x architecture.
 
 ## References
 
-- [TEP 19 "Other architecture support"](https://github.com/tektoncd/community/blob/master/teps/0019-other-arch-support.md)
+- [TEP 19 "Other architecture support"](https://github.com/tektoncd/community/blob/main/teps/0019-other-arch-support.md)
 - Issue [tektoncd/plumbing#495](https://github.com/tektoncd/plumbing/issues/495)
 - Issue [tektoncd/pipeline#856](https://github.com/tektoncd/pipeline/issues/856)
 - Issue [tektoncd/pipeline#3064](https://github.com/tektoncd/pipeline/issues/3064)

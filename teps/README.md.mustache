@@ -34,7 +34,7 @@ following:
 
 into one file which is created incrementally in collaboration with one
 or more [Working
-Groups](https://github.com/tektoncd/community/blob/master/working-groups.md)
+Groups](https://github.com/tektoncd/community/blob/main/working-groups.md)
 (WGs).
 
 This process does not block authors from doing early design docs using

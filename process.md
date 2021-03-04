@@ -224,12 +224,12 @@ If you have an idea for a project that you'd like to add to `Tekton`,
 you should [be aware of the requirements](#project-requirements) follow this process:
 
 1. Propose the project in
-  [a Tekton working group meeting](https://github.com/tektoncd/community/blob/master/working-groups.md)
+  [a Tekton working group meeting](https://github.com/tektoncd/community/blob/main/working-groups.md)
 2. [File an issue in the `community` repo](https://github.com/tektoncd/community/issues)
   which describes:
     * The problem the project will solve
     * Who will own it
-3. Once [at least 2 governing committee members](https://github.com/tektoncd/community/blob/master/governance.md)
+3. Once [at least 2 governing committee members](https://github.com/tektoncd/community/blob/main/governance.md)
    approve the issue, you can [open a PR to add your project to the experimental repo](#experimental-repo)
    (more likely) or if the governing committee members agree, a new repo will be created for you.
 4. You will then be responsible for making sure the project meets [new project requirements](#project-requirements)
@@ -266,7 +266,7 @@ of the repos (unless requested!).
 ### Experimental repo
 
 Projects can be added to the experimental repo when the
-[governing committee members](https://github.com/tektoncd/community/blob/master/governance.md)
+[governing committee members](https://github.com/tektoncd/community/blob/main/governance.md)
 consider them to be potential candidates to be Tekton top level projects, but would like to
 see more design and discussion around before
 [promoting to offical tekton projects](#promotion-from-experimental-to-top-level-repo).
@@ -278,7 +278,7 @@ project is to iterate on the project in a completely different repo and org, whi
 
 #### Promotion from experimental to top level repo
 
-With approval from [at least 2 governing committee members](https://github.com/tektoncd/community/blob/master/governance.md)
+With approval from [at least 2 governing committee members](https://github.com/tektoncd/community/blob/main/governance.md)
 a project can get its own top level repo in [the `tektoncd` org](https://github.com/tektoncd).
 
 The criteria here is that the governing committee agrees that the project

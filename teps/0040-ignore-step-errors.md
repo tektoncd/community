@@ -142,7 +142,7 @@ This proposal is limited to a step within a task and does not address `pipelineT
 * As a new Tekton user, I want to migrate existing scripts and automations from other CI/CD systems that allowed a
   similar step unit of failure.
 
-* A [platform team](https://github.com/tektoncd/community/blob/master/user-profiles.md#1-pipeline-and-task-authors)
+* A [platform team](https://github.com/tektoncd/community/blob/main/user-profiles.md#1-pipeline-and-task-authors)
   wants to share a `Task` with their team which runs the following steps in a sequence:
   * Run unit tests (which may fail)
   * Apply a transformation to the test results (e.g. converts them to a certain format such as junit)

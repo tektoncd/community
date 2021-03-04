@@ -140,7 +140,7 @@ List the specific goals of the TEP.  What is it trying to achieve?  How will we
 know that this has succeeded?
 -->
 
-- Improve the [reusability](https://github.com/tektoncd/community/blob/master/design-principles.md#reusability)
+- Improve the [reusability](https://github.com/tektoncd/community/blob/main/design-principles.md#reusability)
 of `Tasks` by improving the guarding of `Finally Tasks` at authoring time.
 - Enable guarding execution of `Finally Tasks` using `WhenExpressions`.  
 
@@ -334,14 +334,14 @@ expectations).
 ## Design Evaluation
 <!--
 How does this proposal affect the reusability, simplicity, flexibility 
-and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/master/design-principles.md)
+and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/main/design-principles.md)
 -->
 
-- [Reusability](https://github.com/tektoncd/community/blob/master/design-principles.md#reusability): This proposal reuses
+- [Reusability](https://github.com/tektoncd/community/blob/main/design-principles.md#reusability): This proposal reuses
   an existing component, `WhenExpressions`, to guard `Finally Tasks`. Moreover, it improves the reusability of `Tasks` by
   enabling specifying guards explicitly and avoiding representing them in the `Tasks`'s `Steps`. 
   
-- [Simplicity](https://github.com/tektoncd/community/blob/master/design-principles.md#simplicity): Using `WhenExpressions`
+- [Simplicity](https://github.com/tektoncd/community/blob/main/design-principles.md#simplicity): Using `WhenExpressions`
   to guard the execution of `Finally Tasks` is much simpler than the workarounds that used `Workspaces`. It is also 
   consistent with how we already guard the other `Tasks`.
   
@@ -368,8 +368,8 @@ information to express the idea and why it was not acceptable.
   However, users creating workarounds to support guarding `Finally Tasks`. In addition, we already [allow skipping](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#consuming-task-execution-results-in-finally)
   `Finally Tasks` they use uninitialized `Results` from skipped or failed `Tasks`. 
 
-- Use `Conditions` to guard `Finally Tasks`. However, `Conditions` were deprecated and replaced with [`WhenExpressions`](https://github.com/tektoncd/community/blob/master/teps/0007-conditions-beta.md),
-  read further details in [Conditions Beta TEP](https://github.com/tektoncd/community/blob/master/teps/0007-conditions-beta.md).
+- Use `Conditions` to guard `Finally Tasks`. However, `Conditions` were deprecated and replaced with [`WhenExpressions`](https://github.com/tektoncd/community/blob/main/teps/0007-conditions-beta.md),
+  read further details in [Conditions Beta TEP](https://github.com/tektoncd/community/blob/main/teps/0007-conditions-beta.md).
 
 
 ## References
@@ -380,9 +380,9 @@ shared drive, examples, etc. This is useful to refer back to any other related l
 to get more details.
 -->
 
-- [TEP for `WhenExpressions`](https://github.com/tektoncd/community/blob/master/teps/0007-conditions-beta.md)  
+- [TEP for `WhenExpressions`](https://github.com/tektoncd/community/blob/main/teps/0007-conditions-beta.md)  
 - [Guarding `Task` execution using `WhenExpressions`](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#guard-task-execution-using-whenexpressions)
-- [TEP for `Tasks` `Results` in `Finally Tasks`](https://github.com/tektoncd/community/blob/master/teps/0004-task-results-in-final-tasks.md)
+- [TEP for `Tasks` `Results` in `Finally Tasks`](https://github.com/tektoncd/community/blob/main/teps/0004-task-results-in-final-tasks.md)
 - [Consuming `Tasks` `Results` in `Finally Tasks`](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#consuming-task-execution-results-in-finally)  
-- [TEP for `Task` execution status in `Finally Tasks`](https://github.com/tektoncd/community/blob/master/teps/0028-task-execution-status-at-runtime.md)
+- [TEP for `Task` execution status in `Finally Tasks`](https://github.com/tektoncd/community/blob/main/teps/0028-task-execution-status-at-runtime.md)
 - [Accessing `Task` execution status in `Finally Tasks`](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#using-execution-status-of-pipelinetask)

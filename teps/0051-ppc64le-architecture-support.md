@@ -110,5 +110,5 @@ Existing unit and e2e tests will be executed on ppc64le architecture.
 
 ## References
 
-- [TEP 19 "Other architecture support"](https://github.com/tektoncd/community/blob/master/teps/0019-other-arch-support.md)
+- [TEP 19 "Other architecture support"](https://github.com/tektoncd/community/blob/main/teps/0019-other-arch-support.md)
 - Issue [tektoncd/pipeline#856](https://github.com/tektoncd/pipeline/issues/856)

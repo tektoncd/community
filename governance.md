@@ -70,7 +70,7 @@ activities:
 * The [Tekton Mission and Vision](roadmap.md)
 * Select [election officers](#election-officers) to run elections
 
-It defines the processes around [TEPs](https://github.com/tektoncd/community/tree/master/teps).
+It defines the processes around [TEPs](https://github.com/tektoncd/community/tree/main/teps).
 Should the community fail to reach consensus on whether to accept a proposed
 TEP or not, the governance committee can help to break the impasse.
 

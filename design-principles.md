@@ -10,7 +10,7 @@
 1. Tekton should contain only the bare minimum and simplest features needed to meet the largest number of CI/CD use cases.
 1. Prefer a [simple](https://www.infoq.com/presentations/Simple-Made-Easy/) solution that solves most use cases to a complex solution that solves all use cases (can be revisited later).
 1. New features should be consistent with existing components, in structure and behavior, to make learnability, trialability and adoption easy.
-1. Any new feature should have been previously discussed and agreed upon in a [Tekton Enhancement Proposal](https://github.com/tektoncd/community/tree/master/teps). 
+1. Any new feature should have been previously discussed and agreed upon in a [Tekton Enhancement Proposal](https://github.com/tektoncd/community/tree/main/teps). 
 1. In TEPs, demonstrate that the proposed feature is absolutely necessary. What’s the current experience without the feature and how challenging is it?
 
 ## Flexibility
@@ -25,4 +25,4 @@
 ## Conformance
 1. Tekton features should work as the user expects in varied environment setup.
 1. Tekton should not contain kubernetes-specific features, such as configuations for a `Pod`, in the API as much as possible. When kubernetes-specific features have to be added, they should be explicitly called out in the design docs and consider shunting them together into a section of the API, such as `podTemplate`.  
-1. In TEPs, discuss how the proposal affects [conformance](https://github.com/tektoncd/community/blob/master/teps/0012-api-spec.md).
+1. In TEPs, discuss how the proposal affects [conformance](https://github.com/tektoncd/community/blob/main/teps/0012-api-spec.md).

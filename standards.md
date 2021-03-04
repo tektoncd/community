@@ -6,9 +6,9 @@ The purpose of this doc is to:
 * Establish a baseline for reviewers so they know at a minimum what to look for
 
 Design: Most designs should be first proposed via an issue and possibly a
-[TEP](https://github.com/tektoncd/community/tree/master/teps#tekton-enhancement-proposals-teps).
+[TEP](https://github.com/tektoncd/community/tree/main/teps#tekton-enhancement-proposals-teps).
 API changes should be evaluated according to
-[Tekton Design Principles](https://github.com/tektoncd/community/blob/master/design-principles.md).
+[Tekton Design Principles](https://github.com/tektoncd/community/blob/main/design-principles.md).
 
 Each Pull Request is expected to meet the following expectations around:
 
@@ -21,7 +21,7 @@ Each Pull Request is expected to meet the following expectations around:
   * [Tests](#tests)
   * [Reconciler/Controller Changes](#reconcilercontroller-changes)
 
-_See also [the Tekton review process](https://github.com/tektoncd/community/blob/master/process.md#reviews)._
+_See also [the Tekton review process](https://github.com/tektoncd/community/blob/main/process.md#reviews)._
 
 ## Pull request description
 

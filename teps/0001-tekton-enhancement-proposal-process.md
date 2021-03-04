@@ -59,7 +59,7 @@ following:
 
 into one file which is created incrementally in collaboration with one
 or more [Working
-Groups](https://github.com/tektoncd/community/blob/master/working-groups.md)
+Groups](https://github.com/tektoncd/community/blob/main/working-groups.md)
 (WGs).
 
 This process does not block authors from doing early design docs using
@@ -108,7 +108,7 @@ their adoption strategy.
 
 Before this proposal, there is no a standard way or template to
 create project enhancements, only
-[suggestions](https://github.com/tektoncd/community/blob/master/process.md#proposing-features)
+[suggestions](https://github.com/tektoncd/community/blob/main/process.md#proposing-features)
 on proposing a feature. We rely on documents hosted on Google docs,
 without a standard template explaining the change. Once a proposal is
 done, via a design docs, it tends to be hard to follow what happens
@@ -208,9 +208,9 @@ that would, _most likely_ not require a TEP.
 Project creations *or* project promotion from the experimental project
 would also fall under the TEP process, deprecating the current
 [project
-proposal](https://github.com/tektoncd/community/blob/master/process.md#proposing-projects)
+proposal](https://github.com/tektoncd/community/blob/main/process.md#proposing-projects)
 process (but not the [project
-requirements](https://github.com/tektoncd/community/blob/master/process.md#project-requirements)).
+requirements](https://github.com/tektoncd/community/blob/main/process.md#project-requirements)).
 
 
 ### TEP Template

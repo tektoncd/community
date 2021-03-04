@@ -76,7 +76,7 @@ There are two changes proposed to the Trigger spec:
 2. Deprecate the `name` field for reffering to TriggerTemplate objects in favor
    of a new `ref` field. This is for consistency as we use usually use `ref` to
    refer to other resources (see `bindings` as an
-   [example](https://github.com/tektoncd/community/blob/master/teps/0016-concise-trigger-bindings.md#proposal)).
+   [example](https://github.com/tektoncd/community/blob/main/teps/0016-concise-trigger-bindings.md#proposal)).
    Example:
    ```yaml
    # DEPRECATED
@@ -104,4 +104,4 @@ compatible:
 
 1. GitHub issue: https://github.com/tektoncd/triggers/issues/616
 
-1. Embedded Bindings: https://github.com/tektoncd/community/blob/master/teps/0016-concise-trigger-bindings.md
+1. Embedded Bindings: https://github.com/tektoncd/community/blob/main/teps/0016-concise-trigger-bindings.md

@@ -173,4 +173,4 @@ This is the complete list of Tekton teps:
 |[TEP-0051](0051-ppc64le-architecture-support.md) | ppc64le Support | proposed | 2021-01-28 |
 |[TEP-0052](0052-tekton-results-automated-run-resource-cleanup.md) | Tekton Results: Automated Run Resource Cleanup | proposed | 2021-02-11 |
 |[TEP-0053](0053-nested-triggers.md) | Nested Triggers | proposed | 2021-02-24 |
-|[TEP-0054](0054-use-steps.md) | Using Steps from Git or OCI | proposed | 2021-03-04 |
+|[TEP-0054](0054-use-steps.md) | Using Steps from Git or OCI | implementing | 2021-03-04 |

@@ -29,7 +29,9 @@ Tekton community._
 
 We want to be able to reuse versioned steps in a Task from git and OCI easily across many git repositories without copy and paste.
 
-Pipelines can refer to Tasks from bundles or named resources; but we want a more sophisticated model for step composition which avoids the issue of [separate Tasks causing separate Pods](https://github.com/tektoncd/pipeline/issues/3476) and requiring persistent volumes between them. 
+Pipelines can refer to Tasks from bundles or named resources; but we want a more sophisticated model for step composition which avoids the issue of [separate Tasks causing separate Pods](https://github.com/tektoncd/pipeline/issues/3476) and requiring persistent volumes between them.
+
+See the [Step Composition User Guide](https://github.com/jstrachan/pipeline/blob/use/docs/step-composition.md) for details of how to use it.
 
 ## Motivation
 
@@ -85,6 +87,9 @@ The [current implementation](https://github.com/tektoncd/pipeline/pull/3807) pro
 * New git implementation of `remote` 
 
 #### Example
+
+There are many more examples in the [Step Composition User Guide](https://github.com/jstrachan/pipeline/blob/use/docs/step-composition.md).
+
 
 Here is an example of reusing the tekton catalog git clone task:
 

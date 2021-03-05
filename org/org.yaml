@@ -296,6 +296,7 @@ orgs:
         - wlynch
         - ImJasonH
         - XinruZhang
+        - sbwsg
         privacy: closed
         repos:
           results: read

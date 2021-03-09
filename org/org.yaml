@@ -573,6 +573,7 @@ orgs:
         - garethr
         - vincent-pli
         - bobcatfish
+        - spikeburton
         privacy: closed
         repos:
           catalog: read

@@ -680,3 +680,14 @@ orgs:
         privacy: closed
         repos:
           chains: read
+      docs.reviewers:
+        description: Doc reviewers across repos
+        maintainers:
+        - abayer
+        - afrittoli
+        - bobcatfish
+        - dibyom
+        - vdemeester
+        members:
+        - sergetron
+        privacy: closed

@@ -181,6 +181,7 @@ This is the complete list of Tekton teps:
 |[TEP-0052](0052-tekton-results-automated-run-resource-cleanup.md) | Tekton Results: Automated Run Resource Cleanup | implementable | 2021-03-22 |
 |[TEP-0053](0053-nested-triggers.md) | Nested Triggers | implementable | 2021-04-15 |
 |[TEP-0056](0056-pipelines-in-pipelines.md) | Pipelines in Pipelines | proposed | 2021-03-08 |
+|[TEP-0057](0057-windows-support.md) | Windows support | proposed | 2021-03-18 |
 |[TEP-0058](0058-graceful-pipeline-run-termination.md) | Graceful Pipeline Run Termination | implementable | 2021-04-27 |
 |[TEP-0059](0059-skip-guarded-task-only.md) | Skip Guarded Task Only | proposed | 2021-03-24 |
 |[TEP-0061](0061-allow-custom-task-to-be-embedded-in-pipeline.md) | Allow custom task to be embedded in pipeline | implementable | 2021-04-28 |

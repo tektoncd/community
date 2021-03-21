@@ -17,6 +17,17 @@ status: proposed
   - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
+  - [Controlling Step Lifecycle](#controlling-step-lifecycle)
+    - [Failure of a Step](#failure-of-a-step)
+    - [Halting a Step on failure](#halting-your-step-on-failure)
+    - [Exiting breakpoint](#exiting-breakpoint)
+  - [Debug Environment Additions](#debug-environment-additions)
+    - [Mounts](#mounts)
+    - [Debug Scripts](#debug-scripts)
+  - [User Stories](#user-stories)
+    - [CLI Integration](#cli-integration)
+      - [Environment Access](#environment-access)
+- [Alternative](#alternatives)
 <!-- /toc -->
 
 ## Summary
@@ -38,8 +49,8 @@ kind: TaskRun
 metadata:
   generateName: quarante-deux
 spec:
-  breakpoint:
-    onFailure: true
+  debug:
+    breakpoint: ["onFailure"]
 ```
 
 When the "breakpoint on failure" spec is mentioned in a particular TaskRun
@@ -122,3 +133,75 @@ failed step 0 as a success. Running this script would create `/tekton/tools/0.er
 
 `/tekton/debug/scripts/debug-breakpointexit` : Mark the step as completed with failure by writing to `/tekton/tools`. eg: User wants to exit
 breakpoint for failed step 0. Running this script would create `/tekton/tools/0` and `/tekton/tools/0.breakpointexit`.
+
+### User Stories
+
+#### CLI integration
+The scenario below provides details on what the user should do to debug their failed task.
+
+##### Environment access
+1. Get Failed TaskRun name.
+2. Provide as an argument to the cli to start the taskrun in debug mode. To get
+   ```
+   tkn taskrun debug failed-taskrun-1234 --on-failure --console-access
+   ```
+   In the above example we are recreating the TaskRun with the following patch.
+   ```yaml
+   metadata:
+     name: failed-taskrun-1234-debug
+   spec:
+    debug: 
+      breakpoint: ["onFailure"]
+   ```
+3. Once the TaskRun is created and a step fails, the TaskRun Pod will be in the Running state. Till that time the CLI will wait 
+   for the TaskRun to stop executing (due to failure) and go into the limbo state which would be leveraged for debugging.
+   The CLI will open a shell to the step container which would be a reimplementation of `kubectl exec -it`.
+
+
+
+## Alternatives
+
+1. *"Breakpoint" as a map in the debugSpec.*
+
+    ```yaml
+    debug:
+      breakpoint: 
+        onFailure: true
+        beforeStep: []
+        afterStep: []
+    ```
+    The above shows what it could look like if the user could provide more points where they can halt the TaskRun i.e. before and after certain steps. 
+
+2. *"Breakpoint on failure" as a map.*
+
+    Based on 1. we can say that there might come a time, if rerunning steps does become a reality (which is highly likely), the user would like to debug before the failure takes place by enabling, something like beforeFailure which would rerun the step and halt it before execution.
+
+    ```yaml
+    debug:
+      breakpoint: 
+        onFailure: 
+          before: true
+          after: true
+        beforeStep: []
+        afterStep: []
+    ```
+
+3. *Enums rock*
+
+    Using a list instead of a map allow us to maintain the breakpoint locations in the Tekton API and not on the client side.
+
+    - Add a breakpoint before and after the failure.
+
+      ```yaml
+      debug:
+        breakpoint: ["beforeFailure", "onFailure"]
+      ```
+
+    - Create a breakpoint before and after execution of certain steps.
+      The user provides the breakpoint location for before or after the step they want to debug; 
+      followed by the name or the index number of the step itself. (Ordinal or Nominal step reference)
+
+      ```yaml
+      debug:
+        breakpoint: ["before-push-to-registry", "after-3"]
+      ```

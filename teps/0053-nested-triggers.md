@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Nested Triggers
 creation-date: '2021-02-10'
-last-updated: '2021-02-24'
+last-updated: '2021-04-15'
 authors:
 - '@jmcshane'
 ---
@@ -14,11 +14,15 @@ authors:
 - [Motivation](#motivation)
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
-  - [Use Cases (optional)](#use-cases-optional)
+  - [Use Cases](#use-cases)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [Implementation Notes](#implementation-notes)
     - [Example](#example)
+- [Alternatives](#alternatives)
+- [Implementation Decision](#implementation-decision)
+- [References](#references)
+
 <!-- /toc -->
 
 _NB: This document is intended to be a problem statement with a proposed solution.
@@ -78,13 +82,21 @@ by a single triggering event.
 * While we posit that performance improvements are possible by limiting the number of invoked triggers,
   significant performance gains is not intended to be a goal of this proposal.
 
-### Use Cases (optional)
+### Use Cases
 
-* Add common metadata to every github event based on external contextual information
+* Add common metadata to every source control system event based on external contextual information
+
+Notes on this use case: CI systems that run based off a common file format (such as Travis CI and Circle CI) need to query the source repository to determine the actions that must take place based off a fired git event. By putting this query in a single location, all the processing can be done once for creating many downstream resources via triggertemplates.
+
 * Simplify the writing of new Triggers by allowing operators to provide reusable interceptor chains
 * Filter events that don't pass validation in a single Trigger to reduce noise and ease debugging
 * Generate a single PVC name for a set of pipelines to use based on event context and pass PVC 
   into each pipelinerun as a workspace
+* Increase the ability to diagnose the interceptor chain execution by reducing execution per event.
+
+Notes on this use case: Given an eventlistener system that operates based off triggered Git events, there are many possible types of events and resources that could be created. For example, Git can fire pull request events, issue comment, push, releases, etc. With the common file format as discussed above, the eventlistener can parse the event centrally to add the required metadata and then narrow the processing tree from those resources.
+
+A concrete example of this is an eventlistener that can create resources across all these different possible events. If there are a dozen downstream triggers for each one of these events, without nesting each one of these triggers would need to fire for each Github event. With nesting, we filter out the event `type`, then process only the triggers associated with that event type. This allows us to build off specific extensions that we expect in the trigger body and reduces the overall noise in the event listener logs.
 
 ## Requirements
 
@@ -202,3 +214,173 @@ Notice how simple it is for the Trigger author to write the logic around their t
 when the common logic is implemented at the top level. Trigger authors can also manage
 their own set of downstream triggers as you can specify additional triggers alongside
 a binding and template once the interceptor chain completes.
+
+## Alternatives
+
+There are three alternatives that have been identified to provide some of the same benefits.
+
+### Option 1: Select Downstream Triggers With Labels
+
+Add a `triggerSelector` field that allows a trigger to target downstream triggers based off a label selector:
+
+```yaml
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: top-level-trigger
+spec:
+  interceptors:
+    - cel:
+        filter: >-
+          header.match('header-filter', 'a-header-filter')
+        - key: example-overlay
+          expression: body.example.value
+  triggerSelector:
+    matchLabels:
+      key: value
+```
+
+#### Advantages
+
+* Trigger Readability - By only invoking triggers after previous processing completes, we can assume specific attributes are set and filter on a small set of conditions. This reduces the complexity of the expressions required in the Trigger interceptors to validate that a certain event should be fired.
+* Trigger Reusability - nesting trigger selectors would allow for both a fan out and fan in approach that would allow "terminal" Triggers to share common attributes, such as a common set of TriggerBindings or a TriggerTemplate that sets PipelineRun attributes and metadata. This could allow Triggers to support more complex use cases without repetition or complex interceptor logic within Trigger resources.
+* Eventlistener Simplicity - the EventListener would not need an additional resource type to be able to process this. By adding this functionality to Triggers directly, we only need to inspect the implicit Trigger "graph" to be able to understand what happens for an event listener.
+* Resource Validation - Fewer resources would need to be exposed on the EventListener HTTP endpoint, and by looking at the EventListener trigger selector we could identify exactly which Triggers are exposed over HTTP.
+* This option provides the advantages from Option 2, while also allowing for further nesting. Since Option 2 provides a common interceptor chain, that could be implemented in a Trigger for each desired `group` with the `triggerSelector` field set as the downstream target for groups.
+
+#### Disadvantages
+
+* Implementation complexity - Since one trigger could invoke another, we could possibly run into a situation where a loop of trigger processing occurs. The implementation will need to filter out this situation to avoid possible infinite loops.
+* Eventlistener readability - By allowing a Trigger to select additional triggers to process, it becomes more difficult to know what will happen in the system when a HTTP event is fired without Trigger inspection. Since processing goes through a nested chain of invocations, you would have to read a number of triggers to identify the path that a single resource takes through the EventListener processing.
+
+### Option 2: Interceptor Groups
+
+Specify the interceptor groups at the top level and process each group on trigger:
+
+```yaml
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: my-el
+spec:
+  groups: 
+  - name: github-group
+    interceptors:
+      - my-interceptor
+      - add-extra-body
+    triggerSelector:
+      matchLabels:
+        app=foo
+        anotherval=xyz
+  - name: another-group
+    interceptors:
+      - my-interceptor
+    triggerSelector:
+       matchLabels:
+         app=foo
+```
+
+This can work well with running a root EventListener interceptor with a `labelSelector`. One challenge here is that these `InterceptorGroups` become another separate API resource that would need to be managed and potentially added to the API. This could be added onto the existing Trigger resource, but then it becomes closer to Option 1.
+
+#### Advantages
+
+* EventListener Readability - the list of interceptor groups sits in the EventListener objects, so when adding a trigger, a trigger author can check in there, and decide which labels to add to it so that it ends up under the correct top trigger.
+* Resource Trigger Validation - Provides the same advantage from Option 1.
+* Implementation within the current system - this implementation could be done with minimal impact to the API by wrapping the trigger invocation by a group processing endpoint.
+
+#### Disadvantages
+
+* Trigger Complexity - since this only allows a single fan out, the downstream trigger for each one of these trigger resources would need to validate/assemble all data required to determine what resources should be generated by the eventlistener.
+* Nesting Limitations - This creates a graph with a single edge, from the groups to the target triggers. This limits the ability to chain resources together to complete multiple "common validation" steps before determining resource targets.
+
+
+### Option 3: Downstream EventListener
+
+Allow triggers to target other eventListeners after processing interceptors:
+
+```yaml
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: top-level-trigger
+spec:
+  interceptors:
+    - cel:
+        filter: >-
+          header.match('header-filter', 'check-this-header-filter')
+        - key: example-overlay
+          expression: body.example.value
+    - webhook:
+        objectRef:
+          kind: Service
+          name: example-webhook-service
+          apiVersion: v1
+          namespace: tekton-pipelines
+  eventListeners:
+  #Two possible ways of specifying target
+  - target-namespace/downstream-eventlistener
+  - http://downstream-eventlistener.target-namespace.svc:8080
+```
+
+#### Advantages
+
+* Allow reuse of the trigger selector logic from the eventlistener across multiple label selected triggers
+
+#### Disadvantages
+
+* This could possibly create services for triggers that may not want to be exposed event within the cluster. The eventlistener would expose Triggers over HTTP that are intended to run after the interceptors have processed. This could potentially bypass required authentication steps needed to invoke Triggers, such as validating that an event came from the Git source system.
+* API Impact: the `eventListeners` target doesn't fit well into the current API as we would need to determine how to "invoke" an event listener.
+* Implementation impact: currently an eventlistener cannot receive extensions from an HTTP event, so it would not be able to set common data across the triggered resources.
+
+## Implementation Decision
+
+After discussion with the working group for this TEP, the decision was made for an initial implementation that would solve some of the initial requirements while allowing for future iteration on this TEP. The decision is a compromise around the [second alternative](#alternatives) with minimal impact on the overall API surface. The implementation will consist of the following:
+
+* Add `triggerGroups` as a top level field inside of the event listener.
+* Each `triggerGroup` can specify an inline set of interceptors.
+* Each `triggerGroup` can specify a set of triggers via namespace and label selectors.
+
+This capability will allow unified processing for a set of Triggers, selected via namespace and label selectors, within an EventListener process.
+
+Once [TEP-0033](https://github.com/tektoncd/community/blob/main/teps/0033-tekton-feature-gates.md) is complete and integrated into triggers, the trigger groups feature can remain behind alpha feature gates while the team evaluates the appropriate next steps for extending the eventlistener capabilities. 
+
+### Example `triggerGroup` Configuration
+
+The EventListener API resource will be updated to enable the following configuration:
+
+```
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: listener-sel
+  namespace: foo
+spec:
+  serviceAccountName: foo-el-sa
+  triggerGroups:
+  - name: github-group
+    interceptors:
+    - name: "validate GitHub payload and filter on eventType"
+      ref:
+        name: "github"
+      params:
+      - name: "secretRef"
+        value:
+          secretName: github-secret
+          secretKey: secretToken
+      - name: "eventTypes"
+        value: ["pull_request", "tag"]
+    triggerSelector:
+      namespaceSelector:
+        matchNames:
+        - my-ns
+      labelSelector:
+        matchLabels:
+          triggers: github
+```
+
+The namespace selector will default to matching the namespace that the event listener runs in.
+
+## References
+
+* [Working Group Discussion Notes](https://docs.google.com/document/d/16IeJvXbeMP6L7VzxZuzPhYKAcnBL42FVTCEPO9BWL0I/edit?resourcekey=0-Ie3k33EUyc2l7RfDerHPTw)
+* [Alternatives: Example Configurations](https://gist.github.com/dibyom/317262193564aceca26359035ec7b259)

@@ -183,5 +183,6 @@ This is the complete list of Tekton teps:
 |[TEP-0056](0056-pipelines-in-pipelines.md) | Pipelines in Pipelines | proposed | 2021-03-08 |
 |[TEP-0058](0058-graceful-pipeline-run-termination.md) | Graceful Pipeline Run Termination | implementable | 2021-04-27 |
 |[TEP-0059](0059-skip-guarded-task-only.md) | Skip Guarded Task Only | proposed | 2021-03-24 |
+|[TEP-0060](0060-remote-resource-resolution.md) | Remote Resource Resolution | proposed | 2021-05-17 |
 |[TEP-0061](0061-allow-custom-task-to-be-embedded-in-pipeline.md) | Allow custom task to be embedded in pipeline | implementable | 2021-04-28 |
 |[TEP-0063](0063-workspace-dependencies.md) | Workspace Dependencies | proposed | 2021-04-23 |

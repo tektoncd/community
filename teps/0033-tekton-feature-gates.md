@@ -2,7 +2,7 @@
 status: implementable
 title: Tekton Feature Gates
 creation-date: '2020-11-20'
-last-updated: '2021-03-10'
+last-updated: '2021-03-23'
 authors:
 - '@vdemeester'
 - '@frittoli'
@@ -35,6 +35,7 @@ authors:
     - [Indicate stability level with field name](#indicate-stability-level-with-field-name)
     - [Add alpha section(s) to the spec](#add-alpha-sections-to-the-spec)
     - [Build separate release with alpha features](#build-separate-release-with-alpha-features)
+- [Implementation](#implementation)
 - [Upgrade & Migration Strategy](#upgrade--migration-strategy)
 - [References](#references)
 <!-- /toc -->
@@ -170,13 +171,11 @@ an alternative where we use the same approach for both.)
 In both cases we want to control access with
 [a feature flag](https://github.com/tektoncd/pipeline/blob/master/docs/install.md#customizing-the-pipelines-controller-behavior).
 
-* For new API fields, will will gate access to all of them behind two feature flags
-  called `enable-alpha-api-fields` and `enable-beta-api-fields`.
-  ([Design details: new api fields](#new-api-fields).)
+* For new API fields, will will gate access to all of them behind one feature flag called
+  `enable-api-fields` ([Design details: new api fields](#new-api-fields).)
 * For changes in behavior which are not configurable via API fields in our CRDs,
   each feature will be gated by its own unique feature flag.
   ([Design details: changes in behavior](#changes-in-behavior).)
-
 
 ### Risks and Mitigations
 
@@ -187,9 +186,21 @@ below.
 
 ### New API fields
 
-We gate access to all new API fields with two new
-[feature flags](https://github.com/tektoncd/pipeline/blob/master/docs/install.md#customizing-the-pipelines-controller-behavior) called `enable-alpha-api-fields` and `enable-beta-api-fields`
-which will default to false.
+We gate access to all new API fields with a new
+[feature flag](https://github.com/tektoncd/pipeline/blob/master/docs/install.md#customizing-the-pipelines-controller-behavior)
+called `enable-api-fields` with possible values of:
+
+* `stable` (default) - This value indicates that only fields of the highest stability level are enabled; at the moment
+  the highest version in Tekton Pipelines is `beta`, so this would mean only beta stability fields are enabled, i.e.
+  `alpha` fields are not enabled. Once we have a `v1` version, this would mean only `v1` fields, i.e. `beta` and `alpha`
+  fields would not be enabled.
+* `beta` (not needed until `v1`) - This value indicates that only fields which are of `beta` (or greater) stability are
+  enabled, i.e. `alpha` fields are not enabled. Since `beta` is currently the highest level of stability in Tekton
+  Pipelines, this value is not needed and does not need to be added until we support (at least one) `v1` version CRD.
+* `alpha` - This value indicates that fields of all stability levels are enabled, specifically `alpha`, `beta` and
+  (once its available) `v1`.
+
+This allows administrators to opt into allowing their users to use alpha and beta fields.
 
 For example:
 
@@ -199,15 +210,17 @@ kind: ConfigMap
 metadata:
   name: feature-flags
 data:
-  enable-alpha-api-fields: "true"
-  enable-beta-api-fields: "true"
+  enable-api-fields: "alpha"
 ```
 
-This allows administrators to opt into allowing their users to use alpha and beta fields.
+_Initially we had proposed using separate flags for alpha and beta (`enable-alpha-api-fields` and
+`enable-beta-api-fields`) but this led to a confusing situation where if only `enable-alpha-api-fields` was set and a
+field advanced from alpha to beta, a user suddenly wouldn't be able to use it (until they set `enable-beta-api-fields`),
+so we decided it would be more clear to use one flag and have it so that setting `alpha` implies setting `beta` as well._
 
-_Note that we will only need the `enable-beta-api-fields` flag once we have v1 types in Tekton,
-at the moment the highest version we have is beta, so we will initially only need
-`enable-alpha-api-fields`._
+When a new field is added, it will be added to the highest stable version of the CRD, which assumes that any lower
+stability versions are depcreated, e.g. right now we support both `v1beta1` and `v1alpha1` CRDs (e.g. Pipeline, Task),
+but the `v1alpha` CRDs are deprecated.
 
 Anyone submitting any Tekton CRD (e.g. Pipelines, Tasks, Runs, PipelineRuns, TaskRuns) when these are
 true will be able to use fields which are considered "alpha" and/or "beta" (depending on which fields
@@ -221,12 +234,52 @@ by the webhook admission controller: if the flag is not enabled and a user tries
 alpha field, the webhook will not allow the CRD to be stored and will return an actionable error.
 (Same for beta.)
 
+#### Existing alpha field flags
+
+We have several fields (or sets of fields) which were added to Tekton Pipelines before we added this feature flag and
+are currently [gated by their own feature specific flags](https://github.com/tektoncd/pipeline/blob/main/docs/install.md#customizing-the-pipelines-controller-behavior):
+
+* `enable-tekton-oci-bundles`
+* `enable-custom-tasks`
+
+These flags are being used to indicate that these features are alpha; but once we have `enable-api-fields: alpha`, we
+can use that instead and we can deprecate these flags; i.e. setting `enable-api-fields: alpha` would imply that
+`enable-tekton-oci-bundles` and `enable-custom-tasks` are set to true as well. After we give folks a few releases
+to adjust to that, we could remove these flags.
+
+`enable-tekton-oci-bundles` might be an exception to this; it's possible that cluster admins might want to prevent
+folks from referencing remote Task locations so we may want to keep this flag.
+
+#### Future CRDs
+
+In Tekton Pipelines we currently have a set of beta CRDs and several alpha CRDs. In
+[our plan for our v1 release](https://github.com/tektoncd/pipeline/issues/3548) we are trying to update all existing
+CRDs to the same level, so that they are eventually all removed or all v1.
+
+However it is possible that in the future we might want to add more CRDs. If that was to happen the CRDs would be
+added initially as `alpha` and would need to progress to `beta` and eventually `v1`. In this scenario, we could have a
+mix of CRD versions (all of `v1`, `beta`, `alpha`).
+
+This is how the `enable-api-fields` values would impact them:
+
+* `v1` types would support having both `alpha` and `beta` fields; `enable-api-fields: alpha` would enable both, 
+  `enable-api-fields: beta` would enable `beta` fields but not `alpha`.
+* `beta` types would support having `alpha` fields; `enable-api-fields: alpha` would enable them
+
+Use of `alpha` CRDs would not require `enable-api-fields` to be set, neither would `beta`, i.e. `enable-api-fields` only
+gates access to fields within CRDs, not to CRDs themselves.
+
+#### Pros and cons
+
 Pros:
-* One flag (for each of the 2 levels of stability) makes it easy to opt into alpha features
-  as a whole (assumes a user who wants any of these features wants "cutting edge" features in general)
+* One flag makes it easy to opt into alpha (or beta) features as a whole (assumes a user who wants any of these
+  features wants "cutting edge" features in general)
 * Provides a simpler testing matrix than one flag per field
   (see [one feature flag per new alpha field](#one-feature-flag-per-new-alpha-field)
   alternative for details)
+* Cluster admins can control access to new functionality
+* If a cluster administrator wants to have finer gained control over what fields users can and cannot use, they still
+  have the ability to do this via writing their own admission webhook
 
 Cons:
 * Users who want to use new functionality and do not have admin access to their clusters will
@@ -246,6 +299,8 @@ Cons:
       to decide how to handle this
 * These two fields would toggle alpha and beta fields across all CRDs; another option would be
   to have a flag per version per CRD
+* Incongruous with the apiVersion of the resource; just looking at the spec for a `v1` or `beta` CRD, it would not be
+  obvious that some of the fields might actually have a lower stability level
 
 #### Docs
 
@@ -269,10 +324,13 @@ complicates the combination of settings we'll need to test in order to feel
 confident in our automated testing, and because promoting these changes from
 alpha will be a backwards incompatible change._ 
 
+#### Pros and cons
+
 Pros:
-* It will be clear to users whether they have opted into this functionality or not
+* It will be clear to cluster admins whether they have opted into this functionality or not
 
 Cons:
+* Users of Tekton as a service may not know what functionality the cluster admin has opted into
 * Flags added this way can only be removed according to our deprecation policy and will need to
   be supported for as long as the corresponding version is supported (e.g. today we support v1alpha1
   and v1beta1 so flags of this kind that we added for v1beta1 functionality will stick around until
@@ -286,15 +344,95 @@ to decide when a feature is ready to move from alpha to beta and finally to v1.
 This will likely require the feature being available for at least one release
 if not several releases (and maybe use in [dogfooding](https://github.com/tektoncd/plumbing/blob/main/docs/dogfooding.md))
 to be able to collect and handle user feedback.
+  
+#### Examples
 
-* When an alpha API field is ready to be declared beta:
-    * If the underlying CRD has a version of v1, the webhook admission controller
-      will be updated to require the `enable-beta-api-fields` flag instead of the
-      `enable-alpha-api-fields` flag in order to use the field.
-    * If the underlying CRD has a version of v1beta1, the webhook admission controller
-      will be updated no longer require `enable-alpha-api-fields` to use the field
-* When a beta API field is ready to be declared v1, the webhook addmission controller
-  will be updated to no longer require `enable-beta-api-fields` to use the field.
+##### Promoting fields
+
+The following examples of field promotion will use the example of adding a new field to control the timeouts of
+non-finally Tasks in a Pipeline (very similar to [TEP-0047](https://github.com/tektoncd/community/pull/326) but for
+demonstration purposes we're going to pretend it's being added to a Pipeline instead of a PipelineRun),
+specifically a new field `tasksTimeout`, e.g.:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+...
+spec:
+  timeout: "0h0m60s"
+```
+
+The field would be added to the highest stable verison of the CRD, in this case to the `v1beta1` version of the
+`PipelineRun` CRD.
+
+###### Adding an alpha field to a beta type
+
+1. The feature will be added and will only work when `enable-api-fields` is set to `alpha`
+    a. If a `PipelineRun` is submitted that uses the new field but `enable-api-fields` is not set to `alpha`,
+       the validating admission webhook will reject it
+2. The feature will be documented in the `PipelineRun` documentation in the alpha fields section
+3. The release notes will explain that this field is alpha
+
+###### Removing an alpha or beta field
+
+Let's say we decide we want to remove the `tasksTimeout` field which we added as an alpha field (maybe we want to
+rename or restructure it). Because it is [our policy](https://github.com/tektoncd/pipeline/blob/main/api_compatibility_policy.md#alpha-beta-and-ga)
+allows us to drop this field with one release of warning.
+
+1. We will have a release with a release note warning users that the field is about to be dropped.
+2. In the next release, the field will be removed completely
+
+Since in our example `tasksTimeout` is being added to a `Pipeline`, this means that folks may have `Pipelines` in their
+cluster that use the `tasksTimeout` field which has now been removed. In this case, users would not find out that they
+have invalid `Pipelines` until they try to use them (this is the case for any backwards incompatible change made to
+the API).
+
+###### Promoting a field from alpha to the highest stable level
+
+Let's say that after some amount of time (maybe 3 or 4 releases) we decided we were happy with the feature and want to
+promote it to beta, which currently is the type of the underlying CRD (`PipelineRun` is `v1beta`).
+
+1. The validation would be updated to no longer require `enable-api-fields` is set to `alpha`
+2. The documentation would be moved out of the `alpha` section of the `PipelineRun` docs
+3. The release notes would explain that this feature is now stable and available without any flag needing to be set
+
+###### Promoting a field from alpha to beta when the underlying type is v1
+
+Let's pretend that `PipelineRun` was actually `v1`. This means that the `tasksTimeout` field needs to progress from
+alpha to beta before it can progress to v1. So let's say that some amount of time has passed since the field was
+introduced as alpha (e.g. 3 or 4 releases) and we want to progress it to beta.
+
+1. The validation would be updated to require `enable-api-fields` to be set to either `alpha` or `beta`.
+2. The documentation would be moved from the `alpha` section of the `PipelineRun` docs to the `beta` section
+3. The release notes would explain that the field is now beta.
+
+After some other number of release (maybe another 3 or 4), the field could be promoted to v1 (aka
+[the highest stable level](#promoting-a-field-from-alpha-to-the-highest-stable-level)).
+
+##### Promoting behavior flags
+
+Let's say we want to change the behavior such that instead of workspaces by default being available in a Task at
+`/workspace/my-workspace` the root directory is actually called `/tekton-files`, e.g. `/tekton-files/my-workspace`.
+
+1. To change this behavior we would add a feature flag, e.g. `workspace-dir-rename` with a default of false
+    a. When set to true, the new location `tekton-files` would be used, but users would have to opt into it
+2. The next release would advertise this flag
+3. When the flag is set to false (the default) a warning will be logged
+
+The next step would be to either change the default value of the flag or to remove it entirely (we recommend changing
+the default value to give users a chance to adjust); both are backwards incompatible changes and so per
+[our policy](https://github.com/tektoncd/pipeline/blob/main/api_compatibility_policy.md#alpha-beta-and-ga) we must wait
+at least 9 months worth of releases before making this change (12 months once we have a v1 release).
+
+After 9 months, we change the default value:
+
+1. We change the default value of `workspace-dir-rename` to true
+2. In the release notes we warn that this is about to be changed - if people want to maintain the previous behavior
+   they will need to explicitly set the flag to false
+3. When the flag is set to false, a warning will be logged
+
+At this point we consider the backwards incompatible change to have been made, and we can decide when to finally remove
+the flag entirely (e.g. as soon as the next release).
 
 #### Changes in behavior
 
@@ -309,10 +447,14 @@ as part of a deprecation announcement in
 [Tekton Pipelines v0.11.0](https://github.com/tektoncd/pipeline/releases/tag/v0.11.0-rc1) which was
 Mar 4, 2020, and was our first beta release. Our
 [API compatibility policy for beta](https://github.com/tektoncd/pipeline/blob/master/api_compatibility_policy.md#alpha-beta-and-ga)
-requires that we give at least 9 months to migrate from the depcrecated functionality, so
+requires that we give at least 9 months to migrate from the deprecated functionality, so
 [as early as Dec 4, 2020](https://github.com/tektoncd/pipeline/blob/master/docs/deprecations.md)
 we have the option to either change the default value of the flag (and later remove it) or to remove
 the flag completely.
+
+We recommend that in this case, before removing the flag entirely, the default value of the flag be changed, to maximize
+the chances that folks are able to gracefully migrate from the old behavior to the new. Changing the default value would
+be considered a backward imcompatible change.
 
 ## Test Plan
 
@@ -323,10 +465,9 @@ the flag completely.
       infeasible
 * For alpha and beta API fields, we will have a set of end to end (or example tests)
   which run with:
-  * `enable-alpha-api-fields` true, `enable-alpha-api-fields` false (with tests that use alpha fields)
-  * `enable-alpha-api-fields` false, `enable-alpha-api-fields` true (with tests that use beta fields)
-  * with both true, which use both fields
-  * with both false
+  * With the default value of `enable-api-fields`, i.e. `stable`, which will be the default for most tests
+  * `enable-api-fields: "alpha"` (with tests that use alpha fields, and beta fields once they exist)
+  * Once we add `enable-api-fields: "beta"` we will add tests with this set which use the beta fields
 
 ## Design Evaluation
 
@@ -374,6 +515,8 @@ data:
   enable-allow-step-failure: "true"
 ```
 
+#### Pros and cons
+
 Pros:
 * Operators will have the ultimate control over what alpha features can be used
 
@@ -398,11 +541,15 @@ For example, right now Task has `v1alpha1` (deprecated) and `v1beta1`. We could 
 create a version such as `v1alpha2` and add new fields to that version before promoting them
 to `v1beta1`.
 
+#### Pros and cons
+
 Pros:
 * From the user's point of view, this might be the most intuitive option:
   if they want to opt into alpha features for a beta CRD (e.g. Task is currently v1beta1),
   they use the alpha version (v1alpha1)
 * Operators can control access by not installing CRD versions they don't want being used
+* The version information is clearly included in the resource specification, i.e. the resource specification can be
+  used as a source of truth for the stability level
 
 Cons:
 * The maintenance burden for Tekton contributors is the biggest blocker: every time we add
@@ -413,11 +560,21 @@ Cons:
   we'd have to leverage something like annotations to store the new fields
 * Not clear if we'd need to make a new version every time we add a new field; or have one version
   with all experimental fields
+* We can only have one storage type, so anything that is added to any of these alternative versions will also need
+  to be added to the backing storage type
+* It won't be possible to mix and match features from multiple CRD versions, e.g.:
+    * I might want to mix a feature from the `v6alpha2` `Task` (`shoot lasers`) with a feature from `v1alpha7`
+      (`reach escape velocity`).  If I could mix these features then my Tasks could Shoot Lasers From Space.
+      But if I can't mix them then my Task can either be in space or shoot lasers, but not both at the same time.
+* It is not clear how we could support multiple CRD versions with different features as well as the ability to embed
+  specs (e.g. embedding a Task spec inside of a Pipeline spec - which version(s) does the Pipeline support?)
 
 ### Documentation only
 
 In this version, we make no changes to functionality, but we make very clear documentation
 that shows which fields are considered beta.
+
+#### Pros and cons
 
 Pros:
 * No code changes
@@ -430,6 +587,8 @@ Cons:
 ### Warn on use of new fields
 
 Handling this with warnings (e.g. warn the user in logs when they use alpha features)
+
+#### Pros and cons
 
 Pros:
 * Few code changes
@@ -462,8 +621,11 @@ spec:
       alpha_allow_failure: true # starting the field name with alpha indicates it has alpha stablity
 ```
 
+#### Pros and cons
+
 Pros:
 * Very clear when a field is alpha and that changes will be required once it is stable
+* Very easy for tools to automatically migrate when fields are promoted (e.g. `alpha_.*` to `beta_.*`)
 
 Cons:
 * There would be a lot of fields (once we promote a field, we'd need to maintain the previous versions
@@ -523,6 +685,8 @@ spec:
       allow_failure: true # new field
 ```
 
+#### Pros and cons
+
 Pros:
 * Very clear when a field is alpha and that changes will be required once it is stable
 
@@ -535,6 +699,8 @@ Cons:
 Build multiple releases: one which only has beta fields in beta types, etc.,
 and one that contains alpha fields as well.
 
+#### Pros and cons
+
 Pros:
 * Clear when you're opting in and when you're not
 
@@ -542,11 +708,27 @@ Cons:
 * Opting in is harder (install something entirely different)
 * Additional complication in our release process (esp if we need to make several different versions)
 
+## Implementation
+
+In order to consider this TEP implemented we will need to:
+
+* Create clear documentation showing contributors how to add new features i.e. how do you add a field that is
+  guarded by these flags including:
+  * Verifying in the admission controller that the flag is set if the field is used
+  * How to add the appropriate [tests](#test-plan)
+  * How to correctly [document](#docs)) the feature
+* Add [documentation](#docs) about the stability level of each field
+* Add documentation about how to use the new flag
+* Add [tests](#test-plan) i.e. initially an end to end (or example) test that sets the flag to `alpha`
+* Deprecate the `enable-custom-tasks` flag (can be implied by `enable-api-fields:alpha`) - possibly `enable-oci-bundles`
+  as well
+
 ## Upgrade & Migration Strategy (optional)
 
 We would apply this to Tekton Pipelines to start with, which currently has v1beta1
-as the highest level of stability, by adding the `enable-alpha-api-fields` feature flag.
-Once we have added `v1` types, we would add the `enable-beta-api-fields` feature flag as well.
+as the highest level of stability, by adding `enable-api-fields` with a default value of `stable` and supporting an
+alternative value of `alpha`. Once we have added `v1` types, we would add `beta` as a supported value for this field
+as well.
 
 ## References
 

@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Graceful Pipeline Run Termination
 creation-date: '2021-03-18'
-last-updated: '2021-03-18'
+last-updated: '2021-04-27'
 authors:
 - '@rafalbigaj'
 ---
@@ -69,15 +69,15 @@ Related issues:
 
 ### Non-Goals
 
-- There is not intention to change the existing pipeline run cancellation behaviour, 
+- There is no intention to change the existing pipeline run cancellation behaviour, 
   but rather provide an alternative one that would support graceful run termination.
 
 ### Use Cases (optional)
 
 - As a Kubeflow user, I run a training pipeline that spawns a [`TFJob`](https://www.kubeflow.org/docs/components/training/tftraining/).
-  Once the pipeline execution is stopped the training job should be terminated to limit resource usage.
+  Once the pipeline execution is stopped, the training job should be terminated to limit resource usage.
 - As a CodeEngine user, I run a pipeline that [submits a batch job](https://cloud.ibm.com/docs/codeengine?topic=codeengine-cli#cli-jobrun).
-  Once the pipeline execution is stopped the batch job should be terminated to limit the service costs.
+  Once the pipeline execution is stopped, the batch job should be terminated to limit the service costs.
 - As a kubernetes user, I run a pipeline that provisions a new cluster.
   The pipeline is executed and stopped. The k8s cluster resource should be freed up.
 - As a Kubeflow user, I run a pipeline that executes some ETL actions in a sequence.
@@ -86,15 +86,25 @@ Related issues:
 
 ## Requirements
 
-- Users should be able to gracefully stop a pipeline run and cleanup external resources. 
+- Users should be able to gracefully terminate (cancel) a pipeline run and cleanup external resources. 
 - Users may want to wait for running tasks to be finished before stopping a pipeline run.
 
 ## Proposal
 
-<!--
+In this proposal the following 2 actions are differentiated:
 
-To gracefully terminate (stop) a `PipelineRun` that's currently executing, users update its definition to mark it as stopped. 
-When you do so, the spawned `TaskRuns` are also marked as stopped and all associated Pods are deleted.
+- *cancel* means kill running tasks
+- *stop* means let running tasks finish but no new tasks are scheduled
+
+To gracefully terminate a `PipelineRun` that's currently executing, but wait for final tasks to be run first,
+users update its definition with states:
+
+- "CancelledRunFinally" - cancel `PipelineRun` and ensure `finally` is run
+- "StoppedRunFinally" - stop `PipelineRun` and ensure `finally` is run
+
+To gracefully cancel a `PipelineRun` that's currently executing, users update its definition 
+to mark it as canceled, but request final tasks to be run first. 
+When you do so, the spawned non-final `TaskRuns` are marked as cancelled and all associated Pods are deleted.
 In parallel the final tasks are triggered.
 
 For example:
@@ -106,44 +116,29 @@ metadata:
   name: go-example-git
 spec:
   # […]
-  status: "PipelineRunStopped"
+  status: "CancelledRunFinally"
 ```
 
--->
+In the second scenario, users want to wait for running tasks to be completed.
+To gracefully terminate a `PipelineRun`, users update its definition to mark it as stopped. 
+When you do so, the spawned `TaskRuns` are not cancelled.
+The final tasks are triggered, when all running tasks are finalized.
 
-### Notes/Caveats (optional)
+For example:
 
-<!--
-What are the caveats to the proposal?
-What are some important details that didn't come across above.
-Go in to as much detail as necessary here.
-This might be a good place to talk about core concepts and how they relate.
--->
-
-### Risks and Mitigations
-
-<!--
-What are the risks of this proposal and how do we mitigate. Think broadly.
-For example, consider both security and how this will impact the larger
-kubernetes ecosystem.
-
-How will security be reviewed and by whom?
-
-How will UX be reviewed and by whom?
-
-Consider including folks that also work outside the WGs or subproject.
--->
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: go-example-git
+spec:
+  # […]
+  status: "StoppedRunFinally"
+```
 
 ### User Experience (optional)
 
-<!--
-Consideration about the user experience. Depending on the area of change,
-users may be task and pipeline editors, they may trigger task and pipeline
-runs or they may be responsible for monitoring the execution of runs,
-via CLI, dashboard or a monitoring system.
-
-Consider including folks that also work on CLI and dashboard.
--->
+Support for additional command or flags in `tkn` CLI should be considered.
 
 ### Performance (optional)
 
@@ -151,17 +146,91 @@ No impact on performance.
 
 ## Design Details
 
-<!--
-This section should contain enough information that the specifics of your
-change are understandable.  This may include API specs (though not always
-required) or even code snippets.  If there's any ambiguity about HOW your
-proposal will be implemented, this is the place to discuss them.
+In this proposal the list of statuses users can set in `spec.status` is extended to:
 
-If it's helpful to include workflow diagrams or any other related images,
-add them under "/teps/images/". It's upto the TEP author to choose the name
-of the file, but general guidance is to include at least TEP number in the
-file name, for example, "/teps/images/NNNN-workflow.jpg".
--->
+&nbsp; | don't run finally tasks  | run finally tasks
+------ | ------------------------ | -----------------------------
+cancel | Cancelled                | CancelledRunFinally
+stop   |                          | StoppedRunFinally
+
+The existing state "PipelineRunCancelled" is deprecated and replaced by "Cancelled".
+
+We need to consider following cases:
+
+1. User sets `spec.status` to "CancelledRunFinally" in `PipelineRun` with running tasks, 
+   but `finally` section is empty.
+
+    In this case a graceful termination would ack the same as a pipeline run cancellation.
+    
+    - `spec.status` in all running `TaskRun` is patched to "TaskRunCancelled"
+    - `spec.status` in all running `Run` is patched to "RunCancelled"
+    - `PipelineRun` condition after graceful termination is:
+      ```yaml
+      { type: Succeeded, Status: False, Reason: Cancelled } 
+      ```
+
+2. User sets `spec.status` to "CancelledRunFinally" in `PipelineRun` with running tasks 
+   and non-empty `finally` section.
+
+    In this case a graceful termination cancels all running task runs and waits for final tasks to be processed.
+    
+    - `spec.status` in all running `TaskRun` is patched to "TaskRunCancelled"
+    - `spec.status` in all running `Run` is patched to "RunCancelled"
+    - `PipelineRun` condition just after cancellation is:
+      ```yaml
+      { type: Succeeded, Status: Unknown, Reason: PipelineRunStopping } 
+      ```    
+    - when final tasks are completed, `PipelineRun` condition is:
+      ```yaml
+      { type: Succeeded, Status: False, Reason: PipelineRunCancelled }
+      ```
+
+3. User sets `spec.status` to "StoppedRunFinally" in `PipelineRun` with running tasks.
+
+    In this case a graceful termination waits for all tasks to be completed.
+    
+    - `PipelineRun` condition just after graceful stop is:
+      ```yaml
+      { type: Succeeded, Status: Unknown, Reason: PipelineRunStopping } 
+      ```    
+    - when final tasks are completed, `PipelineRun` condition is:
+      ```yaml
+      { type: Succeeded, Status: False, Reason: PipelineRunCancelled } 
+      ```
+
+4. User sets `spec.status` to "CancelledRunFinally" or "StoppedRunFinally" 
+   in `PipelineRun` with running final tasks.
+
+    In this case a graceful termination does not change a pipeline run state, 
+    which waits for all final tasks to be completed.
+    
+    - `PipelineRun` condition is unchanged.
+
+5. User sets `spec.status` to "CancelledRunFinally" or "StoppedRunFinally" 
+   in `PipelineRun` with tasks not scheduled yet.
+
+    When a pipeline run is gracefully terminated (in the way described above), any unscheduled non-final task is skipped
+    and listed in `status.skippedTasks` in `PipelineRun`.
+    
+    Final tasks, if present, are scheduled normally.
+
+Relationship among `PipelineRun` states:
+
+- If `PipelineRun` has stopped executing (i.e. [the Succeeded Condition is False or True](https://github.com/tektoncd/pipeline/blob/main/docs/pipelineruns.md#monitoring-execution-status)),
+  then modifications to `spec.status` should be rejected. Currently, such a validation is missing 
+  for "PipelineRunCancelled" state (replaced by "Cancelled").
+  
+- "Cancelled" - if this state is set when the `PipelineRun` is already in "PipelineRunStopping" state,
+  active final tasks should be cancelled and no task should be scheduled anymore.
+  That way users can forcefully terminate final tasks.
+  
+
+"CancelledRunFinally" and "StoppedRunFinally" states changes the `finally` behaviour, 
+which becomes an exit handler responsible for cleanup actions. 
+
+In the future, somebody may be interested in support for "Stopped" state, 
+which could allow stopping `PipelineRun`, letting active tasks finish but no new tasks being scheduled
+(including final tasks). That requires a separate TEP.
 
 ## Test Plan
 
@@ -193,17 +262,17 @@ The new API value (non-breaking change).
 ## Alternatives
 
 1. Change the current behaviour of a pipeline run cancellation to be graceful by default (invoke finally tasks).
-    - **Props:** new need for the new API value
+    - **Pros:** new need for the new API value
     - **Cons:** that would introduce the breaking change and even more importantly users would loose control
         over the expected behaviour, while the force termination is still useful in some cases.
 
 2. Decide the termination strategy as an additional property of `finally`. A pipeline author would say whether 
     final tasks should be run on cancel.
-    - **Props:** a pipeline author can specify expected behaviour.
+    - **Pros:** a pipeline author can specify expected behaviour.
     - **Cons:** this would give to little control in runtime on the expected behaviour.
     
 3. A variant of 2. with ability to overwrite the termination strategy in runtime.
-    - **Props:** the default strategy can be specified by an author and changed in runtime.
+    - **Pros:** the default strategy can be specified by an author and changed in runtime.
     - **Cons:** a bit more complex.
 
 

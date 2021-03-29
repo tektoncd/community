@@ -171,7 +171,7 @@ an alternative where we use the same approach for both.)
 In both cases we want to control access with
 [a feature flag](https://github.com/tektoncd/pipeline/blob/master/docs/install.md#customizing-the-pipelines-controller-behavior).
 
-* For new API fields, will will gate access to all of them behind one feature flag called
+* For new API fields, we will gate access to all of them behind one feature flag called
   `enable-api-fields` ([Design details: new api fields](#new-api-fields).)
 * For changes in behavior which are not configurable via API fields in our CRDs,
   each feature will be gated by its own unique feature flag.
@@ -208,6 +208,23 @@ called `enable-api-fields` with possible values of:
   (once its available) `v1`.
 
 This allows administrators to opt into allowing their users to use alpha and beta fields.
+
+Since we do not yet have any `v1` CRDs, the behavior will look like:
+
+| Feature Versions ->  | beta | alpha |
+| ---  | --- | --- |
+| stable | x | |
+| alpha | x | x |
+
+x == "**enabled**"
+
+Once we have `v1` CRDs it will become:
+
+| Feature Versions -> | v1 | beta | alpha |
+| --- | --- | --- | --- |
+| stable | x | | |
+| beta | x |  x | |
+| alpha | x | x | x |
 
 For example:
 
@@ -366,7 +383,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 ...
 spec:
-  timeout: "0h0m60s"
+  tasksTimeout: "0h0m60s"
 ```
 
 The field would be added to the highest stable verison of the CRD, in this case to the `v1beta1` version of the

@@ -15,13 +15,21 @@ one year: every year either two or three of the seats are up for election.
 Full Name         | Company   | GitHub  | Slack         | Elected On  | Until
 ------------------|:---------:|---------|---------------|-------------|---------------
 Andrew Bayer      | CloudBees | [abayer](https://github.com/abayer)         | [@Andrew Bayer](https://tektoncd.slack.com/team/UJ6DJ4MSS)    | Feb 2020            | Feb 2022
-Vincent Deemester | Red Hat   | [vdemeester](https://github.com/vdemeester) | [@vdemeester](https://tektoncd.slack.com/team/UHSQGV1L3)      | Bootstrap Committee | Feb 2021
-Christie Wilson   | Google    | [bobcatfish](https://github.com/bobcatfish)   | [@Christie Wilson](https://tektoncd.slack.com/team/UJ6DECY78) | Bootstrap Committee | Feb 2021
+Vincent Deemester | Red Hat   | [vdemeester](https://github.com/vdemeester) | [@vdemeester](https://tektoncd.slack.com/team/UHSQGV1L3)      | Feb 2021 | Feb 2023
+Christie Wilson   | Google    | [bobcatfish](https://github.com/bobcatfish)   | [@Christie Wilson](https://tektoncd.slack.com/team/UJ6DECY78) | Feb 2021 | Feb 2023
 Andrea Frittoli   | IBM       | [afrittoli](https://github.com/afrittoli)   | [@Andrea Frittoli](https://tektoncd.slack.com/team/UJ411P2CC) | Feb 2020 | Feb 2022
-Jason Hall        | Red Hat   | [ImJasonH](https://github.com/ImJasonH)     | [@Jason Hall](https://tektoncd.slack.com/team/UJ3MCRRRA)      | Feb 2020 | Feb 2022
+Dibyo Mukherjee   | Google    | [dibyom](https://github.com/dibyom)     | [@Jason Hall](https://tektoncd.slack.com/team/UJ73HM7PZ)          | Feb 2021 | Feb 2023
 
 There is no designated facilitator at the moment, the responsibility is
 distributed across the five members of the committee.
+
+#### Former members ❤️
+
+Full Name         | GitHub  | Slack         | Elected On  | Until
+------------------|---------|---------------|-------------|---------------
+Jason Hall        | [ImJasonH](https://github.com/ImJasonH) | [@Jason Hall](https://tektoncd.slack.com/team/UJ3MCRRRA)      | Feb 2020 | Feb 2022
+Dan Lorenc        | [dlorenc](https://github.com/dlorenc) | [@Dan Lorenc](https://tektoncd.slack.com/team/UJ636MN15) | Bootstrap committee | Feb 2020
+Kim Lewandowski   | [kimsterv](https://github.com/kimsterv) | [@Kim Lewandowski](https://tektoncd.slack.com/team/UJ480G6KS) | Bootstrap committee | Feb 2020
 
 ## Governance Facilitator Role (optional)
 
@@ -151,6 +159,30 @@ will vote in the special election (ie: eligibility will not be redetermined
 at the time of the special election). A board member elected in a special
 election will serve out the remainder of the term for the person they are
 replacing, regardless of the length of that remainder.
+
+### Changes to governing board
+
+When someone joins the governing board:
+* They should be granted [the permissions given them as members of the governing board](#permissions-and-access)
+* They will be added to the `#governance-private` and `#governance` [slack](contact.md#slack) channels
+* They will be added to the "Tekton Governing Board Meeting" which occurs every 2 weeks and to the facilitator rotation, and
+  added to the document as owners
+* They will be added to these mailing lists as owners:
+  * [`tekton-governance`](https://groups.google.com/g/tekton-governance)
+  * [`tekton-nominations`](https://groups.google.com/g/tekton-nominations)
+  * [`tekton-dev`](https://groups.google.com/g/tekton-dev)
+  * [`tekton-users`](https://groups.google.com/g/tekton-usersv)
+
+When someone leaves the governing board:
+* [The permissions given them as members of the governing board](#permissions-and-access) should be revoked, unless
+  they need them to continue to [act as build cop](https://github.com/tektoncd/plumbing/tree/main/bots/buildcaptain#tekton-buildcaptain)
+* They will be removed from the "Tekton Governing Board Meeting" and removed as editors from the agenda doc
+* They will be removed from the `#governance-private` [slack](contact.md#slack) channel
+* They will be removed as owners from these mailing lists:
+  * [`tekton-governance`](https://groups.google.com/g/tekton-governance) (remove)
+  * [`tekton-nominations`](https://groups.google.com/g/tekton-nominations) (remove)
+  * [`tekton-dev`](https://groups.google.com/g/tekton-dev) (downgrade to member)
+  * [`tekton-users`](https://groups.google.com/g/tekton-usersv) (downgrade to member)
 
 ## Permissions and access
 

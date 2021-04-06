@@ -256,6 +256,7 @@ This is the working group for [`tektoncd/catalog`](https://github.com/tektoncd/c
 | <img width="30px" src="https://github.com/chmouel.png">       | Chmouel Boudjnah  | Red Hat | [chmouel](https://github.com/chmouel)              |
 | <img width="30px" src="https://github.com/afrittoli.png">     | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli)          |
 | <img width="30px" src="https://github.com/piyush-garg.png">   | Piyush Garg       | Red Hat | [piyush-garg](https://github.com/piyush-garg)      |
+| <img width="30px" src="https://github.com/vinamra28.png">   | Vinamra Jain       | Red Hat | [vinamra28](https://github.com/vinamra28)      |
 
 ## Operator and Deployment
 

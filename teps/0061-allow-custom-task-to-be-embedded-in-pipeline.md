@@ -37,10 +37,10 @@ authors:
 
 Tektoncd/Pipeline currently allows custom task to be referenced in pipeline
 resource specification file using [`taskRef`](https://github.com/tektoncd/community/blob/main/teps/0002-custom-tasks.md).
-That feature allows a custom task to be submitted to kubernetes along
-the submission of the [Tektoncd/pipeline](https://github.com/tektoncd/pipeline),
-however, the submission of a custom task is a separate request to Kubernetes.
-If multiple custom tasks use same name, to both Kubernetes and Tektoncd/Pipeline,
+That feature allows a custom task reference to be submitted to kubernetes along
+the submission of the [Tektoncd/pipeline](https://github.com/tektoncd/pipeline).
+However, to run the pipeline, custom task CRD need to be submitted separately as separate requests to Kubernetes.
+If multiple custom task CRDs are created with the same name, to both Kubernetes and Tektoncd/Pipeline,
 they will be treated as the same task, this behavior can have unintended
 consequences when Tektoncd/Pipeline gets used as a backend with multiple users.
 This problem becomes even greater when new users follow documents such as
@@ -49,8 +49,16 @@ multiple users will step on each other's toes, and produced unintended results.
 
 ## Motivation
 
-It is natural for a user to follow ways such as a [Kubernetes Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/), ReplicaSet, StatefulSet and also
-Tektoncd/Pipeline taskSpec to have a Pipeline with custom tasks embedded.
+In Kubeflow Pipeline (KFP), we need all the templates and task spec live in each pipeline. Currently, 
+having all the custom task templates living in the Kubernetes namespace scope means that
+we have to make multiple API calls to Kubernetes in order to get all the pipeline
+information to render in our API/UI. For example, when we create a pipelineRun with custom
+tasks, the KFP client first needs to make multiple API calls to Kubernetes to create all the
+custom task CRDs on the same namespace before creating the `pipelineRun`. Having all the spec
+inside a single `pipelineRun` can simplify a lot of work for the KFP client and reduce the
+number of API calls to the Kubernetes cluster. 
+
+
 Currently TektonCD/Pipeline supports task specifications to be embedded in
 a pipeline for regular task, but not for custom task. If Tektoncd/Pipeline
 also allows a custom task specification to be embedded in a pipeline specification
@@ -60,16 +68,17 @@ See issue [tektoncd/pipeline#3682](https://github.com/tektoncd/pipeline/issues/3
 
 ### Goals
 
-1. Allow custom tasks to be embedded in a pipeline specification,
-2. Custom task specification verification/validation should be handed
-over to custom task controllers, custom task specification must not be
-validated by Tektoncd/Pipeline validation logic.
-3. Custom taskSpec should be submitted as part of the runSpec.
+1. Allow custom tasks to be embedded in a pipeline specification.
+2. Custom taskSpec should be submitted as part of the runSpec.
 
 ### Non-Goals
 
-Custom task controllers are to be developed by other parties. Custom task
+1. Custom task controllers are to be developed by other parties. Custom task
 specification should not be validated by Tektoncd/Pipeline webhooks.
+
+2. Custom task specification verification/validation should be handed
+over to custom task controllers, custom task specification must not be
+validated by Tektoncd/Pipeline validation logic.
 
 ### Use Cases (optional)
 
@@ -82,14 +91,13 @@ Cluster Admin? etc...) and experience (what workflows or actions are enhanced
 if this problem is solved?).
 -->
 
-- Users can put all the information in one pipelineRun CR.
-- Users don't have to manage the custom task CR. Since custom task CR is
-namespace scope. Currently if there are multiple users in the same namespace, they
-will have conflicts when they are using the same name for their custom task CR.
-- In KFP, we need all the templates and task spec live in each pipeline. Currently, 
-having all the custom task templates living in the Kubernetes namespace scope means that
-we have to make multiple API calls to Kubernetes in order to get all the pipeline
-information to render in our API/UI. 
+When using Kubeflow Pipeline (KFP):
+
+- KFP compiler can put all the information in one pipelineRun CR. Then, KFP 
+client doesn't need to create any Kubernetes resource before running the pipelineRun.
+- KFP doesn't manage the associated custom task CRs for each pipeline. Since many custom task CRs are
+namespace scope, multiple users in the same namespace will have conflicts when
+creating the custom task CRs with the same name but with different specs.
 
 
 ## Requirements
@@ -122,8 +130,6 @@ How will UX be reviewed and by whom?
 Consider including folks that also work outside the WGs or subproject.
 -->
 
-None
-
 ### User Experience (optional)
 
 <!--
@@ -140,9 +146,9 @@ can create a pipeline or pipelineRun using a single API call to the Kubernetes.
 Any downstream systems that employ tektoncd e.g. Kubeflow pipelines, will not be
  managing all the custom task CRs and their versioning.
 
-It is natural for a user to follow ways such as a 
-[Kubernetes Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/), ReplicaSet, StatefulSet 
-and also Tektoncd/Pipeline taskSpec to have a Pipeline with custom tasks embedded.
+It is natural for a user to follow ways such as defining the[PodTemplateSpec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podtemplatespec-v1-core)
+as the Kubernetes pod definition in [Kubernetes Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#use-case), ReplicaSet, and StatefulSet.
+Thus, making Tektoncd/Pipeline taskSpec to have a Pipeline with custom tasks embedded can have the same experience.
 
 ### Performance (optional)
 

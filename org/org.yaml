@@ -318,6 +318,7 @@ orgs:
         - ncskier
         - vtereso
         - savitaashture
+        - jmcshane
         privacy: closed
         repos:
           triggers: write

@@ -67,7 +67,7 @@ number of API calls to the Kubernetes cluster.
 Currently TektonCD/Pipeline supports task specifications to be embedded in
 a pipeline for regular task, but not for custom task. If Tektoncd/Pipeline
 also allows a custom task specification to be embedded in a pipeline specification
-then the behavior will be unified with regular task, retaining the existing the behavior of `taskRef`. 
+then the behavior will be unified with regular task, retaining the existing behavior of `taskRef`. 
 The embedding of spec avoids the issues related to naming conflict, when multiple users in the
 same namespace create resource. Related issue 
 [tektoncd/pipeline#3682](https://github.com/tektoncd/pipeline/issues/3682)

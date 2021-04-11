@@ -37,48 +37,51 @@ authors:
 
 Tektoncd/Pipeline currently allows custom task to be referenced in pipeline
 resource specification file using [`taskRef`](https://github.com/tektoncd/community/blob/main/teps/0002-custom-tasks.md).
-That feature allows a custom task reference to be submitted to kubernetes along
-the submission of the [Tektoncd/pipeline](https://github.com/tektoncd/pipeline).
-However, to run the pipeline, custom task CRD need to be submitted separately as separate requests to Kubernetes.
-If multiple custom task CRDs are created with the same name, to both Kubernetes and Tektoncd/Pipeline,
-they will be treated as the same task, this behavior can have unintended
-consequences when Tektoncd/Pipeline gets used as a backend with multiple users.
-This problem becomes even greater when new users follow documents such as
-`Get started` which often use same name for task and pipeline. In this environment
-multiple users will step on each other's toes, and produced unintended results.
+This TEP discusses the various aspects of embedding the custom task in the `TaskSpec` for the Tekton Pipeline CRD and `RunSpec` for the Tekton Run CRD. Just as a regular task, can be either referenced
+or embedded in the `pipelineRun`, after implementation of this TEP, a similar support will be available for custom task controller as well.
 
 ## Motivation
 
-In Kubeflow Pipeline (KFP), we need all the templates and task spec live in each pipeline. Currently, 
+A custom task reference needs to be submitted to kubernetes along with
+the submission of the [Tektoncd/pipeline](https://github.com/tektoncd/pipeline).
+To run the pipeline, custom task resource object creation is submitted as a separate request to Kubernetes.
+If multiple custom task resource objects are created with the same name, to both Kubernetes and Tektoncd/Pipeline,
+they will be treated as the same task, this behavior can have unintended
+consequences when Tektoncd/Pipeline gets used as a backend with multiple users.
+This problem becomes even greater when new users follow documents such as
+`Get started` where each user may end up with same name for task and pipeline. In this environment
+multiple users will step on each other's toes, and produce unintended results.
+
+Another motivation for this is reduction in number of API calls to get all the pipeline information.
+A case in point, in Kubeflow Pipeline (KFP), we need all the templates and task spec live in each pipeline. Currently, 
 having all the custom task templates living in the Kubernetes namespace scope means that
 we have to make multiple API calls to Kubernetes in order to get all the pipeline
-information to render in our API/UI. For example, when we create a pipelineRun with custom
+information to render in our API/UI. 
+
+For example, when we create a pipelineRun with custom
 tasks, the KFP client first needs to make multiple API calls to Kubernetes to create all the
 custom task CRDs on the same namespace before creating the `pipelineRun`. Having all the spec
-inside a single `pipelineRun` can simplify a lot of work for the KFP client and reduce the
+inside a single `pipelineRun` can simplify task/pipeline submission for the KFP client and reduce the
 number of API calls to the Kubernetes cluster. 
-
 
 Currently TektonCD/Pipeline supports task specifications to be embedded in
 a pipeline for regular task, but not for custom task. If Tektoncd/Pipeline
 also allows a custom task specification to be embedded in a pipeline specification
-then the behavior will be unified with non custom task and there won't be
-any issues in terms of naming conflict when used by multiple users.
-See issue [tektoncd/pipeline#3682](https://github.com/tektoncd/pipeline/issues/3682)
+then the behavior will be unified with regular task, retaining the existing the behavior of `taskRef`. 
+The embedding of spec avoids the issues related to naming conflict, when multiple users in the
+same namespace create resource. Related issue 
+[tektoncd/pipeline#3682](https://github.com/tektoncd/pipeline/issues/3682)
 
 ### Goals
 
 1. Allow custom tasks to be embedded in a pipeline specification.
 2. Custom taskSpec should be submitted as part of the runSpec.
+3. Document, general advice on validation/verification of custom task, to the custom task controller developers.
 
 ### Non-Goals
 
 1. Custom task controllers are to be developed by other parties. Custom task
-specification should not be validated by Tektoncd/Pipeline webhooks.
-
-2. Custom task specification verification/validation should be handed
-over to custom task controllers, custom task specification must not be
-validated by Tektoncd/Pipeline validation logic.
+ specification validation by Tektoncd/Pipeline webhooks.
 
 ### Use Cases (optional)
 
@@ -108,8 +111,8 @@ performance characteristics that must be met, specific edge cases that must
 be handled, or user scenarios that will be affected and must be accomodated.
 -->
 
-- The Tekton controller is responsible for adding the the custom task spec to
-the Run spec. Then it get validate by the custom task controllers.
+- The Tekton controller is responsible for adding the custom task spec to
+the Run spec. Validation of the custom task is delegated to the custom controller.
 
 ## Proposal
 TBD
@@ -146,7 +149,7 @@ can create a pipeline or pipelineRun using a single API call to the Kubernetes.
 Any downstream systems that employ tektoncd e.g. Kubeflow pipelines, will not be
  managing all the custom task CRs and their versioning.
 
-It is natural for a user to follow ways such as defining the[PodTemplateSpec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podtemplatespec-v1-core)
+It is natural for a user to follow ways such as defining the [PodTemplateSpec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podtemplatespec-v1-core)
 as the Kubernetes pod definition in [Kubernetes Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#use-case), ReplicaSet, and StatefulSet.
 Thus, making Tektoncd/Pipeline taskSpec to have a Pipeline with custom tasks embedded can have the same experience.
 

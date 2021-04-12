@@ -6,7 +6,7 @@ which you can find documented in their individual `CONTRIBUTING.md` files.
 
 * [Finding something to work on](#finding-something-to-work-on)
 * [Proposing features](#proposing-features)
-* [Project OWNERS](#OWNERS)
+* [Project OWNERS](#owners-and-collaborators)
 * Pull request [reviews](#reviews) and [process](#pull-request-process)
 * [Propose projects](process.md#proposing-projects)
 * [The CDF CLA](#cla)

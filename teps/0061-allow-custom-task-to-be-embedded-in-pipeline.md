@@ -52,13 +52,11 @@ This problem becomes even greater when new users follow documents such as
 `Get started` where each user may end up with same name for task and pipeline. In this environment
 multiple users will step on each other's toes, and produce unintended results.
 
-Another motivation for this is reduction in number of API calls to get all the pipeline information.
+Another motivation for having this TEP, is reduction in number of API calls to get all the pipeline information.
 A case in point, in Kubeflow Pipeline (KFP), we need all the templates and task spec live in each pipeline. Currently, 
 having all the custom task templates living in the Kubernetes namespace scope means that
 we have to make multiple API calls to Kubernetes in order to get all the pipeline
-information to render in our API/UI. 
-
-For example, when we create a pipelineRun with custom
+information to render in our API/UI. For example, when we create a `pipelineRun` with custom
 tasks, the KFP client first needs to make multiple API calls to Kubernetes to create all the
 custom task CRDs on the same namespace before creating the `pipelineRun`. Having all the spec
 inside a single `pipelineRun` can simplify task/pipeline submission for the KFP client and reduce the
@@ -68,14 +66,14 @@ Currently TektonCD/Pipeline supports task specifications to be embedded in
 a pipeline for regular task, but not for custom task. If Tektoncd/Pipeline
 also allows a custom task specification to be embedded in a pipeline specification
 then the behavior will be unified with regular task, retaining the existing behavior of `taskRef`. 
-The embedding of spec avoids the issues related to naming conflict, when multiple users in the
+Most importantly, embedding of spec avoids the issues related to naming conflict, when multiple users in the
 same namespace create resource. Related issue 
 [tektoncd/pipeline#3682](https://github.com/tektoncd/pipeline/issues/3682)
 
 ### Goals
 
 1. Allow custom tasks to be embedded in a pipeline specification.
-2. Custom taskSpec should be submitted as part of the runSpec.
+2. Custom `taskSpec` should be submitted as part of the `runSpec`.
 3. Document, general advice on validation/verification of custom task, to the custom task controller developers.
 
 ### Non-Goals
@@ -94,14 +92,13 @@ Cluster Admin? etc...) and experience (what workflows or actions are enhanced
 if this problem is solved?).
 -->
 
-When using Kubeflow Pipeline (KFP):
+Use cases from Kubeflow Pipeline (KFP), where `tektoncd` is used as a backend for running pipelines:
 
-- KFP compiler can put all the information in one pipelineRun CR. Then, KFP 
-client doesn't need to create any Kubernetes resource before running the pipelineRun.
-- KFP doesn't manage the associated custom task CRs for each pipeline. Since many custom task CRs are
-namespace scope, multiple users in the same namespace will have conflicts when
-creating the custom task CRs with the same name but with different specs.
-
+- KFP compiler can put all the information in one `pipelineRun` object. Then, KFP 
+client doesn't need to create any Kubernetes resource before running the `pipelineRun`.
+- KFP doesn't manage the lifecycle of associated custom task resource objects for each pipeline.
+Since many custom task resource objects are namespace scope, multiple users in the same namespace will have conflicts when
+creating the custom task resource objects with the same name but with different specs.
 
 ## Requirements
 
@@ -144,14 +141,14 @@ via CLI, dashboard or a monitoring system.
 Consider including folks that also work on CLI and dashboard.
 -->
 
-With the embedded taskSpec for the custom task, all the Tekton clients
-can create a pipeline or pipelineRun using a single API call to the Kubernetes.
+With the embedded `taskSpec` for the custom task, all the Tekton clients
+can create a pipeline or `pipelineRun` using a single API call to the Kubernetes.
 Any downstream systems that employ tektoncd e.g. Kubeflow pipelines, will not be
- managing all the custom task CRs and their versioning.
+ managing lifecycle of all the custom task resource objects and their versioning.
 
 It is natural for a user to follow ways such as defining the [PodTemplateSpec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podtemplatespec-v1-core)
-as the Kubernetes pod definition in [Kubernetes Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#use-case), ReplicaSet, and StatefulSet.
-Thus, making Tektoncd/Pipeline taskSpec to have a Pipeline with custom tasks embedded can have the same experience.
+as the Kubernetes pod definition in [Kubernetes Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#use-case), `ReplicaSet`, and `StatefulSet`.
+Thus, making Tektoncd/Pipeline `taskSpec` to have a Pipeline with custom tasks embedded can have the same experience.
 
 ### Performance (optional)
 
@@ -197,7 +194,7 @@ expectations).
 -->
 
 We can reuse the custom task e2e tests with the current test controller
-to verify whether the controller can handle the custom task taskSpec.
+to verify whether the controller can handle the custom task `taskSpec`.
 
 ## Design Evaluation
 <!--

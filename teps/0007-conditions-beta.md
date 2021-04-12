@@ -56,7 +56,7 @@ Original Design Doc in Google Docs, visible to members of tekton-dev@: https://d
 
 ## Summary
 
-`Conditions` is a [CRD](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) used to specify a criteria to determine whether or not a `Task` executes. When other Tekton resources were migrated to [beta](https://github.com/tektoncd/pipeline/blob/master/api_compatibility_policy.md#alpha-beta-and-ga), it remained in [alpha](https://github.com/tektoncd/pipeline/blob/master/api_compatibility_policy.md#alpha-beta-and-ga) because it was missing features needed by users.
+`Conditions` is a [CRD](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) used to specify a criteria to determine whether or not a `Task` executes. When other Tekton resources were migrated to [beta](https://github.com/tektoncd/pipeline/blob/main/api_compatibility_policy.md#alpha-beta-and-ga), it remained in [alpha](https://github.com/tektoncd/pipeline/blob/main/api_compatibility_policy.md#alpha-beta-and-ga) because it was missing features needed by users.
 
 After analyzing the feature requests and discussing with users, we have identified that the most critical gaps in `Conditions` are **simplicity**, **efficiency**, **skipping** and **status**. We want to address these gaps so that it can work well with the other `Pipeline` resources and users can count on its stability.
 

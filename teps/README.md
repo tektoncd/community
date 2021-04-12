@@ -161,19 +161,25 @@ This is the complete list of Tekton teps:
 |[TEP-0028](0028-task-execution-status-at-runtime.md) | task-exec-status-at-runtime | implementable | 2020-11-02 |
 |[TEP-0029](0029-step-workspaces.md) | step-and-sidecar-workspaces | implementable | 2020-10-02 |
 |[TEP-0030](0030-workspace-paths.md) | workspace-paths | proposed | 2020-10-18 |
-|[TEP-0031](0031-tekton-bundles-cli.md) | tekton-bundles-cli | implementable | 2020-12-07 |
+|[TEP-0031](0031-tekton-bundles-cli.md) | tekton-bundles-cli | implemented | 2021-03-26 |
 |[TEP-0032](0032-tekton-notifications.md) | Tekton Notifications | proposed | 2020-11-18 |
-|[TEP-0033](0033-tekton-feature-gates.md) | Tekton Feature Gates | proposed | 2020-11-20 |
+|[TEP-0033](0033-tekton-feature-gates.md) | Tekton Feature Gates | implementable | 2021-03-23 |
 |[TEP-0035](0035-document-tekton-position-around-policy-authentication-authorization.md) | document-tekton-position-around-policy-authentication-authorization | implementable | 2020-12-09 |
 |[TEP-0036](0036-start-measuring-tekton-pipelines-performance.md) | Start Measuring Tekton Pipelines Performance | proposed | 2020-11-20 |
 |[TEP-0037](0037-remove-gcs-fetcher.md) | Remove `gcs-fetcher` image | implementing | 2021-01-27 |
+|[TEP-0038](0038-generic-workspaces.md) | Generic Workspaces | proposed | 2020-12-11 |
 |[TEP-0039](0039-add-variable-retries-and-retrycount.md) | Add Variable `retries` and `retry-count` | proposed | 2021-01-31 |
 |[TEP-0040](0040-ignore-step-errors.md) | Ignore Step Errors | proposed | 2021-02-04 |
+|[TEP-0042](0042-taskrun-breakpoint-on-failure.md) | taskrun-breakpoint-on-failure | proposed | 2021-03-21 |
 |[TEP-0044](0044-decouple-task-composition-from-scheduling.md) | Decouple Task Composition from Scheduling | proposed | 2021-03-10 |
 |[TEP-0045](0045-whenexpressions-in-finally-tasks.md) | WhenExpressions in Finally Tasks | implementable | 2021-01-28 |
 |[TEP-0047](0047-pipeline-task-display-name.md) | Pipeline Task Display Name | proposed | 2021-02-10 |
+|[TEP-0049](0049-aggregate-status-of-dag-tasks.md) | Aggregate Status of DAG Tasks | proposed | 2021-03-25 |
 |[TEP-0050](0050-ignore-task-failures.md) | Ignore Task Failures | proposed | 2021-02-19 |
 |[TEP-0051](0051-ppc64le-architecture-support.md) | ppc64le Support | proposed | 2021-01-28 |
-|[TEP-0052](0052-tekton-results-automated-run-resource-cleanup.md) | Tekton Results: Automated Run Resource Cleanup | proposed | 2021-02-11 |
+|[TEP-0052](0052-tekton-results-automated-run-resource-cleanup.md) | Tekton Results: Automated Run Resource Cleanup | implementable | 2021-03-22 |
 |[TEP-0053](0053-nested-triggers.md) | Nested Triggers | proposed | 2021-02-24 |
+|[TEP-0056](0056-pipelines-in-pipelines.md) | Pipelines in Pipelines | proposed | 2021-03-08 |
 |[TEP-0057](0057-windows-support.md) | Windows support | proposed | 2021-03-18 |
+|[TEP-0058](0058-graceful-pipeline-run-termination.md) | Graceful Pipeline Run Termination | proposed | 2021-03-18 |
+|[TEP-0059](0059-skip-guarded-task-only.md) | Skip Guarded Task Only | proposed | 2021-03-24 |

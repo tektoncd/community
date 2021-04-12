@@ -220,7 +220,7 @@ of a temporary `authorized_keys` file which in turn allows the Steps to successf
 the Sidecar over SSH.
 
 For an existing example where this could be useful, see the
-[authenticating-git-commands](https://github.com/tektoncd/pipeline/blob/master/examples/v1beta1/taskruns/authenticating-git-commands.yaml)
+[authenticating-git-commands](https://github.com/tektoncd/pipeline/blob/main/examples/v1beta1/taskruns/authenticating-git-commands.yaml)
 example from the Pipelines repo.
 
 #### Story 4

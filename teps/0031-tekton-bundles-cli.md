@@ -3,8 +3,8 @@ title: tekton-bundles-cli
 authors:
   - "@pierretasci"
 creation-date: 2020-11-18
-last-updated: 2020-12-07
-status: implementable
+last-updated: 2021-03-26
+status: implemented
 ---
 # TEP-0031: Tekton Bundles CLI
 
@@ -22,6 +22,7 @@ status: implementable
   - [Risks and Mitigations](#risks-and-mitigations)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
+- [References](#references)
 <!-- /toc -->
 
 ## Summary
@@ -90,15 +91,6 @@ tkn bundle push <REF> [BUNDLE_OBJECT] -f [BUNDLE_OBJECT]
 # Fetches a Tekton Bundle and prints its contents in a configurable format. If KIND is specified, will print only
 # objects of the specified kind (eg, Pipeline or Task). If KIND and NAME are specified, will retrieve a specific object.
 tkn bundle get <REF> [KIND] [NAME] --output=[FORMAT]
-
-# The following are amendments to existing commands.
-
-# Retrieves from an image the requested task(s) rather than from the cluster. Will print the result in the specified
-# format, such as yaml or json.
-tkn task list --image=<REF> --output=[FORMAT]
-tkn task get --image=<REF> --output=[FORMAT] [NAME]
-
-# ... the pipeline command receives these changes as well
 ```
 
 ### Detailed Design
@@ -152,3 +144,7 @@ try out Tekton Bundles.
 2. We could forgo making our own API and just offer specs, examples, and/or documentation for user's to build their own
 APIs. This is a risky prospect because the community might diverge in the way bundles are used and created if there
 isn't at least one official, minimal tool for creating them. It might also hurt the adoption of the feature.
+
+## References
+
+*PRs*: [1](https://github.com/tektoncd/cli/pull/1312) & [2](https://github.com/tektoncd/cli/pull/1328)

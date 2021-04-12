@@ -409,7 +409,7 @@ We are now switching to the "Implementing Tekton Bundles" TEP.
 See the following links for more context on this feature:
 
 - [Tekton Pipeline Resource Extensibility](https://docs.google.com/document/d/1rcMG1cIFhhixMSmrT734MBxvH3Ghre9-4S2wbzodPiU/edit#)
-- [Why Aren't PipelineResources in Beta ?](https://github.com/tektoncd/pipeline/blob/master/docs/resources.md#why-arent-pipelineresources-in-beta)
+- [Why Aren't PipelineResources in Beta ?](https://github.com/tektoncd/pipeline/blob/main/docs/resources.md#why-arent-pipelineresources-in-beta)
 - [Pipeline Reosurces Redesign](https://github.com/tektoncd/pipeline/issues/1673)
 
 1. A TEP is proposed to add extensibility to PipelineResources. This

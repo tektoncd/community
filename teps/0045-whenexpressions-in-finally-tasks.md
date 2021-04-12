@@ -103,10 +103,10 @@ updates.
 [documentation style guide]: https://github.com/kubernetes/community/blob/master/contributors/guide/style-guide.md
 -->
 
-Users can guard execution of `Tasks` using `WhenExpressions`, but that is not supported in `Finally Tasks`. This TEP 
+Users can guard execution of `Tasks` using `WhenExpressions`, but that is not supported in `Finally Tasks`. This TEP
 describes the need for supporting `WhenExpressions` in `Finally Tasks` not only to provide efficient guarded execution
-but also to improve the reusability of `Tasks`. Given we've recently added support for `Results` and `Status` in 
-`Finally Tasks`, this is an opportune time to enable `WhenExpressions` in `Finally Tasks`. 
+but also to improve the reusability of `Tasks`. Given we've recently added support for `Results` and `Status` in
+`Finally Tasks`, this is an opportune time to enable `WhenExpressions` in `Finally Tasks`.
 
 ## Motivation
 
@@ -119,19 +119,19 @@ demonstrate the interest in a TEP within the wider Tekton community.
 [experience reports]: https://github.com/golang/go/wiki/ExperienceReports
 -->
 
-Currently, users cannot guard the execution of `Finally Tasks` so they are always executed. 
-Users may want to guard the execution of `Finally Tasks` based on [`Results` from other `Tasks`](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#consuming-task-execution-results-in-finally). 
-Moreover, now that [the execution status of `Tasks` is accessible in `Finally Tasks`](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#using-execution-status-of-pipelinetask),
+Currently, users cannot guard the execution of `Finally Tasks` so they are always executed.
+Users may want to guard the execution of `Finally Tasks` based on [`Results` from other `Tasks`](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#consuming-task-execution-results-in-finally).
+Moreover, now that [the execution status of `Tasks` is accessible in `Finally Tasks`](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#using-execution-status-of-pipelinetask),
 they may also want to guard the execution of `Finally Tasks` based on the execution status of other `Tasks`.
 
-An example use case is a `Pipeline` author wants to send a notification, such as posting on Slack using [this catalog task](https://github.com/tektoncd/catalog/tree/master/task/send-to-channel-slack/0.1#post-a-message-to-slack), 
+An example use case is a `Pipeline` author wants to send a notification, such as posting on Slack using [this catalog task](https://github.com/tektoncd/catalog/tree/master/task/send-to-channel-slack/0.1#post-a-message-to-slack),
 when a certain `Task` in the `Pipeline` failed. To do this, one user has had to use a workaround using `Workspaces` that
 they describe [in this thread](https://tektoncd.slack.com/archives/CK3HBG7CM/p1603399989171300?thread_ts=1603376439.161500&cid=CK3HBG7CM).
 In addition, needing the workaround prevents the user from reusing the Slack catalog task as further described in [this issue](https://github.com/tektoncd/pipeline/issues/3438).
 
-We already guard `Tasks` using [`WhenExpressions`](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#guard-task-execution-using-whenexpressions),
-which efficiently evaluate the criteria of executing `Tasks`. We propose supporting using `WhenExpressions` to guard 
-the execution of `Finally Tasks` as well. 
+We already guard `Tasks` using [`WhenExpressions`](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#guard-task-execution-using-whenexpressions),
+which efficiently evaluate the criteria of executing `Tasks`. We propose supporting using `WhenExpressions` to guard
+the execution of `Finally Tasks` as well.
 
 ### Goals
 
@@ -142,7 +142,7 @@ know that this has succeeded?
 
 - Improve the [reusability](https://github.com/tektoncd/community/blob/main/design-principles.md#reusability)
 of `Tasks` by improving the guarding of `Finally Tasks` at authoring time.
-- Enable guarding execution of `Finally Tasks` using `WhenExpressions`.  
+- Enable guarding execution of `Finally Tasks` using `WhenExpressions`.
 
 ### Non-Goals
 
@@ -163,13 +163,13 @@ implementation.  The "Design Details" section below is for the real
 nitty-gritty.
 -->
 
-To improve reusability and support guarding of `Tasks` in `Finally`, we propose enabling `WhenExpressions` in `Finally 
-Tasks`. Similar to in non-finally `Tasks`, the `WhenExpressions` in `Finally Tasks` can operate on static inputs or 
-variables such as `Parameters`, `Results` and `Execution Status` through variable substitution. 
+To improve reusability and support guarding of `Tasks` in `Finally`, we propose enabling `WhenExpressions` in `Finally
+Tasks`. Similar to in non-finally `Tasks`, the `WhenExpressions` in `Finally Tasks` can operate on static inputs or
+variables such as `Parameters`, `Results` and `Execution Status` through variable substitution.
 
-If the `WhenExpressions` evaluate to `True`, the `Finally Task` would be executed. If the `WhenExpressions` evaluate to 
-`False`, the `Finally Task` would be skipped and included in the list of `Skipped Tasks` section of the `Status`. 
-Moreover, the `Pipeline` will exit with `Completion` instead of `Success`, as described in a [similar scenario in the docs](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#consuming-task-execution-results-in-finally).
+If the `WhenExpressions` evaluate to `True`, the `Finally Task` would be executed. If the `WhenExpressions` evaluate to
+`False`, the `Finally Task` would be skipped and included in the list of `Skipped Tasks` section of the `Status`.
+Moreover, the `Pipeline` will exit with `Completion` instead of `Success`, as described in a [similar scenario in the docs](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#consuming-task-execution-results-in-finally).
 
 Note that this proposal does not affect the scheduling of `Finally Tasks`, they will still be executed in parallel after
 the other `Tasks` are done.
@@ -234,10 +234,10 @@ spec:
 
 If the `WhenExpressions` in a `Finally Task` use `Results` from a skipped or failed non-finally `Tasks`, then the
 `Finally Task` would also be skipped and be included in the list of `Skipped Tasks` in the `Status`, [similarly to when
-`Results` in other parts of the `Finally Task`](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#consuming-task-execution-results-in-finally).
+`Results` in other parts of the `Finally Task`](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#consuming-task-execution-results-in-finally).
 
 We will validate the `Result` references in the `WhenExpressions` beforehand. If they are invalid (e.g. they don't
-exist or there's a typo), the `Pipeline` validation will fail upfront. 
+exist or there's a typo), the `Pipeline` validation will fail upfront.
 
 ### Using Parameters
 
@@ -269,7 +269,7 @@ spec:
             values: ["Failed"]
           - input: $(params.enable-notifications)
             operator: in
-            values: ["true"]  
+            values: ["true"]
         taskRef:
           name: send-to-slack-channel
       # […]
@@ -292,10 +292,10 @@ via CLI, dashboard or a monitoring system.
 Consider including folks that also work on CLI and dashboard.
 -->
 
-Currently, users have to build workarounds using `Workspaces` and make their `Finally Tasks`'s `Steps` implement the 
-conditional execution. By supporting `WhenExpressions` in `Finally Tasks`, we will significantly improve the user 
-experience of guarding the execution of `Finally Tasks`. Additionally, it makes it easier for users to reuse `Tasks` 
-including those provided in the [Catalog](https://github.com/tektoncd/catalog). 
+Currently, users have to build workarounds using `Workspaces` and make their `Finally Tasks`'s `Steps` implement the
+conditional execution. By supporting `WhenExpressions` in `Finally Tasks`, we will significantly improve the user
+experience of guarding the execution of `Finally Tasks`. Additionally, it makes it easier for users to reuse `Tasks`
+including those provided in the [Catalog](https://github.com/tektoncd/catalog).
 
 ### Performance
 
@@ -309,7 +309,7 @@ Consider which use cases are impacted by this change and what are their
 performance requirements.
 -->
 
-`WhenExpressions` efficiently evaluate the execution criteria without spinning up new pods. 
+`WhenExpressions` efficiently evaluate the execution criteria without spinning up new pods.
 
 ## Test Plan
 
@@ -333,18 +333,18 @@ expectations).
 
 ## Design Evaluation
 <!--
-How does this proposal affect the reusability, simplicity, flexibility 
+How does this proposal affect the reusability, simplicity, flexibility
 and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/main/design-principles.md)
 -->
 
 - [Reusability](https://github.com/tektoncd/community/blob/main/design-principles.md#reusability): This proposal reuses
   an existing component, `WhenExpressions`, to guard `Finally Tasks`. Moreover, it improves the reusability of `Tasks` by
-  enabling specifying guards explicitly and avoiding representing them in the `Tasks`'s `Steps`. 
-  
+  enabling specifying guards explicitly and avoiding representing them in the `Tasks`'s `Steps`.
+
 - [Simplicity](https://github.com/tektoncd/community/blob/main/design-principles.md#simplicity): Using `WhenExpressions`
-  to guard the execution of `Finally Tasks` is much simpler than the workarounds that used `Workspaces`. It is also 
+  to guard the execution of `Finally Tasks` is much simpler than the workarounds that used `Workspaces`. It is also
   consistent with how we already guard the other `Tasks`.
-  
+
 ## Drawbacks
 
 <!--
@@ -353,8 +353,8 @@ Why should this TEP _not_ be implemented?
 
 One could argue that this proposal breaks the `Finally` contract because a `Finally Task` would not run when its
 `WhenExpressions ` evaluate to `False`. However, the `PipelineRun` does attempt such `Finally Tasks` and is explicitly
-skipped, so it's considered `ran` by the `PipelineRun` Controller. Moreover, we are already failing `Finally Tasks` 
-that use `Results` from failed or skipped `Tasks` with validation failure. 
+skipped, so it's considered `ran` by the `PipelineRun` Controller. Moreover, we are already failing `Finally Tasks`
+that use `Results` from failed or skipped `Tasks` with validation failure.
 
 ## Alternatives
 
@@ -364,9 +364,9 @@ not need to be as detailed as the proposal, but should include enough
 information to express the idea and why it was not acceptable.
 -->
 
-- `Finally Tasks` should not be guarded so that they're always "executed" as implied by the `Finally` terminology. 
-  However, users creating workarounds to support guarding `Finally Tasks`. In addition, we already [allow skipping](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#consuming-task-execution-results-in-finally)
-  `Finally Tasks` they use uninitialized `Results` from skipped or failed `Tasks`. 
+- `Finally Tasks` should not be guarded so that they're always "executed" as implied by the `Finally` terminology.
+  However, users creating workarounds to support guarding `Finally Tasks`. In addition, we already [allow skipping](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#consuming-task-execution-results-in-finally)
+  `Finally Tasks` they use uninitialized `Results` from skipped or failed `Tasks`.
 
 - Use `Conditions` to guard `Finally Tasks`. However, `Conditions` were deprecated and replaced with [`WhenExpressions`](https://github.com/tektoncd/community/blob/main/teps/0007-conditions-beta.md),
   read further details in [Conditions Beta TEP](https://github.com/tektoncd/community/blob/main/teps/0007-conditions-beta.md).
@@ -380,9 +380,9 @@ shared drive, examples, etc. This is useful to refer back to any other related l
 to get more details.
 -->
 
-- [TEP for `WhenExpressions`](https://github.com/tektoncd/community/blob/main/teps/0007-conditions-beta.md)  
-- [Guarding `Task` execution using `WhenExpressions`](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#guard-task-execution-using-whenexpressions)
+- [TEP for `WhenExpressions`](https://github.com/tektoncd/community/blob/main/teps/0007-conditions-beta.md)
+- [Guarding `Task` execution using `WhenExpressions`](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#guard-task-execution-using-whenexpressions)
 - [TEP for `Tasks` `Results` in `Finally Tasks`](https://github.com/tektoncd/community/blob/main/teps/0004-task-results-in-final-tasks.md)
-- [Consuming `Tasks` `Results` in `Finally Tasks`](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#consuming-task-execution-results-in-finally)  
+- [Consuming `Tasks` `Results` in `Finally Tasks`](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#consuming-task-execution-results-in-finally)
 - [TEP for `Task` execution status in `Finally Tasks`](https://github.com/tektoncd/community/blob/main/teps/0028-task-execution-status-at-runtime.md)
-- [Accessing `Task` execution status in `Finally Tasks`](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#using-execution-status-of-pipelinetask)
+- [Accessing `Task` execution status in `Finally Tasks`](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#using-execution-status-of-pipelinetask)

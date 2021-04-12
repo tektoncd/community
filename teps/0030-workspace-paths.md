@@ -147,7 +147,7 @@ workspace. Here's an example from our catalog:
 _and_ the files that are expected to be received on them. Example from
 [recent `tkn` PR](https://github.com/tektoncd/catalog/pull/499/files#diff-6752c482b505c3f8ffed15a7d7d291b5R20-R23):
 
-    > - **kubeconfig**: An [optional workspace](https://github.com/tektoncd/pipeline/blob/master/docs/workspaces.md#using-workspaces-in-tasks)
+    > - **kubeconfig**: An [optional workspace](https://github.com/tektoncd/pipeline/blob/main/docs/workspaces.md#using-workspaces-in-tasks)
     > that allows you to provide a `.kube/config` file for `tkn` to access the cluster.
     > The file should be placed at the root of the Workspace with name `kubeconfig`.
 

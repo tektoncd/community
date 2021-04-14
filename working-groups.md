@@ -138,7 +138,7 @@ repository that need to expose documentation.
 
 | &nbsp;                                                     | Facilitators     | Company | Profile                                     |
 | --------------------------------------------------------   | ----------       | ------- | ---------------------------------------     |
-| <img width="30px" src="https://github.com/sergetron.png">  | Serge Pomorski   | Google  | [sergetron](https://github.com/sergetron)   |
+| <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli  | IBM     | [afrittoli](https://github.com/afritolli)   |
 | <img width="30px" src="https://github.com/anneqm.png">     | Anne Michalak    | IBM     | [anneqm](https://github.com/anneqm)         |
 | <img width="30px" src="https://github.com/popcor255.png">  | Napoleon Santana | IBM     | [popcor255](https://github.com/popcor255)   |
 | <img width="30px" src="https://github.com/AlanGreene.png"> | Alan Greene      | IBM     | [AlanGreene](https://github.com/AlanGreene) |

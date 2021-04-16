@@ -200,10 +200,15 @@ Tekton projects.
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Community Meeting VC       | [https://meet.google.com/tse-axnh-mdv](https://meet.google.com/tse-axnh-mdv) |
-| Community Meeting Calendar | Mondays every week, 09:00a-10:00a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=YnBscG9lcGk3b3ZrN3VxZWpjaXRsMm1uNmJfMjAyMDA0MTNUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL)
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/17PodAxG8hV351fBhSu7Y_OIPhGTVgj6OJ2lPphYYRpU/edit)
 | Slack Channel              | [#pipeline-dev](https://tektoncd.slack.com/messages/pipeline-dev) |
+
+### Europe + North America
+
+| Artifact                   | Link                       |
+| -------------------------- | -------------------------- |
+| Community Meeting VC       | [https://meet.google.com/tse-axnh-mdv](https://meet.google.com/tse-axnh-mdv) |
+| Community Meeting Calendar | Mondays every week, 09:00a-10:00a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=YnBscG9lcGk3b3ZrN3VxZWpjaXRsMm1uNmJfMjAyMDA0MTNUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL)
 
 | &nbsp;                                                     | Facilitators      | Company | Profile                                     |
 | --------------------------------------------------------   | ----------        | ------- | ---------------------------------------     |
@@ -215,6 +220,20 @@ Tekton projects.
 | <img width="30px" src="https://github.com/chhsia0.png">    | Chun-Hung Hsiao   | D2iQ    | [chhsia0](https://github.com/chhsia0)       |
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai       | IBM     | [pritidesai](https://github.com/pritidesai) |
 
+### Australia + North America
+
+| Artifact                   | Link                       |
+| -------------------------- | -------------------------- |
+| Community Meeting VC       | [https://meet.google.com/nyw-cwme-iia](https://meet.google.com/nyw-cwme-iia) |
+| Community Meeting Calendar | Mondays every other week, 3:00pm-3:30pm PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=Mm40OXM2NzRuaXY1Z3J2dTRnNDBiZzk0N3FfMjAyMTA0MjZUMjIwMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL)|
+
+| &nbsp;                                                      | Facilitators      | Company      | Profile                                       |
+| --------------------------------------------------------    | ----------        | -------      | ---------------------------------------       |
+| <img width="30px" src="https://github.com/bobcatfish.png">  | Christie Wilson   | Google       | [bobcatfish](https://github.com/bobcatfish)   |
+| <img width="30px" src="https://github.com/skaegi.png">      | Simon Kaegi       | IBM          | [skaegi](https://github.com/skaegi)           |
+| <img width="30px" src="https://github.com/jerop.png">       | Jerop Kipruto     | Google       | [jerop](https://github.com/jerop)             |
+| <img width="30px" src="https://github.com/pierretasci.png"> | Pierre Tasci      | Apple        | [pierretasci](https://github.com/pierretasci) |
+| <img width="30px" src="https://github.com/jmcshane.png">    | James McShane     | SuperOrbital | [jmcshane](https://github.com/jmcshane)       |
 
 ## Dashboard
 

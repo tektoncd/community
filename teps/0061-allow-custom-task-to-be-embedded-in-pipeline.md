@@ -112,9 +112,186 @@ be handled, or user scenarios that will be affected and must be accomodated.
 the Run spec. Validation of the custom task is delegated to the custom controller.
 
 ## Proposal
-TBD
+
+Add support for `Run.RunSpec.Spec`. 
+
+Currently, `Run.RunSpec.Spec` is not supported and there are validations across the
+codebase to ensure, only `Run.RunSpec.Ref` is specified. As part of this TEP, in addition
+to adding support for `Run.RunSpec.Spec`the validations will be changed to support 
+"One of `Run.RunSpec.Spec` or`Run.RunSpec.Ref`" only and not both as part of a single
+API request to kubernetes.
+
+Structure of `RunSpec` after adding the field `Spec` of type `*v1beta1.EmbeddedTask`,
+
+```go
+// RunSpec defines the desired state of Run
+type RunSpec struct {
+	// +optional
+	Ref *TaskRef `json:"ref,omitempty"`
+
+	// TaskSpec is a specification of a custom task
+	// +optional
+	Spec *v1beta1.EmbeddedTask `json:"spec,omitempty"`
+
+	// +optional
+	Params []v1beta1.Param `json:"params,omitempty"`
+
+	// Used for cancelling a run (and maybe more later on)
+	// +optional
+	Status RunSpecStatus `json:"status,omitempty"`
+
+	// +optional
+	ServiceAccountName string `json:"serviceAccountName"`
+
+	// PodTemplate holds pod specific configuration
+	// +optional
+	PodTemplate *PodTemplate `json:"podTemplate,omitempty"`
+
+	// Workspaces is a list of WorkspaceBindings from volumes to workspaces.
+	// +optional
+	Workspaces []v1beta1.WorkspaceBinding `json:"workspaces,omitempty"`
+}
+```
+
+An embedded task will accept a new field i.e. `Spec` with type
+[`runtime.RawExtension`](https://github.com/kubernetes/apimachinery/blob/v0.21.0/pkg/runtime/types.go#L94)
+in addition to `ApiVersion` and `Kind` fields of type string (as part of 
+[`runtime.TypeMeta`](https://github.com/kubernetes/apimachinery/blob/v0.21.0/pkg/runtime/types.go#L36)) :
+
+```go
+type EmbeddedTask struct {
+	// +optional
+	runtime.TypeMeta `json:",inline,omitempty"`
+
+	// +optional
+	Spec runtime.RawExtension `json:"spec,omitempty"`
+
+	// +optional
+	Metadata PipelineTaskMetadata `json:"metadata,omitempty"`
+
+	// TaskSpec is a specification of a task
+	TaskSpec `json:",inline,omitempty"`
+}
+```
+
+An example `Run` spec based on Tektoncd/experimental/task-loop controller, will look like:
+
+```yaml
+apiVersion: tekton.dev/v1alpha1
+kind: Run
+metadata:
+  name: simpletasklooprun
+spec:
+  params:
+    - name: word
+      value:
+        - jump
+        - land
+        - roll
+    - name: suffix
+      value: ing
+  spec:
+    apiVersion: custom.tekton.dev/v1alpha1
+    kind: TaskLoop
+    spec:
+      # Task to run (inline taskSpec also works)
+      taskRef:
+        name: simpletask
+      # Parameter that contains the values to iterate
+      iterateParam: word
+      # Timeout (defaults to global default timeout, usually 1h00m; use "0" for no timeout)
+      timeout: 60s
+      # Retries for task failure
+      retries: 2
+```
+
+Another example based on `PipelineRun` spec, will look like:
+
+_Note that, `spec.pipelineSpec.tasks.taskSpec.spec` is holding the custom task spec._
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: pr-loop-example
+spec:
+  pipelineSpec:
+    tasks:
+      - name: first-task
+        taskSpec:
+          steps:
+            - name: echo
+              image: ubuntu
+              imagePullPolicy: IfNotPresent
+              script: |
+                #!/usr/bin/env bash
+                echo "I am the first task before the loop task"
+      - name: loop-task
+        runAfter:
+          - first-task
+        params:
+          - name: message
+            value:
+              - I am the first one
+              - I am the second one
+              - I am the third one
+        taskSpec:
+          apiVersion: custom.tekton.dev/v1alpha1
+          kind: PipelineLoop
+          spec:
+            iterateParam: message
+            pipelineSpec:
+              params:
+                - name: message
+                  type: string
+              tasks:
+                - name: echo-loop-task
+                  params:
+                    - name: message
+                      value: $(params.message)
+                  taskSpec:
+                    params:
+                      - name: message
+                        type: string
+                    steps:
+                      - name: echo
+                        image: ubuntu
+                        imagePullPolicy: IfNotPresent
+                        script: |
+                          #!/usr/bin/env bash
+                          echo "$(params.message)"
+      - name: last-task
+        runAfter:
+          - loop-task
+        taskSpec:
+          steps:
+            - name: echo
+              image: ubuntu
+              imagePullPolicy: IfNotPresent
+              script: |
+                #!/usr/bin/env bash
+                echo "I am the last task after the loop task"
+
+```
+
+`Tektoncd/pipeline` can only validate the structure and fields it knows about, validation of the
+custom task spec field(s) is delegated to the custom task controller.
+
+A custom controller may still choose to not support one of `Spec` or `Ref` based 
+`Run` or `PipelineRun` specification. This can be done by implementing validations at the custom controller end.
+If the custom controller did not respond in any of the ways i.e. either validation errors or reconcile CRD,
+then, a `PipelineRun` or a `Run` will wait until the timeout and mark the status as `Failed`.
+
+What is the fate of an existing custom controller developed prior to the implementation of this TEP. If the 
+custom controller implemented a validation for missing a `Ref`, then the `PipelineRun` or `Run` 
+missing a `Ref` will fail immediately with configured error and if however, no validation was
+implemented for missing a `Ref`, then it can even lead to `nil dereference errors` or have the same fate
+as that of a custom controller who does not respond for missing a `Spec` or a `Ref`.
 
 ### Notes/Caveats (optional)
+A poorly implemented custom task controller might neglect validation or manifest erroneous behaviour beyond
+the control of `tektoncd/pipeline`. This is true of any `custom task` implementation whether `Spec`
+or `Ref`.
 
 ### Risks and Mitigations
 
@@ -144,11 +321,15 @@ Consider including folks that also work on CLI and dashboard.
 With the embedded `taskSpec` for the custom task, all the Tekton clients
 can create a pipeline or `pipelineRun` using a single API call to the Kubernetes.
 Any downstream systems that employ tektoncd e.g. Kubeflow pipelines, will not be
- managing lifecycle of all the custom task resource objects and their versioning.
+ managing lifecycle of all the custom task resource objects (e.g. generate unique names)
+and their versioning.
 
-It is natural for a user to follow ways such as defining the [PodTemplateSpec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podtemplatespec-v1-core)
-as the Kubernetes pod definition in [Kubernetes Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#use-case), `ReplicaSet`, and `StatefulSet`.
-Thus, making Tektoncd/Pipeline `taskSpec` to have a Pipeline with custom tasks embedded can have the same experience.
+It is natural for a user to follow ways such as defining the 
+[PodTemplateSpec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podtemplatespec-v1-core)
+as the Kubernetes pod definition in 
+[Kubernetes Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#use-case),
+`ReplicaSet`, and `StatefulSet`.
+Tektoncd/Pipeline with custom tasks embedded will offer a similar/familiar experience.
 
 ### Performance (optional)
 

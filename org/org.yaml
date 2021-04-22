@@ -6,8 +6,8 @@ orgs:
     - tekton-robot
     - thelinuxfoundation
     - vdemeester
-    - imjasonh
     - afrittoli
+    - dibyom
     billing_email: info@cd.foundation
     company: ''
     default_repository_permission: none

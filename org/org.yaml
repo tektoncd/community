@@ -379,6 +379,7 @@ orgs:
         - vincent-pli
         - withlin
         - afrittoli
+        - pierretasci
         privacy: closed
         repos:
           pipeline: read
@@ -445,6 +446,7 @@ orgs:
         - mpeters
         - afrittoli
         - vinamra28
+        - pierretasci
         privacy: closed
         repos:
           community: read

@@ -114,7 +114,7 @@ their own, and they can self-nominate.
 Nominations should be sent to `tekton-nominations@googlegroups.com`. The email
 should contain:
 
-* The nominee’s email address, github handle, company affiliationg, and tektoncd
+* The nominee’s email address, github handle, company affiliation, and tektoncd
   project(s) they contribute to
 * For each of two contributors nominating this individual:
   * The company they work for
@@ -242,6 +242,9 @@ When someone joins the governing board:
 * They will be added to the `#governance-private` and `#governance` [slack](contact.md#slack) channels
 * They will be added to the "Tekton Governing Board Meeting" which occurs every 2 weeks and to the facilitator rotation, and
   added to the document as owners
+* They will be added as managers to [the Tekton community Google Drive](https://github.com/tektoncd/community/blob/main/contact.md#shared-drive)
+* They will be added as admins to [the tektoncd GitHub org](https://github.com/tektoncd/community/blob/main/org/org.yaml)
+* They will be added as owners to [the community repo](https://github.com/tektoncd/community/blob/main/OWNERS)
 * They will be added to these mailing lists as owners:
   * [`tekton-governance`](https://groups.google.com/g/tekton-governance)
   * [`tekton-nominations`](https://groups.google.com/g/tekton-nominations)
@@ -253,6 +256,9 @@ When someone leaves the governing board:
   they need them to continue to [act as build cop](https://github.com/tektoncd/plumbing/tree/main/bots/buildcaptain#tekton-buildcaptain)
 * They will be removed from the "Tekton Governing Board Meeting" and removed as editors from the agenda doc
 * They will be removed from the `#governance-private` [slack](contact.md#slack) channel
+* They will be removed as managers from [the Tekton community Google Drive](https://github.com/tektoncd/community/blob/main/contact.md#shared-drive)
+* They will be removed as admins from [the tektoncd GitHub org](https://github.com/tektoncd/community/blob/main/org/org.yaml)
+* They will be removed as owners from [the community repo](https://github.com/tektoncd/community/blob/main/OWNERS)
 * They will be removed as owners from these mailing lists:
   * [`tekton-governance`](https://groups.google.com/g/tekton-governance) (remove)
   * [`tekton-nominations`](https://groups.google.com/g/tekton-nominations) (remove)

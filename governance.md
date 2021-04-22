@@ -100,8 +100,8 @@ include opening PRs, reviewing and commenting on PRs, opening and commenting on
 issues, writing design docs, commenting on design docs, helping people on slack,
 participating in working groups. The
 [dashboard on tekton.devstats.cd.foundation](https://tekton.devstats.cd.foundation/d/9/developer-activity-counts-by-repository-group-table?orgId=1&var-period_name=Last%20year&var-metric=contributions&var-repogroup_name=All&var-country_name=All)
-will show GitHub based contributions.
-We expect to increase the contribution count required going forward.
+will show GitHub based contributions; contributions that are not GitHub based must
+be called out explicitly by the voter to confirm eligibility.
 
 ### Candidate Eligibility
 
@@ -114,8 +114,8 @@ their own, and they can self-nominate.
 Nominations should be sent to `tekton-nominations@googlegroups.com`. The email
 should contain:
 
-* The nominee’s email address, github handle, and tektoncd project(s) they
-  contribute to
+* The nominee’s email address, github handle, company affiliationg, and tektoncd
+  project(s) they contribute to
 * For each of two contributors nominating this individual:
   * The company they work for
   * Their github handles
@@ -134,18 +134,30 @@ Details about the schedule and logistics of the election will be announced in a
 timely manner by the election officers to eligible candidates and voters via the
 tekton-dev@googlegroups.com mailing list.
 
+Example timeline:
+
+1. Before or during nominations, send an email to all elgible voters to notify them
+  that they are eligble (allowing people time to reach out if they believe they are
+  eligble but are not on our list) (we have used [this script](https://github.com/tektoncd/community/tree/main/election)
+  in the past)
+1. 1 week for nominations (previously, starting on a Thursday until midnight PST the next Wednesday)
+1. 1 week for the election itself (starting the following Thursday until midnight PST the next Wednesday)
+
 ### Election Officers
 
 For every election, the governance board wll choose three election officers,
 by the following criteria, so as to promote healthy rotation and diversity:
 
 * election officers must be eligible to vote
-* two election officers should have served before. This will only become
-  possible after next election. For the election of Feb 2021 one officer
-  should have served before
+* two election officers should have served before
 * one election officer should have never served before
 * each officer should come from a different company to maintain 40% maximal
   representation
+* election officers should not be currently running in the election
+
+The governing board can decide to make exceptions to the above requirements
+if needed (for example, if two people cannot be found who have served before
+and want to be officers).
 
 ### Vacancies
 
@@ -159,6 +171,69 @@ will vote in the special election (ie: eligibility will not be redetermined
 at the time of the special election). A board member elected in a special
 election will serve out the remainder of the term for the person they are
 replacing, regardless of the length of that remainder.
+
+### Email templates
+
+For handy reference in future elections, here are some starter templates to send out
+to announce phases in the election.
+
+To announce opening up nomintations:
+
+```
+Hello Tekton contributors!
+
+Today we officially open up the nominations for the <TBD number of seats> 2 year seats on our governing board [0] !
+
+This section of our bylaws describes the entire process: [1].
+
+If you would like to be nominated, please send an email to tekton-nominations@googlegroups.com. The email should contain:
+
+* Your email address, github handle, the company you represent, and tektoncd project(s) you contribute to
+* An explanation of how you meet the "15 contributions" criteria, with links to related artifacts if required (e.g. design docs). (Note the easiest way to meet this criteria is to be present on this devstats dashboard [3], however this only shows folks with GitHub based contributions. Please include a description of your non-GitHub contributions if applicable.)
+* For each of two contributors nominating you:
+  * The company they work for
+  * Their github handles
+  * The tektoncd project(s) they contribute to
+ 
+As described in our bylaws [3], the election process requires three election officers, who are responsible for the execution of the election.
+Election officers must be eligible to vote and should come each from a different company.
+
+We already have <TBD number of election officers> election officers for this election:
+
+* <TBD names and affiliations>
+
+If you would like to serve as election officer, please reach out to any member of the governing board before the beginning of the voting process.
+
+This is the election timeline:
+
+    < TBD fill in timeline, below is example from 2021 >
+    Feb 24 at midnight PST the nominations will close
+    Feb 25 we will start the voting process via http://civs.cs.cornell.edu/
+    Mar 3 we close the election
+
+Please feel free to reach out to anyone on the governing board and/or reply to this email with any questions!
+
+[0] https://github.com/tektoncd/community/blob/main/governance.md
+[1] https://github.com/tektoncd/community/blob/main/governance.md#elections
+[2] https://tekton.devstats.cd.foundation/d/9/developer-activity-counts-by-repository-group-table?orgId=1&var-period_name=Last%20year&var-metric=contributions&var-repogroup_name=All&var-country_name=All
+[3] https://github.com/tektoncd/community/blob/main/governance.md#election-officers
+```
+
+To announce the beginning of the election:
+
+```
+Hello everyone,
+
+The <TBD year> governing board election has begun!
+
+Everyone who is eligible to vote who we know of should now have received an email with a link to vote. If you think you should get one and you didn't, please check all of the email addresses that might be associated with your GitHub account, and your spam folder, and if you still can't find the email, let me know and I can add you to the poll.
+
+Otherwise happy voting! The poll will close at midnight PST on <TBD date>.
+
+Note that we have constrained the board such that no single employer can have more than 40% of the total seats. [0]
+
+[0] https://github.com/tektoncd/community/blob/main/governance.md#elections
+```
 
 ### Changes to governing board
 

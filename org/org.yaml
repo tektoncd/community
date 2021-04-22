@@ -254,6 +254,7 @@ orgs:
         - sthaha
         - nikhil-thomas
         - vincent-pli
+        - savitaashture
         privacy: closed
         repos:
           operator: write
@@ -628,6 +629,7 @@ orgs:
         - savitaashture
         - vdemeester
         - vincent-pli
+        - piyush-garg
         privacy: closed
         repos:
           operator: read

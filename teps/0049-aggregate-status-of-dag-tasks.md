@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Aggregate Status of DAG Tasks
 creation-date: '2021-03-04'
-last-updated: '2021-03-25'
+last-updated: '2021-04-23'
 authors:
 - '@pritidesai'
 ---
@@ -116,6 +116,13 @@ will fail with the validation error if `$(tasks.status)` is used in any `dag` ta
 ## Test Plan
 
 All necessary e2e, unit tests, and example will be added.
+
+## Alternatives
+
+Introduce the same variable but with an alternate name `$(pipeline.status)` instead of `$(tasks.status)`.
+
+The only downside to naming it this way is, it might confuse the users since this variable represents the overall status
+of the `tasks` section and not the entire `pipeline`.
 
 ## References
 

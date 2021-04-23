@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Allow custom task to be embedded in pipeline
 creation-date: '2021-03-18'
-last-updated: '2021-03-27'
+last-updated: '2021-04-28'
 authors:
 - '@Tomcli'
 - '@litong01'
@@ -117,8 +117,8 @@ Add support for `Run.RunSpec.Spec`.
 
 Currently, `Run.RunSpec.Spec` is not supported and there are validations across the
 codebase to ensure, only `Run.RunSpec.Ref` is specified. As part of this TEP, in addition
-to adding support for `Run.RunSpec.Spec`the validations will be changed to support 
-"One of `Run.RunSpec.Spec` or`Run.RunSpec.Ref`" only and not both as part of a single
+to adding support for `Run.RunSpec.Spec` the validations will be changed to support 
+"One of `Run.RunSpec.Spec` or `Run.RunSpec.Ref`" only and not both as part of a single
 API request to kubernetes.
 
 Structure of `RunSpec` after adding the field `Spec` of type `*v1beta1.EmbeddedTask`,
@@ -129,7 +129,7 @@ type RunSpec struct {
 	// +optional
 	Ref *TaskRef `json:"ref,omitempty"`
 
-	// TaskSpec is a specification of a custom task
+	// Spec is a specification of a custom task
 	// +optional
 	Spec *v1beta1.EmbeddedTask `json:"spec,omitempty"`
 
@@ -170,6 +170,7 @@ type EmbeddedTask struct {
 	Metadata PipelineTaskMetadata `json:"metadata,omitempty"`
 
 	// TaskSpec is a specification of a task
+	// +optional
 	TaskSpec `json:",inline,omitempty"`
 }
 ```
@@ -343,6 +344,14 @@ Consider which use cases are impacted by this change and what are their
 performance requirements.
 -->
 
+Performance improvement is a consequence of reduction in number of API request(s) to 
+create custom resource(s) accompanying a pipeline. In pipelines, where the number
+of custom task resource objects are large, this can make a huge difference in
+performance improvement.
+
+For the end users, trying to render the custom task resource details on the UI dashboard,
+can be a much smoother experience if all the requests could be fetched in fewer API request(s).
+
 ## Design Details
 
 <!--
@@ -356,6 +365,29 @@ add them under "/teps/images/". It's upto the TEP author to choose the name
 of the file, but general guidance is to include at least TEP number in the
 file name, for example, "/teps/images/NNNN-workflow.jpg".
 -->
+The actual code changes needed to implement this TEP, are very minimal.
+
+**Broad categories are:**
+1. Add the relevant APIs. 
+   Already covered in [Proposal section](#proposal).
+   
+2. Change validation logic to accept the newly added API fields.
+    Currently `tecktoncd/pipeline` will reject any request for `Run`, 
+    which does not include a `Run.RunSpec.Ref`. So this validation is now changed to
+    either one of `Ref` or `Spec` must be present, but not both. 
+    
+    Next, whether it is a `Ref` or a `Spec`, validation logic will ensure, they have 
+    non-empty values for, `APIVersion` and `Kind`.
+    
+    Lastly document advice for downstream custom controllers to implement their
+    own validation logic. This aspect is covered in full detail, in
+    [Upgrade &amp; Migration Strategy section](#upgrade--migration-strategy-optional)
+    of this TEP.
+
+This TEP does not change the existing flow of creation of `Run` object, it updates 
+the Run object with the content of `RunSpec.Spec` by marshalling the field 
+`Spec runtime.RawExtension` to json and embed in the spec, before creating the
+Run object.
 
 ## Test Plan
 
@@ -374,20 +406,30 @@ All code is expected to have adequate tests (eventually with coverage
 expectations).
 -->
 
-We can reuse the custom task e2e tests with the current test controller
-to verify whether the controller can handle the custom task `taskSpec`.
+We can reuse the current custom task e2e tests which simulates a custom task controller
+updating `Run` status. Then, verify whether the controller can handle the custom task
+`taskSpec` as well or not.
 
 ## Design Evaluation
 <!--
 How does this proposal affect the reusability, simplicity, flexibility 
 and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/master/design-principles.md)
 -->
+Before the implementation of this TEP, i.e. without the support for embedding a
+custom task spec in the `PipelineRun` resource, a user has to create multiple API
+requests to the Apiserver. Next, he has to ensure unique names, to avoid conflict
+in someone else's created custom task resource object. 
+
+Embedding of custom task spec avoids the problems related to name collisions
+and also improves performance by reducing the number of API requests to create custom
+task resource objects. The performance benefit, of reducing the number of API requests,
+is more evident when using web-ui based dashboard to display, pipeline details
+(e.g. in Kubeflow Pipelines with tekton as backend).
+
+Lastly, it looks aesthetically nicer and coherent with existing regular task,
+with all the custom task spec using fewer lines of yaml and all present in one place.
 
 ## Drawbacks
-
-<!--
-Why should this TEP _not_ be implemented?
--->
 
 ## Alternatives
 
@@ -413,7 +455,34 @@ Use this section to detail wether this feature needs an upgrade or
 migration strategy. This is especially useful when we modify a
 behavior or add a feature that may replace and deprecate a current one.
 -->
+- **Existing custom controller need to upgrade their validation logic:**
+  
+     **Rationale:** Previously, there was only one possibility for the structure of `Run` objects,
+     i.e. they had the path as `Run.RunSpec.Ref`. A custom controller may do fine,
+     even without validating the input request(s) that misses a `Ref`. Because,
+     this was already validated by `tektoncd/pipeline`. After the implementation of
+     this TEP, this is no longer the case, a `Run.RunSpec` may either contain a `Ref`
+     or a `Spec`. So a request with a `Spec`, to a controller which does not have
+     proper validation for missing a `Ref`, and does not yet support a `Spec`, may
+     be rendered in an unstable state e.g. due to `nil dereference errors` or
+     fail due to timeout.
 
+- **Support `spec` or `taskSpec` in the existing custom controller:**
+    
+    With implementation of this tep, users can supply custom task spec embedded in a
+  `PipelineRun` or `Run`. The existing custom controller need to upgrade, to provide support. 
+
+- **Unmarshalling the json of custom task object embedded as `Spec`:**
+    
+    `Run.RunSpec.Spec` objects are marshalled as binary by using `json.Marshal` where
+    `json` is imported from `encoding/json` library of golang. So the custom controller
+    may unmarshall these objects by using the corresponding `unmarshall` function as,
+    `json.Unmarshal(run.Spec.Spec.Spec.Raw, &customObjectSpec)`. In the future, 
+    a custom task SDK will do a better job of handling it, and making it easier for the 
+    developer to work on custom task controller.
+    TODO: Add a reference to an example custom task controller e.g. `TaskLoop`, once
+    the changes are merged.
+  
 ## References (optional)
 
 <!--
@@ -423,4 +492,4 @@ to get more details.
 -->
 
 1. [tektoncd/pipeline#3682](https://github.com/tektoncd/pipeline/issues/3682)
-2. [Custom tasks](https://github.com/tektoncd/community/blob/main/teps/0002-custom-tasks.md)
+2. [TEP-0002 Custom tasks](0002-custom-tasks.md)

@@ -212,6 +212,7 @@ This is the complete list of Tekton teps:
 |[TEP-0061](0061-allow-custom-task-to-be-embedded-in-pipeline.md) | Allow custom task to be embedded in pipeline | implemented | 2021-05-26 |
 |[TEP-0062](0062-catalog-tags-and-hub-categories-management.md) | Catalog Tags and Hub Categories Management | implementable | 2021-03-30 |
 |[TEP-0063](0063-workspace-dependencies.md) | Workspace Dependencies | proposed | 2021-04-23 |
+|[TEP-0065](0065-retry-failed-tasks-on-demand.md) | Retry failed tasks on-demand in a pipeline | proposed | 2021-05-07 |
 |[TEP-0066](0066-dogfooding-tekton.md) | Dogfooding Tekton | proposed | 2021-05-16 |
 |[TEP-0067](0067-tekton-catalog-pipeline-organization.md) | Tekton Catalog Pipeline Organization | implementable | 2021-02-22 |
 |[TEP-0070](0070-tekton-catalog-task-platform-support.md) | Platform support in Tekton catalog | proposed | 2021-06-02 |

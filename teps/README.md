@@ -75,7 +75,7 @@ The TEP `OWNERS` are the **main** owners of the following projects:
 To create a new TEP, use the [teps script](./tools/README.md):
 
 ```shell
-$ ./teps.py new --title "The title of the TEP" --author nick1 --author nick2
+$ ./teps/tools/teps.py new --title "The title of the TEP" --author nick1 --author nick2
 ```
 
 The script will allocate a new valid TEP number, set the status

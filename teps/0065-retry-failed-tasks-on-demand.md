@@ -84,8 +84,8 @@ individually, mark tests for rerun.
 
 1. CI/CD use case, manually rerun all the failed jobs for a particular pull 
    request.
-2. As a backend for kubeflow, one would want to manually retry a failed 
-   `pipelineRun` to optimally use the resources.
+2. As a backend for Kubeflow Pipelines (KFP), one would want to manually retry a failed 
+   `pipelineRun` to optimally use the resources. KFP already implemented this feature as the [pipeline 'retry' API](https://www.kubeflow.org/docs/components/pipelines/reference/api/kubeflow-pipeline-api-spec/#operation--apis-v1beta1-runs--run_id--retry-post) on the Argo backend.
 3. If the pipeline failed due to external factors such as cluster node
    failure and image registry disconnect, user can retry from the same
    stage at a later time.
@@ -204,7 +204,7 @@ Why should this TEP _not_ be implemented?
    [TEP-0015 Pending](0015-pending-pipeline.md).
    This may be cumbersome, as opposed to 
    an API for retry. Also retry is also used by other pipeline engines e.g. 
-   [Kubeflow](https://www.kubeflow.org/docs/components/pipelines/reference/api/kubeflow-pipeline-api-spec/#operation--apis-v1beta1-runs--run_id--retry-post) 
+   [Kubeflow pipelines](https://www.kubeflow.org/docs/components/pipelines/reference/api/kubeflow-pipeline-api-spec/#operation--apis-v1beta1-runs--run_id--retry-post) 
    
 
 <!--

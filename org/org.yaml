@@ -370,7 +370,6 @@ orgs:
         - piyush-garg
         - chmouel
         - psschwei
-        - sergetron
         - hrishin
         - ImJasonH
         - EliZucker
@@ -396,7 +395,6 @@ orgs:
         - AlanGreene
         - popcor255
         - afrittoli
-        - sergetron
         - bobcatfish
         - vdemeester
         - skaegi
@@ -695,10 +693,9 @@ orgs:
         description: Doc reviewers across repos
         maintainers:
         - abayer
-        - afrittoli
         - bobcatfish
         - dibyom
         - vdemeester
         members:
-        - sergetron
+        - afrittoli
         privacy: closed

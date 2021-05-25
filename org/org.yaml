@@ -77,6 +77,7 @@ orgs:
     - kimsterv
     - loosebazooka
     - lukehinds
+    - LyndseyBu
     - maneeshmehra
     - marcelmue
     - mattmoor
@@ -474,6 +475,7 @@ orgs:
         - skaegi
         - jessm12
         - ziheng
+        - LyndseyBu
         privacy: closed
         repos:
           dashboard: read

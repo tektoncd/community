@@ -331,9 +331,24 @@ Supporting cancellation is optional but recommended.
 
 ### Timeout
 
-Today, users can specify a timeout for a component `Task` of a `Pipeline` (see [`PipelineTask.Timeout`](https://godoc.org/github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1#PipelineTask)). The `Run` type will specify a `Timeout` field to hold this value when created as part of a `PipelineRun` (or when `Run`s are created directly). Custom Task authors can read and propagate this field if desired, but a Tekton-owned controller will be responsible for tracking this timeout and updating timed out `Run`s to signal unsuccessful execution.
+Today, users can specify a timeout for a component `Task` of a `Pipeline` (see
+[`PipelineTask.Timeout`](https://godoc.org/github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1#PipelineTask)).
+The `Run` type will specify a `Timeout` field to hold this value when created
+as part of a `PipelineRun` (or when `Run`s are created directly). Custom Task
+authors can read and propagate this field if desired.
 
-A Custom Task author can watch for this status update and take any corresponding actions (e.g., cancel a cloud build, stop the waiting timer, tear down the approval listener).
+Tekton-owned controller will not forcibly update the `.status` of a
+Run directly. This will be the responsibility of Custom Task controller.
+
+For a PipelineRun with either a pipeline level timeout configured and/or the
+custom task level timout configuration, timeout is updated to the run with same
+policy as it is for task runs. On timeout, the running run's status is updated with
+"RunCancelled". 
+
+A Custom Task author can watch for this status update (i.e. 
+`Run.Spec.Status == RunCancelled`) and or `Run.HasTimedOut()` and take any
+corresponding actions ( i.e. a clean up e.g., cancel a cloud build, stop the
+waiting timer, tear down the approval listener).
 
 Supporting timeouts is optional but recommended.
 

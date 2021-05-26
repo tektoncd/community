@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Allow custom task to be embedded in pipeline
 creation-date: '2021-03-18'
-last-updated: '2021-04-28'
+last-updated: '2021-05-26'
 authors:
 - '@Tomcli'
 - '@litong01'
@@ -121,7 +121,23 @@ to adding support for `Run.RunSpec.Spec` the validations will be changed to supp
 "One of `Run.RunSpec.Spec` or `Run.RunSpec.Ref`" only and not both as part of a single
 API request to kubernetes.
 
-Structure of `RunSpec` after adding the field `Spec` of type `*v1beta1.EmbeddedTask`,
+Introducing a new type `v1alpha1.EmbeddedRunSpec`
+
+```go
+// EmbeddedRunSpec allows custom task definitions to be embedded
+type EmbeddedRunSpec struct {
+	runtime.TypeMeta `json:",inline"`
+
+	// +optional
+	Metadata v1beta1.PipelineTaskMetadata `json:"metadata,omitempty"`
+
+	// Spec is a specification of a custom task
+	// +optional
+	Spec runtime.RawExtension `json:"spec,omitempty"`
+}
+```
+
+Structure of `RunSpec` after adding the field `Spec` of type `EmbeddedRunSpec`,
 
 ```go
 // RunSpec defines the desired state of Run
@@ -131,7 +147,7 @@ type RunSpec struct {
 
 	// Spec is a specification of a custom task
 	// +optional
-	Spec *v1beta1.EmbeddedTask `json:"spec,omitempty"`
+	Spec *EmbeddedRunSpec `json:"spec,omitempty"`
 
 	// +optional
 	Params []v1beta1.Param `json:"params,omitempty"`
@@ -153,9 +169,9 @@ type RunSpec struct {
 }
 ```
 
-An embedded task will accept a new field i.e. `Spec` with type
+An embedded task will accept new fields i.e. `Spec` with type
 [`runtime.RawExtension`](https://github.com/kubernetes/apimachinery/blob/v0.21.0/pkg/runtime/types.go#L94)
-in addition to `ApiVersion` and `Kind` fields of type string (as part of 
+and `ApiVersion` and `Kind` fields of type string (as part of 
 [`runtime.TypeMeta`](https://github.com/kubernetes/apimachinery/blob/v0.21.0/pkg/runtime/types.go#L36)) :
 
 ```go
@@ -278,8 +294,8 @@ spec:
 `Tektoncd/pipeline` can only validate the structure and fields it knows about, validation of the
 custom task spec field(s) is delegated to the custom task controller.
 
-A custom controller may still choose to not support one of `Spec` or `Ref` based 
-`Run` or `PipelineRun` specification. This can be done by implementing validations at the custom controller end.
+A custom controller may still choose to not support a `Spec` based `Run` or 
+`PipelineRun` specification. This can be done by implementing validations at the custom controller end.
 If the custom controller did not respond in any of the ways i.e. either validation errors or reconcile CRD,
 then, a `PipelineRun` or a `Run` will wait until the timeout and mark the status as `Failed`.
 
@@ -433,12 +449,12 @@ with all the custom task spec using fewer lines of yaml and all present in one p
 
 ## Alternatives
 
-<!--
-What other approaches did you consider and why did you rule them out?  These do
-not need to be as detailed as the proposal, but should include enough
-information to express the idea and why it was not acceptable.
--->
+Use `v1beta1.EmbeddedTask` as `RunSpec.Spec` so that we
+don't have to introduce a new embedded Spec type for runs.
 
+Cons:
+* brings some `PipelineTask`-specific fields (like PipelineResources)
+  that don't have a use case in Runs yet.
 
 ## Infrastructure Needed (optional)
 

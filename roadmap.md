@@ -1,6 +1,6 @@
 # Tekton Mission and Roadmap
 
-This doc describes Tekton's mission and the 2020 roadmap.
+This doc describes Tekton's mission and the 2021 roadmap.
 
 - [Mission and Vision](#mission-and-vision)
 - [2021 Roadmap](#2021-roadmap)

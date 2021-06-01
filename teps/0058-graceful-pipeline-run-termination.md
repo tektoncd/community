@@ -18,8 +18,6 @@ authors:
   - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
-  - [Notes/Caveats (optional)](#notescaveats-optional)
-  - [Risks and Mitigations](#risks-and-mitigations)
   - [User Experience (optional)](#user-experience-optional)
   - [Performance (optional)](#performance-optional)
 - [Design Details](#design-details)

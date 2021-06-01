@@ -13,7 +13,6 @@ status: proposed
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goals](#goals)
-  - [Non-Goals](#non-goals)
   - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
 <!-- /toc -->

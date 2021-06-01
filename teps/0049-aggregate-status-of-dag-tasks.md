@@ -17,6 +17,7 @@ authors:
   - [Use Cases](#use-cases)
 - [Proposal](#proposal)
 - [Test Plan](#test-plan)
+- [Alternatives](#alternatives)
 - [References](#references)
 <!-- /toc -->
 

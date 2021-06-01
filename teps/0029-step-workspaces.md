@@ -23,7 +23,7 @@ tags, and then generate with `hack/update-toc.sh`.
 - [Proposal](#proposal)
   - [Add <code>workspaces</code> to <code>Steps</code>](#add--to-)
   - [Add <code>workspaces</code> to <code>Sidecars</code>](#add--to--1)
-  - [Allow <code>workspaces</code> in `Steps` and `Sidecars` to have their own `mountPath`](#allow-workspaces-in-steps-and-sidecars-to-have-their-own-mountpath)
+  - [Allow <code>workspaces</code> in <code>Steps</code> and <code>Sidecars</code> to have their own <code>mountPath</code>](#allow--in--and--to-have-their-own-)
   - [User Stories](#user-stories)
     - [Story 1](#story-1)
     - [Story 2](#story-2)

@@ -10,7 +10,6 @@ authors:
 # TEP-0052: Tekton Results: Automated Run Resource Cleanup
 
 <!-- toc -->
-
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goals](#goals)
@@ -21,6 +20,8 @@ authors:
   - [Delete Runs when complete](#delete-runs-when-complete)
   - [Grace Period](#grace-period)
   - [Notes/Caveats (optional)](#notescaveats-optional)
+    - [Loss of Logs](#loss-of-logs)
+    - [Controller List Latency](#controller-list-latency)
     - [Future Work](#future-work)
       - [Grace Period API Configuration](#grace-period-api-configuration)
   - [Risks and Mitigations](#risks-and-mitigations)
@@ -32,7 +33,8 @@ authors:
 - [Design Evaluation](#design-evaluation)
 - [Alternatives](#alternatives)
   - [Decouple Cleanup from Watcher](#decouple-cleanup-from-watcher)
-
+  - [Count based deletion](#count-based-deletion)
+  - [Event based deletion](#event-based-deletion)
 <!-- /toc -->
 
 ## Summary

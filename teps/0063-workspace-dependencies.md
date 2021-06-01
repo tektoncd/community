@@ -1,10 +1,11 @@
 ---
-status: proposed
+status: implementable
 title: Workspace Dependencies
 creation-date: '2021-04-23'
-last-updated: '2021-04-23'
+last-updated: '2021-06-03'
 authors:
 - '@jerop'
+- '@souleb'
 ---
 
 # TEP-0063: Workspace Dependencies
@@ -71,6 +72,16 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Non-Goals](#non-goals)
   - [Use Cases](#use-cases)
 - [Requirements](#requirements)
+- [Proposal](#proposal)
+- [Design Evaluation](#design-evaluation)
+    - [Reusability](#reusability)
+    - [Simplicity](#simplicity)
+    - [Flexibility](#flexibility)
+- [Alternatives](#alternatives)
+  - [Workspace Paths](#workspace-paths)
+  - [Workspace Substitution](#workspace-substitution)
+  - [Workspace Substitution and From Workspace](#workspace-substitution-and-from-workspace)
+  - [From Workspace](#from-workspace)
 - [References](#references)
 <!-- /toc -->
 
@@ -100,6 +111,10 @@ Today, users cannot specify resource dependencies based on `Workspaces`, that is
 given `Workspace` before another `Task` executes and uses the same `Workspace`. We need to provide a way for users to 
 specify resource dependencies based on `Workspaces` to ensure that failure and skipping strategies for common CI/CD 
 use cases work and users don't get unexpected `Pipeline` failures when we roll out those features.
+
+To enable users to specify resource dependencies based on `Workspaces`, we will provide a field - `useAfter` - that 
+can be used to specify that a given `Task` should use a specific `Workspace` after another `Task` has already used it.
+It will be used to construct the `Directed Acyclic Graph` that represents the `Pipeline` to enforce the execution order.
 
 ## Motivation
 
@@ -244,7 +259,255 @@ be handled, or user scenarios that will be affected and must be accomodated.
 -->
 
 Users should be able to specify resource dependency based on `Workspaces`, that is, a `Task` should execute and use a 
-given `Workspace` before another `Task` executes and uses the same `Workspace`. 
+given `Workspace` before another `Task` executes and uses the same `Workspace`.
+
+## Proposal
+
+<!--
+This is where we get down to the specifics of what the proposal actually is.
+This should have enough detail that reviewers can understand exactly what
+you're proposing, but should not include things like API designs or
+implementation.  The "Design Details" section below is for the real
+nitty-gritty.
+-->
+
+Provide a field - `useAfter` - that can be used to specify that a given `Task` should use a specific `Workspace` after 
+another `Task` has already used it. The `useAfter` field will take a list of `Task` names that should be executed 
+before the current `Task` so that they can operate on the `Workspace` before the current `Task`. It will be used to 
+construct the `Directed Acyclic Graph` that represents the `Pipeline` to enforce the execution order.  
+
+The `useAfter` field would be added to [`WorkspacePipelineTaskBinding`](https://github.com/tektoncd/pipeline/blob/release-v0.24.x/pkg/apis/pipeline/v1beta1/workspace_types.go#L102-L113): 
+
+```go
+// WorkspacePipelineTaskBinding describes how a workspace passed into the pipeline should be
+// mapped to a task's declared workspace.
+type WorkspacePipelineTaskBinding struct {
+	// Name is the name of the workspace as declared by the task.
+	Name string `json:"name"`
+	// Workspace is the name of the workspace declared by the pipeline.
+	Workspace string `json:"workspace"`
+	// SubPath is optionally a directory on the volume which should be used
+	// for this binding (i.e. the volume will be mounted at this sub directory).
+	// +optional
+	SubPath string `json:"subPath,omitempty"`
+	// UseAfter is the list of Task names that should be executed before this Task executes.
+	// UseAfter will be used to construct the Pipeline Directed Acyclic Graph to enforce execution order.
+	// +optional
+	UseAfter []string `json:"useAfter,omitempty"` 
+}
+```
+
+Which will be used as such:
+```yaml
+tasks:
+    - name: task1
+      taskRef:
+        name: write-to-workspace
+      workspaces:
+        - name: output
+          workspace: shared-data
+    - name: task2
+      taskRef:
+        name: read-from-workspace
+      workspaces:
+        - name: input
+          workspace: shared-data
+          useAfter: 
+          - task1
+```
+
+Thus, a `Pipeline` to solve for the [use case](#use-cases) described above would be designed as such:
+
+```yaml
+tasks:
+...
+- name: manual-approval
+  runAfter:
+    - integration-tests
+  when:
+    - input: $(params.git-action)
+      operator: in
+      values:
+        - merge
+  workspaces:
+    - name: workarea
+      workspace: pvc
+  taskRef:
+    name: manual-approval
+
+- name: slack-msg
+  workspaces:
+    - name: workarea
+      workspace: pvc
+      useAfter:
+        - manual-approval    
+  taskRef:
+    name: slack-msg
+
+- name: build-image
+  runAfter:
+    - manual-approval
+  taskRef:
+    name: build-image
+
+- name: deploy-image
+  runAfter:
+    - build-image
+  taskRef:
+    name: deploy-image
+```
+
+This proposal provides the simplest approach to solve the problem of `Workspace` dependencies. Moreover, `useAfter` 
+is parallel to `runAfter`, making it familiar to users and improving its learnability. 
+
+## Design Evaluation
+
+<!--
+How does this proposal affect the reusability, simplicity, flexibility 
+and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/master/design-principles.md)
+-->
+
+#### Reusability
+
+By enabling users to specify resource dependencies based on `Workspaces`, we prevent unexpected failures when we 
+roll out skipping and failure strategies for common CI/CD use cases. Without this, users would have needed to build 
+workarounds in their `Pipelines` to address those failures thus making them less reusable. Hence, this proposal 
+maintains the reusability of Tekton `Pipelines`.
+
+#### Simplicity
+
+The proposed syntax - `useAfter` - provides precisely what users need to express resource dependencies based on 
+`Workspaces`. It is also similar to `runAfter` making it familiar and easily learnable. 
+
+#### Flexibility
+
+This proposal will enable other proposals that enhance the flexibility of Tekton. For example, it would allow the 
+[skipping strategies](https://github.com/tektoncd/community/blob/main/teps/0059-skipping-strategies.md) to work as 
+expected - which will give users the flexibility to guard a `Task` only or guard a `Task` and its dependent `Tasks`.
+
+## Alternatives
+
+<!--
+What other approaches did you consider and why did you rule them out?  These do
+not need to be as detailed as the proposal, but should include enough
+information to express the idea and why it was not acceptable.
+-->
+
+### Workspace Paths
+
+Another approach we could take is to use `Workspace Paths` to express resource dependencies. The problem statement 
+for `Workspace Paths` is discussed in [TEP](https://github.com/tektoncd/community/blob/main/teps/0030-workspace-paths.md)
+and its proposal is discussed in [PR](https://github.com/tektoncd/community/pull/285). The paths would be used as such:
+
+```yaml
+tasks:
+    - name: task1
+      taskRef:
+        name: write-to-workspace
+      workspaces:
+        - name: output
+          workspace: shared-data
+          paths:
+            produced:
+              - name: checkout
+                path: /src          
+    - name: task2
+      taskRef:
+        name: read-from-workspace
+      workspaces:
+        - name: input
+          workspace: shared-data
+          paths:
+            expected:
+              - name: checkout
+                path: /src
+```
+In the above example, we would deduce that `task2` is dependent on `task1` because `task2` expects a `Path` that's 
+produced by `task1`.
+
+However, using `Workspace Paths` to express dependency presents several challenges such as:
+- What if a `Task` reads from a given `Path` but also writes to it?
+- What if `Tasks` produce and expect many `Paths`? 
+  - Would the dependencies and execution flow be clear to users reading their `Pipelines`?
+  - What would be the cost of processing the many `Paths` to deduce dependencies?
+- How verbose would it be to express `Paths` just to specify resource dependencies between `Tasks`?
+
+The work on `Workspace Paths` was paused, but still remains an option in the future with this proposal - we can make 
+it work with the `useAfter` proposal. 
+
+### Workspace Substitution
+
+We could also use string substitution to declare `Workspace` dependencies, similarly to `Result` dependencies. 
+
+```yaml
+tasks:
+    - name: task1
+      taskRef:
+        name: write-to-workspace
+      workspaces:
+        - name: output
+          workspace: shared-data
+    - name: task2
+      taskRef:
+        name: read-from-workspace
+      workspaces:
+        - name: input
+          workspace: $(tasks.task1.workspaces.output)
+```
+In the above example, we'd interpret that `task2` is dependent to `task1` and mount `shared-data` `Workspace` in 
+`task2`.
+
+However, substitution makes the `Workspace` mounted to the `Task` implicit based on the parent `Task`. A user could 
+assume that only the `Workspace` name is substituted, without realizing that it implies `Workspace` dependency 
+between the `Tasks`.
+
+### Workspace Substitution and From Workspace
+
+We could improve on [Workspace Subsitution](#workspace-substitution) alternative above by using `From` instead, 
+similarly to `PipelineResources`. 
+
+```yaml
+tasks:
+    - name: task1
+      taskRef:
+        name: write-to-workspace
+      workspaces:
+        - name: output
+          workspace: shared-data
+    - name: task2
+      taskRef:
+        name: read-from-workspace
+      workspaces:
+        - name: input
+          from: $(tasks.task1.workspaces.output)
+```
+
+It makes the `Workspace` declaration a bit more explicit, however the variable substitution is still implicit and 
+may be confusing. Moreover, `PipelineResources` may be deprecated, so we don't need to be consistent with its syntax.
+
+### From Workspace
+
+We could remove the variable substitution, and use `From` that takes the `Task` name only. 
+
+```yaml
+tasks:
+    - name: task1
+      taskRef:
+        name: write-to-workspace
+      workspaces:
+        - name: output
+          workspace: shared-data
+    - name: task2
+      taskRef:
+        name: read-from-workspace
+      workspaces:
+        - name: input
+          workspace: shared-data
+          from: task1
+```
+
+However, what does it mean for a `Workspace` in a `Task` to be _from_ another `Task`? Instead of `From`, we 
+can use `useAfter` which describes exactly the functionality needed.  
 
 ## References
 

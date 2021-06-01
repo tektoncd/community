@@ -20,9 +20,18 @@ authors:
   - [Implementation Notes](#implementation-notes)
     - [Example](#example)
 - [Alternatives](#alternatives)
+  - [Option 1: Select Downstream Triggers With Labels](#option-1-select-downstream-triggers-with-labels)
+    - [Advantages](#advantages)
+    - [Disadvantages](#disadvantages)
+  - [Option 2: Interceptor Groups](#option-2-interceptor-groups)
+    - [Advantages](#advantages-1)
+    - [Disadvantages](#disadvantages-1)
+  - [Option 3: Downstream EventListener](#option-3-downstream-eventlistener)
+    - [Advantages](#advantages-2)
+    - [Disadvantages](#disadvantages-2)
 - [Implementation Decision](#implementation-decision)
+  - [Example <code>triggerGroup</code> Configuration](#example--configuration)
 - [References](#references)
-
 <!-- /toc -->
 
 _NB: This document is intended to be a problem statement with a proposed solution.

@@ -17,17 +17,17 @@ status: proposed
   - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
-  - [Controlling Step Lifecycle](#controlling-step-lifecycle)
+  - [Controlling step lifecycle](#controlling-step-lifecycle)
     - [Failure of a Step](#failure-of-a-step)
-    - [Halting a Step on failure](#halting-your-step-on-failure)
+    - [Halting a Step on failure](#halting-a-step-on-failure)
     - [Exiting breakpoint](#exiting-breakpoint)
   - [Debug Environment Additions](#debug-environment-additions)
     - [Mounts](#mounts)
     - [Debug Scripts](#debug-scripts)
   - [User Stories](#user-stories)
-    - [CLI Integration](#cli-integration)
-      - [Environment Access](#environment-access)
-- [Alternative](#alternatives)
+    - [CLI integration](#cli-integration)
+      - [Environment access](#environment-access)
+- [Alternatives](#alternatives)
 <!-- /toc -->
 
 ## Summary

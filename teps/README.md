@@ -190,3 +190,4 @@ This is the complete list of Tekton teps:
 |[TEP-0062](0062-catalog-tags-and-hub-categories-management.md) | Catalog Tags and Hub Categories Management | proposed | 2021-03-30 |
 |[TEP-0063](0063-workspace-dependencies.md) | Workspace Dependencies | proposed | 2021-04-23 |
 |[TEP-0067](0067-tekton-catalog-pipeline-organization.md) | Tekton Catalog Pipeline Organization | implementable | 2021-02-22 |
+|[TEP-0070](0070-tekton-catalog-task-platform-support.md) | Platform support in Tekton catalog | proposed | 2021-06-02 |

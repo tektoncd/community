@@ -46,5 +46,6 @@ _See [the calendar](#calendar) for more events._
 
 As much as we can we try to add community docs to
 [our shared Google drive](https://drive.google.com/drive/u/0/folders/0AFOvPxM9MpebUk9PVA).
-Anyone who joins [the mailing list](#mailing-list) will be able to add and edit files in this drive,
-which includes design docs and and our [working groups](./working-groups.md) recordings.
+Anyone who joins [the `tekton-dev` mailing list](#mailing-list) will be able to add and edit files in this drive,
+and anyone who joins the [the `tekton-users` mailing list](#mailing-list) will have read access. This drive
+contains docs and our [working groups](./working-groups.md) recordings.

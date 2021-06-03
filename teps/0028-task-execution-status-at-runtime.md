@@ -3,8 +3,8 @@ title: task-exec-status-at-runtime
 authors:
   - "@pritidesai"
 creation-date: 2020-10-15
-last-updated: 2020-11-02
-status: implementable
+last-updated: 2021-06-03
+status: implemented
 ---
 
 # TEP-0028: Task Execution Status at Runtime

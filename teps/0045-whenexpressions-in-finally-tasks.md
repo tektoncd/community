@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: WhenExpressions in Finally Tasks
 creation-date: '2021-01-21'
-last-updated: '2021-01-28'
+last-updated: '2021-06-03'
 authors:
 - '@jerop'
 ---

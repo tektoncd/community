@@ -3,8 +3,8 @@ title: Conditions Beta
 authors:
   - "@jerop"
 creation-date: 2020-07-22
-last-updated: 2020-11-02
-status: implementable
+last-updated: 2021-06-03
+status: implemented
 ---
 
 # TEP-0007: Conditions Beta
@@ -30,7 +30,6 @@ tags, and then generate with `hack/update-toc.sh`.
 - [Proposal](#proposal)
   - [Simplicity](#simplicity-1)
   - [Efficiency](#efficiency-1)
-  - [Skipping](#skipping-1)
   - [Status](#status-1)
   - [Examples](#examples)
   - [Risks and Mitigations](#risks-and-mitigations)
@@ -41,10 +40,6 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Efficiency](#efficiency-2)
     - [CelRun Custom Task](#celrun-custom-task)
     - [Expression Language Interceptor](#expression-language-interceptor)
-  - [Skipping](#skipping-2)
-    - [Dependency Type](#dependency-type)
-    - [Guard Location](#guard-location)
-    - [Special runAfter](#special-runafter)
   - [Status](#status-2)
     - [Minimal Skipped](#minimal-skipped)
     - [ConditionSucceeded](#conditionsucceeded)
@@ -65,8 +60,9 @@ We will refer to `Conditions` as `Guards` because they determine **if** a `Task`
 We propose:
 - For _simplicity_, we propose **deprecating the separate `Conditions` CRD** and using `Tasks` to produce the `Results` needed to evaluate whether a dependent `Task` executes.
 - For _efficiency_, we propose using string expressions through `When Expressions` to perform simple checks without spinning up new `Pods`; they can operate on previous `Task's Results`, `Parameters`, among other Tekton resources.
-- For _skipping_, we propose adding a field that allows users to specify whether to skip the guarded `Task` only or to skip the guarded `Task` and its ordering-dependent `Tasks`.
 - By deprecating `Conditions` CRD and using `When Expressions`, we can distinguish failed _status_ from evaluating to `False`.
+
+We address _skipping_ separately in [TEP-0059: Skipping Strategies](https://github.com/tektoncd/community/blob/main/teps/0059-skipping-strategies.md).
 
 ## Background
 
@@ -175,8 +171,9 @@ It is currently difficult to distinguish between a `Task` that was skipped due t
 We propose:
 - For _simplicity_, we propose deprecating the separate `Conditions` CRD and using `Tasks` to produce the `Results` needed to evaluate whether a dependent `Task` executes.
 - For _efficiency_, we propose using string expressions through `When Expressions` to perform simple checks without spinning up new `Pods`; they can operate on previous `Task's Results`, `Parameters`, among other Tekton resources.
-- For _skipping_, we propose adding a field that allows users to specify whether to skip the guarded `Task` only or to skip the guarded `Task` and its ordering-dependent `Tasks`.
 - By deprecating `Conditions` CRD and using `When Expressions`, we can distinguish failed _status_ from evaluating to `False`.
+
+We address _skipping_ separately in [TEP-0059: Skipping Strategies](https://github.com/tektoncd/community/blob/main/teps/0059-skipping-strategies.md).
 
 ### Simplicity
 
@@ -293,60 +290,6 @@ values: [‘’]
 
 We can explore adding more [Operators](https://github.com/kubernetes/kubernetes/blob/7f23a743e8c23ac6489340bbb34fa6f1d392db9d/staging/src/k8s.io/apimachinery/pkg/selection/operator.go) later if needed, such as `IsTrue`, `IsFalse`, `IsEmpty` and `IsNotEmpty`. Kubernetes' `Match Expressions` uses a comma separator as an `AND` operator but it won't be supported in Tekton's `When Expressions` (can be revisted later).
 
-### Skipping
-
-As it is currently in `Conditions`, when `WhenExpressions` evaluate to `False`, the `Task` and its branch (of dependent `Tasks`) will be skipped by default while the rest of the `Pipeline` will execute.
-
-A `Task` branch is made up of dependent `Tasks`, where there are two types of dependencies:
-- _Resource dependency_: based on resources needed from parent `Task`, which includes `Results` and `Resources`.
-- _Ordering dependency_: based on `runAfter` which provides sequencing of `Tasks` when there may not be resource dependencies.
-
-To provide more flexibility when `WhenExpressions` evaluate to `False`, we propose adding a field - `whenSkipped` - that:
-- is used to specify whether to execute `Tasks` that are ordering-dependent on the skipped guarded `Task`
-- defaults to `skipBranch` and users can set it to `runBranch` to allow execution of the rest of the branch
-- can be specified in `Tasks` guarded with `WhenExpressions` only; there will be a validation error if `whenSkipped` is specified in `Tasks` without `WhenExpressions`
-- can take the values `skipBranch` or `runBranch` only; there will be a validation error if anything else is passed to `whenSkipped`
-- can be specified guarded `Tasks` with ordering dependencies only; there will be a validation error if `whenSkipped` is specified in `Tasks` with resource dependencies
-
-Here's how a user can use `whenSkipped` to execute ordering-dependent tasks:
-
-```yaml
-api: tekton.dev/v1beta1
-kind: Pipeline
-metadata:
-    name: generate-file
-spec:
-  workspaces:
-    - name: source-repo
-  params:
-    - name: path
-      default: 'README.md'
-  tasks:
-    - name: create-file # executed
-      taskRef:
-        name: create-readme-file
-      workspaces:
-        - name: source
-          workspace: source-repo
-    - name: file-exists # executed
-      taskRef:
-        name: file-exists
-      workspaces:
-        - name: source
-          workspace: source-repo
-    - name: echo-file-does-not-exist # skipped
-      when:
-        - input: '$(tasks.file-exists.results.exists)'
-          operator: In
-          values: ['false']
-      whenSkipped: runBranch
-      taskRef:
-        name: echo-file-exists
-    - name: echo-hello # executed
-      taskRef: echo-hello
-      runAfter:
-      - echo-file-does-not-exist
-```
 
 ### Status
 
@@ -712,25 +655,6 @@ spec:
 ```
 
 To make it flexible, similarly to Triggers which uses language interceptors that's pluggable, we can provide a `CEL` interceptor out of the box and, if needed, users can add or bring their own interceptors to use other languages.
-
-### Skipping
-
-#### Dependency Type
-As described in [Skipping](#skipping) section above, a `Task` can have _resource dependency_ or _ordering dependency_ on a parent `Task`. Executing resource-dependent `Tasks` is invalid since because they'll have resource resolution errors. Thus, we could execute the ordering-dependent `Tasks` and terminate the resource-dependent `Tasks`.
-
-However, this default behavior would remove the option to skip ordering-dependent `Tasks` if users want that, and the modified behavior may not be transparent to users.
-
-#### Guard Location
-`Guards` can be defined in two locations:
-- Within a `Task`: if expression evaluates to `False`, only that `Task` is skipped.
-- Between `Tasks`: if the expression evaluates to `False`, the subsequent `Tasks` are skipped.
-
-However, the implicit behavior may be confusing to users.
-
-#### Special runAfter
-Provide a special kind of `runAfter` -- `runAfterEvenWhenSkipped` -- that users can use instead of `runAfter` to allow for the ordering-dependent `Task` to execute even when the `Task` has been skipped. Related ideas are discussed in [#2653](https://github.com/tektoncd/pipeline/issues/2635) as `runAfterUnconditionally` and [#1684](https://github.com/tektoncd/pipeline/issues/1684) as `runOn`.
-
-However, this would make what happens to the branch opaque to the guarded `Task` because its ordering-dependent `Tasks` could be executed or not be executed.
 
 ### Status 
 

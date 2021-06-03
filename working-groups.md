@@ -36,6 +36,7 @@ The current working groups are:
 - [Dashboard](#dashboard)
 - [Catalog and Hub](#catalog-and-hub)
 - [Operator and Deployment](#operator-and-deployment)
+- [Chains](#chains)
 
 ## General
 
@@ -296,3 +297,20 @@ This is the working group for [`tektoncd/operator`](https://github.com/tektoncd/
 | <img width="30px" src="https://github.com/khrm.png">          | Khurram Baig  | Red Hat | [khrm](https://github.com/khrm)                   |
 | <img width="30px" src="https://github.com/pgarg.png">         | Piyush Garg   | Red Hat | [piyush-garg](https://github.com/piyush-garg)     |
 | <img width="30px" src="https://github.com/sthaha.png">        | Sunil Thaha   | Red Hat | [sthaha](https://github.com/sthaha)               |
+
+## Chains
+
+This is the working group for [`tektoncd/chains`](https://github.com/tektoncd/chains)
+
+| Artifact                   | Link                       |
+| -------------------------- | -------------------------- |
+| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
+| Community Meeting VC       | [https://meet.google.com/iuv-jbov-fmi](https://meet.google.com/iuv-jbov-fmi) |
+| Community Meeting Calendar | Thursdays every other week, 9am -9:30am PST <br>[Calendar](https://calendar.google.com/calendar/u/0/r/eventedit/copy/Nzc3N2VjZjk3amZnZzc5MDQwODYxNzRrZHVfMjAyMTA2MTBUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc/cHJpeWF3YWRod2FAZ29vZ2xlLmNvbQ?scp=ALL) |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1UVPSCDyNO-TzEFSv8jrqrEOF_FmV8NFuXncFm1gwmeY/edit) |
+| Slack Channels             | [#chains](https://tektoncd.slack.com/messages/chains) |
+
+| &nbsp;                                                         | Facilitators   | Company | Profile                                           |
+| -----------------------------------------------------------    | ----------     | ------- | ------------------------------------------------  |
+| <img width="30px" src="https://github.com/dlorenc.png">        | Dan Lorenc     | Google  | [dlorenc](https://github.com/dlorenc) |
+| <img width="30px" src="https://github.com/priyawadhwa.png">    | Priya Wadhwa   | Google  | [priyawadhwa](https://github.com/priyawadhwa)     |

@@ -4,8 +4,8 @@ authors:
   - "@pritidesai"
   - "@bobcatfish"
 creation-date: 2020-07-16
-last-updated: 2020-11-10
-status: implementable
+last-updated: 2021-06-03
+status: implemented
 ---
 
 # TEP-0004: Task Results in Final Tasks

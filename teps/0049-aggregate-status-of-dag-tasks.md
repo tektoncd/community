@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Aggregate Status of DAG Tasks
 creation-date: '2021-03-04'
-last-updated: '2021-04-23'
+last-updated: '2021-06-03'
 authors:
 - '@pritidesai'
 ---
@@ -17,6 +17,7 @@ authors:
   - [Use Cases](#use-cases)
 - [Proposal](#proposal)
 - [Test Plan](#test-plan)
+- [Alternatives](#alternatives)
 - [References](#references)
 <!-- /toc -->
 

@@ -5,6 +5,10 @@ and coordinate on new efforts for the Tekton project.  You can read
 the full details of the project in
 [TEP-1](0001-tekton-enhancement-proposal-process.md).
 
+* [What is a TEP](#what-is-a-tep)
+* [Creating TEPs](#creating-teps)
+* [Reviewing and Merging TEPs](#reviewing-and-merging-teps)
+
 ## What is a TEP
 
 A standardized development process for Tekton is proposed in order to
@@ -70,6 +74,8 @@ The TEP `OWNERS` are the **main** owners of the following projects:
 - [`hub`](https://github.com/tektoncd/hub)
 - [`operator`](https://github.com/tektoncd/operator)
 
+## Creating TEPs
+
 ## Creating and Merging TEPs
 
 To create a new TEP, use the [teps script](./tools/README.md):
@@ -84,36 +90,14 @@ to "proposed" and set the start and last updated dates.
 **Note that the picked number is not "locked" until a PR is created.
 The PR title shall be in the format `TEP-XXXX: <tep-title>`**.
 
-The initial content of the TEP should include the high level
-description and use cases, but no design. This helps for the TEP
-to be approved quickly.
-
-TEP should be merged as soon as possible in the `proposed` state. As
-soon as a general consensus is reached that the TEP, as described
-make sense to pursue, the TEP can be merged.
-The authors can then add the design and update the missing part in follow-up pull requests which moves the TEP to `implementable`.
-
-TEP should be approved by ***at least two owners*** from different
-company. This should prevent a company to *force push* a TEP (and
-thus a feature) in the tektoncd projects.
-
-### TEP Review SLOs
-
-1. After a TEP PR has been created, in
-   [the next API working group meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#api),
-   we will try to find 2 qualified assignees to review (from 2 different companies as described above) and will
-   [assign](https://docs.github.com/en/github/managing-your-work-on-github/assigning-issues-and-pull-requests-to-other-github-users)
-   them to the PR.
-   * If we cannot find 2 reviewers in the meeting, someone in the meeting will be take the action to find reviewers
-     offline (e.g. over [slack](https://github.com/tektoncd/community/blob/main/contact.md#slack) or
-     [tekton-dev](https://github.com/tektoncd/community/blob/main/contact.md#mailing-list)).
-2. Once reviewers have been assigned, they should give initial feedback on the PR by
-   [the next API working group meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#api)
-   at the latest.
-
-_Why don't we use GitHub reviewers instead of assignees? If we want to do that we need to turn off Prow's auto
-assignment of reviewers; there is no guarantee the auto assigned reviewers are the appropriate reviewers.
-See [discussion](https://github.com/tektoncd/community/discussions/362)._
+To help a TEP to be approved quickly, it can be effective for
+the initial content of the TEP to include the high level
+description and use cases, but no design, so reviewers can agree
+that the problems described make sense to address before deciding how
+to address them. Sometimes this can be too abstract and it can help
+ground the discussion to include potential designs as well - but usually
+this will mean people will want to agree to the design before merging and
+it can take longer to get consensus about the design to pursue.
 
 ### Solving TEP number conflicts
 
@@ -128,6 +112,45 @@ the `teps.py renumber` command to refresh your PR:
 The command will update the TEP in the file name and content with a new
 available TEP number, it will refresh the TEPs table and it will present
 a list of git commands that can be used to update the commit.
+
+## Reviewing and Merging TEPs
+
+TEP should be merged as soon as possible in the `proposed` state. As
+soon as a general consensus is reached that the TEP, as described
+make sense to pursue, the TEP can be merged. The authors can then add the
+design and update the missing part in follow-up pull requests which moves the TEP to `implementable`.
+
+### Approval requirements
+
+TEP should be approved by ***at least two owners*** from different
+company. This should prevent a company to *force push* a TEP (and
+thus a feature) in the tektoncd projects.
+
+### TEP Review Process and SLOs
+
+1. After a TEP PR has been created, in
+   [the next API working group meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#api),
+   we will try to find 2 qualified assignees to review (from 2 different companies as described above) and will
+   [assign](https://docs.github.com/en/github/managing-your-work-on-github/assigning-issues-and-pull-requests-to-other-github-users)
+   them to the PR.
+   * If we cannot find 2 reviewers in the meeting, someone in the meeting will be take the action to find reviewers
+     offline (e.g. over [slack](https://github.com/tektoncd/community/blob/main/contact.md#slack) or
+     [tekton-dev](https://github.com/tektoncd/community/blob/main/contact.md#mailing-list)).
+2. Once reviewers have been assigned, they should give initial feedback on the PR by
+   [the next API working group meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#api)
+   at the latest.
+
+Reviewers should use [`/approve`](../process.md#prow-commands) to indicate that they approve of the PR being merged. Once all assigned reviewers
+have approved the PR, the final [`/lgtm`](../process.md#prow-commands) can be added in
+[the next API working group meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#api) or sooner
+by anyone with permission to if needed. If a reviewer has not submitted an `/approve`, this is taken to mean that the
+reviewer either a) hasn't done an initial review yet (see SLO above) or b) wants to see changes in the TEP before
+approving. Whenever possible we will try to get an explicit `/approve` from all assigned reviewers before merging, but
+we can always fall back on [our strict approval requirements](#approval-requirements) if needed.
+
+_Why don't we use GitHub reviewers instead of assignees? If we want to do that we need to turn off Prow's auto
+assignment of reviewers; there is no guarantee the auto assigned reviewers are the appropriate reviewers.
+See [discussion](https://github.com/tektoncd/community/discussions/362)._
 
 ## TEPs
 

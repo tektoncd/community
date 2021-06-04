@@ -3,8 +3,8 @@ title: s390x Support
 authors:
   - "@barthy1"
 creation-date: 2020-09-21
-last-updated: 2020-09-21
-status: proposed
+last-updated: 2021-06-04
+status: implemented
 ---
 
 # TEP-0020: s390x architecture support

@@ -17,7 +17,7 @@ status: proposed
 - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [Caveats](#caveats)
-    - [Naming conflicts](#common-parameter-and-resource-names)
+    - [Naming / type conflicts](#naming--type-conflicts)
     - [Common parameter names](#common-parameter-names)
   - [Performance](#performance)
 - [Design Details](#design-details)
@@ -204,7 +204,7 @@ support remote TaskRefs or PipelineRefs.
 
 ### Caveats
 
-#### Naming conflicts
+#### Naming / type conflicts
 
 In cases of parameter naming conflicts, the innermost definition should win.
 e.g. for the following config:
@@ -237,11 +237,12 @@ The innermost Task definition should take precedence and make the config
 **invalid**, since the PipelineRun array param should not be able to override
 the param definition of the task.
 
-#### Explicit Definitions
+#### Extra parameters
 
-We should only define implicit params if no params section is defined. This
-ensures that this behavior will remain backwards compatible for existing
-defintions. e.g.
+Extra parameters may be passed down to embedded spec definitions, even if they
+are not actually used.
+
+e.g.
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -269,8 +270,50 @@ spec:
       value: "unused message"
 ```
 
-The `UNUSED` param will _not_ be plumbed through to the underlying embedded Task
-(even though it's an extra parameter to the Pipeline).
+Would be resolved to:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: pipelinerun-with-taskspec-to-echo-message
+spec:
+  pipelineSpec:
+    params:
+      - name: MESSAGE
+        type: string
+      - name: UNUSED
+        type: string
+    tasks:
+      - name: echo-message
+        taskSpec:
+          params:
+            - name: MESSAGE
+              type: string
+            - name: UNUSED
+              type: string
+          steps:
+            - name: echo
+              image: ubuntu
+              script: |
+                #!/usr/bin/env bash
+                echo "$(params.MESSAGE)"
+        params:
+          - name: MESSAGE
+            value: $(params.MESSAGE)
+          - name: UNUSED
+            type: $(params.UNUSED)
+  params:
+    - name: MESSAGE
+      value: "Good Morning!"
+    - name: UNUSED
+      value: "unused message"
+```
+
+Although it is never used, the `UNUSED` param will be plumbed through to the
+underlying embedded Task. Since the Task steps do not actually use the param,
+this is unlikely to affect any behavior in execution (unless the Task is doing
+some sort of introspection).
 
 #### Common parameter names
 
@@ -285,6 +328,35 @@ Our expectation here is that if authors are choosing to embed specs, then the
 context of the variables should be known to avoid problems like this. If they
 require a separate/different mapping then it would be up to the author to
 explicitly assign these params, either in line or in its own Task definition.
+
+e.g.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: pipelinerun-with-taskspec-to-echo-message
+spec:
+  pipelineSpec:
+    # Spec params are implicit
+    tasks:
+      - name: echo-message
+        taskSpec:
+          # Spec params are implicit
+          steps:
+            - name: echo
+              image: ubuntu
+              script: |
+                #!/usr/bin/env bash
+                echo "$(params.OTHERMESSAGE)"
+        # Rename MESSAGE -> OTHERMESSAGE
+        params:
+          - name: OTHERMESSAGE
+            value: $(params.MESSAGE)
+  params:
+    - name: MESSAGE
+      value: "Good Morning!"
+```
 
 ### User Experience
 
@@ -327,7 +399,8 @@ resources were equally hard to work with.
 We suspect that this will require additional work to resolve, particularly
 because of the remote resources that complicate validation. We are considering
 this out of scope for now, focusing on what we think will be a small but
-meaningful improvement.
+meaningful improvement. (We suspect we will want to look at these as a follow up
+though).
 
 ## Test Plan
 
@@ -345,7 +418,46 @@ asked for these values or not. While this is okay from an execution standpoint
 affect execution), this might create noise when looking at Run history.
 
 For now we will consider this out of scope - if this really bothered someone
-they could explicitly define the params to prune out unneeded mappings.
+they could explicitly define a Task definition to prune out unneeded params.
+e.g. [rewriting the example from earlier](#extra-parameters):
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: echo
+spec:
+  params:
+    - name: MESSAGE
+      type: string
+  steps:
+    - name: echo
+      image: ubuntu
+      script: |
+        #!/usr/bin/env bash
+        echo "$(params.MESSAGE)"
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: pipelinerun-with-taskspec-to-echo-message
+spec:
+  pipelineSpec:
+    tasks:
+      - name: echo-message
+        taskRef:
+          name: echo
+        params:
+          - name: MESSAGE
+            value: $(params.MESSAGE)
+  params:
+    - name: MESSAGE
+      value: "Good Morning!"
+    - name: UNUSED
+      value: "unused message"
+```
+
+This would ensure that only the `MESSAGE` param is passed to the `echo` Task.
 
 We could look into pruning the child params based on which are actually used,
 but this is complexity we are not interested in adding at the moment.

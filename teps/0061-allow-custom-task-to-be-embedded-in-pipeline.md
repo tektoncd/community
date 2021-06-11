@@ -30,6 +30,7 @@ authors:
 - [Alternatives](#alternatives)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
+- [Implementation Pull request(s)](#implementation-pull-request-s)
 - [References (optional)](#references-optional)
 <!-- /toc -->
 
@@ -483,6 +484,12 @@ behavior or add a feature that may replace and deprecate a current one.
     TODO: Add a reference to an example custom task controller e.g. `TaskLoop`, once
     the changes are merged.
   
+## Implementation Pull request(s)
+
+1. [API Changes, docs and e2e tests](https://github.com/tektoncd/pipeline/pull/3901)
+2. [Followup fix](https://github.com/tektoncd/pipeline/pull/3977)
+3. [Followup fix 2](https://github.com/tektoncd/pipeline/pull/4005)
+
 ## References (optional)
 
 <!--

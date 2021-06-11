@@ -4,7 +4,7 @@ authors:
   - "@jbarrick-mesosphere"
 creation-date: 2020-09-10
 last-updated: 2020-09-10
-status: implementable
+status: implemented
 ---
 
 # TEP-0015: Support Pending PipelineRuns
@@ -19,6 +19,8 @@ status: implementable
   - [User Stories](#user-stories)
     - [Platform Implementor](#platform-implementor)
 - [Alternatives](#alternatives)
+- [Implementation Pull request(s)](#implementation-pull-request-s)
+
 <!-- /toc -->
 
 ## Summary
@@ -116,3 +118,7 @@ able to run without introducing bespoke machinery.
   non-Kubernetes-native queue, such as Redis, and only submitted once they are
   ready to run. This adds complexity in that a new data store must be run and
   it is not easy to provide users visibility into the queue.
+
+## Implementation Pull request(s)
+
+1. [API Changes, docs and e2e tests](https://github.com/tektoncd/pipeline/pull/3522)

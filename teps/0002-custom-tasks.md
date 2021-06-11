@@ -40,6 +40,8 @@ Original Google Doc proposal, visible to members of tekton-dev@: https://docs.go
   - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
   - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
 - [Open Questions](#open-questions)
+- [Implementation Pull request(s)](#implementation-pull-request-s)
+
 <!-- /toc -->
 
 ## Summary
@@ -426,3 +428,8 @@ TBD. At this time, the proposal only covers adding new a type and documentating 
 * Versioning and release cadence and ownership of `tektoncd/sample-task` repo; will it be released/versioned alongside `tektoncd/pipeline`?
 
 * Support for "unnamed" Tasks -- i.e., `Run`s that reference an `apiVersion` and `kind`, but not a `name`. A Custom Task author could either use this to provide "default" behavior where a Task CR doesn't need to be defined, or could not define a CRD at all and only support functionality specified by params. Examples of this are `CEL` and `Wait` tasks that just accept a param for `expression` or `duration`, and don't require defining a `CEL` or `Wait` CRD type.
+
+## Implementation Pull request(s)
+
+1. [API Changes, docs and e2e tests](https://github.com/tektoncd/pipeline/pull/3463)
+2. [Do not allow use of deprecated Conditions with custom tasks](https://github.com/tektoncd/pipeline/pull/3601)

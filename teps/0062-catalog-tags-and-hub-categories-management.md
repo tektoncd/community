@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: implementable
 title: Catalog Tags and Hub Categories Management
 creation-date: '2021-03-30'
 last-updated: '2021-03-30'

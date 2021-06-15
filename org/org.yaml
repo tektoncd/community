@@ -513,6 +513,7 @@ orgs:
         - jerop
         - bigkevmcd
         - sbwsg
+        - waveywaves
         privacy: closed
         repos:
           experimental: read

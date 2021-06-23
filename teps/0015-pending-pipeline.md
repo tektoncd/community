@@ -19,8 +19,7 @@ status: implemented
   - [User Stories](#user-stories)
     - [Platform Implementor](#platform-implementor)
 - [Alternatives](#alternatives)
-- [Implementation Pull request(s)](#implementation-pull-request-s)
-
+- [Implementation Pull request(s)](#implementation-pull-requests)
 <!-- /toc -->
 
 ## Summary

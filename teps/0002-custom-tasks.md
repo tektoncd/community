@@ -40,8 +40,7 @@ Original Google Doc proposal, visible to members of tekton-dev@: https://docs.go
   - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
   - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
 - [Open Questions](#open-questions)
-- [Implementation Pull request(s)](#implementation-pull-request-s)
-
+  - [Implementation Pull request(s)](#implementation-pull-requests)
 <!-- /toc -->
 
 ## Summary

@@ -206,12 +206,8 @@ orgs:
         - skaegi
         members:
         - AlanGreene
-        - mnuttall
-        - a-roberts
-        - dibbles
-        - eddycharly
+        - briangleeson
         - steveodonovan
-        - carolynmabbott
         privacy: closed
         repos:
           dashboard: write

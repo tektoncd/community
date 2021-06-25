@@ -110,7 +110,7 @@ metadata:
     app.kubernetes.io/version: "0.2"
   annotations:
     tekton.dev/pipelines.minVersion: "0.12.1"
-    tekton.dev/category: "foo”     👈 Category of a resource
+    tekton.dev/categories: "foo”     👈 Categories of a resource
     tekton.dev/tags: python, pylint   👈 New tags
     tekton.dev/displayName: pylint
 ```

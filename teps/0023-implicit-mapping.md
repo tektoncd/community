@@ -233,6 +233,38 @@ spec:
       value: ["Good Morning!"]
 ```
 
+This would resolve to something like:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: pipelinerun-with-taskspec-to-echo-message
+spec:
+  pipelineSpec:
+    params:
+      - name: MESSAGE
+        type: array
+    tasks:
+      - name: echo-message
+        taskSpec:
+          params:
+            - name: MESSAGE
+              type: string
+          steps:
+            - name: echo
+              image: ubuntu
+              script: |
+                #!/usr/bin/env bash
+                echo "$(params.MESSAGE)"
+        params:
+          - name: MESSAGE
+            value: $(params.MESSAGE[*])
+  params:
+    - name: MESSAGE
+      value: ["Good Morning!"]
+```
+
 The innermost Task definition should take precedence and make the config
 **invalid**, since the PipelineRun array param should not be able to override
 the param definition of the task.

@@ -22,10 +22,9 @@ For October 2020: check out our [Hacktoberfest](./hacktoberfest-2020.md) ideas!
 See our standards regarding:
 
 * [Code of conduct](code-of-conduct.md)
-* [Development principles](standards.md#principles)
-* [Design principles](design-principles.md) and [User Profiles](user-profiles.md)
-* [Commit messages](standards.md#commit-messages)
-* [Go coding standards](standards.md#go)
+* [Design principles](design-principles.md)
+* [Commits](standards.md#commits)
+* [Code](standards.md#code)
 * [User profiles](user-profiles.md)
 
 Find out about our processes:

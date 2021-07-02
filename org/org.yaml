@@ -625,14 +625,15 @@ orgs:
         - afrittoli
         - bobcatfish
         - ImJasonH
+        - vdemeester
         members:
         - houshengbo
         - nikhil-thomas
         - pradeepitm12
         - savitaashture
-        - vdemeester
         - vincent-pli
         - piyush-garg
+        - sm43
         privacy: closed
         repos:
           operator: read

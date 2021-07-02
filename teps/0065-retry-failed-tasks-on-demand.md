@@ -34,13 +34,17 @@ authors:
 
 ## Summary
 
-Presently, a pipeline has a mechanism for `retry`, which a pipeline
+Presently, a pipeline task has a mechanism for `retry`, which a pipeline
 author can configure at the time of creation of a `Pipeline` or a
 `PipelineRun`. In this TEP, we are exploring the benefits of adding a new
 mechanism `retry` which will allow a user to - "on-demand" retry a failed
-`pipelineRun`. A failed `pipelineRun` may have some or all tasks failed, then
-a retry would make only the failed tasks run again, the successfully
-completed tasks are skipped.
+`pipelineRun`. 
+
+Generally, when a task fails, its dependent tasks are also marked as 
+failed/skipped. With this assumption, a failed `pipelineRun` may have some or
+all tasks failed(or skipped), then a retry would make only the 
+failed (and skipped) tasks run again. The successfully completed tasks are
+skipped.
 
 ## Motivation
 
@@ -55,9 +59,8 @@ to temporary service outages. For example, after training the model, a task
 reporting the metrics fails due to temporary service outage. A retry after
 some time could easily fix it.
 
-A pipeline may be defined with various tasks, and some tasks might move a
-large amount of data and incur cost. This `retry` mechanism has substantial
-value, where each task of the pipeline incurs a significant computing resources, 
+This `retry` mechanism can have substantial value, where each task of the
+pipeline incurs a significant computing resources, 
 e.g. `tekton` is used as a backend for ML pipelines.
 
 _Why do we need a new `retry` mechanism when we already support retry in 
@@ -80,10 +83,9 @@ number of times does not seem to help with optimal resource consumption.
 ### Goals
 
 1. Explore both the merits and demerits in having a new mechanism for on-demand
-   retrying, an _only a failed_ pipeline.
+   retrying, _a failed_ `pipelineRun`.
 2. A pipeline may either have failed due to some failures in the tasks or may
-   be user invoked cancel request. Retry only the failed/canceled tasks for a
-   failed `pipelineRun`.
+   be user invoked cancel request. Resume the failed/canceled `pipelineRun`.
 
 ### Non-Goals
 
@@ -92,8 +94,6 @@ number of times does not seem to help with optimal resource consumption.
 2. Changing existing retry mechanism.
 3. Manage checkpointing of pipeline state or workspaces, etc. A `pipelineRun`'s
    state stored in etcd is used as is.
-4. Determine, a failed tasks dependencies i.e. figuring out what
-   all dependent tasks are needed to rerun the failed task.
    
 ### Use Cases (optional)
 
@@ -119,13 +119,26 @@ number of times does not seem to help with optimal resource consumption.
 
 ## Proposal
 
-When a `PipelineTask` configured with retries fails, in order to retry it resets
-the status and start time for that task so that it can begin again.
+When a `PipelineTask` configured with `task.retries` fails, in order to retry 
+controller resets the `status` and `start-time` for that task so that it can
+begin again. This happens as per the current implementation.
 
 On-demand invocation, can take place by signalling failed `PipelineRun` to
 `retry`. On receiving that signal `pipelinerun` controller will begin to retry
-by resetting the status of the failed task. Apart from the signalling part, this
-is same as current implementation of retry.
+by resetting the `conditions` and start time and end time of the failed
+`PipelineRun`. 
+
+Altering start-time and end-time on retry can have ramification of some
+existing metrics receivers/monitors. Alternatively, a new field `last-retry`
+with sub-fields `start` and `end` time can be introduced. This can be used
+in the logic to calculate the elapsed duration of a `PipelineRun`.
+
+We can grant full timeout to the `PipelineRun`s and its tasks. This seems 
+to be the not so ideal choice. A future TEP might address that.
+
+Once the `pipelineRun` is resumed i.e. it begins to execute, 
+by clearing the `status` of failed tasks. It is not supported for custom
+tasks, it can be supported once TEP-69 is accepted.
 
 ### Notes/Caveats (optional)
 

@@ -172,7 +172,6 @@ orgs:
         description: the cli maintainers
         maintainers:
         - vdemeester
-        - bobcatfish
         members:
         - chmouel
         - sthaha
@@ -539,7 +538,6 @@ orgs:
         description: The cli collaborators
         maintainers:
         - abayer
-        - bobcatfish
         - ImJasonH
         members:
         - Divyansh42

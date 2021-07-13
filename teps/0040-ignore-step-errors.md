@@ -277,6 +277,13 @@ If you would like to use the tekton internal path, you can access the exit code 
 cat /tekton/steps/<step-name>/exitCode
 ```
 
+And, access a step exit code without a step name:
+
+```shell
+cat /tekton/steps/step-unnamed-<step-index>/exitCode
+```
+
+
 #### produce a task result with the failed step
 
 In the following example, the `pipelineRun` is executing two tasks. The first task is producing a result which is being
@@ -355,7 +362,7 @@ kubectl get pr pipelinerun-with-failing-step-mdncp -o json | jq .status.taskRuns
 ]
 ```
 
-This new field `exit` will be implemented as a `alpha` feature and can be enabled by setting `enable-api-fields`
+This new field `onError` will be implemented as a `alpha` feature and can be enabled by setting `enable-api-fields`
 to `alpha`.
 
 ### Demo

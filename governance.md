@@ -18,7 +18,7 @@ Andrew Bayer      | CloudBees | [abayer](https://github.com/abayer)         | [@
 Vincent Deemester | Red Hat   | [vdemeester](https://github.com/vdemeester) | [@vdemeester](https://tektoncd.slack.com/team/UHSQGV1L3)      | Feb 2021 | Feb 2023
 Christie Wilson   | Google    | [bobcatfish](https://github.com/bobcatfish)   | [@Christie Wilson](https://tektoncd.slack.com/team/UJ6DECY78) | Feb 2021 | Feb 2023
 Andrea Frittoli   | IBM       | [afrittoli](https://github.com/afrittoli)   | [@Andrea Frittoli](https://tektoncd.slack.com/team/UJ411P2CC) | Feb 2020 | Feb 2022
-Dibyo Mukherjee   | Google    | [dibyom](https://github.com/dibyom)     | [@Jason Hall](https://tektoncd.slack.com/team/UJ73HM7PZ)          | Feb 2021 | Feb 2023
+Dibyo Mukherjee   | Google    | [dibyom](https://github.com/dibyom)     | [@Dibyo Mukherjee](https://tektoncd.slack.com/team/UJ73HM7PZ)          | Feb 2021 | Feb 2023
 
 There is no designated facilitator at the moment, the responsibility is
 distributed across the five members of the committee.

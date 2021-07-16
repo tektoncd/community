@@ -172,6 +172,7 @@ orgs:
         description: the cli maintainers
         maintainers:
         - vdemeester
+        - chmouel
         members:
         - chmouel
         - sthaha
@@ -537,8 +538,8 @@ orgs:
       cli.collaborators:
         description: The cli collaborators
         maintainers:
-        - abayer
-        - ImJasonH
+        - chmouel
+        - vdemeester
         members:
         - Divyansh42
         - pradeepitm12

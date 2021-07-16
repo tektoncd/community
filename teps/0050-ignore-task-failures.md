@@ -71,9 +71,13 @@ control over the task definitions but may desire to ignore a failure and continu
 
 * Not an alternative to combining the tasks in a pipeline which is covered in
   [TEP-0044 Composing Tasks with Tasks](https://github.com/tektoncd/community/pull/316).
-
 * Not optimizing pipeline runtime which is covered in
   [TEP-0046 PipelineRun in a Pod](https://github.com/tektoncd/community/pull/318).
+* Eventually users might want to specify both that a task should be permitted to fail, and also control the impact
+  on the overall pipeline execution status (e.g. they may sometimes want the pipeline to continue but eventually fail)
+  but in this proposal we will not provide that flexibility since it can be added later, and users could still get
+  that behavior by having a `finally` task which looks at the status of the task that was allowed to fail, and it
+  could decide to fail
 
 ## Requirements
 
@@ -83,7 +87,9 @@ control over the task definitions but may desire to ignore a failure and continu
 * It should be possible to know that a task failed, and the rest of the graph was allowed to continue by observing
   the status of the `PipelineRun`.
 
-* Do not fail the pipeline if any of the tasks fail and continue executing rest of the tasks.
+* When this feature is used to allow a task to fail, the failure of that task should not cause the overall pipeline
+  status to fail (i.e. the task would be considered "successful" for the purposes of determining the status of the
+  pipeline)
 
 ### Use Cases
 

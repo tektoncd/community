@@ -2,7 +2,7 @@
 status: implementable 
 title: Skipping Strategies 
 creation-date: '2021-03-24' 
-last-updated: '2021-05-06' 
+last-updated: '2021-07-28'
 authors:
 - '@jerop'
 ---
@@ -568,12 +568,15 @@ behavior or add a feature that may replace and deprecate a current one.
 
 Changing the scope of `WhenExpressions` to guard the `Task` only is backwards-incompatible, so to make the 
 transition smooth:
-- we'll provide a feature flag, `set-when-expressions-scope-to-task`, which:
-  - will default to `set-when-expressions-scope-to-task` : `false` to guard a `Task` and its dependent `Tasks`
-  - can be set to `set-when-expressions-scope-to-task` : `true` to guard a `Task` only 
-- after 9 months, we'll flip the feature flag and default to `set-when-expressions-scope-to-task` : `true`
-- after 9 more months, we'll remove the feature flag and `WhenExpressions` will be scoped to guard a `Task` only going 
-  forward
+- we'll provide a feature flag, `scope-when-expressions-to-task`, which:
+  - will default to `scope-when-expressions-to-task` : "false" to guard a `Task` and its dependent `Tasks`
+  - can be set to `scope-when-expressions-to-task` : "true" to guard a `Task` only 
+- after 9 months, per the [Tekton API compatibility policy](https://github.com/tektoncd/pipeline/blob/main/api_compatibility_policy.md#alpha-beta-and-ga), 
+  we'll flip the feature flag and default to `scope-when-expressions-to-task` : `true` [February 2022]
+- in the next release, we'll remove the feature flag and `WhenExpressions` will be scoped to guard a 
+  `Task` only going forward [March 2022]
+- when we do [v1 release](https://github.com/tektoncd/pipeline/issues/3548) (projected for early 2022), we will have 
+`when` expressions guarding a `Task` only both in _beta_ and _v1_
 
 We will over-communicate during the migration in Slack, email and working group meetings. 
 

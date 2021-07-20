@@ -65,7 +65,6 @@ We altenate between two meeting times, a time that is friendly for Europe + Nort
 | <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson | Google  | [bobcatfish](https://github.com/bobcatfish) |
 | <img width="30px" src="https://github.com/skaegi.png">     | Simon Kaegi     | IBM     | [skaegi](https://github.com/skaegi)         |
 | <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee | Google  | [dibyom](https://github.com/dibyom)         |
-| <img width="30px" src="https://github.com/chhsia0.png">    | Chun-Hung Hsiao | D2iQ    | [chhsia0](https://github.com/chhsia0)       |
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai     | IBM     | [pritidesai](https://github.com/pritidesai) |
 | <img width="30px" src="https://github.com/imjasonh.png">   | Jason Hall      | Red Hat | [imjasonh](https://github.com/imjasonh)     |
 
@@ -218,7 +217,6 @@ Tekton projects.
 | <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli)   |
 | <img width="30px" src="https://github.com/skaegi.png">     | Simon Kaegi       | IBM     | [skaegi](https://github.com/skaegi)         |
 | <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee   | Google  | [dibyom](https://github.com/dibyom)         |
-| <img width="30px" src="https://github.com/chhsia0.png">    | Chun-Hung Hsiao   | D2iQ    | [chhsia0](https://github.com/chhsia0)       |
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai       | IBM     | [pritidesai](https://github.com/pritidesai) |
 
 ### Australia + North America

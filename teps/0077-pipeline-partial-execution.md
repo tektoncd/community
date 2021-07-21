@@ -50,7 +50,9 @@ Together these will bring in the ability to resume/retry a failed `PipelineRun`
 ## Motivation
 
 1. A very long Pipeline may fail due to a transient failure, and the user may
-   want to only rerun the `Tasks` that failed.
+   want to only rerun the `Tasks` that failed. This is the most significant
+   motivation, as we use tekton as a backend for running our machine learning
+   pipelines at Kubeflow.
 2. It is not enough to `retry` a `PipelineTask` n times, as the failures can
    be due to e.g. service outage. A manual resume/ retry may be helpful.
 3. Iterate quickly, by disabling tasks that take longer time. This can be done
@@ -69,41 +71,156 @@ Together these will bring in the ability to resume/retry a failed `PipelineRun`
 
 ### Use Cases (optional)
 
-<!--
-Describe the concrete improvement specific groups of users will see if the
-Motivations in this doc result in a fix or feature.
-
-Consider both the user's role (are they a Task author? Catalog Task user?
-Cluster Admin? etc...) and experience (what workflows or actions are enhanced
-if this problem is solved?).
--->
+1. *Optimal use of resources*: `tektoncd` as a backend for ML. 
+   A machine learning pipeline may consist of tasks moving large amount of
+   data and then training ml models, all of it can be very resource consuming
+   and inability to retry would require a user to start the entire pipeline
+   over. A manual retry, with the ability to specify what tasks should
+   be skipped, may be helpful.
+2. Partial execution of pipeline. This is useful for reusing an existing
+   pipeline i.e. a user can disable certain task from an existing pipeline
+   and in this way run it without creating a new pipeline.
+3. Partial execution is also helpful for testing, i.e. skipping some tasks
+   and developing and testing iteratively and quickly.
+4. Pause and resume, i.e. one could manually cancel a running `PipelineRun`
+   and resume at later point.
 
 ## Requirements
-
-<!--
-Describe constraints on the solution that must be met. Examples might include
-performance characteristics that must be met, specific edge cases that must
-be handled, or user scenarios that will be affected and must be accomodated.
--->
+- Create a new `PipelineRun` to resume or retry a completed `PipelineRun`.
 
 ## Proposal
 
-<!--
-This is where we get down to the specifics of what the proposal actually is.
-This should have enough detail that reviewers can understand exactly what
-you're proposing, but should not include things like API designs or
-implementation.  The "Design Details" section below is for the real
-nitty-gritty.
--->
+#### Requesting API Changes
+1. Add `resumeFrom` under `PipelineRun.spec`. It has following fields: 
+   - `resumeFrom.name` which is the name of previously run `PipelineRun`.
+   - `resumeFrom.enableTasks` accepts an array of task names under it.
+2. Add `disableTasks` under `PipelineRun.spec`, which accepts an array
+    of task name and their result definitions.
+   - `name`: Name of the task to be disabled.
+        - `results`: Pre-populate results for the disabled task.
+
+Q. Why do we need `resumeFrom` when we have `disableTasks`? 
+
+`disableTasks` can be used to explicitly disable tasks that a user 
+do not wish to run and `resumeFrom` tekton controller automatically
+figures out the tasks failed and unfinished, because it knows the
+DAG. For the end user, it can be difficult to figure out the DAG and
+prepare the accurate execution plan for the next pipeline run.
+
+Both, `resumeFrom` and `disableTasks` are optional fields. See examples
+1 and 2 below.
+
+#### Semantics of execution.
+
+- `resumeFrom` : resumeFrom references a previous pipelineRun and by default
+selects all the failed and unfinished tasks eligible for retrying/resuming.
+It references results of completed tasks from previous run, unless
+overridden by `disableTasks` section.
+
+- `resumeFrom.enableTasks`: If a task was successful in previous run, but
+it is required by the current run, this section can be used to explicitly
+enable it.
+
+**Case: disabled task exists somewhere in the middle of DAG execution.**
+
+Consider the case of following failed `PipelineRun`.
+```
+F   A     D
+| \ |     |
+v   v     v 
+G   B --> E
+    |
+    v
+    C
+```
+
+1. 
+  - Previous Run stats:
+    - Successful Tasks: A 
+    - Failed Tasks: F, B
+    - Not yet started tasks: D, E, G, C
+  - Current Run:
+      - Disabled task: B
+      - To be executed: F, D, E, G, C
+
+Since task B is disabled, task E will use its pre-set result.
+Even if we disable G, F is still retried in the current Run.
+
+#### Examples
+
+1. Resuming a failed Pipeline.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: new-pipeline-run
+spec:
+  # resumeFrom references a previous pipelineRun and by default selects
+  # all the failed and unfinished tasks eligible for retrying/resuming.
+  # It references results of completed tasks from previous run, unless
+  # overridden by disableTasks section.
+  resumeFrom:
+    name: prev-pipeline-run
+    # Enable tasks section can be used to enable those tasks which were
+    # successful in previous run. e.g. an init task.
+    enableTasks:
+      - name: init-task-name
+  # One of the failed task is disabled by disableTasks section, for some
+  # reason we want it skipped and the expected results has been hard coded.
+  disableTasks:
+    - name: task-name
+      # option to pre-populate the values of disabled task's results.
+      results: 
+        - name: result1-name
+          value: some-val
+        - name: result2-name
+          value: some-val2
+  serviceAccountName: 'default'
+  # Some tasks needs cleaning of workspaces, this can be done here.
+  # e.g. one could override a workspace by specifying the name.
+  workspaces:
+  - name: some-data
+    persistentVolumeClaim:
+      claimName: some-storage
+  resources:
+  - name: repo
+    resourceRef:
+      name: some-ref
+```
+
+2. Partial execution of a pipeline.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: new-pipeline-run
+spec:
+  pipelineRef:
+    name: a-pipeline
+  disableTasks:
+    - name: task-name
+      # optionally pre-populate the values of disabled task's results.
+      results: 
+        - name: result1-name
+          value: some-val
+        - name: result2-name
+          value: some-val2
+    - name: task-name-other
+      results:
+        - name: result1-name
+          value: some-val
+        - name: result2-name
+          value: some-val2
+```
 
 ### Notes/Caveats (optional)
 
-<!--
-What are the caveats to the proposal?
-What are some important details that didn't come across above.
-Go in to as much detail as necessary here.
-This might be a good place to talk about core concepts and how they relate.
--->
+Q. Can we provide an option to disable a task and all the that depend on it?
+
+e.g. disable task with a flag e.g. `cascade: true` or `disableDependents: true`.
+
 
 ### Risks and Mitigations
 
@@ -221,4 +338,4 @@ It will be a quick reference for those looking for implementation of this TEP.
 ## References (optional)
 
 1. [Google Doc: Disabling a Task in a Pipeline](https://docs.google.com/document/d/1rleshixafJy4n1CwFlfbAJuZjBL1PQSm3b0Q9s1B_T8/edit#heading=h.jz9jia3av6h1)
-2. [TEP-0065-rejected](https://github.com/tektoncd/community/pull/422)
+2. [TEP-0065](https://github.com/tektoncd/community/pull/422)

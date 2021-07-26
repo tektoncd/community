@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: "Results: JSON Serialized Records"
 creation-date: "2021-05-11"
-last-updated: "2021-05-11"
+last-updated: "2021-07-26"
 authors: ["wlynch@google.com"]
 ---
 
@@ -302,7 +302,7 @@ and conformance of Tekton, as described in [design principles](https://github.co
 -->
 
 Our hope is that this change will make it simpler for integrations to bring
-their own types to Tekton Results.
+their own types to Tekton Results - clients will no longer need to craft proto-ized versions of their types to store them in the Results database. Instead they can simply use JSON serialization (which is far more common) to embed their data in a Record.
 
 ## Drawbacks
 
@@ -413,11 +413,11 @@ We are avoiding this for 2 reasons:
 
 We could continue to handcraft message types, with some sort of conformance test
 to make sure the types match. This will likely be a ton of manual effort, and be
-prone to errors. We'd prefer to infer definitions from the base types.
+prone to errors. We'd prefer to generate definitions from the base types.
 
 ### Use well-known Struct field
 
-Instead of using a byte string, we could use the `google.protobuf.Struct` type
+Instead of using a byte string, we could use the [`google.protobuf.Struct`](https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/struct.proto) type
 directly.
 
 ```proto
@@ -431,16 +431,22 @@ message Any {
 }
 ```
 
-We are choosing not do to this because the Struct type is only really needed for
-the List filtering, so it doesn't make sense to pass the complexity of dealing
-with the Struct type down to clients. e.g. if we this is how we implemented this, a query would look like:
+We are choosing not do to this because the Struct type would only allow for slightly simpler query syntax for
+filtering, with a tradeoff of passing the complexity of dealing
+with the Struct type down to clients. e.g. if we this is how we implemented this, a user would need to take multiple steps to perform a query:
 
 1. (server) Data fetched from DB (jsonb)
-2. (server) jsonb data unmarshalled to Struct
-3. (client) Struct marshalled to JSON
-4. (client) Unmarshal JSON to underlying type (e.g. TaskRun).
+2. (server) unmarshall jsonb data to Struct
+3. (server) filter based on user query
+4. (client) marshall Struct to JSON
+5. (client) unmarshal JSON to underlying type (e.g. TaskRun).
 
+We do not think this provides significant value over using raw bytes directly - the only thing the Struct type guarantees is the message is a valid key/value document.
 Instead we will treat this as an implementation detail of server-side filtering.
+
+1. (server) Data fetched from DB (jsonb)
+3. (server) filter based on user query (using [CEL Dynamic Types](https://github.com/google/cel-spec/blob/master/doc/langdef.md#json-data-conversion))
+5. (client) unmarshal JSON bytes to underlying type (e.g. TaskRun).
 
 ## Upgrade & Migration Strategy (optional)
 

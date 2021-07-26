@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Support retries for custom task in a pipeline.
 creation-date: '2021-05-31'
-last-updated: '2021-05-31'
+last-updated: '2021-07-26'
 authors:
 - '@Tomcli'
 - '@ScrapCodes'
@@ -41,7 +41,7 @@ This TEP is about, a pipeline task can be configured with a `retries` count
 for Custom tasks.
 
 Also, a `PipelineRun` already manages a retry for regular task
-by updating it's status. However, for custom task, a tekton owned controller
+by updating its status. However, for custom task, a tekton owned controller
 can signal a custom task controller, to retry. A custom task controller may
 optionally support it.
 
@@ -126,7 +126,7 @@ Proposed algorithm for performing a retry for custom task.
   to request a custom task to cancel.
   
 - Step 3. In addition to patching the `pipelinerun` controller also enqueue a timer
-  `EnqueueAfter(30*time.Second)` (configurable). On completion of timeout
+  `time.After(30*time.Second)` (configurable). On completion of timeout
   (i.e. 30s), it checks if `/spec/status` is `RunRetry`, then it assumes that
   custom task does not support retry. 
     - a) if custom task does not supports retry as above, It sets no. of `retry done`
@@ -216,23 +216,36 @@ performance requirements.
 
 ## Design Details
 
+Add an optional `Retries` field of type `int` to `RunSpec`.
+
+Add optional `RetriesStatus` field to `RunStatusFields` of type `[]RunStatus`.
+
+Add a config map entry (default-short-timeout-seconds) to `config-defaults` in
+order to make short timeout configurable.
+
+```yaml
+# default-short-timeout-seconds contains the default number of
+# seconds to wait for custom task to respond, on timeout it is assumed
+# custom task does not support the feature. Currently, it is used to
+# quickly timeout a retry in a custom-task.
+default-short-timeout-seconds: "30"  # 30 seconds
+```
+
+Introduce a new status `RunSpecStatusRetry RunSpecStatus = "RunRetry"` for
+`/spec/status` of a `Run`.
+
+Algorithm for performing a retry for a custom task is same as proposal section
+[Proposal](#proposal).
 
 ## Test Plan
 
-<!--
-**Note:** *Not required until targeted at a release.*
+Add unit tests and e2e integration tests for following two cases.
 
-Consider the following in developing a test plan for this enhancement:
-- Will there be e2e and integration tests, in addition to unit tests?
-- How will it be tested in isolation vs with other components?
+1. If the custom task, does not support a retry, we wait until the configured shorter timeout
+   (30 seconds by default) and exhaust all retries.
 
-No need to outline all of the test cases, just the general strategy.  Anything
-that would count as tricky in the implementation and anything particularly
-challenging to test should be called out.
-
-All code is expected to have adequate tests (eventually with coverage
-expectations).
--->
+2. If the custom task *does support* a retry i.e., it does clear its 'spec.status',
+   on each retry. Verify it performs the correct number of retries.
 
 ## Design Evaluation
 <!--
@@ -265,11 +278,20 @@ SIG to get the process for these resources started right away.
 
 ## Upgrade & Migration Strategy (optional)
 
-<!--
-Use this section to detail wether this feature needs an upgrade or
-migration strategy. This is especially useful when we modify a
-behavior or add a feature that may replace and deprecate a current one.
--->
+An upgrade strategy for existing custom controllers,
+
+1. Custom controller already supports a retry field. 
+   - It can deprecate the existing retry field and refer to `Run.spec.retries`.
+   - Watch the status field i.e. `/spec/status` of `Run` if it is `RunRetry`
+     then start executing retry and clear its status to let `tektoncd`
+     controller that the custom task has started retrying.
+2. If custom-task does not already support retry and does not wish to support
+    it, then they can ignore it and tektoncd controller will be able detect 
+   that.
+3. If custom-task does not already support retry and wish to support it,
+    then it should start watching the `/spec/status` of `Run`. If it is 
+   `RunRetry` then start executing retry and clear its status to let 
+   `tektoncd` controller know that the custom task has started retrying.
 
 ## References (optional)
 

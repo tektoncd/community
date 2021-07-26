@@ -29,6 +29,7 @@ authors:
 - [Design Evaluation](#design-evaluation)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
+- [Future work](#future-work)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
 - [Implementation Pull request(s)](#implementation-pull-request-s)
@@ -86,40 +87,44 @@ Together these will bring in the ability to resume/retry a failed `PipelineRun`
    and resume at later point.
 
 ## Requirements
+
 - Create a new `PipelineRun` to resume or retry a completed `PipelineRun`.
+- Ability to partially run a Pipeline, without editing its definition or without
+  an existing `PipelineRun`.
+- An end user may not have to figure out the execution DAG, to be able to resume
+  or retry.
 
 ## Proposal
 
-#### Requesting API Changes
-1. Add `resumeFrom` under `PipelineRun.spec`. It has following fields: 
-   - `resumeFrom.name` which is the name of previously run `PipelineRun`.
-   - `resumeFrom.enableTasks` accepts an array of task names under it.
+### Requesting API Changes
+1. Add `pipelineRunRef` under `PipelineRun.spec`. It has following fields: 
+   - `pipelineRunRef.name` which is the name of previously run `PipelineRun`.
+   - `pipelineRunRef.enableTasks` accepts an array of task names under it.
 2. Add `disableTasks` under `PipelineRun.spec`, which accepts an array
-    of task name and their result definitions.
+    of task name.
    - `name`: Name of the task to be disabled.
-        - `results`: Pre-populate results for the disabled task.
 
-Q. Why do we need `resumeFrom` when we have `disableTasks`? 
+Q. Why do we need `pipelineRunRef` when we have `disableTasks`? 
 
 `disableTasks` can be used to explicitly disable tasks that a user 
-do not wish to run and `resumeFrom` tekton controller automatically
-figures out the tasks failed and unfinished, because it knows the
-DAG. For the end user, it can be difficult to figure out the DAG and
-prepare the accurate execution plan for the next pipeline run.
+do not wish to run. On the other hand, in `pipelineRunRef` tekton controller
+automatically figures out the tasks failed and unfinished, because it knows the
+DAG. For the end user, it can be difficult to figure out the DAG and prepare
+the accurate execution plan for the next pipeline run.
 
-Both, `resumeFrom` and `disableTasks` are optional fields. See examples
+Both, `pipelineRunRef` and `disableTasks` are optional fields. See examples
 1 and 2 below.
 
-#### Semantics of execution.
+### Semantics of execution.
 
-- `resumeFrom` : resumeFrom references a previous pipelineRun and by default
-selects all the failed and unfinished tasks eligible for retrying/resuming.
-It references results of completed tasks from previous run, unless
-overridden by `disableTasks` section.
+- `pipelineRunRef` : pipelineRunRef references a previous pipelineRun and by default
+    selects all the failed and unfinished tasks eligible for retrying/resuming.
+    It references results of completed tasks from previous run.
 
-- `resumeFrom.enableTasks`: If a task was successful in previous run, but
-it is required by the current run, this section can be used to explicitly
-enable it.
+- `pipelineRunRef.enableTasks`: If a task was successful in previous run, but
+    it is required by the current run, this section can be used to explicitly
+    enable it. For example, a task may perform some initialization for the
+    other tasks in `PipelineRun`.
 
 **Case: disabled task exists somewhere in the middle of DAG execution.**
 
@@ -135,16 +140,17 @@ G   B --> E
 ```
 
 1. 
-  - Previous Run stats:
+  - Previous Run stats from `prev-pipeline-run` :
     - Successful Tasks: A 
     - Failed Tasks: F, B
     - Not yet started tasks: D, E, G, C
-  - Current Run:
-      - Disabled task: B
-      - To be executed: F, D, E, G, C
+  - Current Run: `new-pipeline-run`
+      - Disabled task: B, G
+      - To be executed: F, D, C
 
-Since task B is disabled, task E will use its pre-set result.
-Even if we disable G, F is still retried in the current Run.
+Since task B is disabled, task E will also be disabled as it depends on B.
+
+We have disabled G, but F is still retried in the current Run i.e. `new-pipeline-run`
 
 #### Examples
 
@@ -156,26 +162,19 @@ kind: PipelineRun
 metadata:
   name: new-pipeline-run
 spec:
-  # resumeFrom references a previous pipelineRun and by default selects
-  # all the failed and unfinished tasks eligible for retrying/resuming.
-  # It references results of completed tasks from previous run, unless
-  # overridden by disableTasks section.
-  resumeFrom:
+  # pipelineRunRef references a previous pipelineRun and by default selects
+  # all the "failed" and "unfinished" tasks eligible for retrying/resuming.
+  # It references results of completed tasks from previous run.
+  pipelineRunRef:
     name: prev-pipeline-run
     # Enable tasks section can be used to enable those tasks which were
     # successful in previous run. e.g. an init task.
     enableTasks:
-      - name: init-task-name
-  # One of the failed task is disabled by disableTasks section, for some
-  # reason we want it skipped and the expected results has been hard coded.
+      - name: A
+  # One of the failed task is disabled by disableTasks section.
   disableTasks:
-    - name: task-name
-      # option to pre-populate the values of disabled task's results.
-      results: 
-        - name: result1-name
-          value: some-val
-        - name: result2-name
-          value: some-val2
+    - name: B
+    - name: G
   serviceAccountName: 'default'
   # Some tasks needs cleaning of workspaces, this can be done here.
   # e.g. one could override a workspace by specifying the name.
@@ -189,6 +188,8 @@ spec:
       name: some-ref
 ```
 
+Above example will run tasks: A, F, D, C
+
 2. Partial execution of a pipeline.
 
 ```yaml
@@ -200,27 +201,21 @@ spec:
   pipelineRef:
     name: a-pipeline
   disableTasks:
-    - name: task-name
-      # optionally pre-populate the values of disabled task's results.
-      results: 
-        - name: result1-name
-          value: some-val
-        - name: result2-name
-          value: some-val2
-    - name: task-name-other
-      results:
-        - name: result1-name
-          value: some-val
-        - name: result2-name
-          value: some-val2
+    - name: B
+    # the task `B` is disabled for the current execution and everything
+    # that depends on it.
+    - name: G
 ```
+
+Above example will run tasks: A, F, D, C
 
 ### Notes/Caveats (optional)
 
-Q. Can we provide an option to disable a task and all the that depend on it?
+Q. Can we provide an option to disable a task but not all the that depend on it?
 
-e.g. disable task with a flag e.g. `cascade: true` or `disableDependents: true`.
-
+e.g. disable task with a flag e.g. `cascade: false` or `disableDependents: false`.
+Also provide an option for hard-conding the results.
+My preference is this can be work for future TEP.
 
 ### Risks and Mitigations
 
@@ -302,14 +297,174 @@ and conformance of Tekton, as described in [design principles](https://github.co
 Why should this TEP _not_ be implemented?
 -->
 
+## Future Work
+
+1. **Provide an option to disable a task but not all the that depend on it.**
+    
+    ```yaml
+    spec:
+      pipelineRef:
+        name: a-pipeline
+      disableTasks:
+        - name: B
+          disableDependents: false
+          results:
+            - name: result-A
+              value: result-value
+        - name: G
+    ```
+
+    Above example will run tasks: A, E, F, D, C.
+    Note: E is executed, because `disableDependents: false` and results are provided.
+    
+    Use cases include:
+    1. A user can override the results being referenced from previous Run, by using
+       this section.
+    2. Suppose a failed task is permanently failing, and one would like to disable
+       that task but not its dependents, then the user can hard code the results and 
+       execute the dependents.
+       
+
+2. **Option to include all tasks from previous pipelineRun**
+    ```yaml
+    spec:
+      pipelineRunRef:
+        name: prev-pipeline-run
+        include: All # one of: All|failed|none
+      # One of the failed task is disabled by disableTasks section.
+      disableTasks:
+        - name: B
+        - name: G
+    ```
+    Above example will run tasks: A, F, D, C.
+    By default, only failed and unifinished tasks are included from previous 
+    `PipelineRun`. With this option, a user will be able to include either
+   everything or nothing as well. These are merely convenience options. The
+   same can be achieved by a combination of `disableTasks` and `enableTasks`.
+   
+    Use cases:
+    1. _A convenience option_, if there are large no. of tasks in the previous
+        `PipelineRun` and only a few of them have to be explicitly disabled.
+       Then, one can `include: All` and disable specific ones.
+       
+       Without this option, a user will have to list out all the tasks that
+       should be disabled in the `disableTasks` section.
+
+
 ## Alternatives
 
-<!--
-What other approaches did you consider and why did you rule them out?  These do
-not need to be as detailed as the proposal, but should include enough
-information to express the idea and why it was not acceptable.
--->
+1. **Using a boolean in the Task definition**
+   Specify a boolean in the  Pipeline level within the definition of the Task to be disabled.
+    ```yaml
+    apiVersion: tekton.dev/v1beta1
+    kind: Pipeline
+    metadata:
+      name: example-pipeline
+    spec:
+      tasks:
+        - name: task-one
+          taskRef:
+            - name: task-one
+              disable: true
+        - name: task-two
+          taskRef:
+            - name: task-two
+    ```
 
+This alternative does not meet the requirement, without editing pipeline definition.
+
+2. **Using an always-false When expression.**
+   Disable a Task using an always-false When expression.
+    ```yaml
+    apiVersion: tekton.dev/v1beta1
+    kind: Pipeline
+    metadata:
+      name: example-pipeline
+    spec:
+        tasks:
+        - name: task-one
+          when:
+          - input: "false"
+            operator: in
+            values: ["true"]
+          taskRef: 
+            - name: task-one
+        - name: task-two
+          taskRef:
+            - name: task-two
+    ```
+
+This alternative does not meet the requirement, without editing pipeline definition.
+
+3. **SkipTasks**
+    These PipelineTasks would be skipped, and their subsequent tasks would be skipped as well. 
+    ```yaml
+    apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      name: example-pipeline-run
+    spec:
+        pipelineRef:
+          name: example-pipeline
+        skipTasks:
+          - name: fetch-the-recipe
+          - name: print-the-recipe 
+    ```
+
+4. **Using skip tasks with output resources**
+   Allow users to specify a list of PipelineTasks to be skipped when defining a
+   PipelineRun, and include resource overrides to handle dependent Tasks. Some
+   subsequent Tasks may be dependent on the disabled Tasks, that is, they expect
+   some resources from the disabled Tasks. The user can optionally make those
+   resources available by providing access to the workspaces and expected
+   results in the `disabledTasks` definition as such:
+   
+    ```yaml
+    apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+        name: example-pipeline-run
+    spec:
+        pipelineRef:
+            name: example-pipeline
+        workspaces:
+            - name: shared-data
+        persistentVolumeClaim:
+            claimName: shared-task-storage
+        disabledTasks:
+            - name: fetch-the-recipe
+              outputs:
+              workspaces:
+                - name: filedrop
+                  workspace: shared-data
+                  results:
+                - name: status
+                  value: $(foo.status.results)
+            - name: print-the-recipe
+              workspaces:
+              results:
+    ```
+   
+5. **Resume from Tasks in a previous PipelineRun**
+   We can implement some way to allow a PipelineRun to pick up from a previous
+   PipelineRun, and resume from specific Tasks. Similar to Jenkins’ restart from
+   stage.
+   
+    ```yaml
+    apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      name: example-pipeline-run
+    spec:
+      pipelineRef:
+        name: example-pipeline
+        fromPreviousRun: foo
+        resumeFrom: [print-the-recipe]
+    ```
+   
+    One of the challenge here is, a user has to figure out a DAG. As point
+    of resume can be plural.
+   
 ## Infrastructure Needed (optional)
 
 <!--

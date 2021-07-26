@@ -4,8 +4,8 @@ authors:
   - "@Peaorl"
   - "@wlynch"
 creation-date: 2020-10-01
-last-updated: 2021-05-20
-status: proposed
+last-updated: 2021-07-26
+status: implementable
 ---
 
 # TEP-0023: Implicit Parameter Mapping for Embedded Specs
@@ -408,16 +408,22 @@ remote calls to look up additional resources.
 
 The Tekton Pipeline validating/mutating webhook will resolve the parameter in
 embedded fields contained in `Pipeline` and `PipelineRun`. This transforms the
-implicitly specified `Pipeline` specification into an explicitly specified
+implicitly specified `Pipeline` specification into an explicitly defined
 `Pipeline` specification. After the transformation, the webhook performs the
-regular `Pipeline` specification validation checks. As a result, no
-modifications to the `PipelineRun` reconciler are required as it can operate on
-an explicitly specified `Pipeline` specification.
+regular `Pipeline` specification validation checks.
 
-Additionally, any application that depends on the `Pipeline` specification
-stored in a cluster do not need to be updated. Since this is strictly an
-additive change, we do not anticipate needing to block this behind a feature
-gate.
+To implement this, we propose adding additional data into the
+[`SetDefaults` context](https://github.com/tektoncd/pipeline/blob/a593e3225a57d874426f40ba929a885e8604aaa9/pkg/apis/pipeline/v1beta1/pipeline_defaults.go#L31)
+to keep track of seen PipelineRun/TaskRun parameters. If a Param is defined at
+the current spec level we will use that first, else we use the context Params to
+propagate implicit values down the spec stack (e.g. PipelineRun -> Pipeline ->
+Task) for additional resolution. Because we are introducing additional params
+into the resolved spec, we will need to remove
+[restrictions around unused params](https://github.com/tektoncd/pipeline/blob/a593e3225a57d874426f40ba929a885e8604aaa9/pkg/reconciler/taskrun/validate_resources.go#L91-L94).
+
+Since this is strictly an additive change, any application that depends on the
+`Pipeline` specification stored in a cluster does not need to be updated. We do
+not anticipate needing to block this behind a feature gate.
 
 ### Alternatives
 
@@ -433,6 +439,23 @@ because of the remote resources that complicate validation. We are considering
 this out of scope for now, focusing on what we think will be a small but
 meaningful improvement. (We suspect we will want to look at these as a follow up
 though).
+
+#### Don't allow implicit params at the Pipeline/TaskRun level
+
+A drawback of this approach is making things easier for users makes things more
+complex for platforms, particularly when it comes to conformance. e.g. this
+change adds more rules for how param fields need to be processed, which would
+need to be replicated across every Tekton conformant implementation if they are
+not leveraging the base library. We could take a stance that the fields for
+Pipeline/TaskRun primatives should remain explicit in order to simplify logic
+for platform implementations, and instead rely on higher-level types built on
+top of Pipelines/Tasks to handle this kind of user logic.
+
+As of today we don't
+[yet have this kind of higher-level type in vanilla Tekton](https://github.com/tektoncd/community/issues/464),
+but even if/when we did there would likely still be value in adding features
+that simplify the user authoring process for Pipeline/TaskRuns if they continue
+to be types that are directly used.
 
 ## Test Plan
 

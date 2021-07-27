@@ -119,6 +119,7 @@ This is the [`tektoncd/cli`](https://github.com/tektoncd/cli) working group.
 | <img width="30px" src="https://github.com/danielhelfand.png"> | Daniel Helfand   | VMware  | [danielhelfand](https://github.com/danielhelfand) |
 | <img width="30px" src="https://github.com/pradeepitm12.png">  | Pradeep Kumar    | Red Hat | [pradeepitm12](https://github.com/pradeepitm12)   |
 | <img width="30px" src="https://github.com/pgarg.png">         | Piyush Garg      | Red Hat | [piyush-garg](https://github.com/piyush-garg)     |
+| <img width="30px" src="https://github.com/vinamra28.png">   | Vinamra Jain       | Red Hat | [vinamra28](https://github.com/vinamra28)      |
 
 ## Documentation
 

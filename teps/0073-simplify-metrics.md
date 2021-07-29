@@ -6,6 +6,7 @@ last-updated: '2021-06-23'
 authors:
 - "@vdemeester"
 - "@yaoxiaoqi"
+- "@khrm"
 ---
 
 # TEP-0073: Simplify metrics
@@ -20,7 +21,7 @@ authors:
   - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
-  - [Change TaskRun level metrics to namespace level](#change-taskrun-level-metrics-to-namespace-level)
+  - [Setting Level of Metrics for TaskRun or PipelineRun](#setting-level-of-metrics-for-taskRun-or-pipelineRun)
   - [Change metrics type](#change-metrics-type)
   - [Notes/Caveats (optional)](#notescaveats-optional)
   - [Risks and Mitigations](#risks-and-mitigations)
@@ -75,6 +76,14 @@ Here is an extract of an issues raised by the App-SRE team at Red Hat
 >
 > it looks like some labels that are used are cuasing cardinality
 > explosion: `pipelinerun`, `taskrun`.
+
+Everytime a `PipelineRun` or `TaskRun` is executed, it creates new metric or
+time series because we use `pipelinerun` and `taskrun` labels/tags. This causes
+unbounded cardinality which isn't recommended for systems like prometheus.
+While we can expect `Pipeline` or `Task` object to remain fairly constant,
+`pipelinerun` or `taskrun` object will continue to increase which lead to
+cardinality explosion. In systems, where `Pipeline` and `Task` are expected to
+grow, labels based on them can also cause cardinality explosion. 
 
 ### Large metrics volume
 
@@ -131,19 +140,28 @@ be handled, or user scenarios that will be affected and must be accomodated.
 ## Proposal
 
 Coarse-grained metrics should be provided to satisfy the users'
-needs. This can be implemented in 2 ways: changing `TaskRun` level
-metrics to namespace level and changing metrics type. These 2 methods
-are mutually exclusive.  If users care about individual `TaskRun`'s
-performance, they can set `duration_seconds` type from histogram to
-gauge. If users care about overall performance, they can collect
-metrics at namespace level.
+needs. This can be implemented in following ways: 
+- changing `PipelineRun` or `TaskRun` level metrics to `Task` or `Pipeline`
+  level
+- changing `PipelineRun` or `TaskRun` level metrics to namespace level
+- changing metrics type from histogram to gauge in case of `TaskRun` or
+  `PipelineRun` level. 
+Latter is mutually exclusive with former two. If users care about 
+individual `TaskRun` or `PipelineRun`'s performance, they can set 
+`duration_seconds` type from histogram to gauge. If users care
+about overall performance, they can collect metrics at namespace level.
 
-### Change TaskRun level metrics to namespace level
+### Setting Level of Metrics for TaskRun or PipelineRun
 
-We can add a `config-observability` option to switch between `TaskRun` level metrics and namespace level.
-`metrics.namespace-level` field indicates whether to aggregate metrics at namespace level. When set to `true`, it will remove `Task` and `TaskRun` label in metrics. Sizable reduction in metrics count can
-happen when multiple `TaskRun`s is running under the same namespace.
-By default, it is set to `false`.
+We can add a `config-observability` option to switch between `TaskRun` and
+`PipelineRun` level metrics, `Task` and `Pipeline` or namespace level. 
+`metrics.taskrun.level` and `metrics.pipelinerun.level` fields will indicate
+at what level to aggregate metrics. 
+- When they are set to `namespace`, they will remove `Task`, `TaskRun` and,
+  `PipelineRun` and `TaskRun` label respectively in metrics.
+- When set to `task` or `pipeline`, they will remove `TaskRun` and `PipelineRun` 
+  label respectively. 
+- When set to `taskrun` or `pipelinerun`, current behaviour will be exhibited.
 
 ```yaml
 apiVersion: v1
@@ -155,22 +173,30 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/part-of: tekton-pipelines
 data:
-  metrics.namespace-level: "true"
+  metrics.task.level: "task"
 ```
-
-When the option is `false`, every `TaskRun` in a namespace has a set
-of seperate metrics to record its running status.
 
 ```log
 tekton_taskrun_duration_seconds_bucket{namespace="arendelle-nsfqw",status="success",task="anonymous",taskrun="duplicate-pod-task-run-ytqrdxja",le="10"} 1
 tekton_taskrun_duration_seconds_bucket{namespace="arendelle-nsfqw",status="success",task="anonymous",taskrun="duplicate-pod-task-run-ymelobwl",le="10"} 1
 tekton_taskrun_duration_seconds_bucket{namespace="arendelle-nsfqw",status="success",task="anonymous",taskrun="duplicate-pod-task-run-xnuasulj",le="10"} 1
+tekton_taskrun_duration_seconds_bucket{namespace="arendelle-nsfqw",status="success",task="test",taskrun="duplicate-pod-task-run-tqerstbj",le="10"} 1
+tekton_taskrun_duration_seconds_bucket{namespace="arendelle-nsfqw",status="success",task="test",taskrun="duplicate-pod-task-run-alcdjfnk",le="10"} 1
+tekton_taskrun_duration_seconds_bucket{namespace="arendelle-nsfqw",status="success",task="test",taskrun="duplicate-pod-task-run-rtyjsdfm",le="10"} 1
+tekton_taskrun_duration_seconds_bucket{namespace="arendelle-nsfqw",status="success",task="test",taskrun="duplicate-pod-task-run-iytyhksd",le="10"} 1
 ```
 
-When the option is `true`, these metrics will be merged into one.
+When the option is `task`, these metrics will be merged into two based on `task` label.
 
 ```log
-tekton_taskrun_duration_seconds_bucket{namespace="arendelle-nsfqw",status="success",le="10"} 3
+tekton_taskrun_duration_seconds_bucket{namespace="arendelle-nsfqw",task="anonymous",status="success",le="10"} 3
+tekton_taskrun_duration_seconds_bucket{namespace="arendelle-nsfqw",task="test", status="success",le="10"} 4
+```
+
+When the option is `namespace`, these metrics will be merged into one.
+
+```log
+tekton_taskrun_duration_seconds_bucket{namespace="arendelle-nsfqw","status="success",le="10"} 7
 ```
 
 ### Change metrics type
@@ -398,3 +424,4 @@ Additional context for this TEP can be found in the following links:
 - [metrics.md](https://github.com/tektoncd/pipeline/blob/master/docs/metrics.md)
 - [Prometheus Metrics Limitation](https://docs.sysdig.com/en/limit-prometheus-metric-collection.html)
 - [SRVKP-1528 Possible cardinality issue with tekton pipelines metrics](https://issues.redhat.com/browse/SRVKP-1528)
+- [Labeling in Prometheus](https://prometheus.io/docs/practices/naming/#labels)

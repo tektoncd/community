@@ -53,7 +53,7 @@ there is a significant inconsistency in the describe behaviour.
 
 Lastly, final tasks should be triggered on a pipeline run timeout, which is a standard error scenario.
 Running final tasks infinitely should be prevented with the additional configuration of a finalization timeout.
-There is a separate proposal: [TEP-0047](https://github.com/tektoncd/community/pull/326) that covers this part.
+There is a separate proposal: [TEP-0046](https://github.com/tektoncd/community/pull/326) that covers this part.
 
 Related issues:
 - https://github.com/kubeflow/kfp-tekton/issues/506
@@ -277,4 +277,4 @@ The new API value (non-breaking change).
 ## References (optional)
 
 - [ExitHandler not triggered on pipeline run cancellation](https://github.com/kubeflow/kfp-tekton/issues/506)
-- [TEP-0047: Finally tasks execution post pipelinerun timeout](https://github.com/tektoncd/community/pull/326)
+- [TEP-0046: Finally tasks execution post pipelinerun timeout](https://github.com/tektoncd/community/pull/326)

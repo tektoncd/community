@@ -613,6 +613,7 @@ orgs:
         - gabemontero
         - marcelmue
         - jmcshane
+        - sm43
         privacy: closed
         repos:
           triggers: read

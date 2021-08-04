@@ -2,7 +2,7 @@
 status: proposed
 title: Remote Resource Resolution
 creation-date: '2021-03-23'
-last-updated: '2021-06-15'
+last-updated: '2021-08-23'
 authors:
 - '@sbwsg'
 - '@pierretasci'
@@ -20,6 +20,9 @@ authors:
   - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
+  - [Proposal 1: Create an Experimental Resolution Project](#proposal-1-create-an-experimental-resolution-project)
+  - [Proposal 2: Disable Tekton Pipelines' &quot;In-Tree&quot; Resolution Logic With a Deployment Arg](#proposal-2-disable-tekton-pipelines-in-tree-resolution-logic-with-a-deployment-arg)
+  - [Proposal 3: Add <code>status.resolvedMeta</code> to <code>TaskRuns</code> and <code>PipelineRuns</code>](#proposal-3-add--to--and-)
   - [Notes/Caveats (optional)](#notescaveats-optional)
   - [Risks and Mitigations](#risks-and-mitigations)
   - [User Experience (optional)](#user-experience-optional)
@@ -239,13 +242,118 @@ users can leverage those shared pipelines.
 
 ## Proposal
 
-<!--
-This is where we get down to the specifics of what the proposal actually is.
-This should have enough detail that reviewers can understand exactly what
-you're proposing, but should not include things like API designs or
-implementation.  The "Design Details" section below is for the real
-nitty-gritty.
--->
+Prior to moving this TEP to `implementable` there will be a considerable amount
+of experimentation required to guage suitability of different approaches. There
+are a lot of open questions wrt syntax, approach and architecture that cannot
+be easily answered without trying ideas with running code.
+
+There are several additional changes that would aid experimentation in the
+pre-`implementable` phase of this TEP:
+
+### Proposal 1: Create an Experimental Resolution Project
+
+This proposal proposes adding a new controller in the [Experimental
+Repo](https://github.com/tektoncd/experimental/) that implements some of
+the ideas described in the [Alternatives section](#alternatives) of this TEP.
+
+This will need a new directory added with a controller & OWNERS configuration.
+If we want to try multiple alternatives (e.g. explore both interceptor-style
+and reconciler-style approaches) then we can either have separate subdirectories
+or branches for each implementation.
+
+### Proposal 2: Disable Tekton Pipelines' "In-Tree" Resolution Logic With a Deployment Arg
+
+A problem we face with introducing an experimental resolver controller is that
+any in-cluster process watching for `TaskRun` and `PipelineRun` resources will
+race with Tekton Pipelines to process them as they're submitted to the kube
+API.
+
+In order to support an experimental controller independently performing
+resolution we could add a behavioural flag that completely disables the
+built-in resolution logic. For example: `experimental-disable-ref-resolution`.
+
+This is explicitly _not_ being proposed as a feature flag because 1) it is not
+intended to migrate through to production-readiness and 2) a behavioural flag
+with its own name underlines the "experimental mode" that the user is electing
+to put their Tekton Pipelines controller in to.
+
+#### Alternative
+
+A different approach that would work for PipelineRuns today would be to require
+them to be created with a [`Pending`
+status](https://github.com/tektoncd/pipeline/blob/main/docs/pipelineruns.md#pending-pipelineruns).
+
+This proposal doesn't take that approach because:
+1. The same support does not exist for TaskRuns and so would require its own
+   independent TEP and review cycle to implement.
+2. Pending status can't be used by multiple controllers that all need to signal
+   readiness. This means a Resolution Reconciler and (for example) a custom
+   PipelineRun Scheduler could set this flag before the other controller is
+   ready to do so.
+
+### Proposal 3: Add `status.taskYaml` to `TaskRuns` and `status.pipelineYaml` to `PipelineRuns`
+
+When the proposed experimental resolution controller sees an unresolved
+`TaskRun` or `PipelineRun` it will read the resource and then resolve whatever
+ref, bundle or inline document is included. The resolved `spec` will then be
+embedded in the `status.taskYaml.spec` field for `TaskRuns` or the
+`status.pipelineYaml.spec` field for `PipelineRuns`. Once those fields are populated
+Tekton Pipeline's reconcilers will be able to pick them up and begin working
+with the specs.
+
+We will take this approach because it's entirely backwards-compatible with our
+existing resolution and reconcilers: today, the reconcilers already copy
+resolved resources into the `status` block of `TaskRuns` and `PipelineRuns` so
+that changes in the underlying resources don't affect runs that are already
+in-flight. By observing the same protocol it means that the logic changes in
+our Tekton Pipelines' reconcilers is minimized and the same "audit trail"
+property is maintained.
+
+Unfortunatley there's a wrinkle: our existing reconcilers copy labels and
+annotations from the resolved `Task` or `Pipeline` to the `TaskRun` or
+`PipelineRun`. By splitting the resolution logic in to its own external
+machinery we are introducing a barrier between resolution and metadata
+duplication: the "actuation reconcilers" never see the fully-resolved resource,
+only the `spec` passed via the `status`, so they're unable to perform the
+metadata copy. The end result is that the "resolver reconcilers" are also
+responsible for performing this metadata copy.
+
+A lot of the conversation with this TEP so far has revolved around the fact
+that resolution might be something we want to expose not just for Pipelines but
+also other Tekton projects. Having the metadata copy performed by an external
+controller doesn't make a ton of sense in that case: metadata copying is a
+feature/requirement of Tekton Pipelines, not a general requirement for
+resolution.
+
+There are two approaches that I've considered for solutions to this:
+
+1. Change the contract such that the _entire_ resolved YAML document is passed
+   via the `TaskRun` or `PipelineRun` `status`. This would give the Tekton
+   Pipelines reconcilers total flexibility to process the resolved document as
+   they need, but would be backwards-incompatible.
+
+2. Add a `status.resolvedMeta` field to `TaskRuns` and `PipelineRuns` that
+   allows the experimental controller to pass the `metav1.ObjectMeta`
+   information from a `Task` or `Pipeline` alongside the resolved spec.  This
+   would give enough data for Tekton Pipelines' reconcilers to keep metadata
+   copying their responsibility, without being a hard change to the way resolved
+   `specs` are stored on runs.
+
+Given the above two options we are proposing that we employ strategy (1) and
+add a `taskYaml` field to the `status` of `TaskRuns` and a `pipelineYaml` field
+to the status of `PipelineRuns`.
+
+There are some exceptions to the metadata fields that should be copied across.
+For example the annotation `kubectl.kubernetes.io/last-applied-configuration`
+can be extremely large and would bloat a TaskRun or PipelineRun
+during the resolution phase. Similarly for the `metadata.managedFields` field
+The precise set of metadata we include/exclude should be figured out as part
+of this experimental period but a couple of approaches would be:
+
+- Limit to just metadata fields prefixed with `[a-zA-Z].tekton.dev/`.
+- Exclude known edge-case fields (`last-applied-configuration` annotation,
+  `metadata.managedFields`)
+- Limit to just labels.
 
 ### Notes/Caveats (optional)
 

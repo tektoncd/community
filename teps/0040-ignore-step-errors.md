@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: 'Ignore Step Errors'
 creation-date: '2021-01-06'
-last-updated: '2021-07-09'
+last-updated: '2021-08-11'
 authors:
 - '@pritidesai'
 - '@afrittoli'
@@ -362,6 +362,22 @@ kubectl get pr pipelinerun-with-failing-step-mdncp -o json | jq .status.taskRuns
 ]
 ```
 
+Now, if a step fails before initializing a result, the `pipeline` ignores such step failure. But, the  `pipeline`
+will fail with `InvalidTaskResultReference` if it has a task consuming that task result. For example, any task
+consuming `$(tasks.task1.results.result2)` will cause the pipeline to fail since the step exited after initializing
+`result1` but before creating `result2`:
+
+```yaml
+steps:
+  - name: ignore-failure-and-produce-a-result
+    onError: continue
+    image: busybox
+    script: |
+      echo -n 123 | tee $(results.result1.path)
+      exit 1
+      echo -n 456 | tee $(results.result2.path)
+```
+
 This new field `onError` will be implemented as a `alpha` feature and can be enabled by setting `enable-api-fields`
 to `alpha`.
 
@@ -454,3 +470,4 @@ decision to add such section can be delayed until we have a use case.
 * [PR Review Discussion](https://docs.google.com/document/d/1KGmyiMPzFq2mwKLtwac5VtgpAs0GlPo5RDb8MqY-uuw/edit?usp=sharing)
 * [Priti's PoC](https://github.com/tektoncd/pipeline/compare/main...pritidesai:tep-0040?expand=1)
 * [Demo](https://youtu.be/eUFpk2sBuC4)
+* [Implementation in Pipeline Repo PR#4106](https://github.com/tektoncd/pipeline/pull/4106)

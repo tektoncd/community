@@ -167,7 +167,7 @@ Introduce a new field `onError` as part of the
 ```
 - name: failing-step
   image: alpine
-  onError: [ continue | fail]
+  onError: [ continue | stopAndFail]
 ```
 
 The `Step` struct will have a new field `Exit`:
@@ -183,7 +183,7 @@ type Step struct {
     // ...
 
     // define the exiting behavior of the container in this field
-    // set onError to fail to indicate the entrypoint to exit the taskRun if the container exits with non zero exit code
+    // set onError to stopAndFail to indicate the entrypoint to exit the taskRun if the container exits with non zero exit code
     // set onError to continue to indicate the entrypoint to continue executing the rest of the steps irrespective of the container exit code
     OnError string `json:"onError,omitempty"`
 }
@@ -421,7 +421,7 @@ We have identified a few potential use cases in addition to ignoring a step erro
   can be designed by introducing a new field `forceExit`:
 
   ```go
-    onError:  [ continue | fail ]
+    onError:  [ continue | stopAndFail ]
     forceExit: [ true | false ]
   ```
 
@@ -435,7 +435,7 @@ We have identified a few potential use cases in addition to ignoring a step erro
 
   ```go
     exitCode:  [ 0 - 255 | DoNotChange ]
-    onExit:  [ continue | fail ]
+    onExit:  [ continue | stopAndFail ]
     forceExit: [ true | false ]
   ```
 

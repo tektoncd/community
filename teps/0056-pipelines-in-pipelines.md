@@ -2,7 +2,7 @@
 status: proposed
 title: Pipelines in Pipelines
 creation-date: '2021-03-08'
-last-updated: '2021-03-08'
+last-updated: '2021-08-16'
 authors:
 - '@jerop'
 ---
@@ -73,6 +73,8 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Non-Goals](#non-goals)
   - [Use Cases](#use-cases)
     - [Reusability and Composability](#reusability-and-composability-1)
+        - [Linting and Testing](#linting-and-testing)
+        - [Apply and Add Configuration](#apply-and-add-configuration)
     - [Failure Strategies](#failure-strategies-1)
 - [Requirements](#requirements)
 - [References](#references)
@@ -118,6 +120,8 @@ Today, a subset of `Tasks` in a `Pipeline` cannot be grouped together and distri
 
 Users need to define and share a set of `Tasks` as a complete unit of execution.
 
+The grouping of sets of `Tasks` as units of execution would also improve visualization of `Pipelines`. 
+
 #### Failure Strategies
 
 Today, when a `Task` in a `Branch` fails, it stops the execution of unrelated `Branches` and the `Pipeline` as a whole. When `Tasks` are specified in independent `Branches`, there are no dependencies between them, so users may expect that a failure in one `Branch` would not stop the execution of the other `Branch`.
@@ -159,6 +163,8 @@ if this problem is solved?).
 
 As a `Pipeline` author, I need to define a set of `Tasks` as a complete unit of execution that I can share across `Pipelines`.
 
+###### Linting and Testing
+
 For example, I can define and distribute `linting` set of `Tasks` and `testing` set of `Tasks`:
 ```
         linting                     
@@ -184,6 +190,53 @@ and `testing` is made up of `unit-tests`, `integration-tests` and `report-test-r
            |
            v 
   report-test-results
+```
+
+###### Apply and Add Configuration
+
+For example, I have 5 `Tasks` that apply templates including a DeploymentConfig. After the 5 tasks are completed, I have 3 other `Tasks` that add ConfigMaps and Secrets to the DeploymentConfig.
+
+I need to specify that the second set of `Tasks` all need to wait for the first set of `Tasks` to complete execution. 
+
+Today, I'd have to add each of the 5 `Task` names to the `runAfter` section of each of the 3 `Task` names - adding up to 15 items in `runAfter` that I have to maintain.
+
+```
+                                   git-clone
+                                       |
+                                       v
+                                     build
+                                       |
+                                       v
+           ----------------------------------------------------------
+           |              |            |             |              |
+           v              v            v             v              v          
+    apply-configmap   apply-pvc   apply-route   apply-service     apply-dc
+    ----------------------------------------------------------------------
+               |                   |                       |
+               v                   v                       v   
+          add-configmap    add-columna-service       add-kafka-config      
+          ------------------------------------------------------------
+                                   |                           
+                                   v                           
+                                deploy
+```
+
+Instead, I want to define and distribute `apply-config` set of 5 `Tasks` and `add-config` set of 3 `Tasks` so that I can specify that the latter waits for the former to complete execution. 
+
+```                           
+       git-clone
+           |                           
+           v                           
+         build 
+           |
+           v 
+      apply-config
+           |                           
+           v                           
+       add-config 
+           |
+           v 
+        deploy
 ```
 
 #### Failure Strategies
@@ -224,7 +277,8 @@ Use this section to add links to GitHub issues, other TEPs, design docs in Tekto
 shared drive, examples, etc. This is useful to refer back to any other related links
 to get more details.
 -->
-- [Issue](https://github.com/tektoncd/pipeline/issues/2134)
+- [Issue #2134: Support using a PipelineTask in the Pipeline CRD to run other Pipelines the same way we run a Task](https://github.com/tektoncd/pipeline/issues/2134)
+- [Issue #4067: Add a gateway task or grouping for pipelines](https://github.com/tektoncd/pipeline/issues/4067)
 - [Project Proposal](https://github.com/tektoncd/community/issues/330)
 - [Experimental Project](https://github.com/tektoncd/experimental/tree/main/pipelines-in-pipelines)
 - [Original Proposal](https://docs.google.com/document/d/14Uf7XQEnkMFBpNYRZiwo4dwRfW6do--m3yPhXHx4ybk/edit)

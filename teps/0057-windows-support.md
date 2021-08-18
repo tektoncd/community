@@ -112,10 +112,24 @@ In order to have Windows nodes run TaskRuns there are some elements of Tekton th
 In the case where there are no Windows containers the goal is obviously no performance impact at all. When there are Windows containers then we would aim for equivalent performance as on Linux nodes, where possible.
 
 ## Design Details
-TBD
+### Windows Support
+In order for Tekton to run correctly on mixed-os clusters it was first necessary to add linux NodeAffinity rules to the controller and webhook deployments. This was merged in [PR 3909](https://github.com/tektoncd/pipeline/pull/3909). One day we may want these to be able to run on windows nodes, but for now the tekton control plane will always run on linux nodes.
+
+A key factor in adding windows support to Tekton, was to add support for multi-os builds to ko, and a lot of work has been done on that project that affects this TEP. Specifically [this pull request](https://github.com/google/ko/pull/374) added support for building windows images with ko. In order for this to work with Tekton we needed to ensure that the windows entrypoint and nop images behave in the same way as their linux counterparts, this was done in [PR 4018](https://github.com/tektoncd/pipeline/pull/4018).
+
+Documentation and examples of windows workloads were added in [PR 4138](https://github.com/tektoncd/pipeline/pull/4138).
+
+### Windows Script support
+Since windows scripts needs to be created differently from linux scripts, Tekton need some way of determining if a script is destined to run on a windows node. We propose a shebang (similar to what is currently used for linux scripts) which alerts tekton to this - `#!win`. The remainder of the shebang line will be the command used to run the script file. If it’s a powershell script it would be either `#!win powershell -File` or `#!win pwsh -File` depending on the windows image you’re using (the -File option is needed to make powershell interpret commands from a file). For python it would be `#!win python`. If there is nothing on the shebang line other than `#!win` then the script will be stored in a .cmd file which will be executed in the step.
+
+The `ShellImageWin`, which should default to a powershell image, also needs to be added to the Images struct and is used to place windows scripts.
+
+These changes can be seen in [PR 4128](https://github.com/tektoncd/pipeline/pull/4128).
 
 ## Test Plan
-TBD
+Unit tests and e2e tests for windows script mode are in [PR 4128](https://github.com/tektoncd/pipeline/pull/4128), and e2e tests for windows taskruns were merged in pull request [PR 4139](https://github.com/tektoncd/pipeline/pull/4139).
+
+The e2e tests will require windows nodes on a cluster in order to run, so at some point we will need windows nodes added to a cluster for testing. For now the tests are available and ready for use once we have a way of running them.
 
 ## Design Evaluation
 ### Reusability

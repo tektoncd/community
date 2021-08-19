@@ -222,3 +222,4 @@ This is the complete list of Tekton teps:
 |[TEP-0072](0072-results-json-serialized-records.md) | Results: JSON Serialized Records | implementable | 2021-07-26 |
 |[TEP-0073](0073-simplify-metrics.md) | Simplify metrics | proposed | 2021-06-23 |
 |[TEP-0080](0080-support-domainscoped-parameterresult-names.md) | Support domain-scoped parameter/result names | proposed | 2021-08-19 |
+|[TEP-0081](0081-convention-for-parameterresult-name-ownership-and-definition.md) | Convention for parameter/result name ownership and definition | proposed | 2021-08-19 |

@@ -221,3 +221,4 @@ This is the complete list of Tekton teps:
 |[TEP-0071](0071-custom-task-sdk.md) | Custom Task SDK | proposed | 2021-06-15 |
 |[TEP-0072](0072-results-json-serialized-records.md) | Results: JSON Serialized Records | implementable | 2021-07-26 |
 |[TEP-0073](0073-simplify-metrics.md) | Simplify metrics | proposed | 2021-06-23 |
+|[TEP-0080](0080-taskrun-prepost-steps.md) | TaskRun: Pre/Post Steps | proposed | 2021-08-18 |

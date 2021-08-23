@@ -1,10 +1,14 @@
 ---
-status: implementable 
+status: implemented 
 title: Skipping Strategies 
 creation-date: '2021-03-24' 
-last-updated: '2021-07-28'
+last-updated: '2021-08-23'
 authors:
 - '@jerop'
+see-also:
+- TEP-0007
+- TEP-0048
+- TEP-0056
 ---
 
 # TEP-0059: Skipping Strategies
@@ -882,7 +886,9 @@ Use this section to add links to GitHub issues, other TEPs, design docs in Tekto
 shared drive, examples, etc. This is useful to refer back to any other related links
 to get more details.
 -->
-
+- [Implementation in Tekton Pipelines Pull Request #4085](https://github.com/tektoncd/pipeline/pull/4085)
+- [Tekton Pipeline release v0.27.0 "Tonkinese Talos"](https://github.com/tektoncd/pipeline/releases/tag/v0.27.0)
+- [Migration announcement in Tekton Pipelines Discussion #4185](https://github.com/tektoncd/pipeline/discussions/4185)
 - Related Designs:
     - [TEP-0007: Conditions Beta](https://github.com/tektoncd/community/blob/main/teps/0007-conditions-beta.md)
     - [TEP-0050: Ignore Task Failures](https://github.com/tektoncd/community/blob/main/teps/0050-ignore-task-failures.md)

@@ -276,7 +276,6 @@ but **offered purely for illustrative purposes**.
             }
     ```
 
-
 ## Requirements
 
 Needs to be supported by Tekton Tasks/Pipelines
@@ -293,8 +292,43 @@ This proposes the use of reverse-domain scoped names, e.g.
 holders and subdivided according to their will (e.g.
 `dev.tekton.pipelines.foo.bar` may be for `pipelines` use).
 
-
 ### Notes/Caveats (optional)
+
+There are a number of precedents for the use of reverse domain-scoped names:
+
+1. Java imports (easily the most pervasive):
+
+    ```java
+    import com.google.common.collect.ImmutableMap;
+    ```
+
+    > Anecdotally, Google used this internally for Python package names as
+    > well, but this seems like a Google-specific convention for Python.
+
+2. CloudEvent [types](https://github.com/cloudevents/spec/blob/v1.0.1/spec.md#type):
+
+    ```
+    com.github.pull_request.opened
+    ```
+
+3. Containerd plugins (copied from [stargz-snapshotter](https://github.com/containerd/stargz-snapshotter#quick-start-with-kubernetes))
+
+    ```toml
+    # Use stargz snapshotter through CRI
+    [plugins."io.containerd.grpc.v1.cri".containerd]
+      snapshotter = "stargz"
+      disable_snapshot_annotations = false
+    ```
+
+There are also precedents for the use of typical domains, the most relevant to
+our space is Kubernetes [labels and annotations](https://kubernetes.io/docs/reference/labels-annotations-taints/):
+
+```yaml
+metadata:
+  labels:
+    cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+```
+
 
 ### Risks and Mitigations
 

@@ -42,7 +42,7 @@ as an issue for discussion._
 
 ## Motivation
 
-The motivation of this work is to *enabl* us to establish conventions around the
+The motivation of this work is to *enable* us to establish conventions around the
 definition of parameters and results that may have a deeper meaning for
 higher-level systems without a high-degree of accidental naming collisions.
 

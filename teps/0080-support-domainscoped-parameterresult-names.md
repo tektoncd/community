@@ -98,11 +98,11 @@ Two parts to the proposal:
     - name: dev.mattmoor.foo
 ```
 
-2. Allow folks to reference parameters and results with quotes around the name
+2. Allow folks to reference parameters and results with subscript around the name
 (required if it contains a `.`):
 ```yaml
   steps:
-    - image: $(params."dev.mattmoor.foo")
+    - image: $(params[dev.mattmoor.foo])
 ```
 
 ### Notes/Caveats (optional)

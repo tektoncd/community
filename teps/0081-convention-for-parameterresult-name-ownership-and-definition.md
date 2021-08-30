@@ -43,7 +43,7 @@ of well-known parameters and results.
 ### Goals
 
 The first goal of this TEP is to define a mechanism by which an organization
-(e.g. Tekton, Shipwright, Google, Redhat) may define parameters and results
+(e.g. Tekton, Shipwright, Google, Red Hat) may define parameters and results
 that their organization "owns" the definition of wrt typing and semantics.
 
 The second goal of this TEP is to enable the unamiguous definition of interfaces

@@ -324,10 +324,13 @@ Topics for this WG include the experimental [Tekton Workflows](https://github.co
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
 | Community Meeting VC       | [meet.google.com/jwa-pxmv-vpi](https://meet.google.com/jwa-pxmv-vpi) |
 | Community Meeting Calendar | Tuesdays every week, 10am -10:30am ET <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NDl0bzN1OWl2dWxlMXBpNGFnaDhjM2N2NjRfMjAyMTA5MDdUMTQwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
-| Meeting Notes              | [Notes](https://docs.google.com/document/d/1UVPSCDyNO-TzEFSv8jrqrEOF_FmV8NFuXncFm1gwmeY/edit) |
-| Slack Channels             | [#pipeline-as-code](https://tektoncd.slack.com/messages/pipeline-as-code) |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1di4ikeVb8Mksgbq4CzW4m4xUQPZ2dQMLvK1VIJw7OQg/edit) |
+| Slack Channels             | [#workflows](https://tektoncd.slack.com/messages/workflows) |
 
 
-| &nbsp;                                                           | Facilitators    | Company     | Profile                                                 |
-| --------------------------------------------------------         | ----------      | -------     | ---------------------------------------                 |
-| <img width="30px" src="https://github.com/dibyom.png">           | Dibyo Mukherjee | Google      | [dibyom](https://github.com/dibyom)                     |
+| &nbsp;                                                           | Facilitators     | Company     | Profile                                                 |
+| --------------------------------------------------------         | ----------       | -------     | ---------------------------------------                 |
+| <img width="30px" src="https://github.com/dibyom.png">           | Dibyo Mukherjee  | Google      | [dibyom](https://github.com/dibyom)                     |
+| <img width="30px" src="https://github.com/sbws.png">             | Scott Seaward    | Google      | [sbws](https://github.com/sbws)                   |
+| <img width="30px" src="https://github.com/khrm.png">             | Khurram Baig     | Red Hat     | [khrm](https://github.com/khrm)                         |
+| <img width="30px" src="https://github.com/chmouel.png">          | Chmouel Boudjnah | Red Hat     | [chmouel](https://github.com/chmouel)                   |

@@ -37,6 +37,7 @@ The current working groups are:
 - [Catalog and Hub](#catalog-and-hub)
 - [Operator and Deployment](#operator-and-deployment)
 - [Chains](#chains)
+- [Workflows](#workflows)
 
 ## General
 
@@ -313,3 +314,20 @@ This is the working group for [`tektoncd/chains`](https://github.com/tektoncd/ch
 | -----------------------------------------------------------    | ----------     | ------- | ------------------------------------------------  |
 | <img width="30px" src="https://github.com/dlorenc.png">        | Dan Lorenc     | Google  | [dlorenc](https://github.com/dlorenc) |
 | <img width="30px" src="https://github.com/priyawadhwa.png">    | Priya Wadhwa   | Google  | [priyawadhwa](https://github.com/priyawadhwa)     |
+
+## Workflows
+
+Topics for this WG include the experimental [Tekton Workflows](https://github.com/tektoncd/experimental/tree/main/workflows), [Pipelines as Code](https://github.com/openshift-pipelines/pipelines-as-code), [Remote Resolution](https://github.com/tektoncd/community/blob/main/teps/0060-remote-resource-resolution.md) etc.
+
+| Artifact                   | Link                       |
+| -------------------------- | -------------------------- |
+| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
+| Community Meeting VC       | [meet.google.com/jwa-pxmv-vpi](https://meet.google.com/jwa-pxmv-vpi) |
+| Community Meeting Calendar | Tuesdays every week, 10am -10:30am ET <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NDl0bzN1OWl2dWxlMXBpNGFnaDhjM2N2NjRfMjAyMTA5MDdUMTQwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1UVPSCDyNO-TzEFSv8jrqrEOF_FmV8NFuXncFm1gwmeY/edit) |
+| Slack Channels             | [#pipeline-as-code](https://tektoncd.slack.com/messages/pipeline-as-code) |
+
+
+| &nbsp;                                                           | Facilitators    | Company     | Profile                                                 |
+| --------------------------------------------------------         | ----------      | -------     | ---------------------------------------                 |
+| <img width="30px" src="https://github.com/dibyom.png">           | Dibyo Mukherjee | Google      | [dibyom](https://github.com/dibyom)                     |

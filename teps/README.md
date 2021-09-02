@@ -222,4 +222,5 @@ This is the complete list of Tekton teps:
 |[TEP-0072](0072-results-json-serialized-records.md) | Results: JSON Serialized Records | implementable | 2021-07-26 |
 |[TEP-0073](0073-simplify-metrics.md) | Simplify metrics | proposed | 2021-06-23 |
 |[TEP-0080](0080-support-domainscoped-parameterresult-names.md) | Support domain-scoped parameter/result names | implemented | 2021-08-19 |
+|[TEP-0081](0081-add-chains-subcommand-to-the-cli.md) | Add Chains sub-command to the CLI | proposed | 2021-08-31 |
 |[TEP-0084](0084-endtoend-provenance-collection.md) | end-to-end provenance collection | proposed | 2021-09-16 |

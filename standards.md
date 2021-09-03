@@ -14,6 +14,7 @@ Each Pull Request is expected to meet the following expectations around:
 
 * [Pull Request Description](#pull-request-description)
 * [Commits](#commits)
+  * [Example Commit Message](#example-commit-message)
 * [Docs](#docs)
 * [Functionality](#functionality)
 * [Content](#content)
@@ -36,22 +37,39 @@ _See also [the Tekton review process](https://github.com/tektoncd/community/blob
 
 ## Commits
 
-* Follow [commit messages best practices](https://chris.beams.io/posts/git-commit/):
-  1. Separate subject from body with a blank line
-  2. Limit the subject line to 50 characters
-  3. Capitalize the subject line
-  4. Do not end the subject line with a period
-  5. Use the imperative mood in the subject line
-  6. Wrap the body at 72 characters
-  7. Use the body to explain what and why vs. how. Don't just link to an issue and
-      [aim for 2 paragraphs](https://www.youtube.com/watch?v=PJjmw9TRB7s), e.g.:
-      * What is the problem being solved?
-      * Why is this the best approach?
-      * What other approaches did you consider?
-      * What side effects will this approach have?
-      * What future work remains to be done?
-* Prefer one commit per PR; if there are multiple commits, ensure each is
-  self-contained and makes sense without the context of the others in the PR
+* Use the body to explain [what and why vs. how](https://chris.beams.io/posts/git-commit/#why-not-how).
+  Link to an issue whenever possible and [aim for 2 paragraphs](https://www.youtube.com/watch?v=PJjmw9TRB7s),
+  e.g.:
+  * What is the problem being solved?
+  * Why is this the best approach?
+  * What other approaches did you consider?
+  * What side effects will this approach have?
+  * What future work remains to be done?
+* Prefer one commit per PR. For multiple commits ensure each makes sense without the context of the others.
+* As much as possible try to stick to these general formatting guidelines:
+  * Separate subject line from message body.
+  * Write the subject line using the "imperative mood" ([see examples](https://chris.beams.io/posts/git-commit/#imperative)).
+  * Keep the subject to 50 characters or less.
+  * Try to keep the message wrapped at 72 characters.
+  * Check [these seven best practices](https://chris.beams.io/posts/git-commit/#seven-rules) for more detail.
+
+### Example Commit Message
+
+Here's a commit message example to work from that sticks to the spirit
+of the guidance outlined above:
+
+```
+Add example commit message to demo our guidance
+
+Prior to this message being included in our standards there was no
+canonical example of an "ideal" commit message for devs to quickly copy.
+
+Providing a decent example helps clarify the intended outcome of our
+commit message rules and offers a template for people to work from. We
+could alternatively link to good commit messages in our repos but that
+requires developers to follow more links rather than just showing
+what we want.
+```
 
 ## Docs
 

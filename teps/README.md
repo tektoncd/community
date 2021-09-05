@@ -179,7 +179,7 @@ This is the complete list of Tekton teps:
 |[TEP-0022](0022-trigger-immutable-input.md) | Triggers - Immutable Input Events | implementable | 2020-09-29 |
 |[TEP-0023](0023-implicit-mapping.md) | 0023-Implicit-parameter-mapping | implementable | 2021-07-26 |
 |[TEP-0024](0024-embedded-trigger-templates.md) | Embedded TriggerTemplates | implemented | 2020-10-01 |
-|[TEP-0025](0025-hermekton.md) | Hermetic Builds | implementable | 2020-09-11 |
+|[TEP-0025](0025-hermekton.md) | Hermetic Builds | implementable | 2021-09-05 |
 |[TEP-0026](0026-interceptor-plugins.md) | interceptor-plugins | implementable | 2020-10-08 |
 |[TEP-0027](0027-https-connection-to-triggers-eventlistener.md) | HTTPS Connection to Triggers EventListener | implementable | 2020-11-01 |
 |[TEP-0028](0028-task-execution-status-at-runtime.md) | task-exec-status-at-runtime | implemented | 2021-06-03 |

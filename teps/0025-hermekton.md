@@ -2,8 +2,9 @@
 title: Hermetic Builds
 authors:
   - "@dlorenc"
+  - "@mattmoor"
 creation-date: 2020-09-11
-last-updated: 2020-09-11
+last-updated: 2021-09-05
 status: implementable
 ---
 
@@ -55,16 +56,14 @@ I would like to add this support to Tekton Pipelines, and use this feature (and 
 
 ### Goals
 
-* Allow Task authors to indicate that their Task can/should be run hermetically
-* Allow TaskRun authors to designate particular runs to run hermetically
-* Allow Pipeline authors to designate that parts or all of a pipeline can/should be run hermetically
-* Allow PipelineRun authors to designate particular runs to run hermetically
-* Allow post-build auditing to show clearly which *Runs were run hermetically
+* Allow Task authors to indicate Steps that can/should be run hermetically
+* Allow TaskRun authors to indicate Steps that can/should be run hermetically
+* Allow post-build auditing to show clearly which Steps were run hermetically
 
 ### Non-Goals
 
 * Strict sandboxing for untrusted code.
-The goal of this TEP is to run builds in hermetic environments.
+The goal of this TEP is to enable running Steps in hermetic environments.
 This option should not be used to run otherwise untrusted code without another level of sandboxing.
 
 ## Requirements
@@ -76,28 +75,41 @@ This option should not be used to run otherwise untrusted code without another l
 
 ### API Changes
 
-Tekton Pipelines will add support for a new "ExecutionMode" field on several objects.
-That type will look like:
+Tekton Pipelines will allow `TaskSpec`s to specify special "fence" steps that allow execution to transition into or out of "hermetic" execution mode:
 
-```go
-type ExecutionMode struct {
-	Hermetic bool
-}
+```yaml
+steps:
+- name: fetch-stuff
+  ...
+
+# This would direct Tekton to start the network jail.
+- name: tekton-begin-hermetic
+
+- name: build-stuff
+  ...
+
+# This would direct Tekton to disable the network jail.
+- name: tekton-end-hermetic
+
+- name: publish-stuff
+  ...
 ```
 
-This currently holds just a single bool, but could be expanded in the future.
-See [this rationale](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#primitive-types) in the k8s API style guide for why we introduce a new type.
+This change introduces the idea of special steps where a semantic is specified
+by using a particular step `name:`, **without** an `image:`.  It might make
+sense eventually to support parameterizing these semantics with `args:`, but
+the two special steps being introduced here will not support that today:
 
+* `name: tekton-begin-hermetic`: Will enable the network jail for subsequent steps.
+* `name: tekton-end-hermetic`: Will disable the network jail for subsequent steps.
 
-| Object | Field | Description |
-| --- | --- | --- |
-| Task |  spec.ExecutionMode | Whether or not TaskRuns of this Task should happen hermetically. This can be overridden on the TaskRun |
-| TaskRun | spec.ExecutionMode | Whether or not this TaskRun will be run hermetically. This can be used to override the value on the Task |
-| Pipeline | spec.ExecutionMode |Whether or not the **entire** pipeline should run hermetically. This can be overridden on the PipelineRun |
-| PipelineRun | spec.ExecutionMode | Whether or not the **entire** PipelineRun will be run hermetically. This can be used to override the default value on the Pipeline, but can be overridden for a specific TaskRun below.
-| PipelineRun | spec.TaskRunSpecs.ExecutionMode | Whether or not this specific TaskRrun should be run hermetically during a PipelineRun. This overrides the Task, Pipeline and PipelineRun defaults. |
+Previously the proposal scoped hermeticity to "all **user-specified** containers"
+(steps, sidecars), but as Tekton seeks to eliminate `PipelineResources`, the bias
+seems to be towards all steps being specified explicitly.  This future makes it
+harder to identify a "user-specified" scope to wrap in a network jail, which is
+why this proposal seeks to introduce the idea of "fence" steps as the API to let
+users bound the extent of hermeticity.
 
-This execution mode will be applied to all **user-specified** containers, including Steps and Sidecars. Tekton-injected ones (init containers, resource containers) will not run with this policy.
 
 ### User Stories (optional)
 
@@ -186,7 +198,8 @@ In rough order:
 ## Test Plan
 
 Unit tests to verify API fields are plumbed through correctly.
-End-to-end tests showing that builds cannot access the network.
+End-to-end tests showing that builds cannot access the network,
+while inside of the "fences".
 
 
 ## Alternatives

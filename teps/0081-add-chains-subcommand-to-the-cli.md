@@ -95,6 +95,10 @@ While the idea is to use the Tekton CLI to replace a combination of shell
 commands, we may not want to implement all exotic variations and focus only on
 the most common use cases in order to avoid overloading the `chains` command.
 
+A command allowing to configure Tekton Chains. While it would be a great
+feature to have, ths ideal implementation would require creating a new command,
+for instance `tkn adm chains`. This will be part of a future TEP.
+
 ### Use Cases
 
 #### Use Case 1
@@ -130,6 +134,10 @@ kubectl get taskrun $TASKRUN -o=json \
   |base64 --decode \
   | jq
 ```
+
+The behaviour must be secure by default, therefore verifying the signature when
+extracting the payload. However the ability to disable it should be provided to
+the user via a flag like `-S, --skip-verify`.
 
 #### Use Case 2
 
@@ -205,6 +213,9 @@ Some commands would require adding extra dependencies. For instance we would
 need to either ensure `cosign` is installed on the system or add it as a
 dependency in order to implement the commands having to deal with the `cosign`
 keys and signatures.
+
+However, the Sigstore group is working on a lightweight version of `cosign` that
+could be more easily added as a dependency.
 
 ### Risks and Mitigations
 

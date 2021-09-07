@@ -320,6 +320,18 @@ There are a number of precedents for the use of reverse domain-scoped names:
       disable_snapshot_annotations = false
     ```
 
+4. OCI [image annotations](https://github.com/opencontainers/image-spec/blob/main/annotations.md#rules).
+   From their pre-defined annotation keys:
+
+    ```
+    org.opencontainers.image.created
+    org.opencontainers.image.authors
+    org.opencontainers.image.url
+    org.opencontainers.image.documentation
+    org.opencontainers.image.source
+    ...
+    ```
+
 There are also precedents for the use of typical domains, the most relevant to
 our space is Kubernetes [labels and annotations](https://kubernetes.io/docs/reference/labels-annotations-taints/):
 

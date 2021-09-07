@@ -331,6 +331,6 @@ Topics for this WG include the experimental [Tekton Workflows](https://github.co
 | &nbsp;                                                           | Facilitators     | Company     | Profile                                                 |
 | --------------------------------------------------------         | ----------       | -------     | ---------------------------------------                 |
 | <img width="30px" src="https://github.com/dibyom.png">           | Dibyo Mukherjee  | Google      | [dibyom](https://github.com/dibyom)                     |
-| <img width="30px" src="https://github.com/sbws.png">             | Scott Seaward    | Google      | [sbws](https://github.com/sbws)                   |
+| <img width="30px" src="https://github.com/sbwsg.png">            | Scott Seaward    | Google      | [sbwsg](https://github.com/sbwsg)                       |
 | <img width="30px" src="https://github.com/khrm.png">             | Khurram Baig     | Red Hat     | [khrm](https://github.com/khrm)                         |
 | <img width="30px" src="https://github.com/chmouel.png">          | Chmouel Boudjnah | Red Hat     | [chmouel](https://github.com/chmouel)                   |

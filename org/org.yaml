@@ -151,7 +151,6 @@ orgs:
         members:
         - kimsterv
         - dlorenc
-        - sbwsg
         - chmouel
         - vinamra28
         privacy: closed
@@ -197,7 +196,6 @@ orgs:
         - pritidesai
         - dlorenc
         - dibyom
-        - sbwsg
         - jerop
         privacy: closed
         repos:
@@ -277,7 +275,6 @@ orgs:
         - kimsterv
         - nikhil-thomas
         - savitaashture
-        - sbwsg
         - wlynch
         privacy: closed
         repos:
@@ -523,7 +520,6 @@ orgs:
         - ImJasonH
         members:
         - vdemeester
-        - sbwsg
         - dibyom
         - danielhelfand
         - piyush-garg

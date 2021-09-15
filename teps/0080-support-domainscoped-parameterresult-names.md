@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: implemented
 title: Support domain-scoped parameter/result names
 creation-date: '2021-08-19'
 last-updated: '2021-08-19'

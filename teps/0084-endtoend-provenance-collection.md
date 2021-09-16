@@ -1,0 +1,297 @@
+---
+status: proposed
+title: end-to-end provenance collection
+creation-date: '2021-09-16'
+last-updated: '2021-09-16'
+authors:
+- '@nadgowdas'
+---
+
+# TEP-0084: end-to-end provenance collection
+
+<!--
+**Note:** When your TEP is complete, all of these comment blocks should be removed.
+
+To get started with this template:
+
+- [ ] **Fill out this file as best you can.**
+  At minimum, you should fill in the "Summary", and "Motivation" sections.
+  These should be easy if you've preflighted the idea of the TEP with the
+  appropriate Working Group.
+- [ ] **Create a PR for this TEP.**
+  Assign it to people in the SIG that are sponsoring this process.
+- [ ] **Merge early and iterate.**
+  Avoid getting hung up on specific details and instead aim to get the goals of
+  the TEP clarified and merged quickly.  The best way to do this is to just
+  start with the high-level sections and fill out details incrementally in
+  subsequent PRs.
+
+Just because a TEP is merged does not mean it is complete or approved.  Any TEP
+marked as a `proposed` is a working document and subject to change.  You can
+denote sections that are under active debate as follows:
+
+```
+<<[UNRESOLVED optional short context or usernames ]>>
+Stuff that is being argued.
+<<[/UNRESOLVED]>>
+```
+
+When editing TEPS, aim for tightly-scoped, single-topic PRs to keep discussions
+focused.  If you disagree with what is already in a document, open a new PR
+with suggested changes.
+
+If there are new details that belong in the TEP, edit the TEP.  Once a
+feature has become "implemented", major changes should get new TEPs.
+
+The canonical place for the latest set of instructions (and the likely source
+of this file) is [here](/teps/NNNN-TEP-template/README.md).
+
+-->
+
+<!--
+This is the title of your TEP.  Keep it short, simple, and descriptive.  A good
+title can help communicate what the TEP is and should be considered as part of
+any review.
+-->
+
+<!--
+A table of contents is helpful for quickly jumping to sections of a TEP and for
+highlighting any additional information provided beyond the standard TEP
+template.
+
+Ensure the TOC is wrapped with
+  <code>&lt;!-- toc --&rt;&lt;!-- /toc --&rt;</code>
+tags, and then generate with `hack/update-toc.sh`.
+-->
+
+<!-- toc -->
+- [Summary](#summary)
+- [Motivation](#motivation)
+  - [Goals](#goals)
+  - [Non-Goals](#non-goals)
+  - [Use Cases (optional)](#use-cases-optional)
+- [Requirements](#requirements)
+- [Proposal](#proposal)
+  - [Notes/Caveats (optional)](#notescaveats-optional)
+  - [Risks and Mitigations](#risks-and-mitigations)
+  - [User Experience (optional)](#user-experience-optional)
+  - [Performance (optional)](#performance-optional)
+- [Design Details](#design-details)
+- [Test Plan](#test-plan)
+- [Design Evaluation](#design-evaluation)
+- [Drawbacks](#drawbacks)
+- [Alternatives](#alternatives)
+- [Infrastructure Needed (optional)](#infrastructure-needed-optional)
+- [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
+- [Implementation Pull request(s)](#implementation-pull-request-s)
+- [References (optional)](#references-optional)
+<!-- /toc -->
+
+## Summary
+
+As we are designing and building supply chain security solutions, one of the critical requirement is to be able to to capture attestable provenance for every action from code --> container. And our CICD pipelines are biggest part within this spectrum of code --> container. In this proposal, we are presenting some ideas around achieving them in comprehensive manner.
+
+There is some existing great work being done with ["tektoncd/chains"](https://github.com/tektoncd/chains). The objective in this proposal is to build technologies that complement and extends "chains".
+
+
+## Motivation
+
+Let's consider a simple CI workflow shown below:
+
+![](images/0084-endtoend-prov.png)
+
+With "chains", we are able to capture the signed provenance for individual `taskruns`, that includes  input parameters, image/command used for execution and output results. If we query provenance for the output `image`, we only get the record for `image-build` task with input parameter telling us that `image` was build from `clone-dir` path. But, we do not get or link provenance across multiple tasks in the pipeline, such that we can attest end-to-end.
+
+
+### Goals
+
+* Allow automated attestation of pipeline execution from event-trigger to completion
+* Attestation records are captured in popular formats like "in-toto"
+* These record(s) are automatically signed  and pushed to different storage backends (same techniques that chains employed)
+* The attestation record(s) for pipeline execution are self-contained to perform independent provenance audit
+* The attestation process is transparent to the user, in the sense user do not need to change their pipeline.
+
+### Non-Goals
+
+* Ensure performance impact on pipeline execution is minimum
+* Any failure in the controller does not impact pipeline execution
+* All the verifications/enforcements during pipeline execution are currently out-of-scope (possibly should be addressed by seperate pipeline admission controller)
+
+
+<!--
+What is out of scope for this TEP?  Listing non-goals helps to focus discussion
+and make progress.
+-->
+
+### Use Cases (optional)
+
+<!--
+Describe the concrete improvement specific groups of users will see if the
+Motivations in this doc result in a fix or feature.
+
+Consider both the user's role (are they a Task author? Catalog Task user?
+Cluster Admin? etc...) and experience (what workflows or actions are enhanced
+if this problem is solved?).
+-->
+
+## Requirements
+
+<!--
+Describe constraints on the solution that must be met. Examples might include
+performance characteristics that must be met, specific edge cases that must
+be handled, or user scenarios that will be affected and must be accomodated.
+-->
+
+## Proposal
+
+In this proposal, we are suggesting following extensions for an end-to-end and comprehensive provenance:
+
+##### 1. Event Signing Interface
+As the event-payload is received by the `EventListener`, we need an interface to introspect/query payload so we can sign it from the controller.
+
+##### 2. Provenance for pipelinerun
+In addition to individual `taskruns`, we collect the attestation for `pipelineruns`. This would allow us to attest: (a) list of all tasks executed in the pipelines (b) order in which these tasks were executed ( c) list of shared resources created/shared across tasks
+
+##### 3. Attestation Format
+(As an optimizion option) Instead of creating seperate attestation records for `taskrun`, `pipelinerun`, `event-payload`, create a single attestation record at the "end" of a `pipelinerun` that includes everything.
+
+In our running example above, with this changes, for a given `image` we can attest that:
+1.  A pipeline was trigger by event with attested payload 
+2. In the pipeline, 3 tasks were execure in this order: "git-clone" --> "security-scan" --> "image-build". 
+3. The "image" was built from "clone-repo" dirpath, which was populated by "git-clone" task from {repo-url, revision} which match the signed event-payload.
+
+These attestations help audit/validate our pipeline executions for:
+
+1. A pipeline was trigger by authorized event
+2. The source of input parameters to our tasks. In our example the source was an event-payload, but it could be configuration resources as well.
+3. List and order of all tasks performed in the pipeline
+
+### Notes/Caveats (optional)
+
+<!--
+What are the caveats to the proposal?
+What are some important details that didn't come across above.
+Go in to as much detail as necessary here.
+This might be a good place to talk about core concepts and how they relate.
+-->
+
+### Risks and Mitigations
+
+<!--
+What are the risks of this proposal and how do we mitigate. Think broadly.
+For example, consider both security and how this will impact the larger
+kubernetes ecosystem.
+
+How will security be reviewed and by whom?
+
+How will UX be reviewed and by whom?
+
+Consider including folks that also work outside the WGs or subproject.
+-->
+
+### User Experience (optional)
+
+<!--
+Consideration about the user experience. Depending on the area of change,
+users may be task and pipeline editors, they may trigger task and pipeline
+runs or they may be responsible for monitoring the execution of runs,
+via CLI, dashboard or a monitoring system.
+
+Consider including folks that also work on CLI and dashboard.
+-->
+
+### Performance (optional)
+
+<!--
+Consideration about performance.
+What impact does this change have on the start-up time and execution time
+of task and pipeline runs? What impact does it have on the resource footprint
+of Tekton controllers as well as task and pipeline runs?
+
+Consider which use cases are impacted by this change and what are their
+performance requirements.
+-->
+
+## Design Details
+
+<!--
+This section should contain enough information that the specifics of your
+change are understandable.  This may include API specs (though not always
+required) or even code snippets.  If there's any ambiguity about HOW your
+proposal will be implemented, this is the place to discuss them.
+
+If it's helpful to include workflow diagrams or any other related images,
+add them under "/teps/images/". It's upto the TEP author to choose the name
+of the file, but general guidance is to include at least TEP number in the
+file name, for example, "/teps/images/NNNN-workflow.jpg".
+-->
+
+## Test Plan
+
+<!--
+**Note:** *Not required until targeted at a release.*
+
+Consider the following in developing a test plan for this enhancement:
+- Will there be e2e and integration tests, in addition to unit tests?
+- How will it be tested in isolation vs with other components?
+
+No need to outline all of the test cases, just the general strategy.  Anything
+that would count as tricky in the implementation and anything particularly
+challenging to test should be called out.
+
+All code is expected to have adequate tests (eventually with coverage
+expectations).
+-->
+
+## Design Evaluation
+<!--
+How does this proposal affect the reusability, simplicity, flexibility 
+and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/master/design-principles.md)
+-->
+
+## Drawbacks
+
+<!--
+Why should this TEP _not_ be implemented?
+-->
+
+## Alternatives
+
+<!--
+What other approaches did you consider and why did you rule them out?  These do
+not need to be as detailed as the proposal, but should include enough
+information to express the idea and why it was not acceptable.
+-->
+
+## Infrastructure Needed (optional)
+
+<!--
+Use this section if you need things from the project/SIG.  Examples include a
+new subproject, repos requested, github details.  Listing these here allows a
+SIG to get the process for these resources started right away.
+-->
+
+## Upgrade & Migration Strategy (optional)
+
+<!--
+Use this section to detail wether this feature needs an upgrade or
+migration strategy. This is especially useful when we modify a
+behavior or add a feature that may replace and deprecate a current one.
+-->
+
+## Implementation Pull request(s)
+
+<!--
+Once the TEP is ready to be marked as implemented, list down all the Github
+Pull-request(s) merged.
+Note: This section is exclusively for merged pull requests, for this TEP.
+It will be a quick reference for those looking for implementation of this TEP.
+-->
+
+## References (optional)
+
+<!--
+Use this section to add links to GitHub issues, other TEPs, design docs in Tekton
+shared drive, examples, etc. This is useful to refer back to any other related links
+to get more details.
+-->

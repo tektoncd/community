@@ -231,10 +231,11 @@ How will UX be reviewed and by whom?
 Consider including folks that also work outside the WGs or subproject.
 -->
 
-### User Experience (optional)
+### User Experience
 
 * Keep the CLI simple
 * Ensure auto-completion is available
+* Keep only to 2 levels of commands, i.e `tkn <command> <action> [parameter]...`
 
 ### Performance (optional)
 
@@ -300,6 +301,14 @@ The alternative is to use a combination of shell tools and to know which exact
 annotation or key to query/update. It was ruled out since it complicates
 the operations for no good reason. See the
 [Use Cases (optional)](use-cases-optional) section for some examples.
+
+One other alternative would be that chains provides a `tkn-chains` binary,
+and with the "execution model" we have in `tkn`, it would appear as a
+subcommand.One downside of this, is that it wouldn't be available by default and
+would complicate a bit the "packaging part". I'd rather have the chains command
+in, and secure by default (if history teach us anything is that things not
+enable or shipped by default are less adopted 😓)
+[[ref](https://github.com/tektoncd/community/pull/508#discussion_r712816640)].
 
 ## Infrastructure Needed (optional)
 

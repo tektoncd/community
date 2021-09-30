@@ -305,7 +305,7 @@ This is the working group for [`tektoncd/chains`](https://github.com/tektoncd/ch
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Community Meeting VC       | [https://meet.google.com/iuv-jbov-fmi](https://meet.google.com/iuv-jbov-fmi) |
+| Community Meeting VC       | [https://meet.google.com/ktu-xuqo-uyc](https://meet.google.com/ktu-xuqo-uyc) |
 | Community Meeting Calendar | Thursdays every other week, 9am -9:30am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=Nzc3N2VjZjk3amZnZzc5MDQwODYxNzRrZHVfMjAyMTA4MTlUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/1UVPSCDyNO-TzEFSv8jrqrEOF_FmV8NFuXncFm1gwmeY/edit) |
 | Slack Channels             | [#chains](https://tektoncd.slack.com/messages/chains) |

@@ -692,6 +692,7 @@ orgs:
         members:
         - pritidesai
         - dlorenc
+        - loosebazooka
         privacy: closed
         repos:
           chains: read

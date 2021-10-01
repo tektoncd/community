@@ -5,6 +5,7 @@ creation-date: '2021-08-19'
 last-updated: '2021-08-19'
 authors:
 - '@mattmoor'
+- '@skaegi'
 ---
 
 # TEP-0080: Support domain-scoped parameter/result names
@@ -84,7 +85,7 @@ here (just about enabling that next convo).
 
 ## Requirements
 
-Parameters and Result name resolution must be unamiguous, especially in the presence
+Parameters and Result name resolution must be unambiguous, especially in the presence
 of proposals like [TEP for stronger typing](https://github.com/tektoncd/community/pull/479),
 which allows folks to access fields of complex parameters.
 
@@ -98,11 +99,17 @@ Two parts to the proposal:
     - name: dev.mattmoor.foo
 ```
 
-2. Allow folks to reference parameters and results with subscript around the name
+2. Allow folks to reference parameters and results using bracket notation with either
+single or double quotes enclosing the parameter name
 (required if it contains a `.`):
 ```yaml
   steps:
-    - image: $(params[dev.mattmoor.foo])
+    - image: $(params['dev.mattmoor.foo'])
+  
+  #OR
+
+  steps:
+    - image: $(params["dev.mattmoor.foo"])
 ```
 
 ### Notes/Caveats (optional)
@@ -111,7 +118,10 @@ Two parts to the proposal:
 
 The main risk is likely the ambiguity of references without the quoting requirement,
 especially in a world where parameter and results can themselves be object and parts
-of those are accessed via `.`
+of those are accessed via `.` In addition to `.` we might find that `-` is a similarly
+risky character as it is often used in expressions. As for '.' we will have to continue
+to support dereferencing for backwards compatability reasons but likely users should
+be using bracket notation for parameter names with either `.` or `-`.
 
 ### User Experience (optional)
 
@@ -130,8 +140,8 @@ specifics worth fleshing out in advance of PRs.
 
 ## Test Plan
 
-Testing should be added of each of the pieces above: quoting (alone), and quoting
-of parameters and results with `.` in both Task and Pipeline contexts.
+Testing should be added for each of the pieces above: quoting (alone), and both single
+and double quoting of parameters and results with `.` in both Task and Pipeline contexts.
 
 ## Design Evaluation
 
@@ -159,6 +169,7 @@ I can't think of any problems, since this isn't supported today.
 ## Implementation Pull request(s)
 
 * https://github.com/tektoncd/pipeline/pull/4215
+* https://github.com/tektoncd/pipeline/pull/4268
 
 ## References (optional)
 

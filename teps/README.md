@@ -227,4 +227,5 @@ This is the complete list of Tekton teps:
 |[TEP-0082](0082-workspace-hinting.md) | Workspace Hinting | proposed | 2021-10-26 |
 |[TEP-0084](0084-endtoend-provenance-collection.md) | end-to-end provenance collection | proposed | 2021-09-16 |
 |[TEP-0085](0085-per-namespace-controller-configuration.md) | Per-Namespace Controller Configuration | proposed | 2021-10-14 |
+|[TEP-0090](0090-matrix.md) | Matrix | proposed | 2021-11-08 |
 |[TEP-0094](0094-configuring-resources-at-runtime.md) | Configuring Resources at Runtime | proposed | 2021-11-08 |

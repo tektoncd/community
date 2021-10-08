@@ -249,7 +249,8 @@ When someone joins the governing board:
   * [`tekton-governance`](https://groups.google.com/g/tekton-governance)
   * [`tekton-nominations`](https://groups.google.com/g/tekton-nominations)
   * [`tekton-dev`](https://groups.google.com/g/tekton-dev)
-  * [`tekton-users`](https://groups.google.com/g/tekton-usersv)
+  * [`tekton-users`](https://groups.google.com/g/tekton-users)
+  * [`tekton-code-of-conduct`](https://groups.google.com/g/tekton-code-of-conduct)
 
 When someone leaves the governing board:
 * [The permissions given them as members of the governing board](#permissions-and-access) should be revoked, unless
@@ -263,7 +264,8 @@ When someone leaves the governing board:
   * [`tekton-governance`](https://groups.google.com/g/tekton-governance) (remove)
   * [`tekton-nominations`](https://groups.google.com/g/tekton-nominations) (remove)
   * [`tekton-dev`](https://groups.google.com/g/tekton-dev) (downgrade to member)
-  * [`tekton-users`](https://groups.google.com/g/tekton-usersv) (downgrade to member)
+  * [`tekton-users`](https://groups.google.com/g/tekton-users) (downgrade to member)
+  * [`tekton-code-of-conduct`](https://groups.google.com/g/tekton-code-of-conduct) (remove)
 
 ## Permissions and access
 

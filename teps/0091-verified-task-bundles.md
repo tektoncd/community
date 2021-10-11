@@ -43,7 +43,7 @@ title can help communicate what the TEP is and should be considered as part of
 any review.
 -->
 
-# TEP-XXXX: Verified Task Bundles
+# TEP-0091: Verified Task Bundles
 
 <!--
 A table of contents is helpful for quickly jumping to sections of a TEP and for

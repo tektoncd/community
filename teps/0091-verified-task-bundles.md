@@ -420,7 +420,8 @@ image prefix to reduce configuration (longest image name would match first).
 For example:
 
 ```
-  default-task-bundle-verification: |
+  default-task-verification: |
+    bundleVerification:
     - prefix: gcr.io/kaniko-project/
       signer: cosign
       key: [ some-public-key ]

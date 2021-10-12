@@ -215,10 +215,20 @@ performance characteristics that must be met, specific edge cases that must
 be handled, or user scenarios that will be affected and must be accomodated.
 -->
 
-- A Pipeline Author can indicate that a Task Bundle must be verified in order
+- There is a process by which a Task can be marked as trusted meaning the Task
+  has been explicitly signed off by an authenticated third party.
+- Verification can ensure the contents of the Task has not been modified since
+  being marked as trusted.
+- It is not possible to modify the marked Task in such a way that it will still
+  pass verification.
+- Verification can be performed by Tekton Pipelines; Tekton Chains can see
+  whether or not the verification occurred and if it was successful.
+- A Pipeline Author can indicate that a Task must be verified in order
   for Chains to create a provenance attestation.
-- A Pipeline Author can configure a build to fail if a Task Bundle cannot be
-  verified.
+- A Pipeline Author can configure a build to fail if a Task cannot be verified.
+- Ideally, the Tekton Catalog can formally support Tekton Bundles, and the
+  Bundle registry will make it clear how to obtain the public key for
+  community-provided, trusted bundles.
 
 
 ## Proposal

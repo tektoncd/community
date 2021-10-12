@@ -180,7 +180,9 @@ Cluster Admin? etc...) and experience (what workflows or actions are enhanced
 if this problem is solved?).
 -->
 
-**Kaniko builds.** A Kaniko task exists in the Tekton Catalog. This task emits
+**Kaniko builds.** A Kaniko task exists in the Tekton Catalog
+(https://github.com/tektoncd/catalog/blob/main/task/kaniko/0.5/kaniko.yaml).
+This task emits
 output that allows Chains to make attestations. The task uses the
 `gcr.io/kaniko-project/executor` to perform the build and push the resulting
 image. But how can I be sure this Task is not compromised and is actually doing
@@ -189,7 +191,9 @@ using Sigstore's Cosign, to know that it was produced by the expected
 third-party.
 
 **Buildpack builds.** Similar to Kaniko, a Buildpacks task exists in the Tekton
-Catalog with output that indicates the image that was built. The motivation is
+Catalog with output that indicates the image that was built
+(https://github.com/tektoncd/catalog/blob/main/task/buildpacks-phases/0.2/buildpacks-phases.yaml).
+The motivation is
 the same here: how can I trust the Task without some sort of verification?
 
 **Really, any third-party task.** If we're going to build an ecosystem of tasks

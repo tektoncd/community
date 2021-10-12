@@ -1,3 +1,14 @@
+---
+status: proposed
+title: Verified Task Bundles
+creation-date: '2021-10-11'
+last-updated: '2021-10-11'
+authors:
+- '@squee1945'
+---
+
+# TEP-0091: Verified Task Bundles
+
 <!--
 **Note:** When your TEP is complete, all of these comment blocks should be removed.
 
@@ -42,8 +53,6 @@ This is the title of your TEP.  Keep it short, simple, and descriptive.  A good
 title can help communicate what the TEP is and should be considered as part of
 any review.
 -->
-
-# TEP-0091: Verified Task Bundles
 
 <!--
 A table of contents is helpful for quickly jumping to sections of a TEP and for

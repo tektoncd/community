@@ -6,7 +6,7 @@ We'd love to encourage folks to contribute to Tekton - and over at the [Continuo
 
 ### Guidance for project maintainers
 
-When creating a new issue for Hacktoberfest, please assign it the hacktoberfest-accepted label and make sure you provide at least:
+When creating a new issue for Hacktoberfest, please assign it the Hacktoberfest label and make sure you provide at least:
 
 - A perceived difficulty level
 - Awesome contacts/mentors willing to help out
@@ -15,7 +15,7 @@ When creating a new issue for Hacktoberfest, please assign it the hacktoberfest-
 
 ### Guidance for contributors
 
-The below links all contain the label selector for hacktoberfest-accepted and there you can find all of the issues that the maintainers think would be good ones to get involved in.
+The below links all contain the label selector for Hacktoberfest and there you can find all of the issues that the maintainers think would be good ones to get involved in.
 
 We enourage all of the following:
 - Sharing ideas and progress
@@ -30,15 +30,15 @@ If you start addressing an issue please assign yourself to it by posting the `/a
 
 ### Project ideas with Hacktoberfest queries
 
-- [Catalog](https://github.com/tektoncd/catalog/labels/hacktoberfest-accepted)
-- [Chains](https://github.com/tektoncd/chains/labels/hacktoberfest-accepted)
-- [CLI](https://github.com/tektoncd/cli/labels/hacktoberfest-accepted)
-- [Dashboard](https://github.com/tektoncd/dashboard/labels/hacktoberfest-accepted)
-- [Results](https://github.com/tektoncd/results/labels/hacktoberfest-accepted)
-- [Experimental](https://github.com/tektoncd/experimental/labels/hacktoberfest-accepted)
-- [Website](https://github.com/tektoncd/website/labels/hacktoberfest-accepted)
-- [Pipeline](https://github.com/tektoncd/pipeline/labels/hacktoberfest-accepted)
-- [Triggers](https://github.com/tektoncd/triggers/labels/hacktoberfest-accepted)
+- [Catalog](https://github.com/tektoncd/catalog/labels/Hacktoberfest)
+- [Chains](https://github.com/tektoncd/chains/labels/Hacktoberfest)
+- [CLI](https://github.com/tektoncd/cli/labels/Hacktoberfest)
+- [Dashboard](https://github.com/tektoncd/dashboard/labels/Hacktoberfest)
+- [Results](https://github.com/tektoncd/results/labels/Hacktoberfest)
+- [Experimental](https://github.com/tektoncd/experimental/labels/Hacktoberfest)
+- [Website](https://github.com/tektoncd/website/labels/Hacktoberfest)
+- [Pipeline](https://github.com/tektoncd/pipeline/labels/Hacktoberfest)
+- [Triggers](https://github.com/tektoncd/triggers/labels/Hacktoberfest)
 
 ### More information on Hacktoberfest, recognition and our FAQ!
 

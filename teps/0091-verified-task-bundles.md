@@ -185,7 +185,9 @@ if this problem is solved?).
 This task emits
 output that allows Chains to make attestations. The task uses the
 `gcr.io/kaniko-project/executor` to perform the build and push the resulting
-image. But how can I be sure this Task is not compromised and is actually doing
+image. But how can I be sure this Task is not compromised
+(e.g., a malicious image was pushed to the repository)
+and is actually doing
 what I expect? At a minimum, I would like to be able to verify it, for example,
 using Sigstore's Cosign, to know that it was produced by the expected
 third-party.

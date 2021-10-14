@@ -210,7 +210,7 @@ This is the complete list of Tekton teps:
 |[TEP-0057](0057-windows-support.md) | Windows support | proposed | 2021-03-18 |
 |[TEP-0058](0058-graceful-pipeline-run-termination.md) | Graceful Pipeline Run Termination | implementable | 2021-04-27 |
 |[TEP-0059](0059-skipping-strategies.md) | Skipping Strategies | implemented | 2021-08-23 |
-|[TEP-0060](0060-remote-resource-resolution.md) | Remote Resource Resolution | proposed | 2021-08-23 |
+|[TEP-0060](0060-remote-resource-resolution.md) | Remote Resource Resolution | implementable | 2021-11-01 |
 |[TEP-0061](0061-allow-custom-task-to-be-embedded-in-pipeline.md) | Allow custom task to be embedded in pipeline | implemented | 2021-05-26 |
 |[TEP-0062](0062-catalog-tags-and-hub-categories-management.md) | Catalog Tags and Hub Categories Management | implementable | 2021-03-30 |
 |[TEP-0063](0063-workspace-dependencies.md) | Workspace Dependencies | proposed | 2021-04-23 |

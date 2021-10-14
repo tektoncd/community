@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Remote Resource Resolution
 creation-date: '2021-03-23'
-last-updated: '2021-08-23'
+last-updated: '2021-11-01'
 authors:
 - '@sbwsg'
 - '@pierretasci'
@@ -16,21 +16,40 @@ authors:
 - [Key Terms](#key-terms)
 - [Motivation](#motivation)
   - [Goals](#goals)
-  - [Non-Goals](#non-goals)
-  - [Use Cases (optional)](#use-cases-optional)
+  - [Use Cases \(optional\)](#use-cases-optional)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
-  - [Proposal 1: Create an Experimental Resolution Project](#proposal-1-create-an-experimental-resolution-project)
-  - [Proposal 2: Disable Tekton Pipelines' &quot;In-Tree&quot; Resolution Logic With a Deployment Arg](#proposal-2-disable-tekton-pipelines-in-tree-resolution-logic-with-a-deployment-arg)
-  - [Proposal 3: Add <code>status.resolvedMeta</code> to <code>TaskRuns</code> and <code>PipelineRuns</code>](#proposal-3-add--to--and-)
-  - [Notes/Caveats (optional)](#notescaveats-optional)
+  - [1. Establish a new syntax in Tekton Pipelines' `taskRef` and `pipelineRef` structs for remote resources](#1-establish-a-new-syntax-in-tekton-pipelines-taskref-and-pipelineref-structs-for-remote-resources)
+  - [2. Implement procedure for resolution: `ResourceRequest` CRD](#2-implement-procedure-for-resolution-resourcerequest-crd)
+  - [3. Create a new Tekton Resolution project](#3-create-a-new-tekton-resolution-project)
   - [Risks and Mitigations](#risks-and-mitigations)
-  - [User Experience (optional)](#user-experience-optional)
-  - [Performance (optional)](#performance-optional)
+    - [Relying on a CRD as storage for in-lined resolved data](#relying-on-a-crd-as-storage-for-in-lined-resolved-data)
+    - [Changing the way it works means potentially rewriting multiple resolvers](#changing-the-way-it-works-means-potentially-rewriting-multiple-resolvers)
+  - [Data Integrity](#data-integrity)
+  - [User Experience \(optional\)](#user-experience-optional)
+    - [Simple flow: user submits `TaskRun` using public catalog `Task`](#simple-flow-user-submits-taskrun-using-public-catalog-task)
+  - [Performance](#performance)
 - [Design Details](#design-details)
+  - [New Pipelines syntax schema](#new-pipelines-syntax-schema)
+  - [`ResourceRequest` objects](#resourcerequest-objects)
+    - [YAML Examples](#yaml-examples)
+  - [Resolver specifics](#resolver-specifics)
+    - [In-Cluster Resolver](#in-cluster-resolver)
+    - [Bundle Resolver](#bundle-resolver)
+    - [Git Resolver](#git-resolver)
+  - [Pipelines' "Out of the Box" experience](#pipelines-out-of-the-box-experience)
+  - [Function and Struct Helpers](#function-and-struct-helpers)
 - [Test Plan](#test-plan)
+  - [Tekton Pipelines](#tekton-pipelines)
+  - [Tekton Resolution](#tekton-resolution)
+  - [Dogfooding](#dogfooding)
 - [Design Evaluation](#design-evaluation)
+  - [Reusability](#reusability)
+  - [Simplicity](#simplicity)
+  - [Flexibility](#flexibility)
 - [Drawbacks](#drawbacks)
+  - [Design Complexity](#design-complexity)
+  - [Coarse-Grained RBAC](#coarse-grained-rbac)
 - [Alternatives](#alternatives)
   - [Do Nothing Specific to Tekton Pipelines](#do-nothing-specific-to-tekton-pipelines)
     - [Applicability For Other Tekton Projects](#applicability-for-other-tekton-projects)
@@ -41,28 +60,33 @@ authors:
     - [Applicability For Other Tekton Projects](#applicability-for-other-tekton-projects-2)
   - [Custom Tasks](#custom-tasks)
     - [Applicability For Other Tekton Projects](#applicability-for-other-tekton-projects-3)
-  - [Introduce a Tekton Resource Request CRD](#introduce-a-tekton-resource-request-crd)
     - [Applicability For Other Tekton Projects](#applicability-for-other-tekton-projects-4)
   - [A CRD That Wraps Tekton's Existing Types](#a-crd-that-wraps-tektons-existing-types)
     - [Applicability For Other Tekton Projects](#applicability-for-other-tekton-projects-5)
-  - [Use a <code>pending</code> Status on PipelineRuns/TaskRuns With Embedded Resolution Info](#use-a--status-on-pipelinerunstaskruns-with-embedded-resolution-info)
+  - [Use a `pending` Status on PipelineRuns/TaskRuns With Embedded Resolution Info](#use-a-pending-status-on-pipelinerunstaskruns-with-embedded-resolution-info)
     - [Applicability For Other Tekton Projects](#applicability-for-other-tekton-projects-6)
   - [Use an Admission Controller to Perform Resolution](#use-an-admission-controller-to-perform-resolution)
     - [Applicability For Other Tekton Projects](#applicability-for-other-tekton-projects-7)
+  - [Sync Task and Pipeline objects directly into the cluster](#sync-task-and-pipeline-objects-directly-into-the-cluster)
+    - [Applicability For Other Tekton Projects](#applicability-for-other-tekton-projects-8)
 - [Open Questions](#open-questions)
 - [Future Extensions](#future-extensions)
 - [References](#references)
   - [Related designs and TEPs](#related-designs-and-teps)
   - [Experiments and proofs-of-concept](#experiments-and-proofs-of-concept)
   - [Related issues and discussions](#related-issues-and-discussions)
+- [Appendix A: Proof-of-Concept Controller](#appendix-a-proof-of-concept-controller)
+  - [Components](#components)
+  - [Implementation](#implementation)
+  - [Results & Discussion](#results--discussion)
 <!-- /toc -->
 
 ## Summary
 
-This TEP describes some problems around fetching and running Tasks and Pipelines
-("Tekton resources") from remote locations like image registries, git
-repositories, internal catalogs, cloud storage buckets, other clusters or
-namespaces, and so on.
+This TEP describes problems fetching and running Tasks and Pipelines
+("Tekton resources") from remote locations. Examples of these remote locations
+include image registries, git repositories, company-internal catalogs, object
+storage, other namespaces or clusters.
 
 This proposal advocates for treating Task and Pipeline resolution as an
 interface with several default sources out-of-the-box (those we already support
@@ -79,11 +103,10 @@ for their own resolvers.
 
 This section defines some key terms used throughout the rest of this doc.
 
-- `Remote`: Any location that stores Tekton resources outside of the cluster
-  (or namespace in multi-tenant setups) that the user's pipelines are running
-  in. These could be: OCI registries, git repos and other version control
-  systems, other namespaces, other clusters, cloud buckets, an organization's
-  proprietary internal catalog, or any other storage system.
+- `Remote`: Any location that stores Tekton resources. These could be: OCI
+  registries, git repos and other version control
+  systems, other namespaces, other clusters, object storage, an organization's
+  proprietary internal catalog, etc...
 - `Remote Resource`: The YAML file or other representation of a Tekton resource
   that lives in the Remote.
 - `Resolver`: A program or piece of code that knows how to interpret a
@@ -110,9 +133,9 @@ This existing support has a few problems:
    sync them in (`kubectl apply -f git-clone.yaml`).
 2. For resources in a Tekton Bundle registry, operators don't have a choice
    over what kind of storage best suits their teams: It's either a registry or
-   it's back to manually installing Tasks and Pipelines. This might not jive
-   with an org's chosen storage. Put another way: [why can't we just keep our
-   Tasks in git?](https://github.com/tektoncd/pipeline/issues/2298)
+   it's back to manually installing Tasks and Pipelines. This might not be
+   compatible with an org's chosen storage. Put another way: [why can't we just
+   keep our Tasks in git?](https://github.com/tektoncd/pipeline/issues/2298)
 3. Pipeline authors have to document the Tasks their Pipeline depends on
    out-of-band. A [common example of
    this](https://github.com/tektoncd/pipeline/discussions/3822) is a build
@@ -124,8 +147,12 @@ This existing support has a few problems:
    code](https://github.com/tektoncd/pipeline/blob/bad45506a9a9c25b028703e85e501b8f97598695/pkg/reconciler/taskrun/resources/taskref.go#L38)
    is synchronous: a reconciler thread is blocked while a resource is being
    fetched.
-5. Pipelines' existing support for cluster and bundle resources is not easily
-   extensible without modifying Pipelines' source code.
+5. Pipeline's existing support for cluster and bundle resources is not
+   extensible.
+7. Operators of Tekton Pipelines cannot selectively enable/disable sources of
+   tasks and pipelines. They cannot, for example, switch off the ability for
+   Tekton Pipelines to use `Tasks` from the cluster. Right now the only control
+   is whether to enable Bundles support since it's guarded behind feature flags.
 
 ### Goals
 
@@ -149,12 +176,9 @@ This existing support has a few problems:
 - Establish a common syntax that tool and platform creators can use to record,
   as part of a pipeline or run, the remote location that Tekton resources
   should be fetched from.
-- Offer a mechanism to verify remote tasks and pipelines against a digest
-  (or similar mechanism) before they are processed as resources by Pipelines'
-  reconcilers to ensure that the resource returned by a given Remote matches the
-  resource expected by the user.
-
-### Non-Goals
+- Integrate mechanisms to verify remote tasks and pipelines
+  before they are executed by Pipelines' reconcilers. See
+  [TEP-0091](https://github.com/tektoncd/community/pull/537) on this.
 
 ### Use Cases (optional)
 
@@ -172,11 +196,6 @@ published as part of the Tekton Pipelines project. The dev's Resolver is able
 to fetch Tekton resources from their Perforce repo and return them to the
 Pipelines reconciler.
 
-**Using a cloud bucket to store tasks and pipelines**: A team keeps all of
-their CI/CD workflows in a cloud bucket so they can quickly add new features.
-They want to be able to refer to the tasks and pipelines stored in that bucket
-rather than `kubectl apply` when a new workflow is added.
-
 **Platform interoperability**: A platform builder accepts workflows imported
 from other Tekton-compliant platforms. When a Pipeline is imported that
 includes a reference to a Task in a Remote that the platform doesn't already
@@ -189,9 +208,7 @@ compliance rules before the Tasks can be used in their app teams' Pipelines.
 The company hosts a private internal catalog and requires all the app teams to
 build their Pipelines using only that catalog. To make this easier all of the
 CI/CD clusters in the company are configured with a single remote resource
-resolver - a CatalogRef resolver - that points to the internal catalog. When a
-new Task is written it must go through an audit and review process before it is
-allowed to be merged into the internal catalog for all teams to use.
+resolver - a CatalogRef resolver - that points to the internal catalog.
 
 **Replacing ClusterTasks and introducing ClusterPipelines**: Tekton Pipelines
 has an existing CRD called ClusterTask which is a cluster-scoped Task. The
@@ -211,7 +228,7 @@ users can leverage those shared pipelines.
   resources before execution can begin.
 - Include a configurable timeout for async resolution so operators can tune the
   allowable delay before a resource resolution is considered failed.
-- Avoid blocking reconciler threads while fetching a remote resource is in
+- Avoid blocking Pipeline's reconciler threads while fetching a remote resource is in
   progress.
 - The implementation should be compatibile with the existing flagged Tekton
   Bundles support, with a view to replacing Tekton Pipeline's built-in
@@ -242,207 +259,611 @@ users can leverage those shared pipelines.
 
 ## Proposal
 
-Prior to moving this TEP to `implementable` there will be a considerable amount
-of experimentation required to guage suitability of different approaches. There
-are a lot of open questions wrt syntax, approach and architecture that cannot
-be easily answered without trying ideas with running code.
+### 1. Establish a new syntax in Tekton Pipelines' `taskRef` and `pipelineRef` structs for remote resources
 
-There are several additional changes that would aid experimentation in the
-pre-`implementable` phase of this TEP:
+Add new fields to `taskRef` and `pipelineRef` to set the resolver and
+its parameters. Access to these new fields will be locked behind the
+`alpha` feature gate.
 
-### Proposal 1: Create an Experimental Resolution Project
+`taskRef` new syntax samples:
 
-This proposal proposes adding a new controller in the [Experimental
-Repo](https://github.com/tektoncd/experimental/) that implements some of
-the ideas described in the [Alternatives section](#alternatives) of this TEP.
+```yaml
+taskRef:
+  resolver: bundle
+  resource:
+    image_url: gcr.io/tekton-releases/catalog/upstream/golang-fuzz:0.1
+    name: golang-fuzz
+    signer: cosign # TBD. See TEP-0091.
+```
 
-This will need a new directory added with a controller & OWNERS configuration.
-If we want to try multiple alternatives (e.g. explore both interceptor-style
-and reconciler-style approaches) then we can either have separate subdirectories
-or branches for each implementation.
+```yaml
+taskRef:
+  resolver: git
+  resource:
+    repository_url: https://github.com/tektoncd/catalog.git
+    branch: main
+    path: /task/golang-fuzz/0.1/golang-fuzz.yaml
+```
 
-### Proposal 2: Disable Tekton Pipelines' "In-Tree" Resolution Logic With a Deployment Arg
+`pipelineRef` new syntax samples:
 
-A problem we face with introducing an experimental resolver controller is that
-any in-cluster process watching for `TaskRun` and `PipelineRun` resources will
-race with Tekton Pipelines to process them as they're submitted to the kube
-API.
+```yaml
+pipelineRef:
+  resolver: git
+  resource:
+    repository_url: https://github.com/sbwsg/experimental.git
+    branch: remote-resolution
+    path: /remote-resolution/pipeline.yaml
+```
 
-In order to support an experimental controller independently performing
-resolution we could add a behavioural flag that completely disables the
-built-in resolution logic. For example: `experimental-disable-ref-resolution`.
+```yaml
+pipelineRef:
+  resolver: in-cluster
+  resource:
+    name: my-team-build-pipeline
+```
 
-This is explicitly _not_ being proposed as a feature flag because 1) it is not
-intended to migrate through to production-readiness and 2) a behavioural flag
-with its own name underlines the "experimental mode" that the user is electing
-to put their Tekton Pipelines controller in to.
+Note that the fields under `resource:` are validated by a resolver, not
+by Tekton Pipelines. [TEP-0075 (Dictionary
+Params)](https://github.com/tektoncd/community/pull/479) describes
+adding support for JSON object schema to Params. It would make sense to
+bring in the same schema support for the `resource:` field as well and
+eventually resolvers might be able to publish the schema they accept so
+that Pipelines can enforce it during validation of a `TaskRun` or
+`PipelineRun`.
 
-#### Alternative
+### 2. Implement procedure for resolution: `ResourceRequest` CRD
 
-A different approach that would work for PipelineRuns today would be to require
-them to be created with a [`Pending`
-status](https://github.com/tektoncd/pipeline/blob/main/docs/pipelineruns.md#pending-pipelineruns).
+When the Pipelines reconciler sees a `taskRef` or `pipelineRef` with a
+`resolver` field it creates a `ResourceRequest` object. The object is
+populated using fields from the `taskRef` or `pipelineRef`.
 
-This proposal doesn't take that approach because:
-1. The same support does not exist for TaskRuns and so would require its own
-   independent TEP and review cycle to implement.
-2. Pending status can't be used by multiple controllers that all need to signal
-   readiness. This means a Resolution Reconciler and (for example) a custom
-   PipelineRun Scheduler could set this flag before the other controller is
-   ready to do so.
+Once resolved the contents of the requested resource are base64-encoded
+and stored in-line in the `status.data` field of the `ResourceRequest`.
+Metadata is set in the `status.annotations` field. Examples of metadata
+include the commit digest of a resolved `git` resource, a bundle's
+digest, or the resolved data's `content-type`. The `ResourceRequest` is
+marked as successfully resolved. Here is a sample of a resolved
+`ResourceRequest` with some metadata fields trimmed out for brevity:
 
-### Proposal 3: Add `status.taskYaml` to `TaskRuns` and `status.pipelineYaml` to `PipelineRuns`
+```yaml
+apiVersion: resolution.tekton.dev/v1alpha1
+kind: ResourceRequest
+spec:
+  params:
+    repository_url: https://github.com/sbwsg/experimental.git
+    branch: remote-resolution
+    path: /remote-resolution/pipeline.yaml
+status:
+  data: a2luZDogUGlwZWxpbmUKYXBpVmVyc2lvbjogdGVrdG9uLmRldi92MWJldGExCm1ldGFkYXRhOgogIG5hbWU6IHAKc3BlYzoKICB0YXNrczoKICAtIG5hbWU6IGZldGNoLWZyb20tZ2l0CiAgICB0YXNrU3BlYzoKICAgICAgc3RlcHM6CiAgICAgIC0gaW1hZ2U6IGFscGluZS9naXQKICAgICAgICBzY3JpcHQ6IHwKICAgICAgICAgIGdpdCBjbG9uZSBodHRwczovL2dpdGh1Yi5jb20vdGVrdG9uY2QvcmVzdWx0cwo=
+  annotations:
+    commit: 2c9b093e94f30f588dc798cc56a2559d4da9d573
+    content-type: application/x-yaml
+  conditions:
+  - lastTransitionTime: "2021-10-14T15:38:14Z"
+    status: "True"
+    type: Succeeded
+```
 
-When the proposed experimental resolution controller sees an unresolved
-`TaskRun` or `PipelineRun` it will read the resource and then resolve whatever
-ref, bundle or inline document is included. The resolved `spec` will then be
-embedded in the `status.taskYaml.spec` field for `TaskRuns` or the
-`status.pipelineYaml.spec` field for `PipelineRuns`. Once those fields are populated
-Tekton Pipeline's reconcilers will be able to pick them up and begin working
-with the specs.
+If a `ResourceRequest` fails resolution then it is marked as failed with
+a `Succeeded/"False"` condition. The condition will include a
+machine-readable `reason` and human-readable `message` explaining the
+failure.
 
-We will take this approach because it's entirely backwards-compatible with our
-existing resolution and reconcilers: today, the reconcilers already copy
-resolved resources into the `status` block of `TaskRuns` and `PipelineRuns` so
-that changes in the underlying resources don't affect runs that are already
-in-flight. By observing the same protocol it means that the logic changes in
-our Tekton Pipelines' reconcilers is minimized and the same "audit trail"
-property is maintained.
+### 3. Create a new Tekton Resolution project
 
-Unfortunatley there's a wrinkle: our existing reconcilers copy labels and
-annotations from the resolved `Task` or `Pipeline` to the `TaskRun` or
-`PipelineRun`. By splitting the resolution logic in to its own external
-machinery we are introducing a barrier between resolution and metadata
-duplication: the "actuation reconcilers" never see the fully-resolved resource,
-only the `spec` passed via the `status`, so they're unable to perform the
-metadata copy. The end result is that the "resolver reconcilers" are also
-responsible for performing this metadata copy.
+Create a new project under the `tektoncd` Github org catering specifically
+to the functionality described in this TEP. The intention will be to
+take this project from alpha to beta and eventually to a stable,
+production-ready state. The project will provide:
 
-A lot of the conversation with this TEP so far has revolved around the fact
-that resolution might be something we want to expose not just for Pipelines but
-also other Tekton projects. Having the metadata copy performed by an external
-controller doesn't make a ton of sense in that case: metadata copying is a
-feature/requirement of Tekton Pipelines, not a general requirement for
-resolution.
+- The `ResourceRequest` CRD and a controller managing the lifecycle for
+  that CRD.
+- Code-generated clients & supporting types for `ResourceRequests`.
+- Function and struct helpers for other projects to use. See more in the
+  [related Design Details section](#function-and-struct-helpers).
+- A common interface for resolver implementors that abstracts away the
+  underlying use of CRDs.
 
-There are two approaches that I've considered for solutions to this:
+Webhook and controller deployments for `ResourceRequest` objects will
+run in the `tekton-remote-resolution` namespace by default. The
+namespace is intentionally separate from `tekton-pipelines` to allow
+`RBAC` that isolates the remote resolution machinery.
 
-1. Change the contract such that the _entire_ resolved YAML document is passed
-   via the `TaskRun` or `PipelineRun` `status`. This would give the Tekton
-   Pipelines reconcilers total flexibility to process the resolved document as
-   they need, but would be backwards-incompatible.
+During initial development and alpha the project will build several
+resolvers: "in-cluster", "bundle", and "git". In time we may decide to
+move these to their own repo alongside community-contributed resolvers,
+if any are written. See the [Design Details](#design-details) section
+for more on specific resolvers.
 
-2. Add a `status.resolvedMeta` field to `TaskRuns` and `PipelineRuns` that
-   allows the experimental controller to pass the `metav1.ObjectMeta`
-   information from a `Task` or `Pipeline` alongside the resolved spec.  This
-   would give enough data for Tekton Pipelines' reconcilers to keep metadata
-   copying their responsibility, without being a hard change to the way resolved
-   `specs` are stored on runs.
-
-Given the above two options we are proposing that we employ strategy (1) and
-add a `taskYaml` field to the `status` of `TaskRuns` and a `pipelineYaml` field
-to the status of `PipelineRuns`.
-
-There are some exceptions to the metadata fields that should be copied across.
-For example the annotation `kubectl.kubernetes.io/last-applied-configuration`
-can be extremely large and would bloat a TaskRun or PipelineRun
-during the resolution phase. Similarly for the `metadata.managedFields` field
-The precise set of metadata we include/exclude should be figured out as part
-of this experimental period but a couple of approaches would be:
-
-- Limit to just metadata fields prefixed with `[a-zA-Z].tekton.dev/`.
-- Exclude known edge-case fields (`last-applied-configuration` annotation,
-  `metadata.managedFields`)
-- Limit to just labels.
-
-### Notes/Caveats (optional)
-
-<!--
-What are the caveats to the proposal?
-What are some important details that didn't come across above.
-Go in to as much detail as necessary here.
-This might be a good place to talk about core concepts and how they relate.
--->
+The `ResourceRequest` Lifecycle Controller will be responsible for the
+following:
+1. Initialize `ResourceRequest` status fields on object creation.
+2. Observe `ResourceRequest` objects for populated `status.data` field
+   and set their `Succeeded` condition to `"True"`.
+3. Enforce global timeouts for all `ResourceRequests`, marking them
+   failed if the current time minus their `metadata.creation_timestamp`
+   is longer than the limit.
 
 ### Risks and Mitigations
 
-<!--
-What are the risks of this proposal and how do we mitigate. Think broadly.
-For example, consider both security and how this will impact the larger
-kubernetes ecosystem.
+#### Relying on a CRD as storage for in-lined resolved data
 
-How will security be reviewed and by whom?
+_Risk_: Relying on a CRD may introduce scaling problems that couldn't be
+discovered during proof-of-concept testing. Task and Pipeline
+definitions may only get larger until a CRD no longer provides enough
+space. In busy CI/CD clusters many rapidly created large
+`ResourceRequests` may cause API server or etcd performance to
+degrade.
 
-How will UX be reviewed and by whom?
+_Possible Mitigation_: Implement a `PipelineResource`-style artifact
+system where short-lived PVCs or an object store are used as ephemeral
+intermediary storage. A `ResourceRequest` could store a tuple of
+(`status.dataRef`, `status.dataDigest`) in place of in-lined
+`status.data`.  `status.dataRef` would be a pointer to the PVC or object
+store and `status.dataDigest` would be a low collision hash of the data
+being pointed to for Pipelines to verify when it "follows the pointer"
+and downloads the data.
 
-Consider including folks that also work outside the WGs or subproject.
--->
+This is only one possible mitigation and there are many others
+approaches we could take. The only constraints on the mitigation
+are that the overall goals remain met:
+- the implementation can operate without blocking Pipelines' reconcile loops,
+- with the same parameter format,
+- with a hook into Pipelines' reconcilers to queue reconciles when a
+resource has been fetched or failed.
+
+#### Changing the way it works means potentially rewriting multiple resolvers
+
+_Risk_: Changes to the way Remote Resolution is implemented during alpha
+mean that all resolvers at some point need to be updated or rewritten as
+well.
+
+_Possible Mitigation_: To help mitigate this the alpha resolvers will be
+written to be agnostic about the "protocol". All interaction with
+clients / CRDs will be kept in shared helpers so that a rewrite only
+impacts that shared code.
+
+#### Data Integrity
+
+_Risk_: `ResourceRequest` objects have no data integrity mechanism yet, so
+a motivated actor with access to the cluster and write permissions on
+`ResourceRequest` objects can modify them without detection. This
+becomes a more notable concern when thinking about task verification
+occurring in Resolvers, as is planned in
+[TEP-0091](https://github.com/tektoncd/community/pull/537). A user with
+the necessary permissions could change a `ResourceRequest` object
+containing a Task _after_ Task verification occurred.
+
+_Possible Mitigation_: Tekton already has solutions undergoing design to address
+this problem on two fronts, and so it would make sense to integrate directly
+with one of them:
+1. [TEP-0089 SPIRE support](https://github.com/tektoncd/community/pull/529)
+where Tekton's objects (i.e. a `ResourceRequest`) can be signed by authorized
+workloads (i.e. a `ResourceRequest` Reconciler).
+2. The solution under design in TEP-0086 ([available to read
+here](https://hackmd.io/a6Kl4oS0SaOyBqBPTirzaQ)) which includes content
+addressability as a desirable property of the storage subsystem (OCI
+Registry being a good candidate).
 
 ### User Experience (optional)
 
-<!--
-Consideration about the user experience. Depending on the area of change,
-users may be task and pipeline editors, they may trigger task and pipeline
-runs or they may be responsible for monitoring the execution of runs,
-via CLI, dashboard or a monitoring system.
+#### Simple flow: user submits `TaskRun` using public catalog `Task`
 
-Consider including folks that also work on CLI and dashboard.
--->
+1. User applies a `TaskRun` with a `taskRef` that points to a remote:
 
-### Performance (optional)
+```yaml
+kind: TaskRun
+metadata:
+  name: my-tr
+spec:
+  taskRef:
+    resolver: git
+    resource:
+      repository_url: https://github.com/tektoncd/catalog.git
+      branch: main
+      path: /task/golang-fuzz/0.1/golang-fuzz.yaml
+```
 
-<!--
-Consideration about performance.
-What impact does this change have on the start-up time and execution time
-of task and pipeline runs? What impact does it have on the resource footprint
-of Tekton controllers as well as task and pipeline runs?
+2. A `ResourceRequest` is created by the `TaskRun` reconciler:
 
-Consider which use cases are impacted by this change and what are their
-performance requirements.
--->
+```yaml
+apiVersion: resolution.tekton.dev/v1alpha1
+kind: ResourceRequest
+metadata:
+  labels:
+    resolution.tekton.dev/resolver: git
+  ownerReferences:
+  - apiVersion: tekton.dev/v1beta1
+    controller: true
+    kind: TaskRun
+    name: my-tr
+    uid: 6aa5857a-3d67-4a09-94a1-8e9cc136dcf8
+spec:
+  params:
+    repository_url: https://github.com/tektoncd/catalog.git
+    branch: main
+    path: /task/golang-fuzz/0.1/golang-fuzz.yaml
+```
+
+3. The `ResourceRequest` is resolved and its `status.data` updated with the in-lined base64-encoded
+   contents of the `golang-fuzz` task. The taskrun reconciler uses the spec from the retrieved
+   `golang-fuzz` task to execute the user's submitted `TaskRun`.
+
+### Performance
+
+1. Caching. LFU or LRU caches make sense in multiple spots along a
+   request's path: in Pipelines' reconcilers, in the `ResourceRequest`
+   reconciler, or in the resolvers themselves.
+2. De-duplication. Mentioned earlier in this doc, if pipelines'
+   reconcilers can assert that an existing `ResourceRequest` exactly
+   matches the resolver and parameters of a `pipelineRef` or `taskRef`
+   then instead of creating a new `ResourceRequest` pipelines could
+   instead attach an additional `ownerReference` on the existing
+   `ResourceRequest` and reuse it.
 
 ## Design Details
 
-<!--
-This section should contain enough information that the specifics of your
-change are understandable.  This may include API specs (though not always
-required) or even code snippets.  If there's any ambiguity about HOW your
-proposal will be implemented, this is the place to discuss them.
+### New Pipelines syntax schema
 
-If it's helpful to include workflow diagrams or any other related images,
-add them under "/teps/images/". It's upto the TEP author to choose the name
-of the file, but general guidance is to include at least TEP number in the
-file name, for example, "/teps/images/NNNN-workflow.jpg".
--->
+The OpenAPI schema for the new fields added to `taskRef` and
+`pipelineRef` will be as follows:
+
+```yaml
+  properties:
+    resolver:
+      description: Resolver names the type of resource resolution to be performed. e.g. "in-cluster", "bundle", "git"
+      type: string
+    resource:
+      description: Resource specifies the remote-specific parameters needed to resolve the Task or Pipeline.
+      type: object
+      x-kubernetes-preserve-unknown-fields: true
+```
+
+Pipelines' validation code will need to be updated to accomodate these
+new fields.
+
+### `ResourceRequest` objects
+
+- `ResourceRequests` are namespaced and must be created in the same
+  namespace as the referencing `PipelineRun` or `TaskRun`. This is
+  required to support `ownerReferences` and to keep tenants' resource
+  requests separated in multi-tenant clusters.
+
+- The label `resolution.tekton.dev/resolver` is _required_ on
+  `ResourceRequests` and its omission will result in the request being
+  immediately failed. This is to allow for watches and filtering based
+  on the resolver type.
+
+- All labels prefixed `resolution.tekton.dev/` are ring-fenced for use
+  in future resolution-related features.
+
+- `ownerReferences` are included pointing back at the `PipelineRun` or
+  `TaskRun` that issued this request. If the runs are deleted, their
+  requests are cleaned up. In future this may also be useful for
+  de-duplicating requests in the same namespace for the same remote
+  Tekton resource.
+
+Below are syntax examples of `ResourceRequest` objects both in
+newly-created states, succeeded state and failed state.
+
+#### YAML Examples
+
+Example of a newly-created `ResourceRequest` for a Bundle task from the
+public catalog:
+
+```yaml
+apiVersion: resolution.tekton.dev/v1alpha1
+kind: ResourceRequest
+metadata:
+  name: get-task-from-bundle-12345
+  namespace: bar
+  labels:
+    resolution.tekton.dev/resolver: bundle
+  ownerReferences:
+  - apiVersion: tekton.dev/v1beta1
+    controller: true
+    kind: TaskRun
+    name: my-tr
+    uid: 6aa5857a-3d67-4a09-94a1-8e9cc136dcf8
+spec:
+  params:
+    image_url: gcr.io/tekton-releases/catalog/upstream/golang-fuzz:0.1
+    name: golang-fuzz
+```
+
+A newly-created `ResourceRequest` for a task from the catalog git repo:
+
+```yaml
+apiVersion: resolution.tekton.dev/v1alpha1
+kind: ResourceRequest
+metadata:
+  name: get-task-from-git-12345
+  namespace: quux
+  labels:
+    resolution.tekton.dev/resolver: git
+  ownerReferences:
+  - apiVersion: tekton.dev/v1beta1
+    controller: true
+    kind: TaskRun
+    name: my-tr
+    uid: 6aa5857a-3d67-4a09-94a1-8e9cc136dcf8
+spec:
+  params:
+    repository_url: https://github.com/tektoncd/catalog.git
+    branch: main
+    path: /task/golang-fuzz/0.1/golang-fuzz.yaml
+```
+
+A successfully completed `ResourceRequest`:
+
+```yaml
+apiVersion: resolution.tekton.dev/v1alpha1
+kind: ResourceRequest
+metadata:
+  name: get-pipeline-from-git-12345
+  namespace: quux
+  labels:
+    resolution.tekton.dev/resolver: git
+  ownerReferences:
+  - apiVersion: tekton.dev/v1beta1
+    controller: true
+    kind: PipelineRun
+    name: my-pr
+    uid: 6aa5857a-3d67-4a09-94a1-8e9cc136dcf8
+spec:
+  params:
+    repository_url: https://github.com/sbwsg/experimental.git
+    commit: 2c9b093e94f30f588dc798cc56a2559d4da9d573
+    path: /remote-resolution/pipeline.yaml
+status:
+  annotations:
+    commit: 2c9b093e94f30f588dc798cc56a2559d4da9d573
+    content-type: application/x-yaml
+  data: a2luZDogUGlwZWxpbmUKYXBpVmVyc2lvbjogdGVrdG9uLmRldi92MWJldGExCm1ldGFkYXRhOgogIG5hbWU6IHAKc3BlYzoKICB0YXNrczoKICAtIG5hbWU6IGZldGNoLWZyb20tZ2l0CiAgICB0YXNrU3BlYzoKICAgICAgc3RlcHM6CiAgICAgIC0gaW1hZ2U6IGFscGluZS9naXQKICAgICAgICBzY3JpcHQ6IHwKICAgICAgICAgIGdpdCBjbG9uZSBodHRwczovL2dpdGh1Yi5jb20vdGVrdG9uY2QvcmVzdWx0cwo=
+  conditions:
+  - lastTransitionTime: "2021-10-14T15:38:14Z"
+    status: "True"
+    type: Succeeded
+```
+
+A failed `ResourceRequest`:
+
+```yaml
+apiVersion: resolution.tekton.dev/v1alpha1
+kind: ResourceRequest
+metadata:
+  name: get-pipeline-from-git-12345
+  namespace: quux
+  labels:
+    resolution.tekton.dev/resolver: git
+  ownerReferences:
+  - apiVersion: tekton.dev/v1beta1
+    controller: true
+    kind: PipelineRun
+    name: my-pr
+    uid: 6aa5857a-3d67-4a09-94a1-8e9cc136dcf8
+spec:
+  params:
+    repository_url: https://github.com/sbwsg/experimental.git
+    branch: remote-resolution
+    path: /remote-resolution/invalid-pipeline.yaml
+status:
+  conditions:
+  - lastTransitionTime: "2021-10-19T11:06:00Z"
+    message: 'error opening file "/remote-resolution/invalid-pipeline.yaml": file does not exist'
+    reason: ResolutionFailed
+    status: "False"
+    type: Succeeded
+```
+
+### Resolver specifics
+
+Each Resolver runs as its own controller in the cluster. This allows an
+operator to spin up or tear down support for individual resolvers by
+`apply`ing or `delete`ing them.
+
+A resolver observes `ResourceRequest` objects, filtering on the
+`resolution.tekton.dev/resolver` label to find only those it is
+interested in.
+
+Each resolver is granted only the RBAC permissions needed to perform
+resolution. In most cases this will be limited to `GET`, `LIST` and
+`UPDATE` permissions on `ResourceRequests` and their `status`
+subresource. The "in-cluster" resolver will need permissions to `GET`
+and `LIST` `Tasks`, `ClusterTasks` and `Pipelines` as well. Depending on
+requirements of each, some resolvers may need `GET` on `ConfigMaps` or
+`Secrets` in the `tekton-remote-resolution` namespace as well.
+
+A resolver is only ultimately responsible for updating the `status.data`
+and `status.annotations` field of a `ResourceRequest`. The
+`ResourceRequest` lifecycle controller is responsibile for marking
+resource requests completed or timing them out. A resolver _may_ mark a
+`ResourceRequest` as failed with an accompanying error and reason.
+
+#### In-Cluster Resolver
+
+The "in-cluster" resolver will support looking up `Tasks`,
+`ClusterTasks` and `Pipelines` from the cluster it resides in. It will
+mimic Tekton Pipelines' existing built-in support for these resources.
+The parameters for this `ResourceRequest` will look like:
+
+```yaml
+kind: Task
+name: foo
+```
+
+#### Bundle Resolver
+
+The "bundle" resolver will support looking up resources from Tekton
+Bundles. This will mirror the existing support in Tekton Pipelines. In
+addition it will verify a bundle before returning it if configured to do
+so. The precise approach to verifying a bundle will be based on the
+decisions made in
+[TEP-0091](https://github.com/tektoncd/community/pull/537).
+
+The supported paramaters for a "bundle" `ResourceRequest` will be:
+
+```yaml
+image_url: gcr.io/tekton-releases/catalog/upstream/golang-fuzz:0.1
+name: golang-fuzz
+signer: cosign # TBD, see TEP-0091
+```
+
+When the bundle is successfully resolved the `ResourceRequest` will be
+updated with both the resource contents and an annotation with the
+digest of the fetched image.
+
+#### Git Resolver
+
+The "git" resolver will support fetching resources from git
+repositories. This is new functionality that is not supported by Tekton
+Pipelines currently. In addition to basic support for fetching files
+from git this resolver will also need to support quite rich
+configuration (which can be developed over time):
+
+- Allow-lists for specific repo urls, branches and commits.
+- Settings for limiting access to certain repos by namespace.
+- Timeout settings for git operations.
+- Proxy settings (equivalent to `HTTP_PROXY`, `HTTPS_PROXY` environment
+  variables).
+- Path filtering such that only specific directories and file paths
+  within a repo can be sourced.
+- Verification of fetched files, following any approach decided in
+  [TEP-0091](https://github.com/tektoncd/community/pull/537).
+
+Since clones of large repos can be slow, and not all providers support
+features like sparse checkout, the "git" resolver will implement caching
+as a high priority.
+
+The parameters for a "git" `ResourceRequest` will initially look as
+follows:
+
+```yaml
+repository_url: https://github.com/tektoncd/catalog.git
+commit: 2c9b093e94f30f588dc798cc56a2559d4da9d573
+branch: main # either commit or branch may be specified, but not both
+path: /task/golang-fuzz/0.1/golang-fuzz.yaml
+```
+
+The git resolver will need to gracefully handle concurrent requests for
+the same resource and will also need to be able to cancel in-flight
+operations if a `ResourceRequest` is failed or deleted.
+
+When the git resource is successfully resolved the `ResourceRequest`
+will be updated with both the resource contents as well as an annotation
+with the fetched commit SHA.
+
+### Pipelines' "Out of the Box" experience
+
+One of the goals for this feature is to reach a point of maturity that
+Tekton Pipelines could consider replacing its baked-in `taskRef` and
+`pipelineRef` support with resolvers from the Tekton Resolution project.
+
+At that point Pipelines' maintainers would need to decide how best to
+provide default resolvers "out of the box". One possible approach would be
+to deploy the `ResourceRequest` lifecycle reconciler and a set of resolvers
+as part of Pipelines' `release.yaml`.
+
+### Function and Struct Helpers
+
+Tekton Pipelines and any other project leveraging Tekton Resolution will
+primarily interact with the resolution machinery through helper
+libraries. These helpers are going to hide as much of the specifics of
+resource requesting as possible but may need some supporting objects passed
+in. For example, a `ResourceRequest` client/lister may need to be passed from
+Pipelines to the Resolution helpers but the client or lister would itself be
+generated by, and imported from, the Tekton Resolution project.
 
 ## Test Plan
 
-<!--
-**Note:** *Not required until targeted at a release.*
+### Tekton Pipelines
 
-Consider the following in developing a test plan for this enhancement:
-- Will there be e2e and integration tests, in addition to unit tests?
-- How will it be tested in isolation vs with other components?
+Unit and integration tests covering the new features including:
+- Validation of new `taskRef` and `pipelineRef` syntax.
+- Creation of `ResourceRequests`.
+- Behaviour of Pipelines on `ResourceRequest` success.
+- Behaviour of Tekton Pipelines on `ResourceRequest` failure.
+- Timing out remote resolution requests.
 
-No need to outline all of the test cases, just the general strategy.  Anything
-that would count as tricky in the implementation and anything particularly
-challenging to test should be called out.
+Eventually the resolution project may reach a point of maturity that
+Tekton Pipelines opts to use it for all `taskRef` and `pipelineRef`
+resolution. At this point Pipelines will need additional test coverage
+for:
 
-All code is expected to have adequate tests (eventually with coverage
-expectations).
--->
+- Correctly translating all `taskRefs` and `pipelineRefs` to
+  `ResourceRequests`.
+- End-to-end behaviour of all the resolvers supported by Pipelines "out
+  of the box".
+
+### Tekton Resolution
+
+As part of this project being spun up a new suite of tests will be
+introduced covering the new CRD, its reconciler as well as individual
+suites for each of the resolvers.
+
+### Dogfooding
+
+We currently dogfood Pipelines' Bundles support in our release
+processes, for example in [add-pr-body](https://github.com/tektoncd/plumbing/blob/4fa296769032ea4a14af614bb0cf330ddf84a593/tekton/ci/interceptors/add-pr-body/tekton/release-pipeline.yaml#L52).
+
+If accepted, the Tekton Resolution project and a set of resolvers could
+eventually be installed in our dogfood cluster and used as part of our
+release processes.
+
+Once Remote Resolution is supported in Dogfooding we can also implement
+testing for recommended "Task Management" approaches. Documenting these
+will also provide guidelines to help the community structure their own
+repos and registries of `Pipelines` and `Tasks`.
 
 ## Design Evaluation
-<!--
-How does this proposal affect the reusability, simplicity, flexibility 
-and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/master/design-principles.md)
--->
+
+### Reusability
+
+The CRD-based approach is reusable across any Tekton project that wants
+to utilize remote resources. Submitting `ResourceRequest` objects for
+resolution is not a feature exclusively tied to Tekton Pipelines.
+Triggers, Workflows, Pipeline-as-Code and others should all be able to
+use `ResourceRequest` objects.
+
+### Simplicity
+
+1. Creating a new object kind specifically designed for handing off
+   responsibility of resolution is intended to make Tekton Pipelines'
+   job simpler. Pipelines does not need to bake-in support for git.
+   Eventually Pipelines may be able to remove all support for reading
+   Tasks and Pipelines from the cluster or Bundles entirely, relying
+   instead on resolvers.
+2. Creating new reconcilers from scratch is not trivial, however a
+   resolver does not need new code-generated libraries or even to know
+   the specifics of CRDs. A shared interface and template project can
+   alleviate the difficulty of writing new resolvers.
+
+### Flexibility
+
+- By decoupling Tekton Pipelines from the source of `Tasks` and
+  `Pipelines` it becomes possible to support any source independent of
+  the Pipelines codebase.
+- New approaches to resolution and resource handling can be built,
+  tested and productionized without burdening the Tekton Pipelines
+  project directly.
 
 ## Drawbacks
 
-<!--
-Why should this TEP _not_ be implemented?
--->
+### Design Complexity
+
+The primary drawback is complexity: we may find that the proposed
+solution is ultimately only ever used to fetch files from git. A
+mitigation to this drawback is that, if this becomes apparent, starting
+off in alpha allows the approach to be rethought and scoped back before
+moving to beta.
+
+### Coarse-Grained RBAC
+
+With the proposed design RBAC will be limited to whether or not a given
+ServiceAccount / Role can create or read  `ResourceRequest` objects. This
+won't prevent situations where, for example, multiple resolvers compete
+over the same `ResourceRequest` type.
 
 ## Alternatives
 
@@ -567,18 +988,27 @@ spec:
 Pros:
 - Writing an HTTP server that responds to requests with JSON is a relatively
   small development burden.
-- Possibly familiar pattern for anyone who's used Triggers' Interceptors?
+- Familiar pattern for anyone who's used Triggers' Interceptors.
 - Flexible since the endpoint can do whatever it wants before returning the
   resolved resource.
 - Tekton Pipelines could surface metrics around latencies, errors, etc...
   during resolutions.
+- `ClusterInterceptors` as they're employed by Triggers are composable - a single
+  incoming event payload can be processed through a sequence of `ClusterInterceptors`.
+  This might also be a nice feature for Pipelines too, passing a resolved Tekton resource
+  through various verification, validation or processing steps before being returned
+  to the Tekton Pipelines controller.
 
 Cons:
-- Synchronous: the resource request is a direct connection from Pipelines
-  controller to HTTP server.
-  - This could be mitigated by putting the onus on Resolver designers to
-    implement caching and scaling strategies. Not necessarily a problem
-    Pipelines must solve.
+- Synchronous: the resource request is a direct connection from a Pipelines
+  reconciler to HTTP server, blocking that reconciler thread while the resolver
+  processes the request. This could be mitigated by:
+  - Putting the responsibility on Resolver designers to ensure their
+    resolvers are fast. Not necessarily a problem Pipelines must solve.
+  - Pulling the HTTP requests out of Pipelines' reconciler loops. This could
+    be done using a go routine pool, a Futures-style interface, or a multitude
+    of other approaches. Any approach adds implementation complexity to
+    Pipelines and exposes more questions on logging and observability.
 - Moving to an HTTP based service takes us away somewhat from Kubernetes RBAC,
   which potentially makes implementing multi-tenant setups more difficult or
   complex.
@@ -736,110 +1166,6 @@ Tasks would also need to know how to create resources for those projects. A Git
 Custom Task Resolver would need to know how to create TaskRuns, PipelineRuns,
 TriggerBindings, EventListeners, TriggerTemplates, and so on.
 
-### Introduce a Tekton Resource Request CRD
-
-Add a new CRD for async resource resolution. One process requests a resource by creating an object of this new kind. Another process fulfills the request by writing the resource's content directly inline to the object. The first process notices the updated condition and reads the resource from the object.
-
-1. User submits a run type with a remote reference:
-
-```yaml
-kind: TaskRun
-metadata:
-  name: foo-run
-spec:
-  taskRef:
-    apiVersion: tekton.dev/v1beta1
-    kind: Task
-    remote:
-      apiVersion: gitref.tekton.dev/v1alpha1
-      url: https://github.com/tektoncd/catalog.git
-      ref: main
-      path: /tasks/git-clone/0.4/git-clone.yaml
-```
-
-2. Pipelines controller creates request object:
-
-```yaml
-apiVersion: gitref.tekton.dev/v1alpha1
-kind: TektonResourceRequest
-metadata:
-  ownerReferences:
-  - apiVersion: tekton.dev/v1beta1
-    kind: TaskRun
-    name: foo-run
-    uid: # ...
-spec:
-  remote: # These are resolver-specific fields.
-    url: https://github.com/tektoncd/catalog.git
-    ref: main
-    path: /tasks/git-clone/0.4/git-clone.yaml
-```
-
-Pipelines controller then continues on with other work. The TaskRun is given a `status.condition` indicating
-that remote resolution is ongoing for it.
-
-3. A Resolver is running in the cluster waiting for `gitref.tekton.dev/v1alpha1.TektonResourceRequest` objects.
-Upon seeing one it performs the remote resolution. The specifics of the resolution
-are dependent on the type of Resolver - a gitref resolver will read from its cache, clone the file if
-it's not cached.
-
-4. Pipelines controller remote resource contract specifies that the resolved YAML must be placed into the `status.response`
-field of the `TektonResourceRequest`. After fetching the resource, the Resolver populates that field and sets Succeeded condition:
-
-```yaml
-apiVersion: gitref.tekton.dev/v1alpha1
-kind: TektonResourceRequest
-# ... same as above plus ...
-status:
-  conditions:
-  - type: Succeeded
-    status: "True"
-    reason: RemoteResourceResolved
-    message: Resource was resolved successfully.
-  response: # an embedded raw field with content of /tasks/git-clone/0.4/git-clone.yaml
-    <YAML of git-clone 0.4 goes here>
-```
-
-5. Pipelines controller sees the updated request, parses the response, ensures it's a valid Task and sets
-defaults on it. Resolved resource is recorded to `taskRun.status.taskSpec` field. TaskRun is executed.
-
-Pros:
-- Resource resolution is performed declaratively.
-- Resolution is executed concurrently while the Pipelines controller does other
-  things.
-- Relatively simple for Pipelines to specify its side of the contract.
-- Relatively flexible for Resolvers to do "whatever they want" so long as they
-  return YAML that Pipelines considers valid.
-    - Example: if a Resolver is implementing an -as-code flow, it can fetch a
-      Pipeline at a specific commit __AND__ re-write any referenced tasks in
-      that Pipeline so that they too reference the specific commit as well.
-- Lifetime of fetched resource is tied to owner reference.
-- Pipelines not responsible for anything Resolver-specific.
-- Pipelines can validate returned content before submitting to cluster.
-- Pipelines can apply defaults on returned content before submitting to
-  cluster.
-- Pipelines can record metrics specific to remote resolution like latencies and
-  errors.
-- Pipelines can decide to fetch all remote refs up-front, just-in-time, or some
-  combination.
-- Resolvers don't need RBAC for creating TaskRuns / PipelineRuns - they just
-  fetch YAML.
-
-Cons:
-- Writing a reconciler can be difficult, though this challenge would only be faced
-  by those users needing to write a custom Resolver.
-- Given that no users have expressed desire for anything beyond oci and git
-  support it's very unclear whether anyone would actually ever bother to
-  develop a Resolver. Could be a __lot__ of wasted effort.
-- Increases the number of objects in the cluster by a worst-case factor of 2N:
-  one additional resource request object for every Task and Pipeline.
-  - Mitigation 1: Lean more on Tekton Results as source of truth instead of
-    cluster. Advise more aggressive pruning of objects for completed runs.
-  - Mitigation 2: Introduce a hashing mechanism so that multiple requests for
-    the same resource yaml result in no new object creation if that resolved
-    resource yaml already exists in the cluster. Use OwnerReferences on the
-    resource to prevent pre-emptive garbage collection of in-use resource yamls.
-
 #### Applicability For Other Tekton Projects
 
 The role of the Resolver is limited to fetching YAML strings and writing them
@@ -887,6 +1213,10 @@ Pros:
 
 Cons:
 - We'd still need to decide precisely what the protocol for resolution is.
+- `PipelineRunPending` is documented for users / third-party tools, not intended for
+  Pipelines' internal use-cases.
+- Users may already be using the `PipelineRunPending` status for other purposes
+  so adopting the status for resolution may inadvertently step on those users' toes.
 
 #### Applicability For Other Tekton Projects
 
@@ -916,14 +1246,43 @@ Admission controllers are a Kubernetes-wide concept. It seems reasonable to assu
 other Tekton projects could also leverage this mechanism for their own resource resolution
 needs. Possible opportunity to share controller or libraries to achieve this?
 
+### Sync Task and Pipeline objects directly into the cluster
+
+Rather than using an intermediary data format like `ResourceRequest`
+objects Resolvers could instead simply pull Tasks and Pipelines out of
+places like Git repos and `kubectl apply` them to the cluster. This
+would avoid any question of performance impact related to CRDs and would
+potentially any changes being required at all in Tekton Pipelines.
+
+Pros:
+- Syncing the contents of a repo into the cluster can happen
+  totally independently of Tekton Pipelines.
+- Possibly the simplest system design for users to understand?
+
+Cons:
+- Unclear how this would work for pipelines-as-code use-cases where a
+  user's Pull Request could include Pipeline or Task changes that should
+  be used in testing.
+- Unclear how tasks and pipelines with the same name from multiple
+  branches or commits could co-exist in the same namespace. Potential
+  risk for confusing outcomes here.
+
+#### Applicability For Other Tekton Projects
+
+This solution would be quite specific to Tekton Pipelines if coded to
+only submit Tasks and Pipelines to the cluster. Alternatively resolvers
+could operate with zero understanding of the resources and simply
+`kubectl apply` whatever appears in the repository but this too has
+drawbacks with regard to deciding which resources should be applied and
+which shouldn't.
+
 ## Open Questions
 
-- How will the implementation of this feature support use-cases where a pipeline is
-  fetched at a specific commit and references tasks that should also be pulled from
-  that specific commit?
 
 ## Future Extensions
 
+- Write a resolver that can fetch a pipeline at a specific commit and rewrites its
+  `taskRefs` to also reference that same commit.
 - Add "default" remotes so that operators can pick where to get tasks from when
   no remote is specified by user. For example, an internal OCI registry might
   be the default remote for an org so a PipelineTask referring only to
@@ -960,15 +1319,134 @@ needs. Possible opportunity to share controller or libraries to achieve this?
   discussion](https://github.com/tektoncd/experimental/pull/723)
 - [Using a Custom Task protocol to support any kind of
   resolver](https://github.com/sbwsg/pipeline/commit/a571869336ba09732f830743fbee938f4d40ac4d)
-    - Intended to be used in tandem with [a set of custom tasks in experimental
-      repo for remote resources in oci, catalogs, git, and
-      gcs](https://github.com/sbwsg/experimental/commit/1140f236ec0ffaf529835e913139eafa847608a8)
-    - A [video demo (starts at
-      11:09)](https://drive.google.com/file/d/1RxTbDt0wv7kK31tKj6acFhOs2t4Y4uHj/view)
+    - Intended to be used in tandem with [a set of custom tasks in experimental repo for remote resources in oci, catalogs, git, and gcs](https://github.com/sbwsg/experimental/commit/1140f236ec0ffaf529835e913139eafa847608a8)
+    - A [video demo (starts at 11:09)](https://drive.google.com/file/d/1RxTbDt0wv7kK31tKj6acFhOs2t4Y4uHj/view)
       of this proof-of-concept.
+- [Experimental Remote Resolution Controller](#appendix-a-proof-of-concept-controller)
 
 ### Related issues and discussions
 
 - [Pipelines Issue 2298: Add support for referencing Tasks in git](https://github.com/tektoncd/pipeline/issues/2298)
 - [Pipelines Issue 3305: Refactor the way resources are injected into the reconcilers](https://github.com/tektoncd/pipeline/issues/3305)
 - [Pipelines Discussion about running tasks from the catalog](https://github.com/tektoncd/pipeline/discussions/3827)
+
+## Appendix A: Proof-of-Concept Controller
+
+As part of the discovery phase for this TEP a controller has been
+developed for our experimental repo to test out some ideas. That
+controller demonstrates two of [the Alternatives](#alternatives) we
+outlined above:
+
+1. `ClusterInterceptor`-fronted HTTP servers with which Pipelines
+   exchanges JSON messages to resolve pipelineRefs.
+2. A `ResourceRequest` CRD in which resources are summoned as Kubernetes
+   API Objects & resolved by independent reconcilers.
+
+The code is not production-ready and only supports `PipelineRuns`.
+
+[The Pull Request](https://github.com/tektoncd/experimental/pull/806) is available for a deeper look.
+
+### Components
+
+The project is split across several reconcilers:
+
+1. A shim reconciler watching `PipelineRuns`. Consider this a stand-in
+   for Tekton Pipelines just to "make things work" without deeper
+   integration.
+2. A reconciler watching `ResourceRequests`
+3. A resolver reconciler watching for Git `ResourceRequests`
+4. A resolver reconciler watching for In-Cluster `ResourceRequests`
+
+Alongside the controller are two HTTP servers:
+
+5. A HTTP server waiting for requests of Git resources behind a
+   Kubernetes `Service` and discovered via `ClusterInterceptor`.
+6. A HTTP server waiting for requests of in-cluster resources behind a
+   Kubernetes `Service` and discovered via `ClusterInterceptor`.
+
+### Implementation
+
+The project is placed into either `ResourceRequest` mode or
+`ClusterInterceptor` mode using an environment variable in the
+controller deployment.
+
+The order of operations to resolve a single `pipelineRef` is as follows:
+
+1. User creates `PipelineRun` with:
+  - `spec.status` set to `PipelineRunPending`
+  - A `resolution.tekton.dev/type` annotation set to either `"git"` or
+    `"in-cluster"`.
+  - Annotations for type-specific parameters. e.g. `git.repo`,
+    `in-cluster.kind`
+2. The shim reconciler accepts the `PipelineRun` due to its pending
+state and type annotation.
+3. At this point the flow splits depending on which mode the project is
+running in:
+  * In `ResourceRequest` mode:
+    1. The shim reconciler creates a `ResourceRequest` object with a
+    `resolution.tekton.dev/type` label and params.
+    2. The `ResourceRequest` reconciler initializes the object's
+    condition to `Succeeded/Unknown`.
+    3. The resolver reconcilers check if they can resolve the
+    `ResourceRequest` by filtering on its type label.
+    4. A matching resolver reconciler performs the work needed to fetch
+    the resource's content.
+    5. The resolver reconciler updates the `ResourceRequest` with the
+    resolved data in its `status.data` field.
+    6. The `ResourceRequest` reconciler observes the populated
+    `status.data` and updates the object's condition to
+    `Succeeded/True`.
+  * In `ClusterInterceptor` mode:
+    1. The shim reconciler looks up the `ClusterInterceptor` matching
+    the `resolution.tekton.dev/type` label on the `PipelineRun`.
+    2. The shim reconciler sends a JSON request to the address from the
+    `ClusterInterceptor` with the parameters from the `PipelineRun`
+    annotations.
+    3. The HTTP server advertised by the `ClusterInterceptor` receives
+    the request and fetches the resource's content.
+    4. The HTTP server responds with the resolved content wrapped in a
+    JSON object.
+
+### Results & Discussion
+
+Main takeaways from development:
+
+1. There is no way to "shim" support for this feature into `TaskRuns` at
+the moment.
+
+The experimental controller works with an unmodified Tekton Pipelines
+installation but only for `PipelineRuns`. This is made possible because
+`PipelineRuns` can be created in `PipelineRunPending` state that allows
+them to be processed by the experimental controller. `TaskRuns` by
+contrast do not have an equivalent pending state so the only way to
+support them is using a flag to modify the behaviour of the `TaskRun`
+reconciler.
+
+2. Async when coordinating requests to HTTP endpoints will require
+additional complexity.
+
+About a half a day was spent looking at ways to implement the
+`ClusterInterceptor` approach in a way that does not "block"
+`PipelineRun` reconciler threads. Figuring out possible solutions is
+quick but implementing and debugging the chosen approach will take more
+engineering effort. This also raised questions around how to surface
+requests so that users have observability into the state of the system.
+That kind of observability feels a lot more "natural" with a CRD where
+state and condition are publicized through the fields of objects.
+
+3. Resolvers are easy to write given the appropriate framework
+
+In order to support both the `ClusterInterceptor` and `ResourceRequest`
+approaches with the same resolvers a common interface was introduced.
+The interface abstracts away the underlying requests or k8s objects and
+lets the resolver code focus on the fetching and returning of resources
+and metadata. This seems like a good pattern to follow with the proposed
+Tekton Resolution project - provide a common interface that resolver
+developers can implement so that they don't need to worry about HTTP
+requests or k8s objects.
+
+The [interface from the experiment is here](https://github.com/tektoncd/experimental/pull/806/files#diff-afd6f8cf4be4f39c4b89126ce24b3bcfe0dda043652ca58174ddc3e8dc8c7440) and example
+implementations are
+[the no-op resolver](https://github.com/tektoncd/experimental/pull/806/files#diff-1e86751838a2f568ec27059bc66017da3707df13c622d66fa054bc1bf972fd61R51-R73),
+[the git resolver](https://github.com/tektoncd/experimental/pull/806/files#diff-12ccd70eee12ff7bb294b028ced32e94dc17f6de401546149ec2019d46181dbc)
+and [the in-cluster resolver](https://github.com/tektoncd/experimental/pull/806/files#diff-c2538ec6debd5006fe68d7efb394d14655fdc1d877b05654f1ed8f105f509268).

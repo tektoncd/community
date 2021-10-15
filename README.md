@@ -34,7 +34,7 @@ Find out about our processes:
 * [Project OWNERS](process.md#OWNERS)
 * [Pull request reviews](process.md#reviews)
 * [Propose projects](process.md#proposing-projects)
-* [Github Org Management](org/README.md), including [requirements to join the org](org/README.md#requirements)
+* [GitHub Org Management](org/README.md), including [requirements to join the org](org/README.md#requirements)
 * [The CDF CLA](process.md#cla)
 
 _For guidelines on how to contribute to `tektoncd/community` see [CONTRIBUTING.md](CONTRIBUTING.md)._

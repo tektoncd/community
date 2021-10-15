@@ -1,6 +1,6 @@
 ---
 status: proposed
-title: Custom Configuration
+title: Per-Namespace Controller Configuration
 creation-date: '2021-08-25'
 last-updated: '2021-10-14'
 authors:

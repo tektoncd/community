@@ -151,7 +151,7 @@ We are proposing following 2 extensions:
 
 #### `tkn sign`
 
-```bash=
+```bash
 % tkn sign -h
 USAGE
   tkn sign -key <key path> [-f] [-r] <pipeline dir> [i] <oci registry path> [t] <image tag>
@@ -182,7 +182,7 @@ This command would perform following actions:
 6. Provide an option to convert tkn definitions to intoto-layout first and then sign it.
 
 #### `tkn verify`
-```bash=
+```bash
 % tkn verify -h
 USAGE
   tkn verify -key <key path> [-r] <pipeline dir> [i] <oci registry path> [t] <image tag>
@@ -261,7 +261,7 @@ performance requirements.
 
 Once task/pipeline YAML file is signed, it will be updated with following annotations
 
-```yaml=
+```yaml
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:

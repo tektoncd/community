@@ -38,6 +38,7 @@ The current working groups are:
 - [Operator and Deployment](#operator-and-deployment)
 - [Chains](#chains)
 - [Workflows](#workflows)
+- [Pipeline](#pipeline)
 
 ## General
 
@@ -336,3 +337,25 @@ Topics for this WG include the experimental [Tekton Workflows](https://github.co
 | <img width="30px" src="https://github.com/sbwsg.png">            | Scott Seaward    | Google      | [sbwsg](https://github.com/sbwsg)                       |
 | <img width="30px" src="https://github.com/khrm.png">             | Khurram Baig     | Red Hat     | [khrm](https://github.com/khrm)                         |
 | <img width="30px" src="https://github.com/chmouel.png">          | Chmouel Boudjnah | Red Hat     | [chmouel](https://github.com/chmouel)                   |
+
+## Pipeline
+
+This is the working group for [`tektoncd/pipeline`](https://github.com/tektoncd/pipeline).
+
+| Artifact                   | Link                       |
+| -------------------------- | -------------------------- |
+| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1AfJfdyd1JN2P4haBdYOxEn6SMENMgvQF9ps7iF2QSG0/edit)
+| Slack Channel              | [#pipeline-dev](https://tektoncd.slack.com/messages/pipeline-dev) |
+| Community Meeting VC       | [https://meet.google.com/htx-ottk-hdw](https://meet.google.com/htx-ottk-hdw) |
+| Community Meeting Calendar | Tuesday every other week, 09:30a-10:00a PST <br>[Calendar]( https://calendar.google.com/calendar/event?action=VIEW&eid=bnNxYmswdjlzZTB1NTkwMGdkdGZvbGRrcXFfUjIwMjExMDA1VDE2MzAwMCBwZGVzYWlAdXMuaWJtLmNvbQ&tok=MjUjY2hyaXN0aWV3aWxzb25AZ29vZ2xlLmNvbWYzZjAzNmY0YTE0N2ZkZGZlZTdhM2ZlMWFhODlhNzA2MjYxZWU5YWY&ctz=America%2FNew_York&hl=en&es=0)
+
+
+| &nbsp;                                                     | Facilitators      | Company | Profile                                     |
+| --------------------------------------------------------   | ----------        | ------- | ---------------------------------------     |
+| <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli)   |
+| <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson   | Google  | [bobcatfish](https://github.com/bobcatfish) |
+| <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee   | Google  | [dibyom](https://github.com/dibyom)         |
+| <img width="30px" src="https://github.com/jerop.png">      | Jerop Kipruto     | Google  | [jerop](https://github.com/jerop)           |
+| <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai       | IBM     | [pritidesai](https://github.com/pritidesai) |
+| <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |

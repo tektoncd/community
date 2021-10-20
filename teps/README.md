@@ -225,3 +225,4 @@ This is the complete list of Tekton teps:
 |[TEP-0081](0081-add-chains-subcommand-to-the-cli.md) | Add Chains sub-command to the CLI | proposed | 2021-08-31 |
 |[TEP-0084](0084-endtoend-provenance-collection.md) | end-to-end provenance collection | proposed | 2021-09-16 |
 |[TEP-0085](0085-per-namespace-controller-configuration.md) | Per-Namespace Controller Configuration | proposed | 2021-10-14 |
+|[TEP-0093](0093-tkn-cli-extension-for-signverify.md) | tkn cli extension for sign/verify | proposed | 2021-10-20 |

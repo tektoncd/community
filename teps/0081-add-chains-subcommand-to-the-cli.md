@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Add Chains sub-command to the CLI
 creation-date: '2021-08-31'
-last-updated: '2021-08-31'
+last-updated: '2021-10-21'
 authors:
 - '@rgreinho'
 ---
@@ -78,10 +78,10 @@ by adding a new command to the Tekton CLI.
 
 ## Motivation
 
-When working with `Chains`, the user experienced will be enhanced if users are
-able to
+When working with `Chains`, the user experience will be enhanced if users are
+able to:
 *  use the Tekton CLI rather than a combination of other tools like `kubectl`,
-`jq`, `base64`, etc.
+`jq`, and `base64`
 * not having to memorize which exact TaskRun annotation or key to query.
 * discover available `Chains` features via the CLI and/or its documentation.
 
@@ -184,7 +184,7 @@ instead of:
 
 There may not be any specific requirements, depending on the commands being
 implemented. See the [Notes/Caveats (optional)](notes-caveats-optional) for more
-details
+details.
 
 ## Proposal
 
@@ -197,6 +197,7 @@ tkn chains [flags]
 tkn chains [command]
 
 Available Commands:
+  format      Configure Tekton chains' provenance format
   payload     Print a Tekton chains' payload for a specific taskrun
   signature   Print a Tekton chains' signature for a specific taskrun
 
@@ -209,27 +210,18 @@ Use "tkn chains [command] --help" for more information about a command.
 
 ### Notes/Caveats (optional)
 
-Some commands would require adding extra dependencies. For instance we would
+~~Some commands would require adding extra dependencies. For instance we would
 need to either ensure `cosign` is installed on the system or add it as a
 dependency in order to implement the commands having to deal with the `cosign`
-keys and signatures.
+keys and signatures.~~
 
-However, the Sigstore group is working on a lightweight version of `cosign` that
-could be more easily added as a dependency.
+~~However, the Sigstore group is working on a lightweight version of `cosign`
+that could be more easily added as a dependency.~~
 
-### Risks and Mitigations
-
-<!--
-What are the risks of this proposal and how do we mitigate. Think broadly.
-For example, consider both security and how this will impact the larger
-kubernetes ecosystem.
-
-How will security be reviewed and by whom?
-
-How will UX be reviewed and by whom?
-
-Consider including folks that also work outside the WGs or subproject.
--->
+Since `chains` already handles most of the operations, the missing logic will be
+implemented in the `chains` module directly. `chains` already has the dependency
+to the sigstore modules that are needed. Therefore, as long as the CLI can
+import the `chains` module, there won't be any issue.
 
 ### User Experience
 
@@ -237,51 +229,21 @@ Consider including folks that also work outside the WGs or subproject.
 * Ensure auto-completion is available
 * Keep only to 2 levels of commands, i.e `tkn <command> <action> [parameter]...`
 
-### Performance (optional)
-
-<!--
-Consideration about performance.
-What impact does this change have on the start-up time and execution time
-of task and pipeline runs? What impact does it have on the resource footprint
-of Tekton controllers as well as task and pipeline runs?
-
-Consider which use cases are impacted by this change and what are their
-performance requirements.
--->
-
 ## Design Details
 
-<!--
-This section should contain enough information that the specifics of your
-change are understandable.  This may include API specs (though not always
-required) or even code snippets.  If there's any ambiguity about HOW your
-proposal will be implemented, this is the place to discuss them.
+The new command and associated sub-commands should contain as little logic as
+possible.
 
-If it's helpful to include workflow diagrams or any other related images,
-add them under "/teps/images/". It's upto the TEP author to choose the name
-of the file, but general guidance is to include at least TEP number in the
-file name, for example, "/teps/images/NNNN-workflow.jpg".
--->
+Each command/sub-command should only initialize the parameters that are
+necessary to perform the calls to the functions from the `chains` module.
+
+Helper functions may be provided to simplify some operations and make the code
+DRYer.
 
 ## Test Plan
 
-<!--
-**Note:** *Not required until targeted at a release.*
-
-Consider the following in developing a test plan for this enhancement:
-- Will there be e2e and integration tests, in addition to unit tests?
-- How will it be tested in isolation vs with other components?
-
-No need to outline all of the test cases, just the general strategy.  Anything
-that would count as tricky in the implementation and anything particularly
-challenging to test should be called out.
-
-All code is expected to have adequate tests (eventually with coverage
-expectations).
--->
-
-* Unit tests should be enough.
-* The tests should be similar to any other tekton command.
+* Unit test and e2e tests will be added or updated to the `chains` module.
+* For the CLI, the tests should be similar to any other tekton command.
 
 ## Design Evaluation
 <!--
@@ -310,32 +272,10 @@ in, and secure by default (if history teach us anything is that things not
 enable or shipped by default are less adopted 😓)
 [[ref](https://github.com/tektoncd/community/pull/508#discussion_r712816640)].
 
-## Infrastructure Needed (optional)
-
-<!--
-Use this section if you need things from the project/SIG.  Examples include a
-new subproject, repos requested, github details.  Listing these here allows a
-SIG to get the process for these resources started right away.
--->
-
-## Upgrade & Migration Strategy (optional)
-
-<!--
-Use this section to detail wether this feature needs an upgrade or
-migration strategy. This is especially useful when we modify a
-behavior or add a feature that may replace and deprecate a current one.
--->
-
 ## Implementation Pull request(s)
 
-<!--
-Once the TEP is ready to be marked as implemented, list down all the Github
-Pull-request(s) merged.
-Note: This section is exclusively for merged pull requests, for this TEP.
-It will be a quick reference for those looking for implementation of this TEP.
--->
-
 * <https://github.com/tektoncd/cli/pull/1440>
+* <https://github.com/tektoncd/chains/pull/245>
 
 ## References (optional)
 

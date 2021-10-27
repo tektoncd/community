@@ -146,6 +146,15 @@ orgs:
     - zhangtbj
     - ziheng
     teams:
+      governing-board:
+        description: Tekton Governing Board members
+        members:
+        - abayer
+        - bobcatfish
+        - vdemeester
+        - afrittoli
+        - dibyom
+        privacy: closed
       catalog.maintainers:
         description: the catalog maintainers
         maintainers:

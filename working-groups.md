@@ -129,10 +129,12 @@ This is the documentation working group, related to
 [`tektoncd/website`](https://github.com/tektoncd/website) and all
 repository that need to expose documentation.
 
+Connecting to the Meeting VC requires a Zoom account.
+
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Community Meeting VC       | [https://meet.google.com/hyc-nunv-hts](https://meet.google.com/hyc-nunv-hts) |
+| Community Meeting VC       | [https://zoom.us/j/97950473778?pwd=MWk5TUFZYWxkRzhOcThFV3NMbXBXQT09](https://zoom.us/j/97950473778?pwd=MWk5TUFZYWxkRzhOcThFV3NMbXBXQT09) |
 | Community Meeting Calendar | Wednesdays every week, 11:00a-11:30a EST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=MW9oZzNpbmkxbHU5ZGtlN2hnMzVsYjNpcTJfMjAyMDAxMjlUMTgwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 | Meeting Notes              | [Notes](https://www.google.com/url?q=https://docs.google.com/document/d/1nnJe4rWBFZORW9ScV9o-yk6BmvX419DDKKwIlORRhsY/edit%23&sa=D&ust=1575716141397000&usg=AOvVaw0IMqtfI1KeX8a6zq2ODl9n) |
 | Document Folder            | [Folder](https://drive.google.com/drive/folders/1dpGatrFh_Wykrs_tUkVK8hLNF1VaGHZd) |
@@ -160,6 +162,8 @@ The meeting are created in the ET timezone. With daylight savings in the US
 the time of the meetings remains the same, but it changes with respect to UTC
 and other timezones.
 
+Connecting to the Meeting VC requires a Zoom account.
+
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/ |
@@ -171,7 +175,7 @@ and other timezones.
 
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
-| Community Meeting VC       | [https://meet.google.com/yja-jajy-ter](https://meet.google.com/yja-jajy-ter) |
+| Community Meeting VC       | [https://zoom.us/j/92490107166?pwd=OEIvbUk2aWlkaEl0dHhSeFUrYVlDQT09](https://zoom.us/j/92490107166?pwd=OEIvbUk2aWlkaEl0dHhSeFUrYVlDQT09) |
 | Community Meeting Calendar | Thursdays 1:00pm-1:30pm ET <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=bmwxdG9kcWtnbDJtNHYxNjByOHBwZ25wcXRfMjAyMTA0MDFUMTcwMDAwWiBhbmRyZWEuZnJpdHRvbGlAbQ&tmsrc=andrea.frittoli%40gmail.com&scp=ALL) |
 
 | &nbsp;                                                        | Facilitators      | Company | Profile                                           |
@@ -184,7 +188,7 @@ and other timezones.
 
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
-| Community Meeting VC       | [https://meet.google.com/yja-jajy-ter](https://meet.google.com/yja-jajy-ter) |
+| Community Meeting VC       | [https://zoom.us/j/91999310007?pwd=OWEwVzROdE5nRisrWmNUa3g5aW4vZz09](https://zoom.us/j/91999310007?pwd=OWEwVzROdE5nRisrWmNUa3g5aW4vZz09) |
 | Community Meeting Calendar | Thursdays 8:30pm-9:00pm ET <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NTBmYXBpMWR0OG5iMG5nb25mMm5vcW9ic2VfMjAyMTAzMjVUMTIzMDAwWiBhbmRyZWEuZnJpdHRvbGlAbQ&tmsrc=andrea.frittoli%40gmail.com&scp=ALL) |
 
 | &nbsp;                                                        | Facilitators      | Company | Profile                                           |
@@ -341,14 +345,15 @@ Topics for this WG include the experimental [Tekton Workflows](https://github.co
 ## Pipeline
 
 This is the working group for [`tektoncd/pipeline`](https://github.com/tektoncd/pipeline).
+Connecting to the Meeting VC requires a Zoom account.
 
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/1AfJfdyd1JN2P4haBdYOxEn6SMENMgvQF9ps7iF2QSG0/edit)
 | Slack Channel              | [#pipeline-dev](https://tektoncd.slack.com/messages/pipeline-dev) |
-| Community Meeting VC       | [https://meet.google.com/htx-ottk-hdw](https://meet.google.com/htx-ottk-hdw) |
-| Community Meeting Calendar | Tuesday every other week, 09:30a-10:00a PST <br>[Calendar]( https://calendar.google.com/calendar/event?action=VIEW&eid=bnNxYmswdjlzZTB1NTkwMGdkdGZvbGRrcXFfUjIwMjExMDA1VDE2MzAwMCBwZGVzYWlAdXMuaWJtLmNvbQ&tok=MjUjY2hyaXN0aWV3aWxzb25AZ29vZ2xlLmNvbWYzZjAzNmY0YTE0N2ZkZGZlZTdhM2ZlMWFhODlhNzA2MjYxZWU5YWY&ctz=America%2FNew_York&hl=en&es=0)
+| Community Meeting VC       | [https://zoom.us/j/98272582734?pwd=OTBVMWJIbVJZcUU3WnlodTEvVS9PUT09](https://zoom.us/j/98272582734?pwd=OTBVMWJIbVJZcUU3WnlodTEvVS9PUT09) |
+| Community Meeting Calendar | Tuesday every other week, 09:30a-10:00a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NG5jdWV0ZTFxaGo0MHNpYzVnODlrYXZucGhfMjAyMTExMDJUMTYzMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 
 
 | &nbsp;                                                     | Facilitators      | Company | Profile                                     |

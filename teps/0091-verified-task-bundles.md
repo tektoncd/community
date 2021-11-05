@@ -255,6 +255,13 @@ If a Task Bundle fails verification, the corresponding TaskRun will be
 annotated as such. The Pipeline Author will have optional configuration to stop
 and fail the build on verification failure.
 
+**IMPORTANT:** A Task refers to other images. For the initial delivery of this
+TEP, all static image references within the Task must be referenced by digest
+(i.e., `...@sha256:abcdef`) in order for the verification to succeed. In later
+iterations, this can be extended such that tag-referenced images can
+_themselves_ be verified for the overall Task to pass verification. However,
+this will be left out of the scope of this TEP.
+
 Tekton Chains will be updated to skip processing results from any Task that
 fails verification *by default*. Note that this does not change existing
 behavior because no existing Task Bundle is subject to the verification proposed
@@ -429,7 +436,13 @@ to keep the process secure.
 If the Task Bundle is configured for verification via Cosign (the only option
 on the initial implementation of this TEP), the code will be adjusted to
 use the Cosign libraries to verify the signature on the Task Bundle image
-using the configuration-provided public key.
+using the configuration-provided public key. Note that this TEP leaves room
+for alternate signing mechanisms in the future; Cosign is proposed here in the
+interest of minimizing scope.
+
+**IMPORTANT:** For the initial delivery of this TEP, all static image
+references in the Task must be referenced by digest (i.e., `...@sha256:abcdef`)
+in order for the Task to be considered for verification.
 
 If the Task Bundle image fails verification, the TaskRun will be annotated
 with `verification-failed`

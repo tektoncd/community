@@ -221,7 +221,7 @@ This is the complete list of Tekton teps:
 |[TEP-0071](0071-custom-task-sdk.md) | Custom Task SDK | proposed | 2021-06-15 |
 |[TEP-0072](0072-results-json-serialized-records.md) | Results: JSON Serialized Records | implementable | 2021-07-26 |
 |[TEP-0073](0073-simplify-metrics.md) | Simplify metrics | proposed | 2021-11-01 |
-|[TEP-0074](0074-deprecate-pipelineresources.md) | Deprecate PipelineResources | proposed | 2021-10-25 |
+|[TEP-0074](0074-deprecate-pipelineresources.md) | Deprecate PipelineResources | proposed | 2021-11-05 |
 |[TEP-0080](0080-support-domainscoped-parameterresult-names.md) | Support domain-scoped parameter/result names | implemented | 2021-08-19 |
 |[TEP-0081](0081-add-chains-subcommand-to-the-cli.md) | Add Chains sub-command to the CLI | implementable | 2021-10-21 |
 |[TEP-0082](0082-workspace-hinting.md) | Workspace Hinting | proposed | 2021-10-26 |

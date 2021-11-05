@@ -2,7 +2,7 @@
 status: proposed
 title: Deprecate PipelineResources
 creation-date: '2021-07-14'
-last-updated: '2021-10-25'
+last-updated: '2021-11-05'
 authors:
 - '@bobcatfish'
 ---
@@ -160,8 +160,8 @@ that maybe this concept, at least in its current form, isn't required).
     * [TEP-0075 Object/Dictionary support](https://github.com/tektoncd/community/pull/479) must be at a beta level of
       stability
     * [TEP-0076 Array support](https://github.com/tektoncd/community/pull/479) must be at a beta level of stability
-    * [pipeline-to-taskrun experimental custom task](https://github.com/tektoncd/experimental/pull/770) must be used in
-      dogfooding, as a way to prove the viability of a solution to [TEP-0044](https://github.com/tektoncd/community/blob/main/teps/0044-decouple-task-composition-from-scheduling.md)
+    * [TEP-0044 Decouple Task Composition from Scheduling](https://github.com/tektoncd/community/blob/main/teps/0044-decouple-task-composition-from-scheduling.md)
+      must be implemented at an alpha level of stability, to give users a reasonable migration path off of PipelineResources for v1
 1. If any of these TEPs this proposal depends on are rejected, we must create a new TEP to fill the gap in functionality
    before moving forward
 1. [Once we meet these requirements](#requirements-to-mark-as-implementable), update this TEP to be `implementable`
@@ -183,6 +183,8 @@ that maybe this concept, at least in its current form, isn't required).
 - [ ] [TEP-0056 Pipelines in Pipelines](https://github.com/tektoncd/community/blob/main/teps/0056-pipelines-in-pipelines.md) is implemented and promoted to beta
 - [ ] [TEP-0075 Object/Dictionary support](https://github.com/tektoncd/community/pull/479) is implemented and promoted to beta
 - [ ] [TEP-0076 Array support](https://github.com/tektoncd/community/pull/479) is implemented and promoted to beta
+- [ ] [TEP-0044 Decouple Task Composition from Scheduling](https://github.com/tektoncd/community/blob/main/teps/0044-decouple-task-composition-from-scheduling.md)
+  is implemented at alpha
   
 ### New repo: tektoncd/images
 
@@ -235,9 +237,6 @@ Possible alternative tweaks:
        implementable (which is itself blocked on [TEP-0076 Array support](https://github.com/tektoncd/community/pull/479)),
        being implemented, and being promoted from an alpha feature to beta
     1. Assume it is okay to accept this TEP while these are still WIP:
-      * [TEP-0044](https://github.com/tektoncd/community/blob/main/teps/0044-decouple-task-composition-from-scheduling.md):
-        it will likely be a while before we fully explore this, in the meantime, we can prove (see above) that a
-        Pipeline running as a pod based approach is viable
       * [TEP-0030 Workspace Paths](https://github.com/tektoncd/community/blob/main/teps/0030-workspace-paths.md)): this
         functionality doesn't seem to be as important to any users as the rest of the PipelineResources features
 * Risk: Migration to v1 will be harder for people who are using PipelineResources

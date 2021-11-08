@@ -59,7 +59,7 @@ tags, and then generate with `hack/update-toc.sh`.
 - [Motivation](#motivation)
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
-  - [Use Cases (optional)](#use-cases-optional)
+  - [Use Cases](#use-cases)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [Notes/Caveats (optional)](#notescaveats-optional)
@@ -121,7 +121,7 @@ What is out of scope for this TEP?  Listing non-goals helps to focus discussion
 and make progress.
 -->
 
-### Use Cases (optional)
+### Use Cases
 
 <!--
 Describe the concrete improvement specific groups of users will see if the

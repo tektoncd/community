@@ -22,7 +22,7 @@ pull requests without requiring [`ok-to-test`](process.md#prow-commands).
 Being part of the org also makes it possible to have issues assigned.
 
 To be eligible to become a member of the org you must (note that this is at the
-discretion of [the governing board members](governance.md)) do both of:
+discretion of [the governing board members](../governance.md)) do both of:
 
 * Opened 5 pull requests against projects in tektoncd
 * Reviewed 5 pull requests against projects in tektoncd

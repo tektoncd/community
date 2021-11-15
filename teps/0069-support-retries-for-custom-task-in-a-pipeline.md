@@ -164,13 +164,8 @@ count, and update the `RetriesStatus` on each retry.
 
 ## Test Plan
 
-Add unit tests and e2e integration tests for following two cases.
-
-1. If the custom task, does not support a retry, we wait until the configured
-   pipeline task timeout and fail.
-
-2. If the custom task *does support* a retry i.e., it does update the `RetriesStatus`.
-   Verify it performs the correct number of retries.
+The TEP introduces new API fields and copy retries count from PipelineRun to the Run.
+Add/upgrade a test to verify this is correctly copied.
 
 ## Design Evaluation
 <!--

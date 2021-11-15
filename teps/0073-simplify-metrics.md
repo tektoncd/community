@@ -2,7 +2,7 @@
 status: proposed
 title: Simplify metrics
 creation-date: '2021-06-23'
-last-updated: '2021-06-23'
+last-updated: '2021-11-01'
 authors:
 - "@vdemeester"
 - "@yaoxiaoqi"
@@ -420,7 +420,8 @@ It will be a quick reference for those looking for implementation of this TEP.
 
 Additional context for this TEP can be found in the following links:
 
-- [Github issues](https://github.com/tektoncd/pipeline/issues/2842)
+- [Related Github Issue: Too much tekton metrics](https://github.com/tektoncd/pipeline/issues/2842)
+- [Related Github Issue: Metrics Retention](https://github.com/tektoncd/pipeline/issues/4340)
 - [metrics.md](https://github.com/tektoncd/pipeline/blob/master/docs/metrics.md)
 - [Prometheus Metrics Limitation](https://docs.sysdig.com/en/limit-prometheus-metric-collection.html)
 - [SRVKP-1528 Possible cardinality issue with tekton pipelines metrics](https://issues.redhat.com/browse/SRVKP-1528)

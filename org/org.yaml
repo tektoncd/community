@@ -62,6 +62,7 @@ orgs:
     - frerikandriessen
     - gabemontero
     - garethr
+    - geriom
     - guillaumerose
     - hone
     - houshengbo
@@ -352,6 +353,7 @@ orgs:
         - AlanGreene
         - jjasghar
         - popcor255
+        - geriom
         privacy: closed
         repos:
           website: write

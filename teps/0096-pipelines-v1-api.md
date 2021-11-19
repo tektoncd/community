@@ -2,7 +2,7 @@
 status: proposed
 title: Pipelines V1 API
 creation-date: '2021-11-29'
-last-updated: '2021-02-07'
+last-updated: '2022-02-07'
 authors:
 - '@lbernick'
 - '@jerop'

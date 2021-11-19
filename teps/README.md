@@ -235,6 +235,7 @@ This is the complete list of Tekton teps:
 |[TEP-0089](0089-nonfalsifiable-provenance-support.md) | Non-falsifiable provenance support | proposed | 2022-01-18 |
 |[TEP-0090](0090-matrix.md) | Matrix | implementable | 2022-02-14 |
 |[TEP-0094](0094-configuring-resources-at-runtime.md) | Configuring Resources at Runtime | implemented | 2022-03-11 |
-|[TEP-0096](0096-pipelines-v1-api.md) | Pipelines V1 API | proposed | 2021-02-07 |
+|[TEP-0095](0095-common-repository-configuration.md) | Common Repository Configuration | proposed | 2021-11-29 |
+|[TEP-0096](0096-pipelines-v1-api.md) | Pipelines V1 API | proposed | 2022-02-07 |
 |[TEP-0098](0098-workflows.md) | Workflows | proposed | 2021-12-06 |
 |[TEP-0100](0100-embedded-taskruns-and-runs-status-in-pipelineruns.md) | Embedded TaskRuns and Runs Status in PipelineRuns | implementable | 2022-02-14 |

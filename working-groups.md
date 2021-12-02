@@ -233,7 +233,6 @@ Tekton projects.
 | <img width="30px" src="https://github.com/bobcatfish.png">  | Christie Wilson   | Google       | [bobcatfish](https://github.com/bobcatfish)   |
 | <img width="30px" src="https://github.com/skaegi.png">      | Simon Kaegi       | IBM          | [skaegi](https://github.com/skaegi)           |
 | <img width="30px" src="https://github.com/jerop.png">       | Jerop Kipruto     | Google       | [jerop](https://github.com/jerop)             |
-| <img width="30px" src="https://github.com/pierretasci.png"> | Pierre Tasci      | Apple        | [pierretasci](https://github.com/pierretasci) |
 
 ## Dashboard
 

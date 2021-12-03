@@ -1,13 +1,13 @@
 ---
 status: proposed
-title: Verified Task Bundles
+title: Verified Remote Resources
 creation-date: '2021-10-11'
-last-updated: '2021-10-11'
+last-updated: '2021-12-03'
 authors:
 - '@squee1945'
 ---
 
-# TEP-0091: Verified Task Bundles
+# TEP-0091: Verified Remote Resources
 
 <!--
 **Note:** When your TEP is complete, all of these comment blocks should be removed.
@@ -110,8 +110,10 @@ updates.
 The proposed features advance Secure Software Supply Chain goals and allow
 users of Tekton and Tekton Chains to implement more secure builds.
 
-- Provide an optional mechanism for Task Bundles within Tekton to be verified.
-- Provide an optional mechanism to fail the build if a Task Bundle cannot be
+| This TEP is written based on TEP-0060 Remote Resource Resolution. |
+
+- Provide an optional mechanism for Remote Resources to be verified.
+- Provide an optional mechanism to fail the build if a Remote Resource cannot be
   verified.
 - Adjust Chains to ignore outputs from Task Runs that explicitly fail
   verification.
@@ -135,7 +137,7 @@ results. For the results in particular, how do we know that some activity
 actually occurred, for example, how do we know that an image was pushed to a
 repository?
 
-Task Bundle verification allows us to place some level of trust in the outputs
+Remote Resource verification allows us to place some level of trust in the outputs
 from a Task Run so that we can be confident in the build results and the
 attestation claims that are made.
 
@@ -150,11 +152,11 @@ know that this has succeeded?
 - Provide solid building blocks to begin to establish formal chains of trust
   within the build pipeline itself.
 - Leveraging the above, provide mechanisms to establish a verifiable corpus
-  of community-provided Task Bundles.
-- Create an optional Tekton configuration for Task Bundle verification based
+  of community-provided Tasks and Task Bundles.
+- Create an optional Tekton configuration for Remote Resource verification based
   on Sigstore Cosign (https://github.com/sigstore/cosign).
 - Create an optional Tekton Chains configuration to skip attestation creation
-  based on information from Task Bundles that could not be verified.
+  based on information from Remote Resources that could not be verified.
 
 
 ### Non-Goals
@@ -242,21 +244,24 @@ nitty-gritty.
 -->
 
 Sigstore Cosign (https://github.com/sigstore/cosign) has mechanisms to securely
-sign a given OCI image. A Task Bundle is packaged as an OCI image. This provides
-a solid footing to leverage Cosign to verify the Task Bundle.
+sign a given OCI image. This provides
+a solid footing to leverage Cosign to verify image-based Remote Resources.
+Future extensions can incorporate other types of Remote Resources, like git
+repository based Remote Resources.
 
 This proposal will introduce new optional configuration to Tekton to indicate
-that a Task Bundle verification must occur. The Pipeline Author specifying the
-bundle will also have to provide the public key of the signature used in the
+that a Remote Resource verification must occur. The Pipeline Author specifying the
+task will also have to provide the public key of the signature used in the
 verification. The public key itself is explicitly obtained outside of Tekton,
-for example, the Task Bundle author may publish their public key somewhere.
+for example, the Remote Resource author may publish their public key somewhere.
 
-If a Task Bundle fails verification, the corresponding TaskRun will be
+If a Remote Resource fails verification, the corresponding TaskRun will be
 annotated as such. The Pipeline Author will have optional configuration to stop
 and fail the build on verification failure.
 
 **IMPORTANT:** A Task refers to other images. For the initial delivery of this
-TEP, all static image references within the Task must be referenced by digest
+TEP, all static image references within a Task fetched as a Remote Resource
+must be referenced by digest
 (i.e., `...@sha256:abcdef`) in order for the verification to succeed. In later
 iterations, this can be extended such that tag-referenced images can
 _themselves_ be verified for the overall Task to pass verification. However,
@@ -264,8 +269,8 @@ this will be left out of the scope of this TEP.
 
 Tekton Chains will be updated to skip processing results from any Task that
 fails verification *by default*. Note that this does not change existing
-behavior because no existing Task Bundle is subject to the verification proposed
-here, and Task Bundle verification is optional and opt-in by the Pipeline
+behavior because no existing Remote Resource is subject to the verification proposed
+here, and Remote Resource verification is optional and opt-in by the Pipeline
 Author.
 
 The Pipeline Author will be able to provide optional configuration to Tekton
@@ -282,8 +287,8 @@ Go in to as much detail as necessary here.
 This might be a good place to talk about core concepts and how they relate.
 -->
 
-This proposal is explicitly focussed on Task *Bundles* because they are
-packaged as an OCI image and work well with Cosign. This does not preclude
+This proposal is explicitly focussed on OCI image baesed Remote Resources
+because they work well with Cosign. This does not preclude
 extending the verification mechanism in the future to encompass an arbitrary
 Task, nor does it preclude additional verification mechanisms other than
 Cosign.
@@ -303,10 +308,10 @@ How will UX be reviewed and by whom?
 Consider including folks that also work outside the WGs or subproject.
 -->
 
-This proposal verifies a Task Bundle itself, but the Task definition within
-the bundle still has references to external, unverified resources - namely, 
+When verifying a Remote Resource that identifies a Task, the Task still has
+references to external, unverified resources - namely, 
 the builder images. These builder images may have been compromised and the
-Task Bundle would still be considered verified.
+Task would still be considered verified.
 
 Some possible mitigations include the following:
 
@@ -404,14 +409,15 @@ apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 
 spec:
-
   taskRef:
-    name: kaniko-build-task
-    bundle: gcr.io/kaniko-project/kaniko-task
-    verification:
-      signer: [cosign]
-      key: [some-public-key]
-      onError: [ stopAndFail | continue ]
+    resolver: bundle
+    resource:
+      image_url: gcr.io/kaniko-project/kaniko-task
+      name: kaniko-build-task
+      verification:
+        signer: [cosign]
+        key: [some-public-key]
+        onError: [ stopAndFail | continue ]
 ```
 
 `signer: cosign`. (Required) Additional verification providers can be added in
@@ -425,17 +431,17 @@ many types of inputs including plain text and various KMS systems.
 spirit of secure by default. `continue` will allow the build to continue even
 if verification fails.
 
-The reconciler for a TaskRef pulls the Tekton Bundle image and expands the
+The reconciler for a Remote Resource pulls the Tekton Bundle image and expands the
 Task definition:
 https://github.com/tektoncd/pipeline/blob/5c6194b377111a84bf8d5c8cc61f1a2e34718bed/pkg/reconciler/taskrun/resources/taskref.go#L91
 
 At this point, after adjusting this code somewhat, we can have the resolved
-digest for the Task Bundle. This digest is key input into the Cosign process
+digest for the Remote Resource. This digest is key input into the Cosign process
 to keep the process secure.
 
-If the Task Bundle is configured for verification via Cosign (the only option
+If the Remote Resource is configured for verification via Cosign (the only option
 on the initial implementation of this TEP), the code will be adjusted to
-use the Cosign libraries to verify the signature on the Task Bundle image
+use the Cosign libraries to verify the signature on the Remote Resource image
 using the configuration-provided public key. Note that this TEP leaves room
 for alternate signing mechanisms in the future; Cosign is proposed here in the
 interest of minimizing scope.
@@ -444,7 +450,7 @@ interest of minimizing scope.
 references in the Task must be referenced by digest (i.e., `...@sha256:abcdef`)
 in order for the Task to be considered for verification.
 
-If the Task Bundle image fails verification, the TaskRun will be annotated
+If the Remote Resource image fails verification, the TaskRun will be annotated
 with `verification-failed`
 (**TODO:** please help provide the _actual_ full annotation that would be 
 appropriate).
@@ -452,14 +458,14 @@ appropriate).
 If `stopAndFail` is configured, the build will fail on image verification.
 
 **Future design idea.** As a future development, a verification section could
-be introduced to the `config-defaults` ConfigMap to allow Task Bundles to be
+be introduced to the `config-defaults` ConfigMap to allow Remote Resources to be
 verifiable by default. The verification configuration could be based on 
 image prefix to reduce configuration (longest image name would match first).
 For example:
 
 ```
-  default-task-verification: |
-    bundleVerification:
+  default-remote-resource-verification: |
+    bundle:
     - prefix: gcr.io/kaniko-project/
       signer: cosign
       key: [ some-public-key ]
@@ -500,13 +506,7 @@ and conformance of Tekton, as described in [design principles](https://github.co
 Why should this TEP _not_ be implemented?
 -->
 
-Ideally, we would have a mechanism to verify any Task, not just a Task Bundle.
-However, to verify an arbitrary Task, we would need to answer these challenging
-questions, delaying the security opportunities available for a Task Bundle
-that are immediately available.
-Because the Task Bundle is distributed as an OCI image, it forms convenient
-input into the Cosign process, and the Cosign process has already answered
-signing questions like canonicalization and signature storage.
+N/A
 
 ## Alternatives
 
@@ -516,20 +516,6 @@ not need to be as detailed as the proposal, but should include enough
 information to express the idea and why it was not acceptable.
 -->
 
-A Kubernetes Admission Controller might be a natural place to check every
-TaskRun object and perform verification. A couple of issues arise:
-
-- To use Cosign securely, we need to resolve the Task Bundle image reference
-  and ensure that it is referenced by digest. If the image is referenced by
-  tag, the Admission Controller would need to read the repository to resolve
-  the tag, and then **update** the TaskRun `taskRef.bundle` so that the same
-  digest is used during the build. This would require a mutating webhook which
-  may not be widely supported (e.g., disallowed by GKE autopilot by default).
-- If verification fails, an annotation needs to be added to the TaskRun, again
-  requiring a mutating webhook (**TODO**: is this true?)
-- Verification process requires accessing the repository to validate the
-  signature. This takes O(10s) and it seems this sort of latency is generally
-  discouraged in Admission Controllers.
 
 ## Infrastructure Needed (optional)
 

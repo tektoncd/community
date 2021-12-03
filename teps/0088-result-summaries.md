@@ -1,3 +1,12 @@
+---
+status: proposed
+title: Tekton Results - Record Summaries
+creation-date: "2021-10-01"
+last-updated: "2021-10-01"
+authors: ["wlynch"]
+---
+
+# TEP-0088: Tekton Results: Record Summaries
 
 <!--
 **Note:** When your TEP is complete, all of these comment blocks should be removed.
@@ -55,11 +64,12 @@ tags, and then generate with `hack/update-toc.sh`.
 -->
 
 <!-- toc -->
+
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
-  - [Use Cases](#use-cases)
+  - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [Notes/Caveats (optional)](#notescaveats-optional)
@@ -75,7 +85,7 @@ tags, and then generate with `hack/update-toc.sh`.
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
 - [Implementation Pull request(s)](#implementation-pull-request-s)
 - [References (optional)](#references-optional)
-<!-- /toc -->
+  <!-- /toc -->
 
 ## Summary
 
@@ -96,6 +106,68 @@ updates.
 [documentation style guide]: https://github.com/kubernetes/community/blob/master/contributors/guide/style-guide.md
 -->
 
+Currently, Tekton Results are modelled so that Records keep a reference to their
+parent Results, but Results themselves do not have a reference back to their
+child Records.
+
+```
++--------+               +--------+
+|        |               |        |
+| Result | <-----+------ | Record |
+|        |       |       |        |
++--------+       |       +--------+
+                 |
+                 |       +--------+
+                 |       |        |
+                 +------ | Record |
+                         |        |
+                         +--------+
+```
+
+This model lets us store and update arbitrary numbers of Records without causing
+contention on the shared parent Result. However, this model has a disadvantage -
+it is difficult to determine which Record is the primary / root Record for a
+given Result without scanning through all Records. This makes it harder to
+determine things like overall Result status, timings, and other information that
+might be common to all Results.
+
+To address this, we wish to add a "Record Summary" to a Result to allow for
+referencing and distilling common fields into a Result without needing to search
+through Records.
+
+```proto
+message Result {
+  ...
+  RecordSummary record_summary = 5;
+}
+
+message RecordSummary {
+  // The name of the Record this summary represents.
+  string record = 1  [
+   (google.api.resource_reference).type = "results.tekton.dev/Record"
+  ];
+  // Identifier of underlying data.
+  // e.g. `pipelines.tekton.dev/PipelineRun`
+  string type = 2;
+
+  // Common Record agnostic fields.
+  google.protobuf.Timestamp start_time = 3;
+  google.protobuf.Timestamp end_time = 4;
+
+  enum Status {
+    UNKNOWN = 1;
+    SUCCESS = 2;
+    FAILURE = 3;
+    ...
+  }
+  Status status = 5;
+
+   // Key-value pairs representing arbitrary underlying record data that clients want to include
+   // that aren't covered by the above Record agnostic fields.
+   map<string, string> record_data = 6;
+}
+```
+
 ## Motivation
 
 <!--
@@ -107,12 +179,35 @@ demonstrate the interest in a TEP within the wider Tekton community.
 [experience reports]: https://github.com/golang/go/wiki/ExperienceReports
 -->
 
+We want to let UIs/CLIs to show high level summaries of Results, e.g. -
+
+| Result | Type        | Status  | Duration |
+| ------ | ----------- | ------- | -------- |
+| A      | PipelineRun | SUCCESS | 30s      |
+| B      | TaskRun     | FAILURE | 10s      |
+| C      | CustomRun   | SUCCESS | 5s       |
+
+However, since Results do not currently store any Record information, the only
+mechanism to output such a UI would be to:
+
+1. List all Results
+2. For each Result, list all Records
+3. From the Records, figure out the order of precedence to know what to display
+   (e.g. if Record contains PipelineRun+TaskRun(s), show the PipelineRun)
+
+Instead, we want to provide fields to allow Result producers to give Result
+consumers consistent access to common high level data (i.e. status, timing, etc)
+and direction as to what Records are most important.
+
 ### Goals
 
 <!--
 List the specific goals of the TEP.  What is it trying to achieve?  How will we
 know that this has succeeded?
 -->
+
+- Allow for Results to access high-level information (e.g. statuses, timing
+  information, primary Record data) in an efficient way.
 
 ### Non-Goals
 
@@ -121,16 +216,28 @@ What is out of scope for this TEP?  Listing non-goals helps to focus discussion
 and make progress.
 -->
 
-### Use Cases
+- Include all Records in a Result - we want to avoid:
+  1. making the size of a Result linear to the number of Records.
+  2. causing contention of the Result if there are many Records being updated at
+     once.
+- Include detailed Record information in a Result - we will continue to defer to
+  the Record to store complete information.
 
-<!--
-Describe the concrete improvement specific groups of users will see if the
-Motivations in this doc result in a fix or feature.
+### Open Questions
 
-Consider both the user's role (are they a Task author? Catalog Task user?
-Cluster Admin? etc...) and experience (what workflows or actions are enhanced
-if this problem is solved?).
--->
+- Should a Result be able to have multiple summaries? e.g. what if I have a
+  Result with multiple TaskRuns?
+
+  - How should a UI / tool handle this?
+
+  **ANSWER**: We will start with only 1 summary for now.
+
+- What fields should we include in a summary? Should things like Git references
+  that might not be applicable to all Results get special treatment, or should
+  they be relegated to `annotations`?
+- Do we need a mechanism to ensure that a Result stays in sync with the
+  underlying Record? What happens if they diverge?
+- Naming / message changes? Should fields be embedded directly into Result?
 
 ## Requirements
 
@@ -139,6 +246,13 @@ Describe constraints on the solution that must be met. Examples might include
 performance characteristics that must be met, specific edge cases that must
 be handled, or user scenarios that will be affected and must be accomodated.
 -->
+
+- Result consumers should be able to get basic high-level Result information
+  without needing to list all Records.
+
+---
+
+<!-- EVERYTHING UNDER HERE TO BE FILLED IN LATER -->
 
 ## Proposal
 
@@ -228,8 +342,9 @@ expectations).
 -->
 
 ## Design Evaluation
+
 <!--
-How does this proposal affect the api conventions, reusability, simplicity, flexibility 
+How does this proposal affect the reusability, simplicity, flexibility
 and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/master/design-principles.md)
 -->
 

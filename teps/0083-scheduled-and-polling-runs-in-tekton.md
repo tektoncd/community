@@ -1,65 +1,21 @@
+---
+status: proposed
+title: Scheduled and Polling runs in Tekton
+creation-date: '2021-09-13'
+last-updated: '2021-09-13'
+authors:
+- '@vdemeester'
+- '@sm43'
+---
 
-<!--
-**Note:** When your TEP is complete, all of these comment blocks should be removed.
-
-To get started with this template:
-
-- [ ] **Fill out this file as best you can.**
-  At minimum, you should fill in the "Summary", and "Motivation" sections.
-  These should be easy if you've preflighted the idea of the TEP with the
-  appropriate Working Group.
-- [ ] **Create a PR for this TEP.**
-  Assign it to people in the SIG that are sponsoring this process.
-- [ ] **Merge early and iterate.**
-  Avoid getting hung up on specific details and instead aim to get the goals of
-  the TEP clarified and merged quickly.  The best way to do this is to just
-  start with the high-level sections and fill out details incrementally in
-  subsequent PRs.
-
-Just because a TEP is merged does not mean it is complete or approved.  Any TEP
-marked as a `proposed` is a working document and subject to change.  You can
-denote sections that are under active debate as follows:
-
-```
-<<[UNRESOLVED optional short context or usernames ]>>
-Stuff that is being argued.
-<<[/UNRESOLVED]>>
-```
-
-When editing TEPS, aim for tightly-scoped, single-topic PRs to keep discussions
-focused.  If you disagree with what is already in a document, open a new PR
-with suggested changes.
-
-If there are new details that belong in the TEP, edit the TEP.  Once a
-feature has become "implemented", major changes should get new TEPs.
-
-The canonical place for the latest set of instructions (and the likely source
-of this file) is [here](/teps/NNNN-TEP-template/README.md).
-
--->
-
-<!--
-This is the title of your TEP.  Keep it short, simple, and descriptive.  A good
-title can help communicate what the TEP is and should be considered as part of
-any review.
--->
-
-<!--
-A table of contents is helpful for quickly jumping to sections of a TEP and for
-highlighting any additional information provided beyond the standard TEP
-template.
-
-Ensure the TOC is wrapped with
-  <code>&lt;!-- toc --&rt;&lt;!-- /toc --&rt;</code>
-tags, and then generate with `hack/update-toc.sh`.
--->
+# TEP-0083: Scheduled and Polling runs in Tekton
 
 <!-- toc -->
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
-  - [Use Cases](#use-cases)
+  - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [Notes/Caveats (optional)](#notescaveats-optional)
@@ -96,6 +52,10 @@ updates.
 [documentation style guide]: https://github.com/kubernetes/community/blob/master/contributors/guide/style-guide.md
 -->
 
+This TEP introduces an idea for a feature in triggers which allows user to 
+- Schedule a pipelinerun/taskrun at a certain time
+- Setup a poll which looks for changes on a repository and triggers pipelinerun/taskrun.
+
 ## Motivation
 
 <!--
@@ -106,6 +66,20 @@ demonstrate the interest in a TEP within the wider Tekton community.
 
 [experience reports]: https://github.com/golang/go/wiki/ExperienceReports
 -->
+
+- To allow users to schedule a pipelinerun/taskrun at a certain time or at certain interval
+
+    Ex. I want to run a pipeline every day at 8 am. Currently, I can do this by setting up a cronjob, but having as a part of Trigger could be a good idea. So, Triggers can start a pipelinerun at the time mentioned by me.
+
+- To allow users to use triggers without need to setup a webhook. Triggers could have a feature which allow user to setup a polling feature for a repository which would look for changes in repository and trigger a pipelinerun or taskrun.
+
+    This was briefly discussed on Issue [#1168](https://github.com/tektoncd/triggers/issues/1168) and [#480](https://github.com/tektoncd/triggers/issues/480).
+
+    This can be solved currently by a setting up a cronjob to check for changes but having as a part of triggers could enhance triggers.
+
+
+Both of the feature could be use cases of conditional triggering where one is at certain time and other would at a certain time if an additional condition passes. They are
+proposed together as the part implementation would be similar which would be discussed in design part in further iterations.
 
 ### Goals
 
@@ -121,7 +95,17 @@ What is out of scope for this TEP?  Listing non-goals helps to focus discussion
 and make progress.
 -->
 
-### Use Cases
+### Use Cases (optional)
+
+(Scheduled Run)
+- As a user, I want to run a pipeline everyday at a certain time. Currently, I can setup using a cronjob which would trigger the run but having this integrated with triggers would be nice. we would do without this feature would be : a cronjob + creating a PipelineRun or a cronjob and a http call to a trigger (to simulate a webhook event).
+
+(Polling)
+- As a user, I don't have permission to setup a webhook on a repository having a polling feature could be helpful to solve this issue. I can configure the polling feature to look for changes and trigger a pipeline.
+
+- Due to restriction of company, users might not be able to expose eventlistener publicly so this could be an option which would look for changes at certain duration and trigger a Pipelinerun. [Reference.](https://github.com/tektoncd/triggers/issues/480#issuecomment-620605920)
+
+- As a developer, I want to be able to setup an automated release process that would look at a given branch (release-vX…) and automatically schedule a build and tag a release in case there was new changes (on a weekly cadence for example). *Note: it can be achieved using a `CronJob` but would be nicer to be integrated in triggers*.
 
 <!--
 Describe the concrete improvement specific groups of users will see if the
@@ -131,6 +115,8 @@ Consider both the user's role (are they a Task author? Catalog Task user?
 Cluster Admin? etc...) and experience (what workflows or actions are enhanced
 if this problem is solved?).
 -->
+
+
 
 ## Requirements
 
@@ -149,6 +135,56 @@ you're proposing, but should not include things like API designs or
 implementation.  The "Design Details" section below is for the real
 nitty-gritty.
 -->
+
+We have a POC done around this part of this idea described in [#1168](https://github.com/tektoncd/triggers/issues/1168) which defines a new CRD as below.
+
+POC tries to implement the polling feature which would look for changes and trigger a piplinerun. This integrates the Trigger template and trigger binding to use data from the response  of GitHub APIs used to look for changes.
+
+```
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: SyncRepo
+metadata:
+  name: test
+spec:
+  repo: https://github.com/tektoncd/hub
+  branch: main
+  frequency: 3m
+  binding: pipeline-binding
+  template: pipeline-template
+```
+
+- This takes GitHub Repo URL and then check for changes at frequeny defined by user.
+- It saves the latest commit id to status to check in further reconcilations. 
+
+
+## Questions
+
+- (sbwsg) We identify CronJobs as an existing solution for scheduling. Why aren't they good enough on their own? ([Ref](https://github.com/tektoncd/community/pull/517#issuecomment-919323436))
+    Cronjob do cover a use case which we are proposing which is triggering run at certain interval but to check it
+    something is actually changed to trigger a pipelinrun/taskrun then we will need a script to check the condition.
+    Everytime we setup this for a repository, the user will have to write a script. This logic can be abstracted into 
+    triggers and an interface can be exposed to user which would be simple to configure.
+
+- (sbwsg) We identify an alternative project that exists today for polling GitHub. Is there a strong reason to favor a new solution 
+  and if so what is it? Is there a strong reason to favor a project owned by Tekton and if so what is it? ([Ref](https://github.com/tektoncd/community/pull/517#issuecomment-919323436))
+
+    The existing solution available is an Operator. Many developer don't have access to install operators into their clusters. 
+    Providing this along with triggers which is installed by Tekton Operator will eliminate a need to install an addtional Operator.
+    So, packaging the solution with Tekton Trigger would be nice
+
+
+(To be explored)
+
+- Should we have both feature together? 
+    - Trigger a pipelinerun at a certain time (cronjob/scheduling) 
+    - Trigger a pipelinerun if something changed in repository (polling)
+
+-   Would it make sense to 
+    -   integrated polling feature with Trigger Binding and Trigger Template? or 
+    -   keep it independent which would take pipeline as input  and create a pipelinerun on a change? 
+    -   or provide both of them together?
+  
+
 
 ### Notes/Caveats (optional)
 
@@ -229,7 +265,7 @@ expectations).
 
 ## Design Evaluation
 <!--
-How does this proposal affect the api conventions, reusability, simplicity, flexibility 
+How does this proposal affect the reusability, simplicity, flexibility 
 and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/master/design-principles.md)
 -->
 
@@ -240,6 +276,10 @@ Why should this TEP _not_ be implemented?
 -->
 
 ## Alternatives
+
+- There is an existing implementation independent of Triggers doing similar.
+    https://github.com/bigkevmcd/tekton-polling-operator
+    This has an CRD which takes input and the controller check for changes and trigger a run object. 
 
 <!--
 What other approaches did you consider and why did you rule them out?  These do
@@ -273,6 +313,10 @@ It will be a quick reference for those looking for implementation of this TEP.
 -->
 
 ## References (optional)
+
+-  Polling a repository to detect changes and trigger a pipeline [#1168](https://github.com/tektoncd/triggers/issues/1168) 
+-   Poll based change detection? [#480](https://github.com/tektoncd/triggers/issues/480)
+
 
 <!--
 Use this section to add links to GitHub issues, other TEPs, design docs in Tekton

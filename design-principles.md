@@ -1,5 +1,9 @@
 # Tekton Design Principles
 
+## API conventions
+1. Changes to Tekton APIs, especially CRD (Custom Resource Definition) based APIs should comply with
+   [Kubernetes API Conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#api-conventions).
+
 ## Reusability
 1. Existing features should be reused when possible instead of adding new ones. Before proposing a feature, try solving the problem with existing features first.
 1. Prefer providing a solution in the Catalog when possible to adding a feature.

@@ -2,9 +2,10 @@
 status: proposed
 title: Decouple Task Composition from Scheduling
 creation-date: '2021-01-22'
-last-updated: '2021-03-10'
+last-updated: '2021-12-07'
 authors:
 - '@bobcatfish'
+- '@lbernick'
 ---
 
 # TEP-0044: Decouple Task Composition from Scheduling
@@ -14,112 +15,135 @@ authors:
 - [Motivation](#motivation)
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
-  - [Use Cases (optional)](#use-cases-optional)
+  - [Use Cases](#use-cases)
   - [Overlap with TEP-0046](#overlap-with-tep-0046)
 - [Requirements](#requirements)
-- [References (optional)](#references-optional)
+- [References](#references)
   - [PipelineResources](#pipelineresources)
 - [Design Details](#design-details)
 - [Alternatives](#alternatives)
 
 ## Summary
 
-This TEP addresses how the current concept of a Task embodies both a reusable unit of logic but is also a unit used to
-schedule execution.
+As stated in Tekton's [reusability design principles](https://github.com/tektoncd/community/blob/main/design-principles.md#reusability),
+Pipelines and Tasks are meant to capture authoring-time concerns, and to be reusable in a variety of execution contexts.
+PipelineRuns and TaskRuns should be able to control execution without the need to modify the corresponding Pipeline or Task.
+
+However, because each TaskRun is executed in a separate pod, Task and Pipeline authors indirectly control the number of pods used in execution.
+This introduces both the overhead of extra pods and friction associated with moving data between Tasks.
+
+This TEP lists the pain points associated with running each TaskRun in its own pod and describes the current features that mitigate these pain points.
+It explores several options for decoupling Task composition and TaskRun scheduling but does not yet propose a preferred solution.
 
 ## Motivation
 
-* Tasks are a reusable unit combining one or more steps (container images) together and defining an interface to those
-  steps via params, workspaces and results
-* Tasks can be combined in a Pipeline
-* When a Pipeline is invoked via a PipelineRun, each Task is executed as a separate pod.
+The choice of one pod per Task works for most use cases for a single TaskRun, but can cause friction when TaskRuns are combined in PipelineRuns.
+These problems are exacerbated by complex Pipelines with large numbers of Tasks.
+There are two primary pain points associated with coupling each TaskRun to an individual pod: the overhead of each additional pod
+and the difficulty of passing data between Tasks in a Pipeline.
 
-This means that choices made around Task design (e.g. creating a Task that encapsulates a git clone and a separate Task
-to run go unit tests) directly impact the performance and overhead involved in executing the Tasks. For example
-if the git clone task wants to share data with the unit test task, beyond a simple
-[result](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#using-results),
-you'll need to provision a PVC or do some other similar, cloud specific storage,
-to [make a volume available](https://github.com/tektoncd/pipeline/blob/master/docs/workspaces.md#specifying-volumesources-in-workspaces)
-that can be shared between them, and running the second Task will be delayed by the overhead of scheduling a second pod.
+### Pod overhead
 
-### Goals
+Pipeline authors benefit when Tasks are made as self-contained as possible, but the more that Pipeline functionality is split between modular Tasks,
+the greater the number of pods used in a PipelineRun. Each pod consumes some system resources in addition to the resources needed to run each container
+and takes time to schedule. Therefore, each additional pod increases the latency of and resources consumed by a PipelineRun.
+
+### Difficulty of moving data between Tasks
+
+Many Tasks require some form of input data or emit some form of output data, and Pipelines frequently use Task outputs as inputs for subsequent Tasks.
+Common Task inputs and outputs include repositories, OCI images, events, or unstructured data copied to or from cloud storage.
+Scheduling TaskRuns on separate pods requires these artifacts to be stored somewhere outside of the pods.
+This could be storage within a cluster, like a PVC, configmap, or secret, or remote storage, like a cloud storage bucket or image repository.
+
+Workspaces make it easier to "shuttle" data through a Pipeline by abstracting details of data storage out of Pipelines and Tasks.
+They currently support only forms of storage within a cluster (PVCs, configmaps, secrets, and emptydir).
+They're an important puzzle piece in decoupling Task composition and scheduling, but they don't address the underlying problem
+that some form of external data storage is needed to pass artifacts between TaskRuns.
+
+The need for data storage locations external to pods introduces friction in a few different ways.
+First, moving data between storage locations can incur monetary cost and latency.
+There are also some pain points associated specifically with PVCs, the most common way of sharing data between TaskRuns.
+Creating and deleting PVCs (typically done with each PipelineRun) incurs additional load on the kubernetes API server and storage backend,
+increasing PipelineRun latency.
+In addition, some systems support only the ReadWriteOnce [access mode](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes)
+for PVCs, which allows the PVC to be mounted on a single node at a time. This means that Pipeline TaskRuns that share data and run in parallel
+must run on the same node.
+
+The following issues describe some of these difficulties in more detail:
+- [Issue: Difficult to use parallel Tasks that share files using workspace](https://github.com/tektoncd/pipeline/issues/2586):
+This issue provides more detail on why it's difficult to share data between parallel tasks using PVCs.
+- [Feature Request: Pooled PersistentVolumeClaims](https://github.com/tektoncd/pipeline/issues/3417):
+This user would like to attach preallocated PVCs to PipelineRuns and TaskRuns rather than incurring the overhead of creating a new one every time.
+- [@mattmoor's feedback on PipelineResources and the Pipeline beta](https://twitter.com/mattomata/status/1251378751515922432):
+The experience of running a common, fundamental workflow is made more difficult by having to use PVCs to move data between pods.
+- [Issue: Exec Steps Concurrent in task (task support DAG)](https://github.com/tektoncd/pipeline/issues/3900): This user would like to be able to
+run Task Steps in parallel, because they do not want to have to use workspaces with multiple pods.
+- [Another comment on the previous issue](https://github.com/tektoncd/pipeline/issues/3900#issuecomment-848832641) from a user who would like to be
+able to run Steps in parallel, but doesn't feel that running a Pipeline in a pod would address this use case because they don't want to turn their Steps into Tasks.
+- [Question: without using persistent volume can i share workspace among tasks?](https://github.com/tektoncd/pipeline/issues/3704#issuecomment-980748302):
+This user uses an NFS for their workspace to avoid provisioning a PVC on every PipelineRun.
+- [FR: Allow volume from volumeClaimTemplate to be used in more than one workspace](https://github.com/tektoncd/pipeline/issues/3440):
+This issue highlights usability concerns with using the same PVC in multiple workspaces (done using sub-paths).
+
+## Existing Workarounds and Mitigations
+
+There's currently no workaround that addresses the overhead of extra pods or storage without harming reusability.
+
+### Combine multiple pieces of functionality in one Task
+Instead of combining functionality provided by Tasks into Pipelines, a Task or Pipeline author could use Steps or a multifunctional script to combine
+all necessary functionality into a single Task. This allows multiple "actions" to be run in one pod, but hurts reusability and makes parallel execution more difficult.
+
+### Use PipelineResources (deprecated) to express a workflow in one Task
+PipelineResources allowed multiple pieces of functionality to run in a single pod by building some of these functions into the TaskRun controller.
+This allowed some workflows to be written as single Tasks.
+For example, the "git" and "image" PipelineResources made it possible to create a workflow that cloned and built a repo, and pushed the resulting image to
+an image repository, all in one Task. 
+However, PipelineResources still required [forms of storage](https://github.com/tektoncd/pipeline/blob/main/docs/install.md#configuring-pipelineresource-storage) external to pods, like PVCs.
+In addition, PipelineResources hurt reusability because they required Task authors to anticipate what other functionality would be needed before and after the Task.
+For this reason, among others, they were deprecated; please see [TEP-0074](./0074-deprecate-pipelineresources.md) for more information.
+
+### Rely on the Affinity Assistant for improved TaskRun scheduling
+The Affinity Assistant schedules TaskRuns that share a PVC on the same node.
+This feature allows TaskRuns that share PVCs to run in parallel in a system that supports only `ReadWriteOnce` Persistent Volumes.
+However, this does not address the underlying issues of pod overhead and the need to shuttle data between TaskRuns in different pods.
+It also comes with its own set of drawbacks, which are described in more detail in
+[TEP-0046: Colocation of Tasks and Workspaces](https://github.com/tektoncd/community/pull/318/files).
+
+### Use Task results to share data without using PVCs
+Tasks may emit string results that can be used as [parameters of subsequent Tasks](https://tekton.dev/docs/pipelines/pipelines/#passing-one-task-s-results-into-the-parameters-or-when-expressions-of-another).
+There is an existing [TEP](https://github.com/tektoncd/community/pull/477/files) for supporting dictionary and array results as well.
+However, results are not designed to handle large, arbitrary forms of data like source repositories or images.
+While there is some [ongoing discussion](https://github.com/tektoncd/community/pull/521) around supporting large results,
+result data would still need to be stored externally to pods.
+
+## Goals
 
 - Make it possible to combine Tasks together so that you can run multiple
-  Tasks together and have control over the scheduling overhead (i.e. pods and volumes required) at authoring time
-  in a way that can be reused (e.g. in a Pipeline)
-- Add some of [the features we don't have without PipelineResources](https://docs.google.com/document/d/1KpVyWi-etX00J3hIz_9HlbaNNEyuzP6S986Wjhl3ZnA/edit#)
-  to Tekton Pipelines (without requiring use of PipelineResources), specifically the first feature listed in
-  [the doc](https://docs.google.com/document/d/1KpVyWi-etX00J3hIz_9HlbaNNEyuzP6S986Wjhl3ZnA/edit#heading=h.gi1d1dikb39u):
-  **Task adapters/specialization**
+  Tasks together and have control over the pods and volumes required.
+- Provide a mechanism to colocate Tasks that execute some "core logic" (e.g. a build)
+with Tasks that fetch inputs (e.g. git clone) or push outputs (e.g. docker push).
 
-### Non-Goals
+## Non-Goals
 
 - Updating the Task CRD to allow Tasks to reference other Tasks
   at [Task authoring time](https://github.com/tektoncd/community/blob/master/design-principles.md#reusability).
   We could decide to include this if we have some use cases that need it; for now avoiding
   this allows us to avoid many layers of nesting (i.e. Task1 uses Task2 uses Task3, etc.)
   or even worse, recursion (Task 1 uses Task 2 uses Task 1...)
-- Completely replacing PipelineResources: we could decide to solve this by improving PipelineResources,
-  or we could add a new feature via this TEP and still continue to support PipelineResources
-  (since they provide [more functionality than just composition](https://docs.google.com/document/d/1KpVyWi-etX00J3hIz_9HlbaNNEyuzP6S986Wjhl3ZnA/edit#))
-- This was previously a use case we were targeting but we've decided to descope the TEP slightly,
-  though if we end up solving this problem as well, that's a bonus:
-  * A user wants to use a Task from the catalog with a git repo and doesn't want the extra
-    overhead of using a Pipeline, they just want to make a TaskRun,
-    e.g. [@mattmoor's feedback on PipelineResources and the Pipeline beta](https://twitter.com/mattomata/status/1251378751515922432))
-    where he wants to checkout some code and [use the kaniko task](https://github.com/tektoncd/catalog/tree/master/task/kaniko/0.1)
-    without having to fiddle with volumes
+- Replacing all functionality that was provided by PipelineResources.
+See [TEP-0074](./0074-deprecate-pipelineresources.md) for the deprecation plan for PipelineResources.
 
-### Use Cases (optional)
+### Use Cases
 
 - A user wants to use catalog Tasks to checkout code, run unit tests and upload results,
   and does not want to incur the additional overhead (and performance impact) of creating
-  volume based workspaces to share data between them in a Pipeline. e.g. specifically
-  cloning with [git-clone](https://github.com/tektoncd/catalog/tree/master/task/git-clone/0.2),
-  running tests with [golang-test](https://github.com/tektoncd/catalog/tree/master/task/golang-test/0.1)
-  and uploading results with [gcs-upload](https://github.com/tektoncd/catalog/tree/master/task/gcs-upload/0.1).
+  volume based workspaces to share data between them in a Pipeline.
 - An organization does not want to use PVCs at all; for example perhaps they have decided
-  on uploading to and downloading from buckets in the cloud (e.g. GCS)
-- An organization is willing to use PVCs to some extent but needs to put limits on their use
+  on uploading to and downloading from buckets in the cloud (e.g. GCS).
+  This could be accomplished by colocating a cloud storage upload Task with the Task responsible for other functionality.
+- An organization is willing to use PVCs to some extent but needs to put limits on their use.
 - A user has decided that the overhead required in spinning up multiple pods is too much and wants to be able to have
   more control over this.
-
-### Overlap with TEP-0046
-
-This TEP covers very similar ground as
-[TEP-0046 (colocation of tasks and workspaces)](https://github.com/tektoncd/community/pull/318), and it may be that we
-choose one solution to address both, but we have kept them separate because they are approaching the problem from
-slightly different angles.
-
-Where they are similar:
-* **Sharing data between Tasks efficiently** is the core problem at the heart of both (in this TEP, we talk about how
-  combining Tasks requires a PVC, in the other we talk about challenges around co-locating pods to share data and
-  inefficiencies of PVCs)
-
-Where they differ:
-
-* **Concurrency** (running of Tasks in parallel) is a big concern in TEP-0046 but isn't directly in the scope of this
-  problem (we could imagine a solution to this problem that only applies when running Tasks serially)
-* **The Affinity Assistant** is another focus of TEP-0046 (i.e. revisiting it before v1) but isn't directly relevant to
-  this TEP (we might solve this without changing or discussing the affinity assistant at all)
-* **Pipelines** - TEP-0046 is specifically concerned with Pipelines; there's a good chance the solution to this TEP
-  will also involve Pipelines, but there are possible solutions that could involve introducing a new type
-* **Controller configuration vs. Authoring time** - This TEP assumes that we'd want to express this kind of composition
-  at "authoring time", i.e. make it [reusable](https://github.com/tektoncd/community/blob/main/design-principles.md#reusability)
-  vs configured at runtime or at the controller level., while TEP-0046 is suggesting to configure this at the controller
-  level.
-  * _Why not configure at the controller level?_ If we only allow this to be configured at the controller level,
-  users will not be able to control which Tasks are co-located with which: it will be all or nothing. This TEP assumes
-  that users will want to have at least some control, i.e. will want to take advantage of both k8s scheduling to execute
-  a Pipeline across multiple nodes AND might sometimes want to co-locate Tasks
-  * _Why not configure in the PipelineRun only? (vs the Pipeline)_ If we only allow this to be configured at runtime,
-  this means that:
-    * When looking at a Pipeline definition, or writing it, you can't predict or control how the Tasks will be
-    co-located (e.g. what if you want to isolate some data such that it's only available to particular Tasks)
-    * If you want to run a Pipeline, you'll need to make decisions at that point about what to co-locate. I can imagine
-    scenarios where folks want to make complex Pipelines and want to have some parts co-located and some parts not; if
-    we only allow for this at runtime, the Pipeline authors will only be able to provide docs or scripts (or 
-    TriggerTemplates) to show folks how they are expected to be run.
 
 ## Requirements
 
@@ -152,7 +176,6 @@ Most of these options are not mutually exclusive:
 * [Remove distinction between Tasks and Pipelines](#remove-distinction-between-tasks-and-pipelines)
 * [Custom Pipeline](#custom-pipeline)
 * [Create a new Grouping CRD](#create-a-new-grouping-crd)
-* [Rely on the Affinity Assistant](#rely-on-the-affinity-assistant)
 * [Custom scheduler](#custom-scheduler)
 * [Support other ways to share data (e.g. buckets)](#support-other-ways-to-share-data-eg-buckets)
 * [Focus on workspaces](#focus-on-workspaces)
@@ -246,107 +269,6 @@ Related:
   * Uses "steps" as the unit
   * Wants to combine these in the embedded Task spec vs in the Pipeline Task
   
-### Update PipelineResources to use Tasks
-
-In this option, we directly tackle problems with PipelineResources by updating them to refer to Tasks (e.g. catalog
-Tasks).
-
-In the example below a PipelineResource type can refer to Tasks:
-
-```yaml
-kind: PipelineResourceType
-apiVersion: v1beta1
-metadata:
-  name: GCS
-spec:
-  description: |
-    GCS PipelineResources download files onto a
-    Workspace from GCS when used as an input and uploads
-    files to GCS from a Workspace when used as an output.
-  input:
-    taskRef:
-      name: gcs-download # From catalog
-  output:
-    taskRef:
-      name: gcs-upload # From catalog
-```
-
-```yaml
-kind: PipelineResourceType
-apiVersion: v1beta1
-metadata:
-  name: GIT
-spec:
-  description: |
-      GIT PipelineResources clone files from a Git
-      repo onto a Workspace when used as an input. It has
-      no output behaviour.
-  input:
-    taskRef:
-      name: git-clone # From catalog
-```
-
-```yaml
-apiVersion: tekton.dev/v1beta1
-kind: Pipeline
-metadata:
-  name: build-test-deploy
-spec:
- params:
-  - name: url
-    value: https://github.com/tektoncd/pipeline.git
-  - name: revision
-    value: v0.11.3
- workspaces:
-  - name: source-code
-  - name: test-results
- tasks:
- - name: run-unit-tests
-   taskRef:
-     name: just-unit-tests
-   workspaces:
-      - name: source-code
-      - name: test-results
-   resources:
-     inputs:
-      - resourceRef: GIT # the pipelineresource defined above
-        params:
-       - name: url
-          value: $(params.url)
-        - name: revision
-          value: $(params.revision)
-        workspaces:
-        - name: source-code
-          workspace: source-code
-    outputs:
-      - resourceRef: GCS # the pipelineresource defined above
-        params:
-        - name: location
-          value: gs://my-test-results-bucket/testrun-$(taskRun.name)
-        workspaces:
-        - name: data
-          workspace: test-results
-```
-
-(Credit to @sbwsg for this proposal and example!)
-
-If we pursue this we can make some choices around whether this works similar to today's PipelineResources where Tasks
-need to declare that they expect them, or we could make it so that PipelineResources can be used with a Task regardless
-of what it declares (the most flexible).
-
-Pros:
-* "fixes" PipelineResources
-* Uses concepts we already have in Tekton but upgrades them
-
-Cons:
-* Not clear what the idea of a PipelineResource is really giving us if it's just a wrapper for Tasks
-* If you want to use 2 Tasks together, you'll have to make a PipelineResource type for at least one of them
-* Only helps us with some scheduling problems (e.g. doesn't help with parallel tasks or finally task execution)
-
-Related:
-* [Specializing Tasks: Visions and Goals](https://docs.google.com/document/d/1G2QbpiMUHSs4LOqcNaIRswcdvoy8n7XuhTV8tXdcE7A/edit)
-* [Specializing Tasks: Possible Designs](https://docs.google.com/document/d/1p8zq_wkAcwr1l5BpNQDyNjgWngOtnEhCYEpcNKMHvG4/edit)
-
 ### Automagically combine Tasks based on workspace use
 
 In this option we could leave Pipelines as they are, but at runtime instead of mapping a Task to a pod, we could decide
@@ -861,15 +783,6 @@ Cons:
 * The line between this and a Pipeline seems very thin
 * New CRD to contend with
 
-### Rely on the affinity assistant
-
-In this approach we'd rely on [the affinity assistant](https://github.com/tektoncd/community/pull/318/files) to
-co-locate pods that use the same workspace.
-
-Cons:
-* Doesn't help us with the overhead of multiple pods
-* [TEP-0046](https://github.com/tektoncd/community/pull/318/files) explores shortcomings of this approach
-
 ### Custom scheduler
 
 In this approach we use a custom scheduler to schedule our pods.
@@ -958,7 +871,7 @@ Cons:
 Related:
 * [Task Specialization: most appealing options?](https://docs.google.com/presentation/d/12QPKFTHBZKMFbgpOoX6o1--HyGqjjNJ7own6KqM-s68)
 
-## References (optional)
+## References
 
 * [Tekton PipelineResources Beta Notes](https://docs.google.com/document/d/1Et10YdBXBe3o2x6lCfTindFnuBKOxuUGESLb__t11xk/edit)
 * [Why aren't PipelineResources in beta?](https://github.com/tektoncd/pipeline/blob/master/docs/resources.md#why-arent-pipelineresources-in-beta)
@@ -975,26 +888,3 @@ Related:
     * Oldies but goodies:
         * [Link inputs and outputs without using volumes](https://github.com/tektoncd/pipeline/issues/617)
         * [Design PipelineResource extensibility](https://github.com/tektoncd/pipeline/issues/238)
-
-### PipelineResources
-
-This kind of compositional functionality was being (somewhat! read on!) provided
-by [PipelineResources](https://github.com/tektoncd/pipeline/blob/master/docs/resources.md).
-[We did not bring these types to beta](https://github.com/tektoncd/pipeline/blob/master/docs/resources.md#why-arent-pipelineresources-in-beta).
-Issues that don't let PipelineResources (as is) solve these problems are:
-* PipelineResource "outputs" do not run when the steps of the Task fail (or if
-  a previous PipelienResource "output" fails) (see [unit test use case](#use-cases-optional))
-* PipelineResources do not use Tasks (which is something we could change), meaning
-  you cannot use them to compose Tasks together, you need to build PipelineResources
-  * Adding new PipelineResources currently needs to be done in the Tekton Pipelines controller,
-    tho there have been several attempts to propose ways to make it extensible:
-    * [PipelineResources 2 Uber Design Doc](https://docs.google.com/document/d/1euQ_gDTe_dQcVeX4oypODGIQCAkUaMYQH5h7SaeFs44/edit)
-    * [Tekton Pipeline Resource Extensibility](https://docs.google.com/document/d/1rcMG1cIFhhixMSmrT734MBxvH3Ghre9-4S2wbzodPiU/edit)
-  * All of this is even though PipelineResources are _very_ similar to Tasks in that they are
-    collections of steps (which [get injected before and after a Task's steps](https://github.com/tektoncd/pipeline/issues/1838)
-* Tasks have to declare in advance what PipelineResources they need; you can't decide to use
-  a PipelineResource with a Task after it has been written (e.g. in a TaskRun or a Pipeline)
-  and you can't mix types of PipelineResource (e.g. if a Task declares it needs a
-  [git PipelineResources](https://github.com/tektoncd/pipeline/blob/master/docs/resources.md#git-resource)
-  it can't use a different kind of PipelineResource to provide those files (tho you can avoid
-  doing the clone multiple times using [from](https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#using-the-from-parameter))

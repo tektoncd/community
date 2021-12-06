@@ -377,9 +377,9 @@ performance requirements.
 -->
 
 Task verification using Cosign requires fetching from a possibly external
-OCI repository (the same repository as the builder image), so when a Task
-Bundle is configured to be verified, some overhead is incurred on the order
-of approximately 5 seconds per Task Bundle. Task Bundles that are not
+OCI repository (the same repository as the builder image), so when a Remote
+Resource is configured to be verified, some overhead is incurred on the order
+of approximately 5 seconds per Remote Resource. Remote Resources that are not
 configured to be verified will have no change in performance.
 
 Tekton Chains will only need to make simple decisions over only locally
@@ -400,7 +400,7 @@ of the file, but general guidance is to include at least TEP number in the
 file name, for example, "/teps/images/NNNN-workflow.jpg".
 -->
 
-TaskRun's `taskRef.bundle` will be updated with the following **optional**
+TaskRun's `taskRef.resource` will be updated with the following **optional**
 configuration `verification`:
 
 ```yaml
@@ -431,13 +431,12 @@ many types of inputs including plain text and various KMS systems.
 spirit of secure by default. `continue` will allow the build to continue even
 if verification fails.
 
-The reconciler for a Remote Resource pulls the Tekton Bundle image and expands the
-Task definition:
-https://github.com/tektoncd/pipeline/blob/5c6194b377111a84bf8d5c8cc61f1a2e34718bed/pkg/reconciler/taskrun/resources/taskref.go#L91
-
-At this point, after adjusting this code somewhat, we can have the resolved
-digest for the Remote Resource. This digest is key input into the Cosign process
-to keep the process secure.
+TEP-0060 introduces a new ResourceRequest reconsiler that will actually pull
+the remote image and expand it to a Task. This is where the verification
+logic will be introduced because (1) the image digest is required for 
+signature validation and (2) in the initial delivery of the feature proposed
+here, each builder image in the Task definition must be by referenced
+by digest for the entire Task to be considered verified.
 
 If the Remote Resource is configured for verification via Cosign (the only option
 on the initial implementation of this TEP), the code will be adjusted to

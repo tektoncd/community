@@ -269,10 +269,10 @@ orgs:
         - vdemeester
         members:
         - houshengbo
-        - sthaha
         - nikhil-thomas
         - vincent-pli
         - savitaashture
+        - sm43
         privacy: closed
         repos:
           operator: write
@@ -646,7 +646,7 @@ orgs:
         - savitaashture
         - vincent-pli
         - piyush-garg
-        - sm43
+        - concaf
         privacy: closed
         repos:
           operator: read

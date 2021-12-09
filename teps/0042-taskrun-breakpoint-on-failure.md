@@ -3,8 +3,8 @@ title: taskrun-breakpoint-on-failure
 authors:
   - "@waveywaves"
 creation-date: 2021-01-15
-last-updated: 2021-03-21
-status: proposed
+last-updated: 2021-12-10
+status: implemented
 ---
 
 # TEP-0042: TaskRun Breakpoint on Failure of Step 

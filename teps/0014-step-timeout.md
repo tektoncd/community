@@ -3,8 +3,8 @@ title: Step Timeout
 authors:
   - "@Peaorl"
 creation-date: 2020-09-10
-last-updated: 2020-09-10
-status: implementable
+last-updated: 2021-12-13
+status: implemented
 ---
 
 # TEP-0014: Step timeout

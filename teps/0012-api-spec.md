@@ -3,8 +3,8 @@ title: API Specification
 authors:
   - "@imjasonh"
 creation-date: 2020-08-10
-last-updated: 2020-08-10
-status: implementable
+last-updated: 2021-12-14
+status: implemented
 ---
 
 # TEP-0012: Tekton Pipelines API Spec
@@ -24,6 +24,7 @@ status: implementable
 - [Test Plan](#test-plan)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
+- [Implementing PRs](#implementing-prs)
 - [References (optional)](#references-optional)
 <!-- /toc -->
 
@@ -108,6 +109,10 @@ Adding more process around API changes can be cumbersome. By only adding an _opt
 We could continue to build and grow Tekton without an API spec.
 
 Without a documented API spec, [Hyrum's Law](https://www.hyrumslaw.com) dictates that _any_ observable behavior of an implementation will eventually come to be depended upon by users, and thus any observable behavior of an implementation effectively becomes its de facto spec. Indeed, this can happen even _with_ an API spec, but by at least attempting to delineate supported features, we can hopefully delay the inevitable.
+
+## Implementing PRs
+- [Tekton API Spec](https://github.com/tektoncd/pipeline/pull/3131)
+- [TaskRun conformance tests](https://github.com/tektoncd/pipeline/pull/3400)
 
 ## References (optional)
 

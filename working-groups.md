@@ -362,3 +362,25 @@ Connecting to the Meeting VC requires a Zoom account.
 | <img width="30px" src="https://github.com/jerop.png">      | Jerop Kipruto     | Google  | [jerop](https://github.com/jerop)           |
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai       | IBM     | [pritidesai](https://github.com/pritidesai) |
 | <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |
+
+## Governing Board / Community
+
+This is the sync meeting for [the Tekton governing board](https://github.com/tektoncd/community/blob/main/governance.md#tekton-governance-committee)
+and a place to discuss community operations and process.
+
+| Artifact                   | Link                       |
+| -------------------------- | -------------------------- |
+| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1rb-JgpZGVRvY6tj5yjh3jeaxUxqeyk8Sudd7gMFtqqA/edit)
+| Slack Channel              | [#governance](https://tektoncd.slack.com/messages/governance) |
+| Community Meeting VC       | [meet.google.com/nas-vyqv-ftg](https://meet.google.com/nas-vyqv-ftg) |
+| Community Meeting Calendar | Tuesday every other week, 09:00a-09:30a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NjFvcHNib2E2cjNwcGc2dGhnMmY2OGU4YTFfMjAyMjAxMThUMTcwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
+
+
+| &nbsp;                                                     | Facilitators      | Company   | Profile                                     |
+| --------------------------------------------------------   | ----------        | -------   | ---------------------------------------     |
+| <img width="30px" src="https://github.com/abayer.png">     | Andrew Bayer      | CloudBees | [abayer](https://github.com/abayer) |
+| <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli   | IBM       | [afrittoli](https://github.com/afrittoli)   |
+| <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson   | Google    | [bobcatfish](https://github.com/bobcatfish) |
+| <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee   | Google    | [dibyom](https://github.com/dibyom)         |
+| <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat   | [vdemeester](https://github.com/vdemeester) |

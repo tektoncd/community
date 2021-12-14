@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Finally tasks execution post pipelinerun timeout
 creation-date: '2021-01-26'
-last-updated: '2021-04-14'
+last-updated: '2021-12-14'
 authors:
 - '@souleb'
 ---
@@ -24,6 +24,7 @@ authors:
   - [Finally block level timeout flag](#finally-block-level-timeout-flag)
   - [Pipelinerun timeout is inclusive of the finally tasks timeout](#pipelinerun-timeout-is-inclusive-of-the-finally-tasks-timeout)
   - [Finally Timeout flag at Pipelinerun Spec](#finally-timeout-flag-at-pipelinerun-spec)
+- [References](#references)
 <!-- /toc -->
 
 ## Summary
@@ -309,3 +310,7 @@ This solution was deemed confusing. The user could expect the `timeout` to be fo
 ### Finally Timeout flag at Pipelinerun Spec
 
 We could add a new flag at the pipelineRun level `finallyTimeout` similar to the timeout flag. If specified, pipelineRun timeout (default is one hour) applies to dag tasks only. The dag tasks will stop executing once it meets the pipelineRun timeout. The finally tasks starts executing at this point and will be executed until meets the timeout specified in finallyTimeout.
+
+## References
+
+* [tektoncd/pipeline PR #3843 - Add a Timeouts optional field to pipelinerun](https://github.com/tektoncd/pipeline/pull/3843)

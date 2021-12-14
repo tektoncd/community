@@ -169,7 +169,7 @@ This is the complete list of Tekton teps:
 |[TEP-0009](0009-trigger-crd.md) | Trigger CRD | implementable | 2020-09-08 |
 |[TEP-0010](0010-optional-workspaces.md) | Optional Workspaces | implemented | 2020-10-15 |
 |[TEP-0011](0011-redirecting-step-output-streams.md) | redirecting-step-output-streams | implementable | 2020-11-02 |
-|[TEP-0012](0012-api-spec.md) | API Specification | implementable | 2020-08-10 |
+|[TEP-0012](0012-api-spec.md) | API Specification | implemented | 2021-12-14 |
 |[TEP-0014](0014-step-timeout.md) | Step Timeout | implemented | 2021-12-13 |
 |[TEP-0015](0015-pending-pipeline.md) | pending-pipeline-run | implemented | 2020-09-10 |
 |[TEP-0016](0016-concise-trigger-bindings.md) | Concise Embedded TriggerBindings | implemented | 2020-09-15 |

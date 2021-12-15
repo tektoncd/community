@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Catalog Tags and Hub Categories Management
 creation-date: '2021-03-30'
-last-updated: '2021-03-30'
+last-updated: '2021-12-15'
 authors:
   - '@piyush-garg'
   - '@PuneetPunamiya'
@@ -225,3 +225,5 @@ metadata:
 ## Upgrade & Migration Strategy (optional)
 
 ## References (optional)
+
+* [tektoncd/catalog PR #658 - Adds `category` field as an annotation as `tekton.dev/categories`](https://github.com/tektoncd/catalog/pull/658)

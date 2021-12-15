@@ -4,8 +4,8 @@ authors:
   - "@Peaorl"
   - "@wlynch"
 creation-date: 2020-10-01
-last-updated: 2021-07-26
-status: implementable
+last-updated: 2021-12-15
+status: implemented
 ---
 
 # TEP-0023: Implicit Parameter Mapping for Embedded Specs
@@ -528,3 +528,4 @@ but this is complexity we are not interested in adding at the moment.
 2. [Add support for implicit param mapping](https://github.com/tektoncd/pipeline/issues/3050)
 3. [Non-standardized parameter and resource names](https://github.com/tektoncd/pipeline/issues/1484)
 4. [Common parameter and resource names](https://github.com/tektoncd/pipeline/issues/1484#issuecomment-546697625)
+5. [tektoncd/pipeline PR #4127 - Implement implicit parameter resolution](https://github.com/tektoncd/pipeline/pull/4127)

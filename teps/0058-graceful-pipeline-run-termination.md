@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Graceful Pipeline Run Termination
 creation-date: '2021-03-18'
-last-updated: '2021-04-27'
+last-updated: '2021-12-15'
 authors:
 - '@rafalbigaj'
 ---
@@ -278,3 +278,4 @@ The new API value (non-breaking change).
 
 - [ExitHandler not triggered on pipeline run cancellation](https://github.com/kubeflow/kfp-tekton/issues/506)
 - [TEP-0046: Finally tasks execution post pipelinerun timeout](https://github.com/tektoncd/community/pull/326)
+- [tektoncd/pipeline PR #3915](https://github.com/tektoncd/pipeline/pull/3915)

@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Support retries for custom task in a pipeline.
 creation-date: '2021-05-31'
-last-updated: '2021-07-26'
+last-updated: '2021-12-15'
 authors:
 - '@Tomcli'
 - '@ScrapCodes'
@@ -215,7 +215,7 @@ An upgrade strategy for existing custom controllers,
 
 ## Implementation Pull request(s)
 
-Not there yet!
+* [tektoncd/pipeline PR #4327 - TEP-69 implemented](https://github.com/tektoncd/pipeline/pull/4327)
 
 ## References (optional)
 

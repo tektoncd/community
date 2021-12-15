@@ -177,7 +177,7 @@ This is the complete list of Tekton teps:
 |[TEP-0020](0020-s390x-support.md) | s390x Support | implemented | 2021-06-04 |
 |[TEP-0021](0021-results-api.md) | Tekton Results API | implementable | 2020-10-26 |
 |[TEP-0022](0022-trigger-immutable-input.md) | Triggers - Immutable Input Events | implementable | 2020-09-29 |
-|[TEP-0023](0023-implicit-mapping.md) | 0023-Implicit-parameter-mapping | implementable | 2021-07-26 |
+|[TEP-0023](0023-implicit-mapping.md) | 0023-Implicit-parameter-mapping | implemented | 2021-12-15 |
 |[TEP-0024](0024-embedded-trigger-templates.md) | Embedded TriggerTemplates | implemented | 2020-10-01 |
 |[TEP-0025](0025-hermekton.md) | Hermetic Builds | implementable | 2020-09-11 |
 |[TEP-0026](0026-interceptor-plugins.md) | interceptor-plugins | implementable | 2020-10-08 |

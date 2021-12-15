@@ -3,8 +3,8 @@ title: Custom Tasks
 authors:
   - "@imjasonh"
 creation-date: 2020-06-18
-last-updated: 2020-07-07
-status: implementable
+last-updated: 2021-12-15
+status: implemented
 ---
 
 # TEP-0002: Enable Custom Tasks

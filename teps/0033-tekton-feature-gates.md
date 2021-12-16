@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Tekton Feature Gates
 creation-date: '2020-11-20'
-last-updated: '2021-03-23'
+last-updated: '2021-12-16'
 authors:
 - '@vdemeester'
 - '@frittoli'
@@ -779,3 +779,4 @@ as well.
 - [Tekton Pipeline API Compatibility Policy](https://github.com/tektoncd/pipeline/blob/master/api_compatibility_policy.md)
 - [Kubenetes API Versioning](https://kubernetes.io/docs/reference/using-api/#api-versioning)
 - [Kubernetes Feature Gates](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/)
+- [tektoncd/pipeline PR #3881 - Implement TEP-0033: Add enable-api-fields feature flag](https://github.com/tektoncd/pipeline/pull/3881)

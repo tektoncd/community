@@ -2,7 +2,7 @@
 status: proposed
 title: Data Locality and Pod Overhead in Pipelines
 creation-date: '2021-01-22'
-last-updated: '2022-01-26'
+last-updated: '2022-02-02'
 authors:
 - '@bobcatfish'
 - '@lbernick'
@@ -18,10 +18,10 @@ authors:
   - [Use Cases](#use-cases)
   - [Overlap with TEP-0046](#overlap-with-tep-0046)
 - [Requirements](#requirements)
-- [References](#references)
-  - [PipelineResources](#pipelineresources)
-- [Design Details](#design-details)
+- [Design Considerations](#design-considerations)
+- [Design Proposal](#design-proposal)
 - [Alternatives](#alternatives)
+- [References](#references)
 
 ## Summary
 
@@ -133,7 +133,7 @@ See [TEP-0074](./0074-deprecate-pipelineresources.md) for the deprecation plan f
 
 ### Use Cases
 
-- A user wants to use catalog Tasks to checkout code, run unit tests and upload results,
+- A user wants to use catalog Tasks to checkout code, run unit tests and upload outputs,
   and does not want to incur the additional overhead (and performance impact) of creating
   volume based workspaces to share data between them in a Pipeline.
 - An organization does not want to use PVCs at all; for example perhaps they have decided
@@ -145,59 +145,168 @@ See [TEP-0074](./0074-deprecate-pipelineresources.md) for the deprecation plan f
 
 ## Requirements
 
-- Tasks can be composed and run together:
+1. Tasks can be composed and run together:
   - Must be able to share data without requiring a volume external to the pod
   - Must be possible to run multiple Tasks as one pod
-- It should be possible to have Tasks that run even if others fail; i.e. the Task
+1. It should be possible to have Tasks that run even if others fail; i.e. the Task
   can be run on the same pod as another Task that fails
-  - This is to support use cases such as uploading test results, even if the test
-    Task failed
-    - This requirement is being included because we could choose a solution that doesn't
-      address the above use case; for example in PipelineResources, you can have a
-      storage "output" but if the steps fail, the "output" pipelineresource will not run
-- Any configuration for the execution of a Pipeline must be modifiable at runtime.
+  - This is to support use cases such as uploading test outputs, even if the test Task failed
+  - This requirement is being included because we could choose a solution that doesn't address the above use case.
+1. Any configuration for the execution of a Pipeline must be modifiable at runtime.
   - We may explore adding authoring time configuration in the future after gathering feedback on runtime configuration.
+1. The `status` of each TaskRun should be displayed separately to the user, with one TaskRun per Task.
+    - [PipelineRuns currently specify this information in a `taskruns` section](https://github.com/tektoncd/pipeline/blob/main/docs/pipelineruns.md#monitoring-execution-status),
+      but we are planning on [removing the bulk of the information stored in this field](./0100-embedded-taskruns-and-runs-status-in-pipelineruns.md).
 
-## Design details
+## Design Considerations
+
+Almost every proposed solution involves running multiple Tasks in one pod, and some involve running an entire Pipeline in a pod.
+This section details pod constraints that will need to be addressed by the chosen design.
+
+Some constraints will need to be addressed by any solution running multiple Tasks in one pod.
+For example, because each pod has only one ServiceAccount, each Task run in a pod must use the same ServiceAccount.
+Other pod constraints are relevant only for Pipeline level features. For example, users can
+[use PipelineRun context in TaskRun parameters](https://github.com/tektoncd/pipeline/blob/main/docs/variables.md#variables-available-in-a-pipeline),
+and supporting this feature in a pod might require entrypoint changes.
+Some functionality blurs the line between Pipeline functionality and functionality of just a group of Tasks
+(for example, considering just the Pipeline's "Tasks" field and not its "Finally" field),
+like the ability to run Tasks in parallel and pass inputs and outputs between them.
+
+The following list details how pod constraints affect Pipeline features. Deciding what design to implement will require deciding
+which of these features are in and out of scope and what level of abstraction is most appropriate for handling them.
+
+### Pipeline functionality supported in pods
+Currently, the TaskRun controller creates one pod per TaskRun, with one container per Step. Pod containers run in parallel, but the entrypoint
+binary run in the pod ensures that each Step waits for the previous one to finish by writing Step metadata to a pod volume and having
+each container wait until a previous Step's outputs are available to begin executing.
+
+Some functionality required to run multiple Tasks in a pod could be supported with existing pod construction and entrypoint code;
+some functionality would require changes to this code, and some functionality may not be possible at all.
+
+* Functionality that could be supported with current pod logic (e.g. by
+  [translating a Pipeline directly to a TaskRun](#pipeline-executed-as-taskrun)):
+  * Sequential tasks (specified using [`runAfter`](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#using-the-runafter-parameter))
+  * [String params](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#specifying-parameters)
+  * [Array params](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#specifying-parameters)
+  * [Workspaces](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#specifying-workspaces)
+  * [Pipeline level results](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#emitting-results-from-a-pipeline)
+  * Workspace features:
+    * [mountPaths](https://github.com/tektoncd/pipeline/blob/main/docs/workspaces.md#using-workspaces-in-tasks)
+    * [subPaths](https://github.com/tektoncd/pipeline/blob/main/docs/workspaces.md#using-workspaces-in-pipelines)
+    * [optional](https://github.com/tektoncd/pipeline/blob/main/docs/workspaces.md#optional-workspaces)
+    * [readOnly](https://github.com/tektoncd/pipeline/blob/main/docs/workspaces.md#using-workspaces-in-tasks)
+    * [isolated](https://github.com/tektoncd/pipeline/blob/main/docs/workspaces.md#isolating-workspaces-to-specific-steps-or-sidecars)
+  * Specifying Tasks in a Pipeline via [Bundles](https://github.com/tektoncd/pipeline/blob/main/docs/tekton-bundle-contracts.md)
+    (all bundles would have to be fetched before execution starts)
+  * [step templates](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#specifying-a-step-template)
+  * [timeout](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#configuring-the-failure-timeout)
+* Functionality that could be supported with updated pod construction logic:
+  * [Step resource requirements](https://tekton.dev/docs/pipelines/tasks/#defining-steps)
+    * Any solution that runs multiple Tasks in one pod will need to determine how container resource requirements
+    should be set based on the resource requirements of each Task.
+  * [Sidecars](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#specifying-sidecars)
+    * We may need to wrap sidecar commands such that sidecars don't start executing until their corresponding Task starts
+    * We will also need to handle the case where multiple Tasks define sidecars with the same name
+* Functionality that would require additional orchestration within the pod (e.g. entrypoint changes):
+  * [Passing results between tasks](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#passing-one-tasks-results-into-the-parameters-or-whenexpressions-of-another)
+  * [retries](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#using-the-retries-parameter)
+  * Contextual variable replacement that assumes a PipelineRun, for example [`context.pipelineRun.name`](https://github.com/tektoncd/pipeline/blob/main/docs/variables.md#variables-available-in-a-pipeline)
+  * [Parallel tasks](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#configuring-the-task-execution-order)
+  * [When expressions](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#guard-task-execution-using-whenexpressions)
+    (and [Conditions](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#guard-task-execution-using-conditions))
+  * [Finally tasks](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#adding-finally-to-the-pipeline)
+  * [Allowing step failure](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#specifying-onerror-for-a-step)
+* Functionality that would require significantly expanded orchestration logic:
+  * [Custom tasks](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#using-custom-tasks) - the pod would
+    need to be able to create and watch Custom Tasks, or somehow lean on the Pipelines controller to do this
+* Functionality that might not be possible (i.e. constrained by pods themselves):
+  * Any dynamically created TaskRuns. This is discussed in more detail [below](#dynamically-created-tasks-in-pipelines).
+  * Running each Task with a different `ServiceAccount` - the pod has one ServiceAccount as a whole
+
+(See also [functionality supported by experimental Pipeline to TaskRun](https://github.com/tektoncd/experimental/tree/main/pipeline-to-taskrun#supported-pipeline-features))
+
+### Dynamically created TaskRuns in Pipelines
+Currently, the number of TaskRuns created from a Pipeline is determined at authoring time based on the number of items
+in a Pipeline's `Tasks` field. However, [TEP-0090: Matrix](./0090-matrix.md) proposes a feature that would allow additional
+TaskRuns to be created when a PipelineRun is executed.
+In summary, a Pipeline may need to run a Task multiple times with different parameters. The parameters "fanned out" to a Task run
+multiple times in parallel may be specified at authoring time, or they may come from an earlier Task.
+For example, a Pipeline might clone a repo, read a set of parameters from the repo, and run a build or test task once
+for each of these parameters.
+
+A controller responsible for running multiple Tasks in one pod must know how many Tasks will be run before creating the pod.
+This is because a pod will start executing once it has been created, and many of the fields (including the containers list)
+[cannot be updated](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#podspec-v1-core).
+However, the number of Tasks needed may not be known until the previous Task is run and its outputs are retrieved.
+Therefore, we may be able to support running a matrixed Pipeline in a pod only when the full set of parameters is known
+at the start of execution. We may not be able to support dynamic matrix parameters or other forms of dynamic Task creation.
+
+### Additional Design Considerations
+- Executing an entire Pipeline in a pod, as compared to executing multiple Tasks in a pod, may pave the way for supporting
+[local execution](https://github.com/tektoncd/pipeline/issues/235).
+
+## Design proposal
 
 TBD - currently focusing on enumerating and examining alternatives before selecting one or more ways forward.
 
 ## Alternatives
 
-Most of these options are not mutually exclusive:
-
-* [Task composition in Pipeline Tasks](#task-composition-in-pipeline-tasks)
-* [Update PipelineResources to use Tasks](#update-pipelineresources-to-use-tasks)
-* [Automatically combine Tasks based on workspace use](#automagically-combine-tasks-based-on-workspace-use)
-* [Introduce scheduling rules to Pipeline](#introduce-scheduling-rules-to-pipeline)
-* [PipelineRun: emptyDir](#pipelinerun-emptydir)
-* [Controller configuration](#controller-level)
-* [Within the Task](#within-the-task)
+* [Pipeline in a Pod + Pipelines in Pipelines](#pipeline-in-a-pod-plus-pipelines-in-pipelines)
+* [Pipeline executed as a TaskRun](#pipeline-executed-as-a-taskrun)
+* [Allow Pipeline Tasks to contain other Tasks](#allow-pipeline-tasks-to-contain-other-tasks)
+* [Automatically combine Tasks that share the same Workspaces](#automagically-combine-tasks-that-share-the-same-workspaces)
+* [Add grouping to Tasks in a Pipeline or PipelineRun](#add-grouping-to-tasks-in-a-pipeline-or-pipelinerun)
+* [Combine Tasks based on runtime values of Workspaces](#combine-tasks-based-on-runtime-values-of-workspaces)
+* [Controller option to execute Pipelines in a Pod](#controller-option-to-execute-pipelines-in-a-pod)
+* [TaskRun controller allows Tasks to contain other Tasks](#taskrun-controller-allows-tasks-to-contain-other-tasks)
 * [Remove distinction between Tasks and Pipelines](#remove-distinction-between-tasks-and-pipelines)
-* [Custom Pipeline](#custom-pipeline)
-* [Create a new Grouping CRD](#create-a-new-grouping-crd)
-* [Custom scheduler](#custom-scheduler)
+* [Create a TaskGroup abstraction](#create-a-taskgroup-abstraction)
 * [Support other ways to share data (e.g. buckets)](#support-other-ways-to-share-data-eg-buckets)
-* [Focus on workspaces](#focus-on-workspaces)
+* [Task Pre and Post Steps](#task-pre-and-post-steps)
 
-Most of the solutions above involve allowing more than one Task to be run in the same pod, and those proposals all share
-the following pros & cons.
+
+### Pipeline in a Pod plus Pipelines in Pipelines
+
+In this option, the Tekton Pipelines controller constructs a pod that implements a Pipeline.
+If used with the [Pipelines in Pipelines](./0056-pipelines-in-pipelines.md) feature,
+users could choose which parts of a pipeline to run in a pod by grouping them into a sub-Pipeline.
+Any Pipelines grouped under a Pipeline executed in a pod will also execute in that pod.
 
 Pros:
-* Making it possible to execute a Pipeline in a pod will also pave the way to be able to support use cases such as
-  [local execution](https://github.com/tektoncd/pipeline/issues/235)
+* Same functionality used to run either an entire Pipeline or a sub-Pipeline in a pod.
+* Meets requirements of running multiple Tasks in one pod without external data storage.
+* Uses [an existing abstraction](https://github.com/tektoncd/community/blob/main/design-principles.md#reusability)
+  (Pipelines)
+* Pipelines already have syntax for expressing some of the features we'd likely want for this functionality, e.g.
+  `finally`
 
 Cons:
+* Using an existing abstraction (Pipelines) could be confusing if we can't support all of a Pipeline's functionality
+  when running as a pod (which is likely)
+* Need to determine a mechanism for surfacing outputs of individual Tasks
 
-* Increased complexity around requesting the correct amount of resources when scheduling (having to look at the
-  requirements of all containers in all Tasks, esp. when they run in parallel)
-* Requires re-architecting and/or duplicating logic that currently is handled outside the pods in the controller
-  (e.g. passing results between Tasks and other variable interpolation)
+### Pipeline executed as a TaskRun
 
+This is the approach currently taken in the
+[Pipeline to TaskRun experimental custom task](https://github.com/tektoncd/experimental/tree/main/pipeline-to-taskrun).
+In this approach, a CustomTask turns a PipelineRun into a TaskRun, and the TaskRun controller executes this TaskRun in a pod.
 
-### Task composition in Pipeline Tasks
+Pros:
+* Permits reuse of existing CRDs with less re-architecting than having the PipelineRun controller run a PipelineRun in a pod.
 
-In this option we make it possible to express Tasks which can be combined together to run sequentially as one pod.
+Cons:
+* We would be [limited in the features we could support](https://github.com/tektoncd/experimental/tree/main/pipeline-to-taskrun#supported-pipeline-features)
+  to features that TaskRuns already support, or we'd have to add more Pipeline features to TaskRuns.
+* Does not surface outputs of Pipeline Tasks separately. Breaks the 1-1 relationship between Tasks and TaskRuns.
+
+### Allow Pipeline Tasks to contain other Tasks
+
+In this option, Pipeline Tasks can refer to other Tasks, which are resolved at runtime and run sequentially in one pod.
+
+This addresses the common use case of a Task needing to be colocated with some inputs and outputs, but may not generalize well to more complex Pipelines.
+One example of a Pipeline that would not be able to run its Tasks in a pod using this strategy is a Pipeline with a
+"fan out" and then "fan in" structure. For example, a Pipeline could clone a repo in its first Task, use that data in several
+subsequent Tasks in parallel, and then have a single Task responsible for cleanup or publishing outputs.
 
 In the following example, 3 Tasks will be combined and run in one pod sequentially:
 
@@ -255,6 +364,7 @@ Pros:
   (but the line is fuzzy)
 
 Cons:
+* Developing a runtime syntax for this functionality will be challenging
 * Only helps us with some scheduling problems (e.g. doesn't help with parallel tasks or finally task execution)
 * What if you _don't_ want the last Tasks to run if the previous tasks fail?
   * Not clear how we would support more sophisticated use cases, e.g. if folks wanted to start mixing `when` expressions
@@ -269,7 +379,7 @@ Related:
   * Uses "steps" as the unit
   * Wants to combine these in the embedded Task spec vs in the Pipeline Task
   
-### Automagically combine Tasks based on workspace use
+### Automagically combine Tasks that share the same workspaces
 
 In this option we could leave Pipelines as they are, but at runtime instead of mapping a Task to a pod, we could decide
 what belongs in what pod based on workspace usage.
@@ -334,27 +444,22 @@ Possible tweaks:
   [a Task requires a workspace `from` another Task](https://github.com/tektoncd/pipeline/issues/3109).
 * We could combine this with other options but have this be the default behavior
   
-
 Pros:
 * Doesn't require any changes for Pipeline or Task authors
+* Allows execution related concerns to be determined at runtime
 
 Cons:
-* Will need to update our entrypoint logic to allow for steps running in parallel
+* Will need to update our entrypoint logic to allow for containers running in parallel
 * Doesn't give as much flexibility as being explicit
   * This functionality might not even be desirable for folks who want to make use of multiple nodes
     * We could mitigate this by adding more configuration, e.g. opt in or out at a Pipeline level, but could get
       complicated if people want more control (e.g. opting in for one workspace but not another)
+* Removes ability to run Tasks on separate pods if data is shared between them.
 
-### Introduce scheduling rules to pipeline
-
-In these options, we add some syntax that allows Pipeline authors to express how they want Tasks to be executed.
-
-#### Add "grouping" to tasks in a pipeline
+### Add "grouping" to Tasks in a Pipeline or PipelineRun
 
 In this option we add some notion of "groups" into a Pipeline; any Tasks in a group will be scheduled together.
-
-In this example, everything in the `fetch-test-upload` group would be executed as one pod. The `update-slack` Task would
-be a separate pod.
+Consider the following Pipeline definition:
 
 ```yaml
 kind: Pipeline
@@ -371,7 +476,6 @@ spec:
   - name: test-results
  tasks:
  - name: get-source
-   group: fetch-test-upload # our new group syntax
    workspaces:
    - name: source-code
      workspace: source-code
@@ -383,17 +487,15 @@ spec:
     - name: revision
       value: $(params.revision)
  - name: run-unit-tests
-   group: fetch-test-upload # our new group syntax
    runAfter: get-source
    taskRef:
      name: just-unit-tests
    workspaces:
    - name: source-code
-     workspcae: source-code
+     workspace: source-code
    - name: test-results
      workspace: test-results
  - name: upload-results
-   group: fetch-test-upload # our new group syntax
    runAfter: run-unit-tests
    taskRef:
      name: gcs-upload
@@ -410,38 +512,27 @@ finally:
     value: "Tests completed with $(tasks.run-unit-tests.status) status"
 ```
 
-Or we could have a group syntax that exists as a root element in the Pipeline, for example for the above:
+The following "group" definition could be specified in either the Pipeline or the PipelineRun:
 
 ```yaml
 groups:
 - [get-source, run-unit-tests, upload-results]
 ```
+This "grouping" would result in the Tasks `get-source`, `run-unit-tests`, and `upload-results` being run in the same pod.
+
+Alternatively, Tasks could be grouped using labels.
 
 Pros:
 * Minimal changes for Pipeline authors
+* Allows Pipeline to run multiple Tasks in one pod without having to support all of a Pipeline's functionality in a pod
 
 Cons:
-* Will need to update our entrypoint logic to allow for steps running in parallel
+* Will need to update our entrypoint logic to allow for containers running in parallel
   * We could (at least initially) only support sequential groups
-* Might be hard to reason about what is executed together
-* Might be hard to reason about what which Tasks can be combined in a group and which can't
 
-#### some other directive, e.g. labels, to indicate what should be scheduled together?
+### Combine Tasks based on runtime values of Workspaces
 
-This option is the same as the previous `groups` proposal but maybe we decide on some other ways to indicating grouping,
-e.g. labels.
-
-### Runtime instead of authoring time
-
-These options pursue a solution that only works at runtime; this means Pipeline authors would not have any control
-over the scheduling.
-
-#### PipelineRun: emptyDir
-
-In this solution we use the values provided at runtime for workspaces to determine what to run. Specifically, we allow
-[`emptyDir`](https://github.com/tektoncd/pipeline/blob/a7ad683af52e3745887e6f9ed58750f682b4f07d/docs/workspaces.md#emptydir)
-to be provided as a workspace at the Pipeline level even when that workspace is used by multiple Tasks, and when that
-happens, we take that as the cue to schedule those Tasks together.
+In this solution we use the values provided at runtime for workspaces to determine what to run. Specifically, we allow emptyDir to be provided as a workspace at the Pipeline level even when that workspace is used by multiple Tasks, and when that happens, we take that as the cue to schedule those Tasks together.
 
 For example given this Pipeline:
 
@@ -471,7 +562,7 @@ spec:
      name: just-unit-tests
    workspaces:
    - name: source-code
-     workspcae: source-code
+     workspace: source-code
    - name: test-results
      workspace: test-results
  - name: upload-results
@@ -496,7 +587,7 @@ metadata:
   name: run
 spec:
   pipelineRef:
-    name: build-test-deply
+    name: build-test-deploy
   workspaces:
   - name: source-code
     emptyDir: {}
@@ -514,7 +605,7 @@ metadata:
   name: run
 spec:
   pipelineRef:
-    name: build-test-deply
+    name: build-test-deploy
   workspaces:
   - name: source-code
     emptyDir: {}
@@ -531,7 +622,7 @@ metadata:
   name: run
 spec:
   pipelineRef:
-    name: build-test-deply
+    name: build-test-deploy
   workspaces:
   - name: source-code
     persistentVolumeClaim:
@@ -542,86 +633,33 @@ spec:
 ```
 
 Pros:
-* Allows runtime decisions about scheduling without changing the Pod
+* Allows user to configure decisions about scheduling at runtime without changing the Pod
 
 Cons:
 * If it's important for a Pipeline to be executed in a certain way, that information will have to be encoded somewhere
   other than the Pipeline 
 * For very large Pipelines, this default behavior may cause problems (e.g. if the Pipeline is too large to be scheduled
   into one pod)
-* A bit strange and confusing to overload the meaning of `emptyDir`, might be simpler and clearer to have a field instead
+* Compared to the ["task group"](#add-grouping-to-tasks-in-a-pipeline-or-pipelinerun) solution, this solution provides similar functionality
+but lends itself less well to adding authoring time configuration later. 
 
-#### PipelineRun: field
+### Controller option to execute Pipelines in a pod
 
-This is similar to the `emptyDir` based solution but instead of adding extra meaning to `emptyDir` we add a field to the
-runtime workspace information or to the entire PipelineRun (maybe when this field is set workspaces do not need to be
-provided.)
+In this option, the Tekton controller can be configured to always execute Pipelines inside one pod.
+This would require similar functionality to the [pipeline in a pod](#pipeline-in-a-pod-plus-pipelines-in-pipelines),
+but provide less flexibility to Task and Pipeline authors, as only cluster administrators will be able to control scheduling.
 
-A field could also be added as part of the Pipeline definition if desired (vs at runtime via a PipelineRun).
-
-#### Controller level
-
-This option is [TEP-0046](https://github.com/tektoncd/community/pull/318). In this option, the Tekton controller can
-be configured to always execute Pipelines inside one pod.
-
-Pros:
-* Authors of PipelineRuns and Pipelines don't have to think about how the Pipeline will be executed
-* Pipelines can be used without updates
-
-Cons:
-* Only cluster administrators will be able to control this scheduling, there will be no runtime or authoring time
-  flexibility
-* Executing a pipeline in a pod will require significantly re-architecting our graph logic so it can execute outside
-  the controller and has a lot of gotchas we'll need to iron out (see
-  [https://hackmd.io/@vdemeester/SkPFtAQXd](https://hackmd.io/@vdemeester/SkPFtAQXd) for some more brainstorming)
-
-### Within the Task
-
-In this option we ignore the "not at Task authoring time" requirement and we allow for Tasks to contain other Tasks.
-
-This is similar to [TEP-0054](https://github.com/tektoncd/community/pull/369) which proposes this via the Task spec
-in a Pipeline, but does not (yet) propose it for Tasks outside of Pipelines.
-
-For example:
-
-```yaml
-apiVersion: tekton.dev/v1beta1
-kind: Task
-metadata:
-  name: build-test-upload
-spec:
-  workspaces:
-  - name: source
-    mountPath: /workspace/source/go/src/github.com/GoogleContainerTools/skaffold
-  steps:
-  - name: get-source
-    uses: git-clone
-    params:
-      url: $(params.url)
-    workspaces:
-    - name: source
-      workspace: source
-  - name: run-tests
-    image: golang
-    workingDir: $(workspaces.source.path)
-    script: |
-      go test <stuff here>
-  - name: upload-results
-    uses: gcs-upload
-```
-
-Pros:
-* Doesn't require many new concepts
-
-Cons:
-* Can create confusing chains of nested Tasks (Task A can contain Task B which can Contain Task C...)
-* Requires creating new Tasks to leverage the reuse (maybe embedded specs negate this?)
-* Doesn't help with parallel use cases
+### TaskRun controller allows Tasks to contain other Tasks
+This solution is slightly different from the ["Allow Pipeline Tasks to contain other Tasks"](#allow-pipeline-tasks-to-contain-other-tasks) solution,
+as this option would be implemented on the TaskRun controller rather than the PipelineRun controller.
+It would permit creating a graph or sequence of Tasks that are all run in the same pod, while maintaining Task reusability.
+However, it blurs the line between responsibility of a Task and responsibility of a Pipeline.
+It would likely lead to us re-implementing Pipeline functionality within Tasks, such as `finally` Tasks and `when` expressions.
 
 ### Remove distinction between Tasks and Pipelines
-
 In this version, we try to combine Tasks and Pipelines into one thing; e.g. by getting rid of Pipelines and adding all
 the features they have to Tasks, and by giving Tasks the features that Pipelines have which they do not have.
+The new abstraction will be able to run in a pod.
 
 Things Tasks can do that Pipelines can't:
 * Sidecars
@@ -632,18 +670,18 @@ Things Pipelines can do that Tasks can't:
 * Finally
 * When expressions
 
-For example, say our new thing is called a Foobar:
+For example, say our new thing is called a Process:
 
 ```yaml
-kind: Foobar
+kind: Process
 metadata:
   name: git-clone
 spec:
  workspaces:
   - name: source-code
- foobars:
+ processes:
  - name: get-source
-   steps: # or maybe each FooBar can only have 1 step and we need to use runAfter / dependencies to indicate ordering?
+   steps: # or maybe each Process can only have 1 step and we need to use runAfter / dependencies to indicate ordering?
     - name: clone
       image: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.21.0
       script: <script here>
@@ -651,24 +689,24 @@ spec:
    - name: source-code
      workspace: source-code
  finally:
- # since we merged these concepts, any Foobar can have a finally
+ # since we merged these concepts, any Process can have a finally
 ```
 
 ```yaml
-kind: Foobar
+kind: Process
 metadata:
   name: build-test-deploy
 spec:
  workspaces:
   - name: source-code
   - name: test-results
- foobars:
+ processes:
  - name: get-source
    workspaces:
    - name: source-code
      workspace: source-code
-   foobarRef: # foobars could have steps or foobarRefs maybe?
-     name: git-clone # uses our foobar above
+   processRef: # processes could have steps or processRefs maybe?
+     name: git-clone # uses our Process above
  - name: run-unit-tests
    runAfter: get-source
    steps:
@@ -682,7 +720,7 @@ spec:
      workspace: test-results
  - name: upload-results
    runAfter: run-unit-tests
-   foobarRef:
+   processRef:
      name: gcs-upload
    params:
    - name: location
@@ -697,179 +735,77 @@ finally:
     value: "Tests completed with $(tasks.run-unit-tests.status) status"
 ```
 
-We will need to add something to indicate how to schedule Foobars now that we won't have the convenience of drawing the
+We will need to add something to indicate how to schedule Processes now that we won't have the convenience of drawing the
 line around Tasks; we could combine this idea with one of the others in this proposal.
 
 Pros:
 * Maybe the distinction between Tasks and Pipelines has just been making things harder for us
 * Maybe this is a natural progression of the "embedding" we already allow in pipelines?
 * We could experiment with this completely independently of changing our existing CRDs (as long as we don't want
-  Foobars to be called `Task` or `Pipeline` XD - even then we could use a different API group)
+  Processes to be called `Task` or `Pipeline` XD - even then we could use a different API group)
+* Might help with use cases where someone wants parallel Steps within a Task, e.g. [this comment](https://github.com/tektoncd/pipeline/issues/3900#issuecomment-848832641)
 
 Cons:
-* Pretty dramatic API change
-* Foobars can contain Foobars can contain Foobars can contain Foobars
+* Pretty dramatic API change. Requires users to update their setups to accommodate a whole new abstraction.
+* This requires implementing Pipeline in a pod functionality. There's no reason to add more complexity on top of Pipeline in a pod
+when that solution would address the issues detailed above.
 
-### Custom Pipeline
+### Create a TaskGroup abstraction
 
-In this approach we solve this problem by making a Custom Task that can run a Pipeline using whatever scheduling
-mechanism is preferred; this assumes the custom task is the ONLY way we support a different scheduling than
-Task to pod going forward (even if we pick a different solution it could make sense to implement it as a custom task
-first).
+In this approach we create a new Tekton type called a "TaskGroup", which can be implemented as a new CRD or a Custom Task.
+TaskGroups may be embedded in Pipelines. We could create a new TaskGroup controller or use the existing TaskRun controller
+to schedule a TaskGroup.
+
+The controller would be responsible for creating one TaskRun per Task in the TaskGroup, and determining
+at runtime how to schedule each TaskRun. For example, it could create a pod and schedule all the TaskRuns on it,
+or, if a single pod running all the Tasks is too large to be scheduled, it could split the TaskRuns between multiple pods.
+The controller would be responsible for reconciling both the TaskGroup and the TaskRuns created from the TaskGroup.
+We could introduce configuration options to specify whether the controller should attempt to split up TaskRuns
+or simply fail if a single pod wouldn't be schedulable. 
+
+The controller would need to determine how many TaskRuns are needed when the TaskGroup is first reconciled, due to
+[limitations associated with dynamically creating Tasks](#dynamically-created-tasks-in-pipelines).
+When the TaskGroup is first reconciled, it would create all TaskRuns needed, with those that are not ready to execute marked as "pending",
+and a pod with one container per TaskRun. The TaskGroup would store references to any TaskRuns created, and Task statuses would be stored on the TaskRuns.
 
 Pros:
-* Doesn't change anything about our API
+* Creating a single TaskRun for each Task would allow individual Task statuses to be surfaced separately.
+* Allows us to choose which Pipeline features to support, and marks a clear distinction for users between supported and unsupported features.
+* Having the Pipeline controller create TaskRuns up front (as "pending" or similar) might have other benefits, for
+  example we've struggled in the past with how to represent the status of Tasks in a Pipeline which don't have a
+  backing TaskRun, e.g. they are skipped or cancelled. Now there actually would be a TaskRun backing them.
 
 Cons:
-* If this custom task is widely adopted, could fork our user community
-
-### Create a new Grouping CRD
-
-In this approach we create a new CRD, e.g. `TaskGroup` that can be used to group Tasks together. Pipelines can refer to
-TaskGroups, and they can even embed them.
-
-For example:
-
-```yaml
-kind: TaskGroup
-metadata:
-  name: build-test-deploy
-spec:
- workspaces:
-  - name: source-code
-  - name: test-results
- tasks:
- - name: get-source
-   workspaces:
-   - name: source-code
-     workspace: source-code
-   taskRef:
-     name: git-clone
-   params:
-   - name: url
-      value: $(params.url)
-    - name: revision
-      value: $(params.revision)
- - name: run-unit-tests
-   runAfter: get-source
-   taskRef:
-     name: just-unit-tests
-   workspaces:
-   - name: source-code
-     workspcae: source-code
-   - name: test-results
-     workspace: test-results
- - name: upload-results
-   runAfter: run-unit-tests
-   taskRef:
-     name: gcs-upload
-   params:
-   - name: location
-     value: gs://my-test-results-bucket/testrun-$(taskRun.name)
-   workspaces:
-   - name: data
-     workspace: test-results
-```
-
-We could decide if we only support sequential execution, or support an entire DAG. Maybe even finally?
-
-An alternative to the above (which is an ["authoring time"](https://github.com/tektoncd/community/blob/main/design-principles.md#reusability)
-solution) would be a "runtime" CRD, e.g. `TaskGroupRun` which could be passed multiple Tasks and run them together.
-
-Pros:
-* Could be used to define different execution strategies
-
-Cons:
-* The line between this and a Pipeline seems very thin
+* Unclear benefit compared to adding a grouping syntax within a Pipeline and letting the PipelineRun controller handle scheduling
+* We would likely end up supporting features like `finally` for both Pipelines and TaskGroups
+(and generally reusing a lot of the PipelineRun controller's code in the TaskGroup controller)
+* Must create all TaskRuns in advance
 * New CRD to contend with
-
-### Custom scheduler
-
-In this approach we use a custom scheduler to schedule our pods.
-
-Cons:
-* [@jlpetterson has explored this option](https://docs.google.com/document/d/1lIqFP1c3apFwCPEqO0Bq9j-XCDH5XRmq8EhYV_BPe9Y/edit#heading=h.18c0pv2k7d1a)
-  and felt it added more complexity without much gain (see also https://github.com/tektoncd/pipeline/issues/3052)
-    * For example the issue [#3049](https://github.com/tektoncd/pipeline/issues/3049)
-* Doesn't help us with the overhead of multiple pods (each Task would still be a pod)
+* Extra complexity for Task/Pipeline authors
+* Grouping decision can only be made at authoring time
+* Does not follow the Tekton [reusability design principle](https://github.com/tektoncd/community/blob/main/design-principles.md#reusability)
+"existing features should be reused when possible instead of adding new ones".
 
 ### Support other ways to share data (e.g. buckets)
 
 In this approach we could add more workspace types that support other ways of sharing data between pods, for example
-uploading to and downloading from s3. (See [#290](https://github.com/tektoncd/community/pull/290/files).)
+uploading to and downloading from s3. This doesn't address the problems of pod overhead and having to use data storage external to a pod
+to share data between Tasks. However, we may choose to proceed with this work independently of this TEP.
 
-[This is something we support for "linking" PipelineResources.](https://github.com/tektoncd/pipeline/blob/master/docs/install.md#configuring-pipelineresource-storage)
+### Task Pre and Post Steps
 
-Pros:
-* Easier out of the box support for other ways of sharing data
-
-Cons:
-* Uploading and downloading at the beginning and end of every Task is not as efficient as being able to share the same
-  disk
-* We'd need to define an extension mechanism so folks can use whatever backing store they want
-* Doesn't help us with the overhead of multiple pods (each Task would still be a pod)
-
-### Focus on workspaces
-
-This approach assumes that our main issue is around how to deal with data in a workspace:
-
-1. Before we run our logic
-2. After we're done with our logic
-
-(Where "logic" means whatever we're actually trying to do; i.e. getting the data to act on and doing something with the
-results are not the main concern of whatever our Pipeline is doing.)
-
-In the following example, the first thing the Pipeline will do is run `git-clone` to initialize the contents of the
-`source-code` workspace; after the Pipeline finishes executing, `gcs-upload` will be called to do whatever is needed
-with the data in the `test-results` workspace.
-
-```yaml
-apiVersion: tekton.dev/v1beta1
-kind: Pipeline
-metadata:
-  name: build-test-deploy
-spec:
- params:
-  - name: url
-    value: https://github.com/tektoncd/pipeline.git
-  - name: revision
-    value: v0.11.3
- workspaces:
-   - name: source-code
-     init:
-     - taskRef: git-clone
-       params:
-       - name: url
-         value: https://github.com/tektoncd/pipeline.git
-       - name: revision
-         value: v0.11.3
-   - name: test-results
-     teardown:
-     - taskRef: gcs-upload
-       params:
-       - name: location
-         value: gs://my-test-results-bucket/testrun-$(taskRun.name)
- tasks:
- - name: run-unit-tests
-   taskRef:
-     name: just-unit-tests
-   workspaces:
-    - name: source-code
-    - name: test-results
-```
-
-Workspace init and teardown could be done either for every Task (which could be quite a bit of overhead) or once for the
-Pipeline.
+This strategy is proposed separately in [TEP-0080](https://github.com/tektoncd/community/pull/502).
+In summary, this TEP proposes allowing TaskRuns to have "pre" steps responsible for downloading some data
+and "post" steps responsible for uploading some outputs. The "main" steps would be able to run hermetically, while the pre and post
+steps would have network access.
 
 Pros:
-* Solves one specific problem: getting data on and off of workspaces
+* Meets requirements that multiple pieces of functionality can be run in one pod with different hermeticity options and no external data storage.
 
 Cons:
-* Helps with our conceptual problems but not with our efficiency problems
-* The difference between a workspace teardown and finally could be confusing
-
-Related:
-* [Task Specialization: most appealing options?](https://docs.google.com/presentation/d/12QPKFTHBZKMFbgpOoX6o1--HyGqjjNJ7own6KqM-s68)
+* Uses Step as a re-usable unit rather than Task. Tasks become less reusable, as they must anticipate what external data storage
+systems will be used on either end. This was one of the reasons [PipelineResources were deprecated](./0074-deprecate-pipelineresources.md#motivation).
+* Less flexible than running multiple Tasks in one pod, as functionality must fit the model of "before steps", "during steps", and "after steps". Might not map neatly to more complex combinations of functionality, such as a DAG.
 
 ## References
 
@@ -878,6 +814,7 @@ Related:
 * [@mattmoor's feedback on PipelineResources and the Pipeline beta](https://twitter.com/mattomata/status/1251378751515922432))
 * [PipelineResources 2 Uber Design Doc](https://docs.google.com/document/d/1euQ_gDTe_dQcVeX4oypODGIQCAkUaMYQH5h7SaeFs44/edit)
 * [Investigate if we can run whole PipelineRun in a Pod](https://github.com/tektoncd/pipeline/issues/3638) - [TEP-0046](https://github.com/tektoncd/community/pull/318)
+* [On Task re-usability, compos-ability and co-location](https://hackmd.io/@vdemeester/SkPFtAQXd)
 * Task specialization:
     * [Specializing Tasks - Vision & Goals](https://docs.google.com/document/d/1G2QbpiMUHSs4LOqcNaIRswcdvoy8n7XuhTV8tXdcE7A/edit)
     * [Task specialization - most appealing options?](https://docs.google.com/presentation/d/12QPKFTHBZKMFbgpOoX6o1--HyGqjjNJ7own6KqM-s68/edit#slide=id.p)

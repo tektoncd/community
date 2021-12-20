@@ -2,7 +2,7 @@
 status: proposed
 title: Pipelines V1 API
 creation-date: '2021-11-29'
-last-updated: '2021-12-13'
+last-updated: '2021-12-20'
 authors:
 - '@lbernick'
 - '@jerop'
@@ -34,6 +34,14 @@ see-also:
 - [Scope](#scope)
 - [API Definition](#api-definition)
 - [Features Included](#features-included)
+  - [Documentation](#documentation)
+  - [Production Readiness](#production-readiness)
+  - [Stability](#stability)
+    - [CRD Stability Levels](#crd-stability-levels)
+    - [API Changes](#api-changes)
+    - [Deprecations](#deprecations)
+    - [Behavior flags](#behavior-flags)
+  - [Feature Completeness](#feature-completeness)
 - [Future Work (Out of Scope for V1)](#future-work-out-of-scope-for-v1)
 - [References](#references)
 <!-- /toc -->
@@ -174,10 +182,107 @@ V1 work should prioritize stabilizing existing beta features that support the [u
 If any gaps in current features are identified, they should be V1 blockers only if mission critical to common use cases.
 
 ## API Definition
+The current Tekton Pipelines API [definition](https://github.com/tektoncd/pipeline/blob/main/api_compatibility_policy.md#what-is-the-api) includes:
+
+- CRDs, including their spec and status fields
+- step ordering and naming of step containers within the Task status
+- labels propagated from PipelineRuns to TaskRuns and TaskRuns to Pods
+- the /workspace and /tekton/results [directories](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#reserved-directories) inside containers started by Tekton
+- the interfaces of the images built by Tekton pipelines
+
+This policy should be updated to include Tekton metrics as part of the API. No other changes are proposed.
 
 ## Features Included
+### Documentation
+
+- Update the compatibility policy to reflect this TEP.
+- Provide a migration guide from v1beta1 API to v1 API.
+- Track documentation updates outside of this TEP (e.g. in a Github project or milestones).
+
+### Production Readiness
+
+- Implement [TEP-0036: Start measuring performance](https://github.com/tektoncd/community/blob/main/teps/0036-start-measuring-tekton-pipelines-performance.md).
+- Implement [TEP-0073: Simplify metrics](https://github.com/tektoncd/community/blob/main/teps/0073-simplify-metrics.md).
+  - [TEP-0006: Tekton metrics](./0006-tekton-metrics.md) is out of scope because it discusses adding more granular metrics. More granular metrics may be added later.
+- Ensure metrics are accurate and mark all metrics as "alpha" or "stable". 
+
+### Stability
+
+- Track bug fixes and small backwards incompatible changes outside of this TEP (e.g. in a Github project or milestones).
+- Implement conversion webhook for v1beta1 objects.
+
+#### CRD Stability Levels
+
+- The Task, TaskRun, Pipeline, and PipelineRun CRDs should be moved to the "stable" stability level.
+- Because Custom Task is mission critical to our extensibility use case, Run should be upgraded to beta stability.
+  - See [Custom Tasks Beta](https://github.com/tektoncd/pipeline/issues/4313) for more information on work required to upgrade Custom Tasks to beta.
+- Keep the ClusterTask CRD at beta stability.
+  - ClusterTask functionality will likely be replaced by [remote resolution](./0060-remote-resource-resolution.md), but there's no plan
+  to replace this functionality at a beta level of stability before releasing a V1 API.
+  - [Still under discussion]: We will decide before v1 whether to stabilize or remove ClusterTask pending community feedback on ClusterTask and remote resolution.
+  See [Where should we take ClusterTasks next?](https://github.com/tektoncd/pipeline/issues/4476) for more info.
+
+| CRD         | Current level | Proposed level |
+| ----------- | ------------- | -------------- |
+| Task        | beta          | stable         |
+| TaskRun     | beta          | stable         |
+| Pipeline    | beta          | stable         |
+| PipelineRun | beta          | stable         |
+| ClusterTask | beta          | beta           |
+| Run         | alpha         | beta           |
+
+#### API Changes
+
+- Fix [pain points](https://github.com/tektoncd/pipeline/issues/3792) associated with TaskRun and PipelineRun Status.
+- Consider replacing any Task or Pipeline fields that should support parameterization with Strings and performing our own validation.
+  - See [Handling parameter interpolation in fields not designed for it](https://github.com/tektoncd/pipeline/issues/1530) for more details.
+
+#### Deprecations
+
+- Deprecate `PipelineRun.Timeout` and [upgrade `PipelineRun.Timeouts` to beta](https://github.com/tektoncd/pipeline/issues/4460).
+- Remove `Pipeline.Tasks[].Conditions`. Conditions have been replaced by when expressions, which are already in beta.
+- Because PipelineResources are deprecated, remove the `Resources` fields of `Task`, `TaskRun`, `Pipeline`, and `PipelineRun`.
+    - [Still under discussion]: Additional community feedback is needed to determine the minimum V1 requirements that will make it usable for PipelineResource users. We should provide PipelineResource users with a migration path to the V1 API, which may include blocking on features proposed in [TEP-0074: Deprecate PipelineResources](https://github.com/tektoncd/community/blob/main/teps/0074-deprecate-pipelineresources.md).
+    - We will proceed with [TEP-0074: Deprecate PipelineResources](https://github.com/tektoncd/community/blob/main/teps/0074-deprecate-pipelineresources.md)
+    independently of Pipelines V1, and merging this TEP as implementable isn't a V1 blocker.
+
+#### Behavior flags
+
+Existing feature flags can be found [here](https://github.com/tektoncd/pipeline/blob/main/config/config-feature-flags.yaml).
+The feature flags "disable-home-env-overwrite", "disable-working-directory-overwrite", and "scope-when-expressions-to-task"
+are not present in this table, as their deprecation has already [been announced](https://github.com/tektoncd/pipeline/blob/main/docs/deprecations.md#deprecation-table).
+
+| Flag                                          | Current Default | Proposed State                                       |
+| --------------------------------------------- | --------------- | -----------------------------------------------------|
+| disable-affinity-assistant                    | false           | default to true                                      |
+| disable-creds-init                            | false           | no change                                            |
+| running-in-environment-with-injected-sidecars | true            | no change                                            |
+| require-git-ssh-secret-known-hosts            | false           | no change                                            |
+| enable-tekton-oci-bundles                     | false           | collapsed under enable-api-fields, requires "alpha"  |
+| enable-custom-tasks                           | false           | collapsed under enable-api-fields, requires "beta"   |
+| enable-api-fields                             | stable          | default to stable, "beta" option added               |
+
+### Feature Completeness
+
+No features identified as V1 blockers that are not necessary for stability or production readiness.
 
 ## Future Work (Out of Scope for V1)
+
+- Supply chain security features, such as Pipelines features required for [SPIRE support](./0089-nonfalsifiable-provenance-support.md)
+- Support for manual approval or pause and resume in Pipelines
+  - This would be supported by the [wait CustomTask](https://github.com/tektoncd/experimental/tree/main/wait-task) or another experimental CustomTask.
+- Native notification support, as proposed in [TEP-0032: Notifications](https://github.com/tektoncd/community/blob/main/teps/0032-tekton-notifications.md)
+- Dynamically generated TaskRuns within a PipelineRun, as proposed in [TEP-0090: Matrix](https://github.com/tektoncd/community/blob/main/teps/0090-matrix.md)
+- Stabilizing the Run CRD (i.e. moving it from "beta" to "stable")
+- Moving OCI bundles to "beta" in v1beta1 or "stable" in v1.
+  - This will need to wait until we have more clarity on [Remote Resolution](./0060-remote-resource-resolution.md).
+- Improving stability guarantees of individual CustomTasks in tektoncd/experimental
+- Additional workspace features, including:
+  - More support for Tasks to declare and validate workspace paths, as proposed in [TEP-0030: Workspace paths](https://github.com/tektoncd/community/blob/main/teps/0030-workspace-paths.md)
+  - Generic workspaces that support any type of volume, as proposed in [TEP-0038: Generic Workspaces](https://github.com/tektoncd/community/blob/main/teps/0038-generic-workspaces.md)
+  - Other types of workspaces, such as cloud storage buckets
+  - Support for declaring dependencies on Workspace data, as proposed in [TEP-0063: Workspace Dependencies](https://github.com/tektoncd/community/blob/main/teps/0063-workspace-dependencies.md)
+  - [TEP-0082: Workspace Hinting](https://github.com/tektoncd/community/blob/main/teps/0082-workspace-hinting.md)
 
 ## References
 
@@ -195,3 +300,5 @@ If any gaps in current features are identified, they should be V1 blockers only 
   - [TEP-0036: Start Measuring Tekton Pipelines Performance](./0036-start-measuring-tekton-pipelines-performance.md)
   - [TEP-0006: Tekton Metrics](./0006-tekton-metrics.md)
   - [TEP-0073: Simplify Metrics](./0073-simplify-metrics.md)
+- Feature stability
+  - [Tekton Pipelines deprecation announcements](https://github.com/tektoncd/pipeline/blob/main/docs/deprecations.md)

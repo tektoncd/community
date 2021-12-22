@@ -547,6 +547,7 @@ orgs:
         - SM43
         - bobcatfish
         - afrittoli
+        - sbwsg
         privacy: closed
         repos:
           plumbing: read

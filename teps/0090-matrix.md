@@ -18,7 +18,7 @@ authors:
   - [Requirements](#requirements)
   - [Use Cases](#use-cases)
     - [1. Kaniko Build](#1-kaniko-build)
-    - [2. Docker Build](#2-docker-build)
+    - [2. Monorepo Build](#2-monorepo-build)
     - [3. Vault Reading](#3-vault-reading)
     - [4. Testing Strategies](#4-testing-strategies)
     - [5. Test Sharding](#5-test-sharding)
@@ -214,9 +214,9 @@ my repository and produces a `Result` that is used to dynamically execute `TaskR
 
 Read more in [user experience report #1][kaniko-example-1] and [user experience report #2][kaniko-example-2].
 
-#### 2. Docker Build 
+#### 2. Monorepo Build 
 
-As a `Pipeline` author, I have several dockerfiles in my repository. 
+As a `Pipeline` author, I have several components (dockerfiles/packages/services) in my repository. 
 
 ```text
 / docker / Dockerfile
@@ -226,7 +226,24 @@ As a `Pipeline` author, I have several dockerfiles in my repository.
 ```
 
 I have a *clone* `PipelineTask` that fetches the repository to a shared `Workspace`. I want to pass in an array 
-`Parameter` with directory names of the dockerfiles to *docker-build* `PipelineTask` which runs docker build and push.  
+`Parameter` with directory names of the components to the *component-build* `PipelineTask` which runs the build flow.  
+
+```
+                                       clone
+                                         |
+                                         v
+                                 get-component-list
+                                         |
+                                         v                                       
+                 ----------------------------------------------------
+                   |                     |                       |
+                   v                     v                       v   
+            component-build-1     component-build-2       component-build-3     
+```
+
+I may need to specify a *get-component-list* `PipelineTask` that fetches the components directories/file names from a configuration file 
+in my repository or based existing directories/file and produces a `Result` that is used to dynamically execute `TaskRuns` for each component.
+The *get-component-list* task can also check what files where changed in the triggering PR/commit to only build components that where changed.
 
 ```
                                      clone
@@ -238,26 +255,10 @@ I have a *clone* `PipelineTask` that fetches the repository to a shared `Workspa
                  --------------------------------------------------
                    |                   |                       |
                    v                   v                       v   
-            docker-build-1      docker-build-2          docker-build-3     
+            component-build-1      component-build-2          component-build-3     
 ```
 
-I may need to specify a *get-dir* `PipelineTask` that fetches the dockerfiles directory names from a configuration file 
-in my repository and produces a `Result` that is used to dynamically execute `TaskRuns` for each dockerfile.
-
-```
-                                     clone
-                                       |
-                                       v
-                                    get-dir
-                                       |
-                                       v                                       
-                 --------------------------------------------------
-                   |                   |                       |
-                   v                   v                       v   
-            docker-build-1      docker-build-2          docker-build-3     
-```
-
-Read more in the [user experience report][docker-example].
+Read more in [user experience report #1][docker-example] and [user experience report #2][monorepo-example].
 
 #### 3. Vault Reading
 
@@ -601,6 +602,7 @@ Read more in the [documentation][ansible].
 - Issues:
   - [#2050: `Task` Looping inside `Pipelines`][issue-2050]
   - [#4097: List of `Results` of a `Task`][issue-4097]
+  - [#1922: Conditional build of subproject within a monorepo][issue-1922]
 
 [task-loops]: https://github.com/tektoncd/experimental/tree/main/task-loops 
 [issue-2050]: https://github.com/tektoncd/pipeline/issues/2050
@@ -611,6 +613,7 @@ Read more in the [documentation][ansible].
 [kaniko-task]: https://github.com/tektoncd/catalog/tree/main/task/kaniko/0.5
 [kaniko-example-2]: https://github.com/tektoncd/pipeline/issues/2050#issuecomment-671959323
 [docker-example]: https://github.com/tektoncd/pipeline/issues/2050#issuecomment-814847519
+[monorepo-example]: https://github.com/tektoncd/pipeline/issues/1922
 [vault-example]: https://github.com/tektoncd/pipeline/issues/2050#issuecomment-841291098
 [tep-0050]: https://github.com/tektoncd/community/blob/main/teps/0050-ignore-task-failures.md
 [argo-workflows]: https://github.com/argoproj/argo-workflows/blob/7684ef4a0c5f57e8723dc8e4d3a17246f7edc2e6/examples/README.md#loops

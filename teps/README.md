@@ -162,7 +162,7 @@ This is the complete list of Tekton teps:
 |[TEP-0002](0002-custom-tasks.md) | Custom Tasks | implemented | 2021-12-15 |
 |[TEP-0003](0003-tekton-catalog-organization.md) | Tekton Catalog Organization | implemented | 2021-02-09 |
 |[TEP-0004](0004-task-results-in-final-tasks.md) | Task Results in Final Tasks | implemented | 2021-06-03 |
-|[TEP-0005](0005-tekton-oci-bundles.md) | Tekton OCI Bundles | implementable | 2020-08-13 |
+|[TEP-0005](0005-tekton-oci-bundles.md) | Tekton OCI Bundles | implemented | 2022-01-04 |
 |[TEP-0006](0006-tekton-metrics.md) | Tekton Metrics | proposed | 2020-07-13 |
 |[TEP-0007](0007-conditions-beta.md) | Conditions Beta | implemented | 2021-06-03 |
 |[TEP-0008](0008-support-knative-service-for-triggers-eventlistener-pod.md) | Support Knative Service for Triggers EventListener Pod | implementable | 2020-08-25 |

@@ -4,8 +4,8 @@ authors:
   - "@vdemeest"
   - "@pierretasci"
 creation-date: 2020-06-24
-last-updated: 2020-08-13
-status: implementable
+last-updated: 2022-01-04
+status: implemented
 ---
 # TEP-0005: Tekton OCI bundles
 

@@ -1,10 +1,11 @@
 ---
-status: proposed
+status: implementable
 title: Pipeline Task Display Name
 creation-date: '2021-01-28'
-last-updated: '2021-02-10'
+last-updated: '2022-01-04'
 authors:
 - '@itewk'
+- '@abayer'
 ---
 
 # TEP-0047: Pipeline Task Display Name
@@ -69,16 +70,21 @@ rendered for context.
 * Add a way to specify an optional display name for `Pipeline` objects that allows any text
   and if provided will be useable for UIs rendering Tekton `Pipeline` rather then the
   machine readable `Pipeline.name` field.
+* Add a way to specify an optional display name for `Task` objects that allows any text
+  and if provided will be useable for UIs rendering Tekton `Task` rather then the
+  machine readable `Task.name` field.
+
 ### Non-Goals
 
-To be determined.
+* Display names or descriptions for `PipelineRun`s and `TaskRun`s.
 
 ### Use Cases (optional)
 
 * Pipeline writers can optionally specify a display name for any/all tasks in a `Pipeline`.
 * Pipeline writers can optionally specify a description for any/all tasks in a `Pipeline`.
-* Pipeline writers can optionally specific a display name for a `Pipeline`.
-* Pipeline writers can optionally specify a description for a `Pipeline`.
+* Pipeline writers can optionally specify a display name for a `Pipeline`.
+* Pipeline writers can optionally specify a display name for a `Task`.
+
 ## Requirements
 
 * New display name filed would be optional and accept any unicode character.
@@ -86,48 +92,55 @@ To be determined.
 
 ## Proposal
 
-See goals and alternatives.
+New fields are added to `Pipeline`, `Task`, and `PipelineTask` for display names, as well as
+a new field on `PipelineTask` for description, matching the existing `Description` field on 
+`Pipeline` and `Task`.
+
 ### Notes/Caveats (optional)
 
 None.
+
 ### Risks and Mitigations
 
-1. there are limits on the lengths of strings Kubernetes will store which may need some handling
-of some sort
-
-2. Tools that render Tekton pipelines will need to be updated to take advantage of the new
+1. Tools that render Tekton pipelines will need to be updated to take advantage of the new
 fields once they are available.
+
 ### User Experience (optional)
 
 None.
 
 ### Performance (optional)
 
-Non predicted.
+There will be a slight increase in CRD size when the new field(s) are used, but nothing significant.
 
 ## Design Details
 
-To be determined.
+No real design is needed here beyond adding the fields.
 
 ## Test Plan
 
-To be determined.
+N/A
 
 ## Design Evaluation
+
 None.
 
 ## Drawbacks
+
 None.
 
 ## Alternatives
 
-To be determined.
+TBD
 
 ## Infrastructure Needed (optional)
+
 None.
 
 ## Upgrade & Migration Strategy (optional)
+
 None.
 
 ## References (optional)
+
 https://github.com/tektoncd/pipeline/issues/3466#issuecomment-767786717

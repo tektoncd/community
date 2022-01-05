@@ -709,6 +709,7 @@ orgs:
         - pritidesai
         - dlorenc
         - loosebazooka
+        - mattmoor
         privacy: closed
         repos:
           chains: read

@@ -64,12 +64,11 @@ tags, and then generate with `hack/update-toc.sh`.
 -->
 
 <!-- toc -->
-
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
-  - [Use Cases (optional)](#use-cases-optional)
+  - [Open Questions](#open-questions)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [Notes/Caveats (optional)](#notescaveats-optional)
@@ -83,9 +82,9 @@ tags, and then generate with `hack/update-toc.sh`.
 - [Alternatives](#alternatives)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
-- [Implementation Pull request(s)](#implementation-pull-request-s)
+- [Implementation Pull request(s)](#implementation-pull-requests)
 - [References (optional)](#references-optional)
-  <!-- /toc -->
+<!-- /toc -->
 
 ## Summary
 

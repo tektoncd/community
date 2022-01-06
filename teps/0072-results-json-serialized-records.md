@@ -64,12 +64,9 @@ tags, and then generate with `hack/update-toc.sh`.
 -->
 
 <!-- toc -->
-
-- [Summary](#summary)
-- [Motivation](#motivation)
+- [Summary / Motivation](#summary--motivation)
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
-  - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [Notes/Caveats (optional)](#notescaveats-optional)
@@ -77,14 +74,19 @@ tags, and then generate with `hack/update-toc.sh`.
   - [User Experience (optional)](#user-experience-optional)
   - [Performance (optional)](#performance-optional)
 - [Design Details](#design-details)
+  - [cel-go compatibility](#cel-go-compatibility)
 - [Test Plan](#test-plan)
 - [Design Evaluation](#design-evaluation)
 - [Drawbacks](#drawbacks)
+  - [cel-go macros](#cel-go-macros)
 - [Alternatives](#alternatives)
-- [Infrastructure Needed (optional)](#infrastructure-needed-optional)
+  - [Embed fields directly in Record](#embed-fields-directly-in-record)
+  - [Remove Knative Types from Pipeline status](#remove-knative-types-from-pipeline-status)
+  - [Handcraft Tekton Pipeline protos](#handcraft-tekton-pipeline-protos)
+  - [Use well-known Struct field](#use-well-known-struct-field)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
 - [References (optional)](#references-optional)
-  <!-- /toc -->
+<!-- /toc -->
 
 ## Summary / Motivation
 

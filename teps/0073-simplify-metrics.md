@@ -21,7 +21,7 @@ authors:
   - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
-  - [Setting Level of Metrics for TaskRun or PipelineRun](#setting-level-of-metrics-for-taskRun-or-pipelineRun)
+  - [Setting Level of Metrics for TaskRun or PipelineRun](#setting-level-of-metrics-for-taskrun-or-pipelinerun)
   - [Change metrics type](#change-metrics-type)
   - [Notes/Caveats (optional)](#notescaveats-optional)
   - [Risks and Mitigations](#risks-and-mitigations)

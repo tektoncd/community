@@ -72,6 +72,9 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
+      - [1. Event Signing Interface](#1-event-signing-interface)
+      - [2. Provenance for pipelinerun](#2-provenance-for-pipelinerun)
+      - [3. Attestation Format](#3-attestation-format)
   - [Notes/Caveats (optional)](#notescaveats-optional)
   - [Risks and Mitigations](#risks-and-mitigations)
   - [User Experience (optional)](#user-experience-optional)
@@ -83,7 +86,7 @@ tags, and then generate with `hack/update-toc.sh`.
 - [Alternatives](#alternatives)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
-- [Implementation Pull request(s)](#implementation-pull-request-s)
+- [Implementation Pull request(s)](#implementation-pull-requests)
 - [References (optional)](#references-optional)
 <!-- /toc -->
 

@@ -232,3 +232,4 @@ This is the complete list of Tekton teps:
 |[TEP-0090](0090-matrix.md) | Matrix | proposed | 2021-11-08 |
 |[TEP-0094](0094-configuring-resources-at-runtime.md) | Configuring Resources at Runtime | proposed | 2021-11-08 |
 |[TEP-0096](0096-pipelines-v1-api.md) | Pipelines V1 API | proposed | 2021-12-13 |
+|[TEP-0099](0099-parameters-in-script.md) | Parameters in Script | proposed | 2021-01-07 |

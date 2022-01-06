@@ -17,6 +17,8 @@ authors:
   - [Use Cases](#use-cases)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
+  - [Requirements to mark as <code>implementable</code>](#requirements-to-mark-as-)
+  - [New repo: tektoncd/images](#new-repo-tektoncdimages)
   - [Risks and Mitigations](#risks-and-mitigations)
   - [User Experience](#user-experience)
 - [Design Details](#design-details)
@@ -24,8 +26,9 @@ authors:
 - [Design Evaluation](#design-evaluation)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
+  - [Keep PipelineResources](#keep-pipelineresources)
 - [Upgrade &amp; Migration Strategy](#upgrade--migration-strategy)
-- [Implementation Pull request(s)](#implementation-pull-request-s)
+- [Implementation Pull request(s)](#implementation-pull-requests)
 - [References](#references)
 <!-- /toc -->
 

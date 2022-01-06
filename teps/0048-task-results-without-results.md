@@ -17,6 +17,8 @@ status: proposed
   - [Non-Goals](#non-goals)
 - [Requirements](#requirements)
   - [Use Cases](#use-cases)
+  - [Consuming task results from the conditional tasks](#consuming-task-results-from-the-conditional-tasks)
+  - [<code>Pipeline Results</code> from the conditional tasks](#-from-the-conditional-tasks)
 - [References](#references)
 <!-- /toc -->
 

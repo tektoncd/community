@@ -33,6 +33,8 @@ tags, and then generate with `hack/update-toc.sh`.
   - [User Experience (optional)](#user-experience-optional)
   - [Performance (optional)](#performance-optional)
 - [Design Details](#design-details)
+  - [Windows Support](#windows-support)
+  - [Windows Script support](#windows-script-support)
 - [Test Plan](#test-plan)
 - [Design Evaluation](#design-evaluation)
   - [Reusability](#reusability)

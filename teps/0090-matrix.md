@@ -1,11 +1,20 @@
 ---
-status: proposed
+status: implementable
 title: Matrix
 creation-date: '2021-10-13'
-last-updated: '2021-11-08'
+last-updated: '2022-02-14'
 authors:
 - '@jerop'
 - '@pritidesai'
+see-also:
+- TEP-0023
+- TEP-0044
+- TEP-0056
+- TEP-0075
+- TEP-0076
+- TEP-0079
+- TEP-0096
+- TEP-0100
 ---
 
 # TEP-0090: Matrix
@@ -28,6 +37,53 @@ authors:
     - [Jenkins](#jenkins)
     - [Argo Workflows](#argo-workflows)
     - [Ansible](#ansible)
+- [Proposal](#proposal)
+  - [API Change](#api-change)
+      - [Alternatives](#alternatives)
+  - [Fan Out](#fan-out)
+  - [Concurrency Control](#concurrency-control)
+- [Design](#design)
+  - [Parameters](#parameters)
+    - [Substituting String Parameters in the Tasks](#substituting-string-parameters-in-the-tasks)
+    - [Substituting Array Parameters in the Tasks](#substituting-array-parameters-in-the-tasks)
+    - [Combinations of Parameters in the Matrix](#combinations-of-parameters-in-the-matrix)
+  - [Results](#results)
+    - [Specifying Results in the Matrix](#specifying-results-in-the-matrix)
+    - [Results from Fanned Out PipelineTasks](#results-from-fanned-out-pipelinetasks)
+  - [Execution Status](#execution-status)
+    - [Specifying Execution Status in the Matrix](#specifying-execution-status-in-the-matrix)
+    - [Execution Status from Fanned Out PipelineTasks](#execution-status-from-fanned-out-pipelinetasks)
+  - [Context Variables](#context-variables)
+  - [Ordering Dependencies - Run After](#ordering-dependencies---run-after)
+  - [Workspaces](#workspaces)
+    - [Writing to Different Paths in a Workspace](#writing-to-different-paths-in-a-workspace)
+    - [Writing to the Same Path in a Workspace](#writing-to-the-same-path-in-a-workspace)
+  - [When Expressions](#when-expressions)
+  - [Retries](#retries)
+  - [Timeouts](#timeouts)
+- [Design Evaluation](#design-evaluation)
+  - [API Conventions](#api-conventions)
+  - [Reusability](#reusability)
+  - [Simplicity](#simplicity)
+  - [Flexibility](#flexibility)
+  - [Conformance](#conformance)
+- [Implementation Plan](#implementation-plan)
+    - [Milestone 1: API Change, Validation and Execute TaskRuns](#milestone-1-api-change-validation-and-execute-taskruns)
+    - [Milestone 2: Execute Runs](#milestone-2-execute-runs)
+    - [Milestone 3: Consume Results](#milestone-3-consume-results)
+- [Related Tekton Projects and Proposals](#related-tekton-projects-and-proposals)
+  - [Task Loop Custom Task](#task-loop-custom-task)
+  - [Tekton Enhancement Proposals](#tekton-enhancement-proposals)
+    - [TEP-0023: Implicit Parameters](#tep-0023-implicit-parameters)
+    - [TEP-0044: Data Locality and Pod Overhead in Pipelines](#tep-0044-data-locality-and-pod-overhead-in-pipelines)
+    - [TEP-0056: Pipelines in Pipelines](#tep-0056-pipelines-in-pipelines)
+    - [TEP-0075: Object Parameters and Results](#tep-0075-object-parameters-and-results)
+    - [TEP-0076: Array Results](#tep-0076-array-results)
+    - [TEP-0079: Tekton Catalog Support Tiers](#tep-0079-tekton-catalog-support-tiers)
+    - [TEP-0096: Pipelines V1 API](#tep-0096-pipelines-v1-api)
+- [Alternatives](#alternatives-1)
+  - [API Change: Boolean in Parameter Specification](#api-change-boolean-in-parameter-specification)
+  - [API Change: Array of Parameter Names in PipelineTask Specification](#api-change-array-of-parameter-names-in-pipelinetask-specification)
 - [References](#references)
 <!-- /toc -->
 
@@ -40,10 +96,14 @@ combination of the `Parameters` in the `matrix`. This `matrix` construct will en
 powerful `Pipelines`. Moreover, it would improve the composability, scalability, flexibility and reusability of
 *Tekton Pipelines*.
 
+In summary, we propose adding a `matrix` field to the `PipelineTask` specification that will be used 
+to declare `Parameters` of type `Array`. The `PipelineTask` will be executed in parallel `TaskRuns` or 
+`Runs` with its `Parameters` substituted with the combinations of `Parameters` in the `Matrix`.
+
 ## Motivation
 
 Users can specify `Parameters`, such as artifacts' names, that they want to supply to [`PipelineTasks`][tasks-docs]
-at runtime. However, they don't have a way to supply varying `Parameters` to the a `PipelineTask`. Today, users would 
+at runtime. However, they don't have a way to supply varying `Parameters` to a `PipelineTask`. Today, users would
 have to duplicate that `PipelineTask` in the `Pipelines` specification as many times as the number of varying 
 `Parameters` that they want to pass in. This is limiting and challenging because:
 - it is tedious and creates large `Pipelines` that are hard to understand and maintain.
@@ -151,12 +211,14 @@ and `Runs` have to complete execution before termination.
 2. Controlling the concurrency of `TaskRuns` or `Runs` created in a given `matrix`. This will be addressed more broadly 
 in Tekton Pipelines ([tektoncd/pipeline: issue#2591][issue-2591], [tektoncd/experimental: issue#804][issue-804]).
 3. Configuring the `TaskRuns` or `Runs` created in a given `matrix` to execute sequentially. This remains an option that 
-we can explore this later. 
+we can explore later.
 4. Excluding generating a `TaskRun` or `Run` for a specific combination in the `matrix`. This can be handled using 
 guarded execution through `when` expressions. This remains an option we can explore later if needed.
 5. Including generating a `TaskRun` or `Run` for a specific combination in the `matrix`. This can be handled by adding 
 the items that produce that combination into the `matrix`, and using guarded execution through `when` expressions to 
 exclude the combinations that should be skipped. This remains an option we can explore later if needed.
+6. Supporting producing `Results` from fanned out `PipelineTasks`. We plan to address this after [TEP-0075][tep-0075]
+and [TEP-0076][tep-0076] have landed. 
 
 ### Requirements
 
@@ -165,9 +227,7 @@ exclude the combinations that should be skipped. This remains an option we can e
 2. The `TaskRuns` or `Runs` executed from the `matrix` of `Parameters` should be run in parallel.
 3. The `Parameters` in the `matrix` can use `Results` from previous `TaskRuns` or `Runs` to dynamically generate 
    `TaskRuns` or `Runs` from a given `PipelineTask`.
-4. Excluding the execution of a `TaskRun` or `Run` with a specific combination in the `matrix` using `when` expressions
-   should be supported.
-5. Configuring the maximum number of `TaskRuns` or `Runs` generated in a given `matrix` should be supported, with a
+4. Configuring the maximum number of `TaskRuns` or `Runs` generated in a given `matrix` should be supported, with a
    default value provided.
 
 ### Use Cases
@@ -241,9 +301,12 @@ I have a *clone* `PipelineTask` that fetches the repository to a shared `Workspa
             component-build-1     component-build-2       component-build-3     
 ```
 
-I may need to specify a *get-component-list* `PipelineTask` that fetches the components directories/file names from a configuration file 
-in my repository or based existing directories/file and produces a `Result` that is used to dynamically execute `TaskRuns` for each component.
-The *get-component-list* task can also check what files where changed in the triggering PR/commit to only build components that where changed.
+I may need to specify a *get-component-list* `PipelineTask` that fetches the components directories or filenames from
+a configuration file in my repository and produces a `Result` that is used to dynamically execute `TaskRuns` for each
+component.
+
+The *get-component-list* `PipelineTask` can also check what files were changed in the triggering PR/commit to only
+build components that were changed.
 
 ```
                                      clone
@@ -423,7 +486,7 @@ each combination of platform and browser.
                                             --------------------------------------------------
                                              |                                           |
                                              v                                           v   
-                                         get-plaforms                              get-browsers
+                                         get-platforms                              get-browsers
                                              |                                           |
                                              v                                           v                                         
    --------------------------------------------------------------------------------------------------------------------------
@@ -596,6 +659,934 @@ For example:
 
 Read more in the [documentation][ansible].
 
+## Proposal
+
+This proposal focuses on enabling execution a `PipelineTask` with different combinations
+of `Parameters`. This section will provide an overview, see the [design](#design) section
+below for further details.
+
+### API Change
+
+To support fanning out of `Tasks` in `Pipelines`, we propose adding a `Matrix` field to the
+`PipelineTask` specification that will be used to declare `Parameters` of type `Array`.
+
+```go
+type PipelineTask struct {
+	Name        string          `json:"name,omitempty"`
+	TaskRef     *TaskRef        `json:"taskRef,omitempty"`
+	TaskSpec    *EmbeddedTask   `json:"taskSpec,omitempty"`
+	Params      []Param         `json:"params,omitempty"`
+	Matrix      []Param         `json:"matrix,omitempty"`
+	...
+}
+```
+
+##### Alternatives
+* [Boolean in Parameter Specification](#api-change-boolean-in-parameter-specification)
+* [Array of Parameter Names in PipelineTask Specification](#api-change-array-of-parameter-names-in-pipelinetask-specification)
+
+### Fan Out
+
+The `Matrix` will be used to execute the `PipelineTask` in parallel `TaskRuns` or `Runs` with
+substitutions from combinations of the `Parameters` in the `Matrix`.
+
+The `Parameters` in the `Matrix` can use `Results` from previous `TaskRuns` or `Runs` to 
+dynamically generate `TaskRuns` or `Runs` from a given `PipelineTask` - see [details](#results).
+
+### Concurrency Control
+
+To support configuring the maximum number of `TaskRuns` or `Runs` generated from a given `Matrix`,
+we propose adding a field - `default-maximum-matrix-fan-out` - to [config defaults][config-defaults]
+with a default value of 256. Users can set it to a different value for their own Tekton Pipelines
+installations, similarly to other [installation customizations][custom-install], such as: 
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-defaults
+data:
+  default-service-account: "tekton"
+  default-timeout-minutes: "20"
+  default-maximum-matrix-fan-out: "1024"
+  ...
+```
+
+When a `Matrix` in `PipelineTask` would generate more than the maximum `TaskRuns` or `Runs`, this
+would fail the `Pipeline` in the first iteration. After initial usage of `Matrix`, we can explore
+other ways of supporting usage beyond that limit, such as allowing `TaskRuns` or `Runs` only up to
+the limit to run at a time, in a follow-up TEP.
+
+If needed, we can also explore providing more granular controls for maximum number of `TaskRuns`
+or `Runs` from `Matrices` - either at `PipelineRun`, `Pipeline` or `PipelineTask` levels - later.
+This is an option we can pursue after gathering user feedback - it's out of scope for this TEP.
+
+## Design 
+
+In this section, we go into the details of the `Matrix` in relation to:
+
+* [Parameters](#parameters)
+* [Results](#results)
+* [Execution Status](#execution-status)
+* [Context Variables](#context-variables)
+* [Ordering Dependencies](#ordering-dependencies---run-after)
+* [Workspaces](#workspaces)
+* [When Expressions](#when-expressions)
+* [Retries](#retries)
+* [Timeouts](#timeouts)
+
+### Parameters
+
+#### Substituting String Parameters in the Tasks
+
+The `Matrix` will take `Parameters` of type `Array` only, which will be supplied to the
+`PipelineTask` by substituting `Parameters` of type `String` in the underlying `Task`.
+The names of the `Parameters` in the `Matrix` must match the names of the `Parameters`
+in the underlying `Task` that they will be substituting.
+
+In the [*kaniko* `Pipeline` example](#motivation) above, the *image* `Parameter` is of
+type `String` in the *kaniko* `Task`. In a `Pipeline` using the `Matrix` feature, the
+*image* `Parameter` is of type `Array` in the `Matrix` in *kaniko-build* `PipelineTask`:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: kaniko-pipeline
+spec:
+  workspaces:
+  - name: shared-workspace
+  params:
+  - name: images
+    type: array
+    description: reference of the images to build
+  tasks:
+  - name: fetch-repository
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-workspace
+    params:
+    - name: url
+      value: https://github.com/tektoncd/pipeline
+  - name: kaniko-build
+    taskRef:
+      name: kaniko
+    runAfter:
+    - fetch-repository
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    matrix:
+    - name: IMAGE
+      value: $(params.images)
+```
+
+In the [platforms and browsers use case above](#6-platforms-and-browsers), the *test*
+`Task` takes *browser* and *platform* `Parameters` of type `String`. A `Pipeline`
+constructed to with the `Matrix` feature would have two `Parameters` of type `Array`,
+and it would execute nine `TaskRuns`:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: platform-browser-tests
+spec:
+  workspaces:
+  - name: shared-workspace
+  params:
+    - name: platforms
+      type: array
+      default:
+        - linux
+        - mac
+        - windows
+    - name: browsers
+      type: array
+      default:
+        - chrome
+        - safari
+        - firefox    
+  tasks:
+  - name: fetch-repository
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-workspace
+    params:
+    - name: url
+      value: https://github.com/org/repo
+  - name: browser-test 
+    taskRef:
+      name: browser-test
+    runAfter:
+      - fetch-repository
+    workspaces:
+      - name: source
+        workspace: shared-workspace
+    matrix:
+      - name: platform
+        value: $(params.platforms)
+      - name: browser
+        value: $(params.browsers)
+```
+
+Without the `Matrix`, users would have to specify nine `PipelineTasks` with the same
+`Task` to get the nine `TaskRuns`: 
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: platform-browser-tests
+spec:
+  workspaces:
+  - name: shared-workspace
+  tasks:
+  - name: fetch-repository
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-workspace
+    params:
+    - name: url
+      value: https://github.com/org/repo
+  - name: browser-test-1 
+    taskRef:
+      name: browser-test
+    runAfter:
+      - fetch-repository
+    workspaces:
+      - name: source
+        workspace: shared-workspace
+    params:
+      - name: platform
+        value: linux
+      - name: browser
+        value: chrome
+  - name: browser-test-2
+    taskRef:
+      name: browser-test
+    runAfter:
+      - fetch-repository
+    workspaces:
+      - name: source
+        workspace: shared-workspace
+    params:
+      - name: platform
+        value: linux
+      - name: browser
+        value: safari
+  - name: browser-test-3
+    taskRef:
+      name: browser-test
+    runAfter:
+      - fetch-repository
+    workspaces:
+      - name: source
+        workspace: shared-workspace
+    params:
+      - name: platform
+        value: linux
+      - name: browser
+        value: firefox
+  - name: browser-test-4
+    taskRef:
+      name: browser-test
+    runAfter:
+      - fetch-repository
+    workspaces:
+      - name: source
+        workspace: shared-workspace
+    params:
+      - name: platform
+        value: mac
+      - name: browser
+        value: chrome
+  - name: browser-test-5
+    taskRef:
+      name: browser-test
+    runAfter:
+      - fetch-repository
+    workspaces:
+      - name: source
+        workspace: shared-workspace
+    params:
+      - name: platform
+        value: mac
+      - name: browser
+        value: safari
+  - name: browser-test-6
+    taskRef:
+      name: browser-test
+    runAfter:
+      - fetch-repository
+    workspaces:
+      - name: source
+        workspace: shared-workspace
+    params:
+      - name: platform
+        value: mac
+      - name: browser
+        value: firefox
+  - name: browser-test-7
+    taskRef:
+      name: browser-test
+    runAfter:
+      - fetch-repository
+    workspaces:
+      - name: source
+        workspace: shared-workspace
+    params:
+      - name: platform
+        value: windows
+      - name: browser
+        value: chrome
+  - name: browser-test-8
+    taskRef:
+      name: browser-test
+    runAfter:
+      - fetch-repository
+    workspaces:
+      - name: source
+        workspace: shared-workspace
+    params:
+      - name: platform
+        value: windows
+      - name: browser
+        value: safari
+  - name: browser-test-9
+    taskRef:
+      name: browser-test
+    runAfter:
+      - fetch-repository
+    workspaces:
+      - name: source
+        workspace: shared-workspace
+    params:
+      - name: platform
+        value: windows
+      - name: browser
+        value: firefox
+```
+
+#### Substituting Array Parameters in the Tasks
+
+To substitute `Parameters` of type `Array` in `Tasks`, we would need `Parameters`
+of type `Arrays of Arrays` in the `Matrix` in `PipelineTasks`. However, we currently
+support `Parameters` of type `String` and `Arrays` only. 
+
+For example, taking the [*gcloud* `Task`][gcloud-task] in the Tekton Catalog, which
+declares as *ARGS* array `Parameter`. Say we want to execute it thrice to check
+authorization, deploy to Cloud Run, and create a GCE instance. And we want to leverage
+the `Matrix` to do all of that in one `PipelineTask`. This is the specification we need:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gcloud-pipeline
+spec:
+  serviceAccountName: workload-identity-sa
+  tasks:
+  ...
+  - name: setup
+    taskRef:
+      name: gcloud
+    matrix:
+    - name: ARGS
+      value: [
+        ['auth', 'list'],
+        ['run', 'deploy', 'my-service', '--image=gcr.io/my-project/my-image', '--platform=PLATFORM', '--region=REGION'],
+        ['compute', 'instances', 'create', 'my-instance', '--zone=ZONE']
+      ]
+  ...
+```
+
+As shown above, we would need `Parameters` of type `Arrays of Arrays` to substitute
+`Arrays` in `Tasks` through the `Matrix`.
+
+In [TEP-0075: Object Parameters and Results][tep-0075], we are exploring supporting
+object `Parameters` through [JSON object schema syntax][json]. Providing `Parameters`
+of type `Arrays of Arrays` is not in scope for TEP-0075, but that's a possibility in
+follow-on work. After support is added, we can revisit supporting `Arrays of Arrays`
+in `Matrix`. 
+
+Moreover, [use cases](#use-cases) we are solving for in this TEP don't need this capability.
+We plan to provide minimum feature set needed to meet the use cases, as described in the
+[simplicity][simplicity] design principle. However, this remains an option we can explore
+later if we have use cases for it and already support `Arrays of Arrays` in Tekton Pipelines.
+
+#### Combinations of Parameters in the Matrix
+
+We need a way to identify a specific combination of `Parameters` in the `Matrix` so that
+we can map it to a given `TaskRun` and its components, such as `Results`. We cannot rely
+on the ordering of the `Parameters` in the `Matrix` to be maintained as specified in the
+`Pipeline`. We propose that we add the generated combinations identifications to the
+`PipelineRunStatusFields` in `PipelineRunStatus`. For example:
+
+```yaml
+  taskRuns:
+    matrixed-pr-foo-0:
+      pipelineTaskName: foo
+      matrixId: 0
+      status:
+        ...
+    matrixed-pr-foo-1:
+      pipelineTaskName: foo
+      matrixId: 1
+      status:
+        ...
+```
+
+The `Parameters` were used for a given `TaskRun` or `Runs` would available in the `TaskRun`
+status itself. The `matrixId` in the `PipelineRunStatus` is useful in identifying that the
+`TaskRun` is part of a `Matrix`, especially if the `TaskRun` name was too long so got hashed.
+This is also in line with providing the minimal information needed in the `PipelineRunStatus`
+as discussed in [TEP-0100: Embedded TaskRuns and Runs Status in PipelineRuns][tep-0100].
+
+### Results
+
+#### Specifying Results in the Matrix
+
+`Results` from previous `TaskRuns` or `Runs` can be passed into the `Matrix`, which will
+dynamically generate `TaskRuns` or `Runs` from the fanned out `PipelineTask`. Today, we
+support string `Results` only, so they will be passed individually into the `Matrix`:
+
+```yaml
+tasks:
+...
+- name: task-4
+  taskRef:
+    name: task-4
+  matrix:
+  - name: values
+    value: 
+    - (tasks.task-1.results.foo) # string
+    - (tasks.task-2.results.bar) # string
+    - (tasks.task-3.results.rad) # string
+```
+
+When we support array `Results`, as proposed in [TEP-0076][tep-0076], users can pass in
+array `Results` directly into the `Matrix`:
+
+```yaml
+tasks:
+...
+- name: task-5
+  taskRef:
+    name: task-5
+  matrix:
+  - name: values
+    value: (tasks.task-4.results.foo) # array
+```
+
+#### Results from Fanned Out PipelineTasks
+
+Producing `Results` from fanned out `PipelineTasks` will not be in the initial iteration.
+After [TEP-0075: Object Parameters and Results][tep-007] and [TEP-0076: Array Results][tep-0076]
+have landed, we will design how to support `Results` from fanned out `PipelineTasks`. 
+
+### Execution Status 
+
+Today, `PipelineTasks` in the `finally` section can access the execution `Status` -
+`Succeeded`, `Failed` or `None` - of each `PipelineTask` in the `tasks` section. This
+is accessed via a variable - `$(tasks.<pipelinetask-name>.status)`.  Read more in the
+[documentation][execution-status].
+```yaml
+finally:
+- name: finaltask
+  params:
+  - name: task1Status
+    value: "$(tasks.task1.status)"
+  ...
+```
+
+In addition, `PipelineTasks` in the `finally` section can access the aggregate execution
+`Status` - `Succeeded`, `Failed`, `Completed`, or `None` - of all the `PipelineTasks`
+in the `tasks` section. This is accessed via a variable - `$(tasks.status)`. Read more
+in the [documentation][aggregate-status].
+```yaml
+finally:
+- name: finaltask
+  params:
+  - name: task1Status
+    value: "$(tasks.status)"
+  ...
+```
+
+#### Specifying Execution Status in the Matrix
+
+We propose that the individual execution `Status` is accessible in the `Matrix` in
+`PipelinesTasks` in the `finally` section of the `Pipeline`.
+
+```yaml
+finally:
+- name: finaltask
+  matrix:
+  - name: task1to3status
+    value: 
+    - "$(tasks.task1.status)"
+    - "$(tasks.task2.status)"
+    - "$(tasks.task3.status)"
+  ...
+```
+
+We propose that aggregate `Status` is available in the `Matrix` in `PipelinesTasks` in
+the `finally` section of the `Pipeline`.
+```yaml
+finally:
+- name: report-status
+  matrix:
+  - name: status
+    value: 
+    - "$(tasks.task1.status)"
+    - "$(tasks.task2.status)"
+    - "$(tasks.task3.status)"
+    - "$(tasks.status)" 
+  ...
+```
+
+#### Execution Status from Fanned Out PipelineTasks
+
+We propose that the individual execution `Status` of a fanned out `PipelineTask` should
+be an aggregate of all `TaskRuns` or `Runs` created from the `PipelineTask`. This should
+remain accessible through the same variable: `$(tasks.<pipelinetask-name>.status)`.
+
+We propose that the aggregate `Status` of all `PipelineTasks` in the `tasks` section to
+consider all the `TaskRuns` or `Runs` created from all the `PipelineTasks`, including the
+fanned out `PipelineTasks`. This should remain accessible through the same variable:
+`$(tasks.status)`. 
+
+The logic used to determine the aggregate statuses should be the same as is now, see the
+[documentation][aggregate-status] for details.
+
+### Context Variables
+
+Similarly to the `Parameters` in the `Params` field, the `Parameters` in the `Matrix`
+field will accept [context variables][variables] that will be substituted, including:
+* `PipelineRun` name, namespace and uid
+* `Pipeline` name
+* `PipelineTask` retries
+* `TaskRun` name, namespace and uid
+* `Task` name and retry count
+
+### Ordering Dependencies - Run After
+
+There are two types of dependencies between `PipelineTasks`:
+* Resource: established by passing resources, such as `Results`.
+* Ordering: declared using `runAfter`, when there are no resource dependencies.
+
+This section focuses on ordering dependencies, see [above](#results) for resource
+dependencies. 
+
+When a `PipelineTask` has an ordering dependency on a fanned out `PipelineTask`, it
+will not be executed until all the `TaskRuns` or `Runs` generated from the `Matrix`
+have been executed.
+
+In the example below, the *test* `PipelineTask` is fanned out using the *shards*
+`Result` in the `Matrix`. The *build* `PipelineTask` is ordering dependent on the
+*test* `PipelineTask`, based on `runAfter`. As such, all the *test* `TaskRuns`
+have to complete execution before *build* `PipelineTask` is executed.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pipeline
+spec:
+  tasks:
+  - name: clone
+    taskRef:
+      name: git-clone
+    ...
+  - name: get-test-shards
+    taskRef:
+      name: get-test-shards
+    runAfter:
+    - clone
+    ...
+  - name: test
+    taskRef:
+      name: test
+    matrix:
+    - name: shards
+      value: $(tasks.get-test-shards.results.shards)
+    ...
+  - name: build
+    taskRef:
+      name: build
+    runAfter:
+    - test
+    ...
+```
+
+### Workspaces
+
+`Tasks` declare `Workspaces` they need; `Pipelines` specify which `Workspaces` are shared among
+`PipelineTasks`. For further details, read the [documentation][workspace-in-pipelines].
+
+When a `PipelineTask` is fanned out using a `Matrix`, the `Workspaces` passed to the `PipelineTask`
+are bound to all its `TaskRuns`. The `Persistent Volumes` associated with the `Workspaces` may need
+to have `ReadWriteMany` access mode.
+
+#### Writing to Different Paths in a Workspace
+
+The fanned out `TaskRuns` could write to different paths in the bound `Workspace`, depending on the
+specification in the underlying `Task`. For example, the [*git-clone*][git-clone] `Task` from the
+Tekton Catalog can be fanned out with multiple urls which clone the repositories to different paths
+in the `Workspace`:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pipeline
+spec:
+  workspaces:
+    - name: shared-workspace
+  tasks:
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+      matrix:
+        - name: url
+          value: 
+          - https://github.com/tektoncd/pipeline
+          - https://github.com/tektoncd/triggers
+          - https://github.com/tektoncd/results
+```
+
+#### Writing to the Same Path in a Workspace
+
+The fanned out `TaskRuns` could write to the same path in the bound `Workspace`, depending on the
+specification in the underlying `Task`. This would make it difficult for the data to be used in the
+subsequent `PipelineTasks`. 
+
+We can solve for this by adding `SubPaths` to the `Workspaces`, such as using the combinations
+identifications described [above](#combinations-of-parameters-in-the-matrix), to write to different
+parts of the same volume. 
+
+We propose that this limitation stays out of scope for this TEP; users can fan out `Tasks` that write
+to different paths and design the `Tasks` that they want to fan out to write to different paths.
+We can explore addressing this limitation in future work, after gathering initial feedback from users.
+
+### When Expressions
+
+Users can specify criteria to guard the execution of `PipelineTasks` using `when` expressions, read
+the [documentation][when] for further details. The `input` and `values` field in the `when` expressions
+accept variables from the `Pipeline`, such as `Parameters` and `Results`. 
+
+When the `when` expressions in a `PipelineTask` with a `Matrix` evaluate to `false`, no `TaskRun` or
+`Run` would be executed from that `PipelineTask` - the `PipelineTask` will be skipped.
+
+Note that the `when` expressions do not accept variables from the `PipelineTask` itself, so it doesn't
+accept variables from either the `params` or `matrix` fields in the `PipelineTask`.
+
+Including or excluding a specific combination from the `Matrix` is out of scope for this TEP, but it
+is an option that we can explore later - see the [Non-Goals](#non-goals) section above for details.
+
+### Retries
+
+Users can specify the number of times a `PipelineTask` should be retried when its `TaskRun` or `Run`
+fails using `retries` field, read the [documentation][retries] for further details. We propose that
+when a `PipelineTask` is fanned out using `Matrix`, a given `TaskRun` or `Run` executed will be
+retried as much as the field in the `retries` field of the `PipelineTask`. 
+
+In the example below, each of the three `TaskRuns` created should be retried 2 times:
+
+```yaml
+tasks:
+  - name: build-the-image
+    retries: 2
+    matrix:
+      - name: platform
+        values:
+          - linux
+          - mac
+          - windows
+    taskRef:
+      name: build-push
+```
+
+### Timeouts
+
+Users can specify the timeout for the `TaskRun` or `Run` that executes `PipelineTask` using the
+`timeout` field, read the [documentation][timeouts] for further details. We propose that when a
+`PipelineTask` is fanned out using `Matrix`, that the `timeout` should apply to each of its 
+`TaskRuns` or `Runs`.
+
+In the example below, each of the three `TaskRuns` created should have a timeout of 90 seconds:
+
+```yaml
+spec:
+  tasks:
+    - name: build-the-image
+      timeout: "0h1m30s"
+      matrix:
+        - name: plaform
+          values:
+            - linux
+            - mac
+            - windows
+      taskRef:
+        name: build-push
+```
+
+## Design Evaluation
+
+### API Conventions
+
+In the proposed design, we comply with the [Kubernetes API conventions][k8s-api] such as:
+* Lists of named subobjects preferred over maps ([convention][k8s-api-objects]): we use
+  named subobjects - `Parameters` - in the `matrix` instead of maps.
+* Think twice about `bool` fields ([convention][k8s-api-primitives]): we didn't use `bools`
+  to plan for future expansions - see [alternative](#api-change-boolean-in-parameter-specification)
+  using `bools`.
+
+### Reusability
+
+* Existing features are reused instead of adding new ones, such as `Parameters`.
+* At `Pipeline` authoring time, authors can specify the `matrix` used to fan out the
+  `PipelineTask`. At `Pipeline` run time, users can control the execution as needed
+  without modifying the `Pipeline` because the `matrix` allows variable substitution.
+
+### Simplicity
+
+* Provided the bare minimum features needed to solve the [use cases](#use-cases).
+  For example, we won't support fanning out based on `Parameters` of type `Array`
+  as discussed [above](#substituting-array-parameters-in-the-tasks).
+* The structure and behavior of `matrix` is consistent with the existing `params`
+  field, making learnability easy and promoting adoption of the feature.
+
+### Flexibility
+
+* The proposed design supports future expansions, including those identified as part
+  of future work. For example, we can support implicit mapping of `Parameters` and
+  consuming `Results` from dynamic fanned out `PipelineTasks`.
+* The proposed design is aligned with ongoing work on the same components, such
+  as `Parameters` and `Results` in [TEP-0075][tep-0075] and [TEP-0076][tep-0076].
+
+### Conformance
+
+* The proposed change is backwards compatible.
+* The `matrix` field is optional, per the guidance in the *Tekton Pipelines*
+  [API Spec][api-spec].
+
+## Implementation Plan
+
+Access to the `matrix` feature and field will be guarded by the `alpha` feature gate. 
+This will give us a chance to gather feedback from users and iterate on the design 
+before promoting it to `beta`. 
+
+In addition, the feature will be implemented in a phases to ensure we handle the 
+complexities carefully. 
+
+#### Milestone 1: API Change, Validation and Execute TaskRuns
+
+First pull request will:
+* Add the `matrix` field to the API.
+* Guard the `matrix` behind the `alpha` feature gate.
+* Implement validation of the `matrix` field, including:
+  * `Parameter` type must be of type `Array`.
+  * `Parameter` can be in only one of `matrix` or `params`, not both.
+
+Second pull request will:
+* Implement fanning out of `PipelineTasks` into `TaskRuns` based on the `matrix`.
+
+This milestone should be in one release.
+
+#### Milestone 2: Execute Runs
+
+Implement fanning out of `PipelineTasks` into `Runs` based on the `matrix`.
+
+#### Milestone 3: Consume Results
+
+Support consuming `Results` in the `Matrix`.
+
+## Related Tekton Projects and Proposals
+
+### Task Loop Custom Task
+
+[Task Loops Experimental Project][task-loops] validated the need for "looping" support in
+Tekton Pipelines. This TEP builds on the work in that Custom Task to provide native support
+for fanning out `PipelineTasks` directly in the Tekton Pipelines API. When `Matrix` is in
+the Tekton Pipelines API, we can deprecate the experimental project and migrate dogfooding
+to use `Matrix` instead (and support users in migrating too). Eventually, we can remove
+the experimental project when migrations are completed.
+
+### Tekton Enhancement Proposals
+
+#### TEP-0023: Implicit Parameters
+
+We may explore supporting implicit mapping of `Parameters` in the `Matrix` in the future.
+This work is out of scope for this TEP. Note that implicit `Parameters` feature is still
+gated behind the `alpha` feature flag - we'll revisit when it's promoted to the Beta API.
+
+Read more in [TEP-0023: Implicit Parameters][tep-0023].
+
+#### TEP-0044: Data Locality and Pod Overhead in Pipelines
+
+We can support fanning out `PipelineTasks` running in one `Pod` when the full set of
+`Parameters`, hence `TaskRuns` and `Runs`, is known at the start of execution (i.e. no
+`Results` the `Matrix`). We need to figure out how to support dynamically fanned out
+`PipelineTasks` when if a `Pipeline` is executed in a `Pod` (i.e. using `Results` in the
+`Matrix`). We will revisit this if we choose to solve the data locality and pod overhead
+problems through `Pipeline` in a `Pod`.
+
+Read more in [TEP-0044: Data Locality and Pod Overhead in Pipelines][tep-0044].
+
+#### TEP-0056: Pipelines in Pipelines
+
+Using `Pipelines` in `Pipelines` in combination with `Matrix` provides fanning out support
+at `Pipeline` level. Directly supporting `Matrix` at the `Pipeline` level is an option we
+can pursue later.
+
+Read more in [TEP-0056: Pipelines in Pipelines][tep-0056].
+
+#### TEP-0075: Object Parameters and Results
+
+The structured Parameters and Results will be useful as providing inputs and producing
+outputs in fanned out `PipelineTasks` using `Matrix`. This is discussed further in the
+[design details](#design) above.
+
+Read more in [TEP-0075: Object Parameters and Results][tep-0075].
+
+#### TEP-0076: Array Results
+
+The structured Parameters and Results will be useful as providing inputs and producing
+outputs in fanned out `PipelineTasks` using `Matrix`. This is discussed further in the
+[design details](#design) above.
+
+Read more in [TEP-0076: Array Results][tep-0075].
+
+#### TEP-0079: Tekton Catalog Support Tiers
+
+Supporting fanning out `PipelineTasks` through `Matrix` would make it easy to provide the
+testing infrastructure needed for the Tekton Catalog that dogfoods Tekton.
+
+Read more in [TEP-0079: Tekton Catalog Support Tiers][tep-0079].
+
+#### TEP-0096: Pipelines V1 API
+
+As mentioned in the [motivation](#motivation) section above, the use cases we aim to cover
+in the [Tekton Pipelines V1][v1] release includes:
+
+> "A `matrix` build pipeline (build, test, … with some different env’ variables — using CustomResource)".
+
+This proposal makes progress towards solving for that use case, and while it may not be
+available in V1 initially, we hope to add it behind the `alpha` flag soon after. We will
+revisit this at that time after gathering initial feedback from users.
+
+Read more in [TEP-0096: Pipelines V1 API][tep-0096].
+
+## Alternatives
+
+### API Change: Boolean in Parameter Specification
+
+Add `InMatrix` field in the `Parameter` specification. It defaults to `false`, and 
+can be set to `true` in `Parameters` of type `Array`.
+
+```go
+type Param struct {
+	Name        string        `json:"name"`
+	Value       ArrayOrString `json:"value"`
+	
+	// InMatrix declares whether this Parameter should be in the Matrix.
+	// +optional 
+	InMatrix    bool          `json:"inMatrix,omitempty"`
+}
+```
+
+The [*kaniko* `Pipeline` example](#motivation) above would be solved as such:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pipeline
+spec:
+  params:
+  - name: images
+    type: array
+  tasks:
+  ...
+  - name: kaniko-build
+    taskRef:
+      name: kaniko
+    params:
+    - name: IMAGE
+      value: $(params.images)
+      inMatrix: true
+    ...
+```
+
+However, this approach has the following disadvantages:
+* Complexity: this approach modifies the `Parameter` specification to support a 
+  feature needed in `PipelineTask` level only, while it's also used at other 
+  levels such as `PipelineRun`.
+* Verbosity: the `inMatrix` boolean has to be added for each `Parameter` that's
+  used to fan out, while the [proposal](#proposal) above would add one line only.
+* Readability: the `Parameters` used to fan out will be mixed up with those that
+  are not, while the [proposal](#proposal) above groups them together.
+* Extensibility: the [Kubernetes API conventions][k8s-api-primitives] warn against
+  using booleans as they limit future expansions. 
+
+### API Change: Array of Parameter Names in PipelineTask Specification
+
+Add `matrix` field in the `PipelineTask` specification, which is used to
+declare the names of `Parameters` used to fan out the `PipelineTask`. Those
+`Parameters` themselves are declared in the `params` field.
+
+```go
+type PipelineTask struct {
+	Name string `json:"name,omitempty"`
+	TaskRef *TaskRef `json:"taskRef,omitempty"`
+	TaskSpec *EmbeddedTask `json:"taskSpec,omitempty"`
+	Params []Param `json:"params,omitempty"`
+	Matrix []string `json:"matrix,omitempty"`
+	...
+}
+```
+
+The [*kaniko* `Pipeline` example](#motivation) above would be solved as such:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pipeline
+spec:
+  params:
+  - name: images
+    type: array
+  tasks:
+  ...
+  - name: kaniko-build
+    taskRef:
+      name: kaniko
+    params:
+    - name: IMAGE
+      value: $(params.images)
+    matrix:
+    - IMAGE
+    ...
+```
+
+However, this approach has the following disadvantages:
+* Verbosity: there is a ton of repetition, with the name of each `Parameter`
+  that's used to fan out written twice, while the [proposal](#proposal) above 
+  would only add one line in general.
+* Flexibility: the duplication make it error-prone to modify the `Pipeline`
+  specification, making it harder to make changes.
+
 ## References
 
 - [Task Loops Experimental Project][task-loops]
@@ -603,10 +1594,28 @@ Read more in the [documentation][ansible].
   - [#2050: `Task` Looping inside `Pipelines`][issue-2050]
   - [#4097: List of `Results` of a `Task`][issue-4097]
   - [#1922: Conditional build of subproject within a monorepo][issue-1922]
+* Tekton Enhancement Proposals:
+  * [TEP-0023: Implicit Parameters][tep-0023]
+  * [TEP-0044: Data Locality and Pod Overhead in Pipelines][tep-0044]
+  * [TEP-0056: Pipelines in Pipelines][tep-0056]
+  * [TEP-0075:Object Parameter and Results][tep-0075]
+  * [TEP-0076: Array Results and Indexing][tep-0076]
+  * [TEP-0079: Tekton Catalog Support Tiers][tep-0079]
+  * [TEP-0096: Pipelines V1 API][tep-0096]
+  * [TEP-0100: Embedded TaskRuns and Runs Status in PipelineRuns][tep-0100]
 
+[tep-0023]: https://github.com/tektoncd/community/blob/main/teps/0023-implicit-mapping.md
+[tep-0044]: https://github.com/tektoncd/community/blob/main/teps/0044-data-locality-and-pod-overhead-in-pipelines.md
+[tep-0056]: https://github.com/tektoncd/community/blob/main/teps/0056-pipelines-in-pipelines.md
+[tep-0075]: https://github.com/tektoncd/community/pull/479
+[tep-0076]: https://github.com/tektoncd/community/pull/477
+[tep-0079]: https://github.com/tektoncd/community/blob/main/teps/0079-tekton-catalog-support-tiers.md
+[tep-0096]: https://github.com/tektoncd/community/blob/main/teps/0096-pipelines-v1-api.md
+[tep-0100]: https://github.com/tektoncd/community/blob/main/teps/0100-embedded-taskruns-and-runs-status-in-pipelineruns.md
 [task-loops]: https://github.com/tektoncd/experimental/tree/main/task-loops 
 [issue-2050]: https://github.com/tektoncd/pipeline/issues/2050
-[issue-4097]: https://github.com/tektoncd/pipeline/issues/4097 
+[issue-4097]: https://github.com/tektoncd/pipeline/issues/4097
+[issue-1922]: https://github.com/tektoncd/pipeline/issues/1922 
 [tasks-docs]: https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md
 [custom-tasks-docs]: https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#using-custom-tasks
 [kaniko-example-1]: https://github.com/tektoncd/pipeline/issues/2050#issuecomment-625423085
@@ -625,3 +1634,20 @@ Read more in the [documentation][ansible].
 [issue-804]: https://github.com/tektoncd/experimental/issues/804
 [issue-2591]: https://github.com/tektoncd/pipeline/issues/2591
 [v1]: https://github.com/tektoncd/pipeline/issues/3548
+[json]: https://json-schema.org/understanding-json-schema/reference/object.html
+[simplicity]: https://github.com/tektoncd/community/blob/main/design-principles.md#simplicity
+[k8s-api]: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#api-conventions
+[k8s-api-objects]: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#lists-of-named-subobjects-preferred-over-maps
+[k8s-api-primitives]: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#primitive-types
+[api-spec]: https://github.com/tektoncd/pipeline/blob/main/docs/api-spec.md#modifying-this-specification
+[gcloud-task]: https://github.com/tektoncd/catalog/tree/main/task/gcloud/0.1
+[execution-status]: https://github.com/tektoncd/pipeline/blob/0b50897ad4a24c30ab79b5ce2a95947a5b7dc885/docs/pipelines.md#using-execution-status-of-pipelinetask
+[aggregate-status]: https://github.com/tektoncd/pipeline/blob/0b50897ad4a24c30ab79b5ce2a95947a5b7dc885/docs/pipelines.md#using-aggregate-execution-status-of-all-tasks
+[variables]: https://github.com/tektoncd/pipeline/blob/0b50897ad4a24c30ab79b5ce2a95947a5b7dc885/docs/variables.md
+[config-defaults]: https://github.com/tektoncd/pipeline/blob/0b50897ad4a24c30ab79b5ce2a95947a5b7dc885/config/config-defaults.yaml
+[custom-install]: https://github.com/tektoncd/pipeline/blob/0b50897ad4a24c30ab79b5ce2a95947a5b7dc885/docs/install.md#customizing-basic-execution-parameters
+[workspace-in-pipelines]: https://github.com/tektoncd/pipeline/blob/0b50897ad4a24c30ab79b5ce2a95947a5b7dc885/docs/workspaces.md
+[git-clone]: https://github.com/tektoncd/catalog/tree/main/task/git-clone/0.5
+[when]: https://github.com/tektoncd/pipeline/blob/6cb0f4ccfce095495ca2f0aa20e5db8a791a1afe/docs/pipelines.md#guard-task-execution-using-when-expressions
+[retries]: https://github.com/tektoncd/pipeline/blob/6cb0f4ccfce095495ca2f0aa20e5db8a791a1afe/docs/pipelines.md#using-the-retries-parameter
+[timeouts]: https://github.com/tektoncd/pipeline/blob/6cb0f4ccfce095495ca2f0aa20e5db8a791a1afe/docs/pipelines.md#configuring-the-failure-timeout

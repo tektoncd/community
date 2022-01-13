@@ -215,6 +215,7 @@ orgs:
         - dlorenc
         - dibyom
         - jerop
+        - sbwsg
         privacy: closed
         repos:
           pipeline: write

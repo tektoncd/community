@@ -202,6 +202,65 @@ specs.
 To avoid issues of additional webhook latency or reliability, we will not
 support remote TaskRefs or PipelineRefs.
 
+In addition to `PipelineRuns`, a `Pipeline's` `params` will also be
+implicitly passed to embedded TaskSpecs. Below is an example Pipeline
+with the implicit param transform applied to it underneath:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pipeline-with-taskspec
+spec:
+  params:
+    - name: MESSAGE
+      type: string
+  tasks:
+    - name: echo-message
+      taskSpec:
+        steps:
+          - name: echo
+            image: ubuntu
+            script: |
+              #!/usr/bin/env bash
+              echo "$(params.MESSAGE)"
+    - name: echo-message-2
+      taskRef:
+        name: echo-task
+```
+
+Here's the transformed version after the admission webhook processes it:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pipeline-with-taskspec
+spec:
+  params:
+    - name: MESSAGE
+      type: string
+  tasks:
+    - name: echo-message
+      taskSpec:
+        params:
+          - name: MESSAGE
+            type: string
+        steps:
+          - name: echo
+            image: ubuntu
+            script: |
+              #!/usr/bin/env bash
+              echo "$(params.MESSAGE)"
+    - name: echo-message-2
+      taskRef:
+        name: echo-task
+```
+
+Notice above that the PipelineTask with a `taskRef` does not receive
+the implicit param mapping. The params in the referenced `Task` may
+include default values that the Pipeline is intentionally leveraging.
+
 ### Caveats
 
 #### Naming / type conflicts

@@ -230,6 +230,7 @@ This is the complete list of Tekton teps:
 |[TEP-0084](0084-endtoend-provenance-collection.md) | end-to-end provenance collection | proposed | 2021-09-16 |
 |[TEP-0085](0085-per-namespace-controller-configuration.md) | Per-Namespace Controller Configuration | proposed | 2021-10-14 |
 |[TEP-0088](0088-result-summaries.md) | Tekton Results - Record Summaries | proposed | 2021-10-01 |
+|[TEP-0089](0089-nonfalsifiable-provenance-support.md) | Non-falsifiable provenance support | proposed | 2021-11-18 |
 |[TEP-0090](0090-matrix.md) | Matrix | proposed | 2021-11-08 |
 |[TEP-0094](0094-configuring-resources-at-runtime.md) | Configuring Resources at Runtime | proposed | 2021-11-08 |
 |[TEP-0096](0096-pipelines-v1-api.md) | Pipelines V1 API | proposed | 2021-12-13 |

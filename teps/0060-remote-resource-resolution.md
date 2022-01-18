@@ -438,7 +438,7 @@ containing a Task _after_ Task verification occurred.
 _Possible Mitigation_: Tekton already has solutions undergoing design to address
 this problem on two fronts, and so it would make sense to integrate directly
 with one of them:
-1. [TEP-0089 SPIRE support](https://github.com/tektoncd/community/pull/529)
+1. [TEP-0089 Non-falsifiable provenance support](https://github.com/tektoncd/community/pull/529)
 where Tekton's objects (i.e. a `ResourceRequest`) can be signed by authorized
 workloads (i.e. a `ResourceRequest` Reconciler).
 2. The solution under design in TEP-0086 ([available to read

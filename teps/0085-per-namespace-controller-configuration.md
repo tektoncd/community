@@ -22,6 +22,7 @@ authors:
     - [Flexible Configuration](#flexible-configuration-1)
     - [Thorough Testing](#thorough-testing-1)
   - [Requirements](#requirements)
+- [Proposal](#proposal)
 - [Open Questions](#open-questions)
 - [References](#references)
 <!-- /toc -->
@@ -78,6 +79,42 @@ As a contributor, I need to test my behavioral changes to ensure that they work 
 
 - Operator can allow for configuration to be defined on per-namespace basis
 - User can specify and use a customized configuration for a given namespace
+
+## Proposal
+
+To enable the `tekton-pipelines-controller`'s feature flags configuration per namespace, we propose adding a new `configmap` with the same name `feature-flags` in each of the candidate namespaces, which contains the properties to override for all the `Pipelineruns` created in this specific namespace.
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feature-flags
+data:
+  disable-home-env-overwrite: "false"
+  scope-when-expressions-to-task: "true"
+```
+
+The candidate namespaces are included in a new environment variable `CONFIG_FEATURE_FLAGS_CUSTOMIZATION_NAMESPACES`.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tekton-pipelines-controller
+  namespace: tekton-pipelines
+spec:
+  template:
+    spec:
+      containers:
+      - name: tekton-pipelines-controller
+        image: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/controller
+        env:
+        - name: CONFIG_FEATURE_FLAGS_CUSTOMIZATION_NAMESPACES
+          value: foo,bar
+        ...
+```
+
+This proposal is implemented in [Tekton Pipelines Pull Request #4499](https://github.com/tektoncd/pipeline/pull/4499)
 
 ## Open Questions
 

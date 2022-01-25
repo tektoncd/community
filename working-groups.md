@@ -39,6 +39,7 @@ The current working groups are:
 - [Chains](#chains)
 - [Workflows](#workflows)
 - [Pipeline](#pipeline)
+- [Governing board / Community](#governing-board--community)
 
 ## General
 

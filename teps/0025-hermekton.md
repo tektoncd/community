@@ -55,9 +55,9 @@ I would like to add this support to Tekton Pipelines, and use this feature (and 
 
 ### Goals
 
-* Allow Task authors to indicate that their Task can/should be run hermetically
+* Allow Task authors to designate which parts of a Task can/should be run hermetically
 * Allow TaskRun authors to designate particular runs to run hermetically
-* Allow Pipeline authors to designate that parts or all of a pipeline can/should be run hermetically
+* Allow Pipeline authors to designate which parts of a Pipeline can/should be run hermetically
 * Allow PipelineRun authors to designate particular runs to run hermetically
 * Allow post-build auditing to show clearly which *Runs were run hermetically
 
@@ -91,6 +91,7 @@ See [this rationale](https://github.com/kubernetes/community/blob/master/contrib
 
 | Object | Field | Description |
 | --- | --- | --- |
+| Task |  spec.steps[*].ExecutionMode | Whether or not Steps of this Task should happen hermetically. This can be overridden on the TaskRun |
 | Task |  spec.ExecutionMode | Whether or not TaskRuns of this Task should happen hermetically. This can be overridden on the TaskRun |
 | TaskRun | spec.ExecutionMode | Whether or not this TaskRun will be run hermetically. This can be used to override the value on the Task |
 | Pipeline | spec.ExecutionMode |Whether or not the **entire** pipeline should run hermetically. This can be overridden on the PipelineRun |
@@ -121,7 +122,7 @@ Hermetic builds should not be used to run otherwise untrusted code.
 The privileges and capabilities used in your TaskRun containers will also be present in your hermetic builds.
 Container escapes (and then network access) will always be possible.
 
-Hermetic builds should only be used to help detect and prevent accidental network access, and as an extra layer of defense against insider attacks. 
+Hermetic builds should only be used to help detect and prevent accidental network access, and as an extra layer of defense against insider attacks.
 These need not stop a determined adversary.
 
 ### Risks and Mitigations
@@ -149,7 +150,7 @@ See Alternatives Considered for a discussion of alternative approaches.
 The Tekton Pipelines entrypoint binary will be extended to support executing hermetic builds.
 This will consist of executing the user-controlled container entrypoint in a new Linux network namespace that is not configured.
 
-This requires passing some flags to `cmd.SysProcAttr.CloneFlags` before calling cmd.Run. 
+This requires passing some flags to `cmd.SysProcAttr.CloneFlags` before calling cmd.Run.
 We will pass:
 
 ```
@@ -158,10 +159,10 @@ syscall.CLONE_NEWNET | syscall.CLONE_NEWUSER | syscall.CLONE_NEWNS | syscall.CLO
 
 `CLONE_NEWNET` is the main flag we care about.
 This gives us a new, empty network namespace that will not work.
-To use this flag inside a Kubernetes container, we must also create a new user namespace using the other flags (unless the container runs with `privileged: True`). 
+To use this flag inside a Kubernetes container, we must also create a new user namespace using the other flags (unless the container runs with `privileged: True`).
 
 After creating the user namespace, we must also map in the external users and groups.
-That can be done with the `cmd.SysProcAttr.UidMappings` and `cmd.SysProcAttr.GidMappings` fields, respectively. 
+That can be done with the `cmd.SysProcAttr.UidMappings` and `cmd.SysProcAttr.GidMappings` fields, respectively.
 
 The net result is a process running in a namespace with an identical filesystem, the same users and groups, and no networking.
 
@@ -206,6 +207,25 @@ Entire Tasks could then be run hermetically using Pod-level NetworkPolicies or a
 
 This approach requires the creation of another DSL, and would make it more challenging/difficult to integrate with
 the Tekton Catalog.
+
+
+### Pre/Post-Steps
+
+An alternative to step-level configuration is to support running steps before
+and after the core `steps:` that execute outside of the network jail.
+
+One of the main criticisms of this was how much it reshapes the API, mainly for
+Hermekton (today).
+
+
+### Network-Jail "fences"
+
+An alternative to step-level configuration is to support "fence" steps that
+explicitly enter or exit the network jail.
+
+This proposal was sort of a trick to encode special semantics into steps by
+establishing a sort of special handshake.  This "non-API change" was still an
+API change, and felt a bit too magical.
 
 
 ## Infrastructure Needed (optional)

@@ -1,14 +1,14 @@
 ---
 status: proposed
-title: Decouple Task Composition from Scheduling
+title: Data Locality and Pod Overhead in Pipelines
 creation-date: '2021-01-22'
-last-updated: '2021-12-07'
+last-updated: '2022-01-26'
 authors:
 - '@bobcatfish'
 - '@lbernick'
 ---
 
-# TEP-0044: Decouple Task Composition from Scheduling
+# TEP-0044: Data Locality and Pod Overhead in Pipelines
 
 <!-- toc -->
 - [Summary](#summary)
@@ -26,14 +26,12 @@ authors:
 ## Summary
 
 As stated in Tekton's [reusability design principles](https://github.com/tektoncd/community/blob/main/design-principles.md#reusability),
-Pipelines and Tasks are meant to capture authoring-time concerns, and to be reusable in a variety of execution contexts.
-PipelineRuns and TaskRuns should be able to control execution without the need to modify the corresponding Pipeline or Task.
-
+Pipelines and Tasks should be reusable in a variety of execution contexts.
 However, because each TaskRun is executed in a separate pod, Task and Pipeline authors indirectly control the number of pods used in execution.
 This introduces both the overhead of extra pods and friction associated with moving data between Tasks.
 
 This TEP lists the pain points associated with running each TaskRun in its own pod and describes the current features that mitigate these pain points.
-It explores several options for decoupling Task composition and TaskRun scheduling but does not yet propose a preferred solution.
+It explores several additional execution options for Pipelines but does not yet propose a preferred solution.
 
 ## Motivation
 
@@ -57,8 +55,8 @@ This could be storage within a cluster, like a PVC, configmap, or secret, or rem
 
 Workspaces make it easier to "shuttle" data through a Pipeline by abstracting details of data storage out of Pipelines and Tasks.
 They currently support only forms of storage within a cluster (PVCs, configmaps, secrets, and emptydir).
-They're an important puzzle piece in decoupling Task composition and scheduling, but they don't address the underlying problem
-that some form of external data storage is needed to pass artifacts between TaskRuns.
+Abstracting data storage out of Pipeline and Task definitions helps make them more reusable, but doesn't address
+the underlying problem that some form of external data storage is needed to pass artifacts between TaskRuns.
 
 The need for data storage locations external to pods introduces friction in a few different ways.
 First, moving data between storage locations can incur monetary cost and latency.
@@ -157,6 +155,8 @@ See [TEP-0074](./0074-deprecate-pipelineresources.md) for the deprecation plan f
     - This requirement is being included because we could choose a solution that doesn't
       address the above use case; for example in PipelineResources, you can have a
       storage "output" but if the steps fail, the "output" pipelineresource will not run
+- Any configuration for the execution of a Pipeline must be modifiable at runtime.
+  - We may explore adding authoring time configuration in the future after gathering feedback on runtime configuration.
 
 ## Design details
 

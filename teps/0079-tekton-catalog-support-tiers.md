@@ -8,6 +8,7 @@ authors:
 - '@jerop'
 - '@vdemeester'
 - '@vinamra28'
+- '@chmouel'
 see-also:
 - TEP-0003
 - TEP-0060
@@ -351,21 +352,50 @@ it may be difficult to identify which Tekton Catalog it came from
 because they won't have the labels added by the CLI.
 
 To make it easy for users to identify the source Catalog, we propose 
-adding a `tekton.dev/catalog` annotation to the resource yaml file, 
-as such:
+adding two annotations:
+* `tekton.dev/catalog` with the three part domain unique identifier
+* `tekton.dev/catalog-url` with the repository path of the Catalog
 
 ```yaml
 # resource from the community catalog
 annotations:
   tekton.dev/pipelines.minVersion: "0.17.0"
   tekton.dev/tags: golang-lint
-  tekton.dev/catalog: community
+  tekton.dev/catalog: dev.tekton.catalog-community
+  tekton.dev/catalog-url: https://github.com/tektoncd/catalog
 
 # resource from the official catalog
 annotations:
   tekton.dev/pipelines.minVersion: "0.30.0"
   tekton.dev/tags: golang-fuzz
-  tekton.dev/catalog: official
+  tekton.dev/catalog: dev.tekton.catalog-official
+  tekton.dev/catalog-url: https://github.com/tektoncd/catalog-official
+```
+
+The rationale for adding the three dot domain is:
+* URL can change and resource can be moved elsewhere - if we want to know the
+  provenance of a Catalog resource, the URL is not something we can rely on.
+* Domain identifier allow us to easily know which provider is providing a given
+  Catalog. A company may want to introduce their own Catalogs for their users and
+  having a domain id make sure there would be no conflicts with official resources.
+* Tools can always rely on the domain id to remain the same.
+
+Example usage of the annotations in Catalogs belonging to organizations:
+
+```yaml
+# resource from the openshift catalog
+annotations:
+  tekton.dev/pipelines.minVersion: "0.17.0"
+  tekton.dev/tags: openshift-build
+  tekton.dev/catalog: com.redhat.openshift
+  tekton.dev/catalog-url: https://github.com/openshift/catalog
+
+# resource from the gke catalog
+annotations:
+  tekton.dev/pipelines.minVersion: "0.30.0"
+  tekton.dev/tags: gke-build
+  tekton.dev/catalog: com.google.gke
+  tekton.dev/catalog-url: https://github.com/gke/catalog
 ```
 
 #### Community and Official Catalogs in Tekton Bundles

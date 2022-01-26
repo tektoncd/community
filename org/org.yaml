@@ -724,3 +724,17 @@ orgs:
         members:
         - afrittoli
         privacy: closed
+      resolution.maintainers:
+        description: The resolution maintainers
+        maintainers:
+        - abayer
+        - afrittoli
+        - bobcatfish
+        - dibyom
+        - vdemeester
+        members:
+        - sbwsg
+        - dibyom
+        privacy: closed
+        repos:
+          resolution: write

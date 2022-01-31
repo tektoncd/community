@@ -402,6 +402,7 @@ orgs:
         - withlin
         - afrittoli
         - pierretasci
+        - lbernick
         privacy: closed
         repos:
           pipeline: read

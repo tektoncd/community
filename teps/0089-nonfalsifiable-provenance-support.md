@@ -5,6 +5,8 @@ creation-date: '2021-10-04'
 last-updated: '2022-01-18'
 authors:
 - '@priyawadhwa'
+- '@lumjjb'
+- '@pxp928'
 ---
 
 # TEP-0089: Non-falsifiable provenance support
@@ -23,6 +25,7 @@ tags, and then generate with `hack/update-toc.sh`.
 - [Summary](#summary)
 - [Background](#background)
 - [SPIRE Concepts](#spire-concepts)
+  - [Using SPIRE for provenance](#using-spire-for-provenance)
   - [Installing SPIRE](#installing-spire)
 - [Proposed Solution](#proposed-solution)
   - [1. Tekton Chains has no way to verify that the TaskRun it received wasn't modified by anybody other than Tekton, during or after execution](#1-tekton-chains-has-no-way-to-verify-that-the-taskrun-it-received-wasnt-modified-by-anybody-other-than-tekton-during-or-after-execution)
@@ -34,8 +37,9 @@ tags, and then generate with `hack/update-toc.sh`.
 - [Proposal](#proposal)
 - [Implementation Plan](#implementation-plan)
   - [Risks and Mitigations](#risks-and-mitigations)
-- [Design Details](#design-details)
+- [Design Details - Signed Results](#design-details---signed-results)
   - [Enabling SPIRE on the Entrypointer Image](#enabling-spire-on-the-entrypointer-image)
+  - [Signing Results](#signing-results)
   - [Verification in Chains](#verification-in-chains)
 - [Test Plan](#test-plan)
 - [Alternatives](#alternatives)
@@ -59,26 +63,41 @@ There are a couple issues with this:
 2. Tekton Pipelines can't verify that the results it reads weren't modified
 
 This is where SPIRE comes in!
-SPIRE can be used to request signatures and certificates (SVIDs) for a given workload.
-This workload can be anything, including a Result, a Pod spec, or an entire TaskRun yaml.
+SPIRE can be used to request JWTs and certificates (SVIDs) for a given workload (pod for kubernetes).
 
 We're going to use SPIRE to mitigate both of the issues mentioned above.
 
 ## SPIRE Concepts
 Before discussing how SPIRE is going to fix these issues, here's a very basic overview of how it works:
 
-Pods running in the cluster can interact with SPIRE.
-A pod will send some `payload` to SPIRE for signing.
-The SPIRE socket will confirm that the request came from an approved workload (in our case, the Tekton controller or Pods created by the controller) and then it will sign the `payload`.
-SPIRE will return:
-1. The `signature` over the `payload`
-1. A SPIFFE Verifiable Identity Document, or [SVID](https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/#spiffe-verifiable-identity-document-svid), an X509 certificate containing the public key used to verify the `signature` against the `payload`
+A SPIRE deployment relies on two key components, the SPIRE server, and its associated SPIRE agents.
+- The SPIRE server serves as a central management system for SPIRE, responsible for interfacing with any key material, authorities, and databases. It is also responsible for attesting the agents that are part of its trust domain.
+- The SPIRE server acts as local endpoints for each compute node that is part of the SPIRE deployment.
 
-SPIRE can be used to request certificates (SVIDs) for a given k8s workload and can use these certificates to create signatures for the data we need to verify, i.e. an entire TaskRun yaml and results. For our use case, both the Tekton entrypointer image (running in Pods) and the Tekton Controller will interact with SPIRE.
+Pods running in a cluster can interact with SPIRE through SPIFFE api via the local SPIRE agent socket.
+
+Getting pod identity
+- A pod can request for an identity by talking to the local agent socket. The SPIRE agent attests the identity of the pod,
+and request for an identity for the pod to the SPIRE server.
+- The workload then receives one or more SPIFFE Verifiable Identity Document, or [SVID](https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/#spiffe-verifiable-identity-document-svid), an X509 certificate together with the associated private key for the pod's identity. The x509 certificate is signed by the SPIRE server's certificate authority.
+
+Verifying pod identity
+- A pod can request for an trust bundle of a SPIRE server, which will include the public key to validate the pod's certificate.
+- This trust bundle can be used to verify the SVID of a pod
+
+Note: Alternatively, using the JWT SPIFFE endpoint, one can request a JWT with a specified audience field. Although possible, it may not be idiomatic to use the audience for payload signing purposes. However, there is an open [issue](https://github.com/spiffe/spire/issues/1848) discussing adding arbitrary claims as well.
+
+Identity registration is an important aspect of getting SPIRE identities. This defines the subject name of identities that are minted to pods, as well as the attestation requirements of the workloads. This can be done specific to usecase, or there is a kubernetes workload registrar that creates identity based on the fully qualified canonical pod name.
+
+### Using SPIRE for provenance
+
+SPIRE can be used for provenance using the private key provided from the workload's SVID and signing a payload. The signature will be verifiable by the x509 certificate of the SVID together with the trust bundle of the SPIRE deployment. The verification would ensure that the payload's provenance comes from the Tekton entrypointer image (running in Pods) or the Tekton Controller.
 
 ### Installing SPIRE
-SPIRE runs as a Unix domain socket on the k8s node.
-We can use [spiffe-csi](https://github.com/spiffe/spiffe-csi) to mount the SPIRE socket into Pods as a `csi` type Volume so that we don't have to rely on the `hostPath` volume.
+- SPIRE server runs as a deployment in kubernetes (for simplicity, we'll assume a single cluster SPIRE deployment).
+- SPIRE agents run as a daemonset in the kubernetes cluster, listening on a Unix domain socket on each k8s node.
+- SPIRE kubernetes workload registrar would be optionally installed to provide automatic registration of SPIRE identities. This is optional and could be handled by the Tekton controller as well.
+- We can use [spiffe-csi](https://github.com/spiffe/spiffe-csi) to mount the SPIRE socket into Pods as a `csi` type Volume so that we don't have to rely on the `hostPath` volume.
 Users will be responsible for installing this themselves.
 When creating Pods, we would automatically mount this volume in as appropriate.
 
@@ -114,8 +133,8 @@ Roughly, this will look something like this:
 
 Each time the TaskRun is modified,
 * Controller verifies the TaskRun hasn't been modified
-* Controller requests a new SPIRE SVID and signature over the new modified TaskRun
-* Controller stores the new SVID and signature on the TaskRun as an annotation
+* Controller requests a new SPIRE SVID signs the new modified TaskRun
+* Controller stores the new SVID x509 and signature on the TaskRun as an annotation
 
 Right now, the design details around this are a little fuzzy!
 The plan is to first implement signed Results, and then if this design no longer seems like the correct fit for signed TaskRuns then it will be revisited in this TEP :)

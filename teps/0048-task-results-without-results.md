@@ -3,8 +3,9 @@ title: Task Results without Results
 authors:
   - "@pritidesai"
   - "@jerop"
+  - "@vinamra28"
 creation-date: 2020-10-20
-last-updated: 2021-06-11
+last-updated: 2022-02-17
 status: proposed
 ---
 
@@ -17,8 +18,9 @@ status: proposed
   - [Non-Goals](#non-goals)
 - [Requirements](#requirements)
   - [Use Cases](#use-cases)
-  - [Consuming task results from the conditional tasks](#consuming-task-results-from-the-conditional-tasks)
-  - [<code>Pipeline Results</code> from the conditional tasks](#-from-the-conditional-tasks)
+      - [Consuming task results from the conditional tasks](#consuming-task-results-from-the-conditional-tasks)
+      - [<code>Pipeline Results</code> from the conditional tasks](#-from-the-conditional-tasks)
+      - [Task claiming to produce Results fails if it doesn't produces](#task-claiming-to-produce-results-fails-if-it-doesnt-produces)
 - [References](#references)
 <!-- /toc -->
 
@@ -173,7 +175,7 @@ Producing the task result in case of a failed task is out of the scope of this T
 
 ### Use Cases
 
-### Consuming task results from the conditional tasks
+#### Consuming task results from the conditional tasks
 
 `deploy-image` requires a default image name to deploy on a cluster when `build-image` is skipped because the
 PR had no changes to a docker file.
@@ -229,7 +231,7 @@ spec:
         name: update-list-of-builds
 ```
 
-### `Pipeline Results` from the conditional tasks
+#### `Pipeline Results` from the conditional tasks
 
 Produce the name of the image as the pipeline result depending on how the image was built.
 
@@ -283,6 +285,146 @@ spec:
       value: $(tasks.propagate-image-name.results.image)
 ```
 
+#### Task claiming to produce `Results` fails if it doesn't produces
+
+Today, a `Task` can declare a `Result` but not produce it and it's
+execution will still be successful whereas if a subsequent `Task` in
+a `Pipeline` attempts to use that `Result` it will fail. This behaviour
+can be confusing to the users as the `Task` which didn't produced
+the `Result` passed and the follow-up `Task` fails. Moreover, the user
+of the `Task` will loose faith in it as it failed to produce what it's
+claiming.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: check-name-matches
+  annotations:
+    description: |
+      Returns "passed" in the "check" result if the name of the CI Job
+      (GitHub Check) matches the regular expression specified. This is used
+      for the "/test" command in GitHub. The regular expression cannot contain spaces.
+spec:
+  params:
+    - name: gitHubCommand
+      description: The whole comment left on GitHub
+    - name: checkName
+      description: The name of the check
+  results:
+    - name: check
+      description: The result of the check, "passed" or "failed"
+  steps:
+    - name: check-name
+      image: alpine
+      script: |
+        #!/bin/sh
+        set -ex
+        set -o pipefail
+
+        # If no command was specified, the check is successful
+        [[ "$(params.gitHubCommand)" == "" ]] && exit 0
+
+        # If a command was specified, the regex should match the checkName
+        REGEX="$(echo $(params.gitHubCommand) | awk '{ print $2}')"
+        [[ "$REGEX" == "" ]] && REGEX='.*'
+        (echo "$(params.checkName)" | grep -E "$REGEX") \
+            && printf "passed" > $(results.check.path) \
+            || printf "failed" > $(results.check.path)
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: catlin-linter
+spec:
+  workspaces:
+    - name: source
+      description: Workspace where the git repo is prepared for linting.
+  params:
+    - name: gitCloneDepth
+      description: Number of commits in the change + 1
+    - name: gitHubCommand
+      description: The command that was used to trigger testing
+    - name: checkName
+      description: The name of the GitHub check that this pipeline is used for
+    - name: pullRequestUrl
+      description: The HTML URL for the pull request
+    - name: gitRepository
+      description: The git repository that hosts context and Dockerfile
+    - name: pullRequestBaseRef
+      description: The pull request base branch
+    - name: pullRequestNumber
+      description: The pullRequestNumber
+  tasks:
+    - name: check-name-match
+      taskRef:
+        name: check-name-matches
+      params:
+        - name: gitHubCommand
+          value: $(params.gitHubCommand)
+        - name: checkName
+          value: $(params.checkName)
+    - name: clone-repo
+      when:
+        - input: $(tasks.check-name-match.results.check)
+          operator: in
+          values: ["passed"]
+      taskRef:
+        name: git-batch-merge
+        bundle: gcr.io/tekton-releases/catalog/upstream/git-batch-merge:0.2
+      workspaces:
+        - name: output
+          workspace: source
+      params:
+        - name: url
+          value: $(params.gitRepository)
+        - name: mode
+          value: "merge"
+        - name: revision
+          value: $(params.pullRequestBaseRef)
+        - name: refspec
+          value: refs/heads/$(params.pullRequestBaseRef):refs/heads/$(params.pullRequestBaseRef)
+        - name: batchedRefs
+          value: "refs/pull/$(params.pullRequestNumber)/head"
+    - name: lint-catalog
+      runAfter:
+        - "clone-repo"
+      taskRef:
+        name: catlin-lint
+      workspaces:
+        - name: source
+          workspace: source
+      params:
+        - name: gitCloneDepth
+          value: $(params.gitCloneDepth)
+  finally:
+    - name: post-comment
+      when:
+        - input: $(tasks.check-name-match.results.check)
+          operator: in
+          values: ["passed"]
+      taskRef:
+        name: github-add-comment
+        bundle: gcr.io/tekton-releases/catalog/upstream/github-add-comment:0.3
+      params:
+        - name: COMMENT_OR_FILE
+          value: "catlin.txt"
+        - name: GITHUB_TOKEN_SECRET_NAME
+          value: bot-token-github
+        - name: GITHUB_TOKEN_SECRET_KEY
+          value: bot-token
+        - name: REQUEST_URL
+          value: $(params.pullRequestUrl)
+      workspaces:
+        - name: comment-file
+          workspace: source
+```
+
+The above `Pipeline` is a part of `Catlin` CI with a bit modifications
+done in `check-name-matches` `Task`. The above `Pipeline` should run
+with the git events such as `when a pull request is created`, etc but it
+doesn't runs. Having default results defined in `check-name-matches` Task
+will fix the `Pipeline`.
 
 ## References
 

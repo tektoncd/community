@@ -314,12 +314,12 @@ This is the working group for [`tektoncd/chains`](https://github.com/tektoncd/ch
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/1UVPSCDyNO-TzEFSv8jrqrEOF_FmV8NFuXncFm1gwmeY/edit) |
 | Slack Channels             | [#chains](https://tektoncd.slack.com/messages/chains) |
 
-| &nbsp;                                                         | Facilitators    | Company | Profile                                           |
-| -----------------------------------------------------------    | ----------      | ------- | ------------------------------------------------  |
-| <img width="30px" src="https://github.com/dlorenc.png">        | Dan Lorenc      | Google  | [dlorenc](https://github.com/dlorenc) |
-| <img width="30px" src="https://github.com/priyawadhwa.png">    | Priya Wadhwa    | Google  | [priyawadhwa](https://github.com/priyawadhwa)     |
-| <img width="30px" src="https://github.com/pritidesai.png">     | Priti Desai     | IBM     | [pritidesai](https://github.com/pritidesai) |
-| <img width="30px" src="https://github.com/bobcatfish.png">     | Christie Wilson | Google  | [bobcatfish](https://github.com/bobcatfish) |
+| &nbsp;                                                         | Facilitators    | Company    | Profile                                           |
+| -----------------------------------------------------------    | ----------      | ---------- | ------------------------------------------------  |
+| <img width="30px" src="https://github.com/priyawadhwa.png">    | Priya Wadhwa    | Chainguard | [priyawadhwa](https://github.com/priyawadhwa)     |
+| <img width="30px" src="https://github.com/pritidesai.png">     | Priti Desai     | IBM        | [pritidesai](https://github.com/pritidesai) |
+| <img width="30px" src="https://github.com/bobcatfish.png">     | Christie Wilson | Google     | [bobcatfish](https://github.com/bobcatfish) |
+| <img width="30px" src="https://github.com/wlynch.png">         | Billy Lynch     | Google     | [wlynch](https://github.com/wlynch) |
 
 ## Workflows
 

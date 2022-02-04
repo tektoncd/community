@@ -82,7 +82,7 @@ and request for an identity for the pod to the SPIRE server.
 - The workload then receives one or more SPIFFE Verifiable Identity Document, or [SVID](https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/#spiffe-verifiable-identity-document-svid), an X509 certificate together with the associated private key for the pod's identity. The x509 certificate is signed by the SPIRE server's certificate authority.
 
 Verifying pod identity
-- A pod can request for an trust bundle of a SPIRE server, which will include the public key to validate the pod's certificate.
+- A pod can request for a trust bundle of a SPIRE server, which will include the public key to validate the pod's certificate.
 - This trust bundle can be used to verify the SVID of a pod
 
 Note: Alternatively, using the JWT SPIFFE endpoint, one can request a JWT with a specified audience field. Although possible, it may not be idiomatic to use the audience for payload signing purposes. However, there is an open [issue](https://github.com/spiffe/spire/issues/1848) discussing adding arbitrary claims as well.
@@ -91,12 +91,12 @@ Identity registration is an important aspect of getting SPIRE identities. This d
 
 ### Using SPIRE for provenance
 
-SPIRE can be used for provenance using the private key provided from the workload's SVID and signing a payload. The signature will be verifiable by the x509 certificate of the SVID together with the trust bundle of the SPIRE deployment. The verification would ensure that the payload's provenance comes from the Tekton entrypointer image (running in Pods) or the Tekton Controller.
+SPIRE can be used for signing provenance using the private key provided from the workload's SVID and signing a payload. The signature will be verifiable by the x509 certificate of the SVID together with the trust bundle of the SPIRE deployment. The verification would ensure that the payload's provenance comes from the Tekton entrypointer image (running in Pods) or the Tekton Controller.
 
 ### Installing SPIRE
 - SPIRE server runs as a deployment in kubernetes (for simplicity, we'll assume a single cluster SPIRE deployment).
 - SPIRE agents run as a daemonset in the kubernetes cluster, listening on a Unix domain socket on each k8s node.
-- SPIRE kubernetes workload registrar would be optionally installed to provide automatic registration of SPIRE identities. This is optional and could be handled by the Tekton controller as well.
+- SPIRE kubernetes workload registrar would be optionally installed to provide automatic [registration](https://spiffe.io/docs/latest/deploying/registering/) of SPIRE workloads. This is optional and could be handled by the Tekton controller as well.
 - We can use [spiffe-csi](https://github.com/spiffe/spiffe-csi) to mount the SPIRE socket into Pods as a `csi` type Volume so that we don't have to rely on the `hostPath` volume.
 Users will be responsible for installing this themselves.
 When creating Pods, we would automatically mount this volume in as appropriate.
@@ -133,7 +133,7 @@ Roughly, this will look something like this:
 
 Each time the TaskRun is modified,
 * Controller verifies the TaskRun hasn't been modified
-* Controller requests a new SPIRE SVID signs the new modified TaskRun
+* Controller requests a new SPIRE SVID and then uses it to sign the new modified TaskRun
 * Controller stores the new SVID x509 and signature on the TaskRun as an annotation
 
 Right now, the design details around this are a little fuzzy!

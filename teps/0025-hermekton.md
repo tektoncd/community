@@ -30,6 +30,8 @@ status: implementable
 - [Alternatives](#alternatives)
   - [Entire Pod Sandboxing](#entire-pod-sandboxing)
   - [Don't Use Pipelines Directly](#dont-use-pipelines-directly)
+  - [Pre/Post-Steps](#prepost-steps)
+  - [Network-Jail &quot;fences&quot;](#network-jail-fences)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
 - [References (optional)](#references-optional)
@@ -80,8 +82,15 @@ Tekton Pipelines will add support for a new "ExecutionMode" field on several obj
 That type will look like:
 
 ```go
+type HermeticMode string
+
+const (
+    NetworkingOff   HermeticMode = "disabled"
+    NetworkingOn    HermeticMode = "enabled"
+)
+
 type ExecutionMode struct {
-	Hermetic bool
+	Hermetic HermeticMode `json:"hermetic,omitempty"`
 }
 ```
 

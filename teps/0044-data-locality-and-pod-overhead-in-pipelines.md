@@ -2,7 +2,7 @@
 status: proposed
 title: Data Locality and Pod Overhead in Pipelines
 creation-date: '2021-01-22'
-last-updated: '2022-02-02'
+last-updated: '2022-02-07'
 authors:
 - '@bobcatfish'
 - '@lbernick'
@@ -240,6 +240,45 @@ This is because a pod will start executing once it has been created, and many of
 However, the number of Tasks needed may not be known until the previous Task is run and its outputs are retrieved.
 Therefore, we may be able to support running a matrixed Pipeline in a pod only when the full set of parameters is known
 at the start of execution. We may not be able to support dynamic matrix parameters or other forms of dynamic Task creation.
+
+### Hermekton support
+
+[TEP-0025](./0025-hermekton.md) proposes specifying "hermeticity" levels for Tasks or Steps. Hermetic Tasks and Steps cannot
+communicate with non-hermetic Tasks and Steps during execution, meaning that all inputs will be specified prior to Task/Step start.
+This requires isolating the network and filesystem for hermetic Tasks/Steps.
+
+#### Use Cases
+
+TEP-0025 describes some [use cases](./0025-hermekton.md#user-stories-optional) for specifying different levels of hermeticity for
+Tasks in a Pipeline. It's not yet clear whether users would like the ability to specify different levels of hermeticity for Tasks
+that are part of a PipelineRun executed in a pod. Security-minded users might prefer to run their Tasks with different service accounts,
+which is not possible in one pod.
+
+#### Feasibility
+
+A Task can only be considered hermetic if it is unable to communicate with other Tasks during execution, and likewise for Steps.
+If we wanted to support different levels of hermeticity for Tasks run in the same pod, we would need to provide a way for the
+Steps in the hermetic Task to communicate with other Steps in that Task, but not with Steps in other Tasks.
+
+Containers in a pod can [communicate](https://kubernetes.io/docs/concepts/workloads/pods/#resource-sharing-and-communication)
+either via ports or via the filesystem.
+
+Isolating the filesystem of a Task run in the same pod as other Tasks is likely feasible.
+A pod can provide shared volumes for containers to use, meaning that we can control how containers communicate via the filesystem
+by controlling which of the pod's volumes they have access to.
+
+Isolating the network of a Task run in the same pod as other Tasks is more challenging.
+Containers in a pod share a network namespace, and can communicate with each other via localhost.
+This means that it's straightforward to restrict a single container's access to the network within the pod by preventing it from
+communicating via localhost, as is proposed for [Step-level hermeticity](./0025-hermekton.md#api-changes).
+However, it's much more challenging to allow a group of containers to communicate with each other, but not with other containers in a pod,
+a feature that would be necessary to run hermetic and non-hermetic Tasks in the same pod. We could explore using [EBPF](https://ebpf.io/)
+to control the container network, but this is likely a large amount of effort and would not work on all platforms.
+
+We could work around this limitation via a few options:
+1. Requiring that hermetic Tasks have only 1 step if they are run in a pod with other Tasks.
+2. Not allowing Steps within hermetic Tasks to communicate with each other.
+3. Requiring that hermetic Tasks not execute in parallel with other Tasks run in the same pod.
 
 ### Additional Design Considerations
 - Executing an entire Pipeline in a pod, as compared to executing multiple Tasks in a pod, may pave the way for supporting

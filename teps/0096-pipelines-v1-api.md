@@ -2,7 +2,7 @@
 status: proposed
 title: Pipelines V1 API
 creation-date: '2021-11-29'
-last-updated: '2021-12-20'
+last-updated: '2021-02-07'
 authors:
 - '@lbernick'
 - '@jerop'
@@ -219,7 +219,8 @@ This policy should be updated to include Tekton metrics as part of the API. No o
 - Keep the ClusterTask CRD at beta stability.
   - ClusterTask functionality will likely be replaced by [remote resolution](./0060-remote-resource-resolution.md), but there's no plan
   to replace this functionality at a beta level of stability before releasing a V1 API.
-  - [Still under discussion]: We will decide before v1 whether to stabilize or remove ClusterTask pending community feedback on ClusterTask and remote resolution.
+  - For the V1 API, ClusterTask should continue to be supported but left at beta stability. After implementing and receiving
+  user feedback on remote resolution, we can make a decision about whether to deprecate ClusterTask or bring it to stable.
   See [Where should we take ClusterTasks next?](https://github.com/tektoncd/pipeline/issues/4476) for more info.
 
 | CRD         | Current level | Proposed level |

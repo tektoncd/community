@@ -2,7 +2,7 @@
 status: proposed
 title: Data Locality and Pod Overhead in Pipelines
 creation-date: '2021-01-22'
-last-updated: '2022-02-07'
+last-updated: '2022-02-09'
 authors:
 - '@bobcatfish'
 - '@lbernick'
@@ -130,6 +130,8 @@ with Tasks that fetch inputs (e.g. git clone) or push outputs (e.g. docker push)
   or even worse, recursion (Task 1 uses Task 2 uses Task 1...)
 - Replacing all functionality that was provided by PipelineResources.
 See [TEP-0074](./0074-deprecate-pipelineresources.md) for the deprecation plan for PipelineResources.
+- Building functionality into Tekton to determine which Tasks should be combined together, as opposed to letting a user configure this.
+We can explore providing this functionality in a later iteration of this proposal.
 
 ### Use Cases
 
@@ -279,6 +281,19 @@ We could work around this limitation via a few options:
 1. Requiring that hermetic Tasks have only 1 step if they are run in a pod with other Tasks.
 2. Not allowing Steps within hermetic Tasks to communicate with each other.
 3. Requiring that hermetic Tasks not execute in parallel with other Tasks run in the same pod.
+
+### Controller role in scheduling TaskRuns
+Some solutions to this problem involve allowing a user to configure which TaskRuns they would like to be executed on one pod,
+and some solutions allow the controller to determine which TaskRuns should be executed on one pod.
+
+For example, if we decide to create a TaskGroup abstraction, we could decide that all Tasks in a TaskGroup should be executed on the same
+pod, or that the controller gets to decide how to schedule TaskRuns in a TaskGroup. Similarly, we could provide an option to execute
+a Pipeline in a pod, or an option to allow the PipelineRun controller to determine which TaskRuns should be grouped.
+
+We should first tackle the complexity of running multiple TaskRuns on one pod before tackling the complexity of determining
+which TaskRuns should be scheduled together. A first iteration of this proposal should require the user to specify when they would like
+TaskRuns to be combined together. After experimentation and user feedback, we can explore providing an option that would rely on the
+controller to make this decision.
 
 ### Additional Design Considerations
 - Executing an entire Pipeline in a pod, as compared to executing multiple Tasks in a pod, may pave the way for supporting
@@ -795,17 +810,19 @@ In this approach we create a new Tekton type called a "TaskGroup", which can be 
 TaskGroups may be embedded in Pipelines. We could create a new TaskGroup controller or use the existing TaskRun controller
 to schedule a TaskGroup.
 
-The controller would be responsible for creating one TaskRun per Task in the TaskGroup, and determining
-at runtime how to schedule each TaskRun. For example, it could create a pod and schedule all the TaskRuns on it,
-or, if a single pod running all the Tasks is too large to be scheduled, it could split the TaskRuns between multiple pods.
-The controller would be responsible for reconciling both the TaskGroup and the TaskRuns created from the TaskGroup.
-We could introduce configuration options to specify whether the controller should attempt to split up TaskRuns
-or simply fail if a single pod wouldn't be schedulable. 
+The controller would be responsible for creating one TaskRun per Task in the TaskGroup, and scheduling each of these
+TaskRuns in the same pod. The controller would be responsible for reconciling both the TaskGroup and the TaskRuns
+created from the TaskGroup.
 
 The controller would need to determine how many TaskRuns are needed when the TaskGroup is first reconciled, due to
 [limitations associated with dynamically creating Tasks](#dynamically-created-tasks-in-pipelines).
 When the TaskGroup is first reconciled, it would create all TaskRuns needed, with those that are not ready to execute marked as "pending",
 and a pod with one container per TaskRun. The TaskGroup would store references to any TaskRuns created, and Task statuses would be stored on the TaskRuns.
+
+In a future version of this solution, we could explore allowing the TaskGroup/TaskRun controller to determine how to schedule TaskRuns.
+For example, it could create a pod and schedule all the TaskRuns on it, or, if a single pod running all the Tasks is too large
+to be scheduled, it could split the TaskRuns between multiple pods. We could introduce configuration options to specify whether
+the controller should attempt to split up TaskRuns or simply fail if a single pod wouldn't be schedulable. 
 
 Pros:
 * Creating a single TaskRun for each Task would allow individual Task statuses to be surfaced separately.

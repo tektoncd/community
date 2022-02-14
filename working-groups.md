@@ -40,6 +40,7 @@ The current working groups are:
 - [Workflows](#workflows)
 - [Pipeline](#pipeline)
 - [Governing board / Community](#governing-board--community)
+- [Software Supply Chains Security (s3c)](#software-supply-chain-security-s3c)
 
 ## General
 
@@ -385,3 +386,25 @@ and a place to discuss community operations and process.
 | <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson   | Google    | [bobcatfish](https://github.com/bobcatfish) |
 | <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee   | Google    | [dibyom](https://github.com/dibyom)         |
 | <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat   | [vdemeester](https://github.com/vdemeester) |
+
+## Software Supply Chain Security (s3c)
+
+The goal of this working group is to discuss supply chain security initiatives across Tekton (exact scope 
+TBD [community#629](https://github.com/tektoncd/community/issues/629)).
+
+| Artifact                   | Link                       |
+| -------------------------- | -------------------------- |
+| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
+| Meeting Notes              | [Discussion board](https://github.com/orgs/tektoncd/projects/14/views/1), [HackMD Notes](https://hackmd.io/gFcAZMFMRwuTaZ1i7Y3fSg)
+| Slack Channel              | [#security](https://tektoncd.slack.com/messages/security) |
+| Community Meeting VC       | [meet.google.com/utk-kdff-hci](https://meet.google.com/utk-kdff-hci) |
+| Community Meeting Calendar | Tuesday every other week, 09:00a-09:30a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NDFuMjg2OTloYTJrYm1jNGM1dWZiZ3JzdGZfMjAyMjAyMjJUMTcwMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
+
+
+| &nbsp;                                                     | Facilitators      | Company   | Profile                                     |
+| --------------------------------------------------------   | ----------        | -------   | ---------------------------------------     |
+| <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai       | IBM       | [pritidesai](https://github.com/pritidesai) |
+| <img width="30px" src="https://github.com/imjasonh.png">   | Jason Hall        | Red Hat   | [imjasonh](https://github.com/imjasonh)     |
+| <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson   | Google    | [bobcatfish](https://github.com/bobcatfish) |
+| <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli   | IBM       | [afrittoli](https://github.com/afrittoli)   |
+| <img width="30px" src="https://github.com/xchapter7x.png"> | John Calabrese    | Google    | [xchapter7x](https://github.com/xchapter7x) |

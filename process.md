@@ -6,7 +6,7 @@ you can find documented in their individual `CONTRIBUTING.md` files.
 
 - [Finding something to work on](#finding-something-to-work-on)
 - [Proposing features](#proposing-features)
-- [Project OWNERS](#owners-and-collaborators)
+- [Project OWNERS](#owners-and-reviewers)
 - Pull request [reviews](#reviews) and [process](#pull-request-process)
 - [Propose projects](process.md#proposing-projects)
 - [The CDF CLA](#cla)
@@ -31,9 +31,9 @@ writing a comment in the issue such as:
 ```
 
 Unfortunately, GitHub will only allow issues to be assigned to users who are
-["collaborators"](https://developer.github.com/v3/repos/collaborators/), aka
-anyone in [the tektoncd org](https://github.com/orgs/tektoncd/people) and/or
-collaborators added to the repo itself.
+["collaboratorsq"](https://developer.github.com/v3/repos/Reviewers/), aka anyone
+in [the tektoncd org](https://github.com/orgs/tektoncd/people) and/or Reviewers
+added to the repo itself.
 
 But don't let that stop you! **Leave a comment in the issue indicating you would
 like to work on it** and we will consider it assigned to you.
@@ -119,6 +119,13 @@ things. "Responsibilities" are things that contributor is expected to do.
 "Requirements" are qualifications a person needs to meet to be in that role, and
 "Privileges" are things contributors on that level are entitled to.
 
+- [Community Participant](#community-participant)
+- [Contributor](#contributor)
+- [Organization Member](#organization-member)
+- [Reviewer](#Reviewer)
+- [Maintainer](#maintainer)
+- [Governance Committee Member](#governance-committee-member)
+
 ### Community Participant
 
 Description: A Community Participant engages with the project and its community,
@@ -142,6 +149,9 @@ discussions.
 Description: A Contributor makes direct contributions to the project and adds
 value to it. [Contributions need not be code](#contributions). People at the
 Contributor level may be new contributors, and they can contribute occasionally.
+
+Contributors may be eligible to vote and run in elections. See
+[Elections](./governance.md#elections) for more details.
 
 A Contributor must meet the responsibilities of a
 [Community Participant](#community-participant), plus:
@@ -192,21 +202,21 @@ The process for a Contributor to become an Organization Member is as follows:
    [org.yaml](https://github.com/tektoncd/community/blob/main/org/org.yaml),
    adding your GitHub username to `orgs.tektoncd.members`.
 
-### Collaborator
+### Reviewer
 
-Description: A Collaborator has responsibility for specific code, documentation,
+Description: A Reviewer has responsibility for specific code, documentation,
 test, or other project areas. They are collectively responsible, with other
 Reviewers, for reviewing all changes to those areas and indicating whether those
 changes are ready to merge. They have a track record of contribution and review
 in the project.
 
-Collaborators are responsible for a "specific area." This can be a specific code
+Reviewers are responsible for a "specific area." This can be a specific code
 directory, driver, chapter of the docs, test job, event, or other
 clearly-defined project component that is smaller than an entire repository or
 subproject. Most often it is one or a set of directories in one or more Git
 repositories. The "specific area" below refers to this area of responsibility.
 
-Collaborators have all the rights and responsibilities of an
+Reviewers have all the rights and responsibilities of an
 [Organization Member](#organization-member), plus:
 
 - Responsibilities include:
@@ -230,11 +240,11 @@ Collaborators have all the rights and responsibilities of an
   - May [`/lgtm`](#prow-commands) pull requests.
   - Can be allowed to [`/approve`](#prow-commands) pull requests in specific
     sub-directories of a project (by maintainer discretion)
-  - Can recommend and review other contributors to become Collaborators
+  - Can recommend and review other contributors to become Reviewers
 
 To facilitate productivity, small repositories, or repositories that do not
 contain production code may decide to use simpler requirements. To become a
-collaborator of one of these repositories, you must either:
+Reviewer of one of these repositories, you must either:
 
 - Be an OWNER on any other repository in the Tekton project, and ask an existing
   OWNER to add you.
@@ -249,22 +259,22 @@ Repositories currently using this simpler mechanism are:
 - tektoncd/website
 - tektoncd/experimental
 
-The process of becoming a Collaborator is:
+The process of becoming a Reviewer is:
 
 1. The contributor is nominated by opening a PR against the appropriate
    project/directory
    [OWNERS file](https://www.kubernetes.dev/docs/guide/owners/), adding their
    GitHub username to the `reviewers` list (or corresponding
    [OWNERS alias](https://www.kubernetes.dev/docs/guide/owners/#owners_aliases)).
-2. At least two Collaborators/[Maintainers](#maintainer) of the team that owns
-   that repository or directory approve the PR.
-3. Update [org.yaml](./org/org.yaml) to add the new collaborator to the
+2. At least two Reviewers/[Maintainers](#maintainer) of the team that owns that
+   repository or directory approve the PR.
+3. Update [org.yaml](./org/org.yaml) to add the new Reviewer to the
    corresponding
    [GitHub team(s)](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams).
 
-- Each project has a `<repo>.collaborators` entry in `org.yaml`, where `<repo>`
-  is the name of the GitHub repository. The only exception is `pipeline` whose
-  maintainer team is name `core.collaborators`.
+- Each project has a `<repo>.Reviewers` entry in `org.yaml`, where `<repo>` is
+  the name of the GitHub repository. The only exception is `pipeline` whose
+  maintainer team is name `core.Reviewers`.
 
 ### Maintainer
 
@@ -274,12 +284,11 @@ area of a project, and are expected to participate in making decisions about the
 strategy and priorities of the project.
 
 A Maintainer must meet the responsibilities and requirements of a
-[Collaborator](#collaborator), plus:
+[Reviewer](#Reviewer), plus:
 
 - Responsibilities include:
   - Reviewing PRs that involve multiple parts of the project
-  - Mentoring new [Contributors](#contributor) and
-    [Collaborators](#collaborator)
+  - Mentoring new [Contributors](#contributor) and [Reviewers](#Reviewer)
   - Writing PRs that involve many parts of the project (e.g. refactoring)
   - Participating in Tekton maintainer activities (build captain, WG lead)
   - Determining strategy and policy for the project
@@ -322,9 +331,8 @@ Repositories currently using this simpler mechanism are:
 
 Process of becoming an Maintainer:
 
-1. Any current Maintainer may nominate a current [Collaborator](#collaborator)
-   to become a new Maintainer, by opening a PR against the appropriate
-   project/directory
+1. Any current Maintainer may nominate a current [Reviewer](#Reviewer) to become
+   a new Maintainer, by opening a PR against the appropriate project/directory
    [OWNERS file](https://www.kubernetes.dev/docs/guide/owners/), adding their
    GitHub username to the `approvers` list (or corresponding
    [OWNERS alias](https://www.kubernetes.dev/docs/guide/owners/#owners_aliases)).
@@ -418,8 +426,8 @@ use to interact with it.
 Before a PR can be merged, it must have both `/lgtm` AND `/approve`:
 
 - `/lgtm` can be added by
-  ["collaborators"](https://developer.github.com/v3/repos/collaborators/), aka
-  anyone in collaborator team specific to the repo
+  ["Reviewers"](https://developer.github.com/v3/repos/Reviewers/), aka anyone in
+  Reviewer team specific to the repo
 - `/approve` can be added only by [OWNERS](#owners)
 
 The merge will happen automatically once the PR has both `/lgtm` and `/approve`,
@@ -429,9 +437,8 @@ and all tests pass. If you don't want this to happen you should
 Any changes will cause the `/lgtm` label to be removed and it will need to be
 re-applied.
 
-If you are not a
-[collaborator](https://developer.github.com/v3/repos/collaborators/), you will
-need a collaborator to add `/ok-to-test` to your PR to allow tests to run.
+If you are not a [Reviewer](https://developer.github.com/v3/repos/Reviewers/),
+you will need a Reviewer to add `/ok-to-test` to your PR to allow tests to run.
 
 (But most importantly you can add dog and cat pictures to PRs with `/woof` and
 `/meow`!!)

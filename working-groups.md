@@ -397,7 +397,7 @@ TBD [community#629](https://github.com/tektoncd/community/issues/629)).
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
 | Meeting Notes              | [Discussion board](https://github.com/orgs/tektoncd/projects/14/views/1), [HackMD Notes](https://hackmd.io/gFcAZMFMRwuTaZ1i7Y3fSg)
 | Slack Channel              | [#security](https://tektoncd.slack.com/messages/security) |
-| Community Meeting VC       | [meet.google.com/utk-kdff-hci](https://meet.google.com/utk-kdff-hci) |
+| Community Meeting VC       | [https://zoom.us/j/96593435267?pwd=TTNVYUJEQlNzMXlKYjFXcUwzOUZEdz09](https://zoom.us/j/96593435267?pwd=TTNVYUJEQlNzMXlKYjFXcUwzOUZEdz09) |
 | Community Meeting Calendar | Tuesday every other week, 09:00a-09:30a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NDFuMjg2OTloYTJrYm1jNGM1dWZiZ3JzdGZfMjAyMjAyMjJUMTcwMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
 
 

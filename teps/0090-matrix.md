@@ -182,7 +182,7 @@ As shown in the above example, the user would have to add another `PipelineTask`
 they can easily make errors while duplicating the *kaniko* `PipelineTasks`' specifications. A user described their 
 experience with these challenges and limitations as such: 
 
->  "Right now I'm doing all of this by just having a statically defined single `Pipeline` with a `Task` and then
+> "Right now I'm doing all of this by just having a statically defined single `Pipeline` with a `Task` and then
 delegating to code/loops within that single `Task` to achieve the `N` things I want to do. This works, but then
 I'd prefer the concept of a single Task does a single thing, rather than overloading it like this. Especially
 when viewing it in the dashboard etc, things get lost" ~ [bitsofinfo][kaniko-example-2]
@@ -641,7 +641,7 @@ spec:
 
 Read more in the [documentation][argo-workflows].
 
-####  Ansible
+#### Ansible
 
 Ansible allows users to execute a task multiple times using `loop`, `with_<lookup>` and `until` keywords.
 
@@ -1012,9 +1012,9 @@ As shown above, we would need `Parameters` of type `Arrays of Arrays` to substit
 
 In [TEP-0075: Object Parameters and Results][tep-0075], we are exploring supporting
 object `Parameters` through [JSON object schema syntax][json]. Providing `Parameters`
-of type `Arrays of Arrays` is not in scope for TEP-0075, but that's a possibility in
-follow-on work. After support is added, we can revisit supporting `Arrays of Arrays`
-in `Matrix`. 
+of type `Arrays of Arrays` is not in scope for [TEP-0075][tep-0075], but that's a
+possibility in follow-on work. After support is added, we can revisit supporting
+`Arrays of Arrays` in `Matrix`. 
 
 Moreover, [use cases](#use-cases) we are solving for in this TEP don't need this capability.
 We plan to provide minimum feature set needed to meet the use cases, as described in the
@@ -1088,14 +1088,14 @@ tasks:
 #### Results from Fanned Out PipelineTasks
 
 Producing `Results` from fanned out `PipelineTasks` will not be in the initial iteration.
-After [TEP-0075: Object Parameters and Results][tep-007] and [TEP-0076: Array Results][tep-0076]
+After [TEP-0075: Object Parameters and Results][tep-0075] and [TEP-0076: Array Results][tep-0076]
 have landed, we will design how to support `Results` from fanned out `PipelineTasks`. 
 
 ### Execution Status 
 
 Today, `PipelineTasks` in the `finally` section can access the execution `Status` -
 `Succeeded`, `Failed` or `None` - of each `PipelineTask` in the `tasks` section. This
-is accessed via a variable - `$(tasks.<pipelinetask-name>.status)`.  Read more in the
+is accessed via a variable - `$(tasks.<pipelinetask-name>.status)`. Read more in the
 [documentation][execution-status].
 ```yaml
 finally:
@@ -1331,7 +1331,7 @@ spec:
     - name: build-the-image
       timeout: "0h1m30s"
       matrix:
-        - name: plaform
+        - name: platform
           values:
             - linux
             - mac
@@ -1604,14 +1604,14 @@ However, this approach has the following disadvantages:
   * [TEP-0096: Pipelines V1 API][tep-0096]
   * [TEP-0100: Embedded TaskRuns and Runs Status in PipelineRuns][tep-0100]
 
-[tep-0023]: https://github.com/tektoncd/community/blob/main/teps/0023-implicit-mapping.md
-[tep-0044]: https://github.com/tektoncd/community/blob/main/teps/0044-data-locality-and-pod-overhead-in-pipelines.md
-[tep-0056]: https://github.com/tektoncd/community/blob/main/teps/0056-pipelines-in-pipelines.md
-[tep-0075]: https://github.com/tektoncd/community/pull/479
-[tep-0076]: https://github.com/tektoncd/community/pull/477
-[tep-0079]: https://github.com/tektoncd/community/blob/main/teps/0079-tekton-catalog-support-tiers.md
-[tep-0096]: https://github.com/tektoncd/community/blob/main/teps/0096-pipelines-v1-api.md
-[tep-0100]: https://github.com/tektoncd/community/blob/main/teps/0100-embedded-taskruns-and-runs-status-in-pipelineruns.md
+[tep-0023]: ./0023-implicit-mapping.md
+[tep-0044]: ./0044-data-locality-and-pod-overhead-in-pipelines.md
+[tep-0056]: ./0056-pipelines-in-pipelines.md
+[tep-0075]: ./0075-object-param-and-result-types.md
+[tep-0076]: ./0076-array-result-types.md
+[tep-0079]: ./0079-tekton-catalog-support-tiers.md
+[tep-0096]: ./0096-pipelines-v1-api.md
+[tep-0100]: ./0100-embedded-taskruns-and-runs-status-in-pipelineruns.md
 [task-loops]: https://github.com/tektoncd/experimental/tree/main/task-loops 
 [issue-2050]: https://github.com/tektoncd/pipeline/issues/2050
 [issue-4097]: https://github.com/tektoncd/pipeline/issues/4097

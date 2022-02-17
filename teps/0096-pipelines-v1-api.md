@@ -242,6 +242,7 @@ This policy should be updated to include Tekton metrics as part of the API. No o
 
 - Deprecate `PipelineRun.Timeout` and [upgrade `PipelineRun.Timeouts` to beta](https://github.com/tektoncd/pipeline/issues/4460).
 - Remove `Pipeline.Tasks[].Conditions`. Conditions have been replaced by when expressions, which are already in beta.
+- Replace `PipelineRunCancelled` status with `Cancelled`, as `PipelineRunCancelled` is deprecated.
 - Because PipelineResources are deprecated, remove the `Resources` fields of `Task`, `TaskRun`, `Pipeline`, and `PipelineRun`.
     - [Still under discussion]: Additional community feedback is needed to determine the minimum V1 requirements that will make it usable for PipelineResource users. We should provide PipelineResource users with a migration path to the V1 API, which may include blocking on features proposed in [TEP-0074: Deprecate PipelineResources](https://github.com/tektoncd/community/blob/main/teps/0074-deprecate-pipelineresources.md).
     - We will proceed with [TEP-0074: Deprecate PipelineResources](https://github.com/tektoncd/community/blob/main/teps/0074-deprecate-pipelineresources.md)
@@ -250,8 +251,8 @@ This policy should be updated to include Tekton metrics as part of the API. No o
 #### Behavior flags
 
 Existing feature flags can be found [here](https://github.com/tektoncd/pipeline/blob/main/config/config-feature-flags.yaml).
-The feature flags "disable-home-env-overwrite", "disable-working-directory-overwrite", and "scope-when-expressions-to-task"
-are not present in this table, as their deprecation has already [been announced](https://github.com/tektoncd/pipeline/blob/main/docs/deprecations.md#deprecation-table).
+The feature flag "scope-when-expressions-to-task" is not present in this table,
+as its deprecation has already [been announced](https://github.com/tektoncd/pipeline/blob/main/docs/deprecations.md#deprecation-table).
 
 | Flag                                          | Current Default | Proposed State                                       |
 | --------------------------------------------- | --------------- | -----------------------------------------------------|

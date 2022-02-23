@@ -242,9 +242,10 @@ This policy should be updated to include Tekton metrics as part of the API. No o
 - Deprecate `PipelineRun.Timeout` and [upgrade `PipelineRun.Timeouts` to beta](https://github.com/tektoncd/pipeline/issues/4460).
 - Remove `Pipeline.Tasks[].Conditions`. Conditions have been replaced by when expressions, which are already in beta.
 - Because PipelineResources are deprecated, remove the `Resources` fields of `Task`, `TaskRun`, `Pipeline`, and `PipelineRun`.
-    - [Still under discussion]: Additional community feedback is needed to determine the minimum V1 requirements that will make it usable for PipelineResource users. We should provide PipelineResource users with a migration path to the V1 API, which may include blocking on features proposed in [TEP-0074: Deprecate PipelineResources](https://github.com/tektoncd/community/blob/main/teps/0074-deprecate-pipelineresources.md).
     - We will proceed with [TEP-0074: Deprecate PipelineResources](https://github.com/tektoncd/community/blob/main/teps/0074-deprecate-pipelineresources.md)
-    independently of Pipelines V1, and merging this TEP as implementable isn't a V1 blocker.
+    independently of Pipelines V1. Merging this TEP as implementable, or any features listed in this TEP, aren't V1 blockers.
+    While we aim to make the transition to V1 as smooth as possible for PipelineResource users, the focus of V1 is to
+    stabilize existing features, and we don't want to block a V1 API on new, experimental features.
 
 #### Behavior flags
 

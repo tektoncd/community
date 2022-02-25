@@ -2,7 +2,7 @@
 status: proposed
 title: Deprecate PipelineResources
 creation-date: '2021-07-14'
-last-updated: '2021-11-05'
+last-updated: '2022-02-25'
 authors:
 - '@bobcatfish'
 ---
@@ -154,7 +154,9 @@ that maybe this concept, at least in its current form, isn't required).
    as a POC that combining Tasks is a viable way to extend Tasks instead of using PipelineResources
 1. Merge this proposal as "proposed"
 1. Mark PipelineResources as deprecated in our Pipelines documentation; announce it officially in the next
-   Pipelines release
+   Pipelines release.
+1. Continue to support `PipelineResources` in the Pipelines `v1beta1` API until we no longer support `v1beta1` and
+   only support `v1`+. `PipelineResources` may be removed in `v1` even if this TEP is not yet implementable.
 1. Wait for the TEPs that this proposal depends on for replacing `PipelineResources` functionality (listed in
    [Design details](#design-details) and prioritized in [Risks and Mitigations](#risks-and-mitigations)) 
    to be merged as `implementable`, implemented, and promoted to beta, i.e.:
@@ -163,17 +165,14 @@ that maybe this concept, at least in its current form, isn't required).
     * [TEP-0075 Object/Dictionary support](https://github.com/tektoncd/community/pull/479) must be at a beta level of
       stability
     * [TEP-0076 Array support](https://github.com/tektoncd/community/pull/479) must be at a beta level of stability
-    * [TEP-0044 Decouple Task Composition from Scheduling](https://github.com/tektoncd/community/blob/main/teps/0044-decouple-task-composition-from-scheduling.md)
-      must be implemented at an alpha level of stability, to give users a reasonable migration path off of PipelineResources for v1
+    * [TEP-0044 Data Locality and Pod Overhead in Pipelines](https://github.com/tektoncd/community/blob/main/teps/0044-data-locality-and-pod-overhead-in-pipelines.md)
+      must be implemented at an alpha level of stability, to give users a reasonable migration path off of PipelineResources
 1. If any of these TEPs this proposal depends on are rejected, we must create a new TEP to fill the gap in functionality
    before moving forward
 1. [Once we meet these requirements](#requirements-to-mark-as-implementable), update this TEP to be `implementable`
 1. Once this TEP is marked as `implementable`, create [tektoncd/images](#new-repo-tektoncdimages) and move the logic
    backing these images to this repo; update the Tekton Pipelines release to reference these images release from there
    instead of within the Tekton Pipelines release itself
-1. Once this TEP is implementable, and we create v1 types, we would any references to PipelineResources
-1. Continue to support `PipelineResources` in the Pipelines `v1beta1` API until we no longer support `v1beta1` and
-   only support `v1`+, at which point we can completely remove the code supporting `PipelineResources`
 
 ### Requirements to mark as `implementable`
 
@@ -186,7 +185,7 @@ that maybe this concept, at least in its current form, isn't required).
 - [ ] [TEP-0056 Pipelines in Pipelines](https://github.com/tektoncd/community/blob/main/teps/0056-pipelines-in-pipelines.md) is implemented and promoted to beta
 - [ ] [TEP-0075 Object/Dictionary support](https://github.com/tektoncd/community/pull/479) is implemented and promoted to beta
 - [ ] [TEP-0076 Array support](https://github.com/tektoncd/community/pull/479) is implemented and promoted to beta
-- [ ] [TEP-0044 Decouple Task Composition from Scheduling](https://github.com/tektoncd/community/blob/main/teps/0044-decouple-task-composition-from-scheduling.md)
+- [ ] [TEP-0044 Data Locality and Pod Overhead in Pipelines](https://github.com/tektoncd/community/blob/main/teps/0044-data-locality-and-pod-overhead-in-pipelines.md)
   is implemented at alpha
   
 ### New repo: tektoncd/images
@@ -329,7 +328,7 @@ without requiring PipelineResources:
 
 Since this is about removing an existing feature, not exactly sure what to put in the test plan. Once we start working
 on the v1 release we'll need to do some work to make sure that we can continue to support the beta API with references
-to PipelineResoruces until we stop supporting beta.
+to PipelineResources until we stop supporting beta.
 
 ## Design Evaluation
 
@@ -361,7 +360,7 @@ does what Pipeline Resources does but better.
 
 ### Keep PipelineResources
 
-We could continue to support PipelineResoruces, and in the v1 release, we could keep them behind
+We could continue to support PipelineResources, and in the v1 release, we could keep them behind
 [the alpha api flag](https://github.com/tektoncd/pipeline/blob/main/docs/install.md#customizing-the-pipelines-controller-behavior).
 
 Pros:

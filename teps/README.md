@@ -221,7 +221,7 @@ This is the complete list of Tekton teps:
 |[TEP-0071](0071-custom-task-sdk.md) | Custom Task SDK | proposed | 2021-06-15 |
 |[TEP-0072](0072-results-json-serialized-records.md) | Results: JSON Serialized Records | implementable | 2021-07-26 |
 |[TEP-0073](0073-simplify-metrics.md) | Simplify metrics | proposed | 2021-11-01 |
-|[TEP-0074](0074-deprecate-pipelineresources.md) | Deprecate PipelineResources | proposed | 2021-11-05 |
+|[TEP-0074](0074-deprecate-pipelineresources.md) | Deprecate PipelineResources | proposed | 2022-02-25 |
 |[TEP-0075](0075-object-param-and-result-types.md) | Object/Dictionary param and result types | proposed | 2022-02-02 |
 |[TEP-0076](0076-array-result-types.md) | Array result types | proposed | 2022-02-03 |
 |[TEP-0079](0079-tekton-catalog-support-tiers.md) | Tekton Catalog Support Tiers | proposed | 2022-01-25 |

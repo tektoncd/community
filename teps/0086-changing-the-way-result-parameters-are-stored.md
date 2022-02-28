@@ -2,68 +2,14 @@
 status: proposed
 title: Changing the way result parameters are stored
 creation-date: '2021-09-27'
-last-updated: '2021-09-27'
+last-updated: '2022-02-28'
 authors:
 - '@tlawrie'
 - '@imjasonh'
+- '@bobcatfish'
 ---
 
 # TEP-0086: Changing the way result parameters are stored
-
-<!--
-**Note:** When your TEP is complete, all of these comment blocks should be removed.
-
-To get started with this template:
-
-- [ ] **Fill out this file as best you can.**
-  At minimum, you should fill in the "Summary", and "Motivation" sections.
-  These should be easy if you've preflighted the idea of the TEP with the
-  appropriate Working Group.
-- [ ] **Create a PR for this TEP.**
-  Assign it to people in the SIG that are sponsoring this process.
-- [ ] **Merge early and iterate.**
-  Avoid getting hung up on specific details and instead aim to get the goals of
-  the TEP clarified and merged quickly.  The best way to do this is to just
-  start with the high-level sections and fill out details incrementally in
-  subsequent PRs.
-
-Just because a TEP is merged does not mean it is complete or approved.  Any TEP
-marked as a `proposed` is a working document and subject to change.  You can
-denote sections that are under active debate as follows:
-
-```
-<<[UNRESOLVED optional short context or usernames ]>>
-Stuff that is being argued.
-<<[/UNRESOLVED]>>
-```
-
-When editing TEPS, aim for tightly-scoped, single-topic PRs to keep discussions
-focused.  If you disagree with what is already in a document, open a new PR
-with suggested changes.
-
-If there are new details that belong in the TEP, edit the TEP.  Once a
-feature has become "implemented", major changes should get new TEPs.
-
-The canonical place for the latest set of instructions (and the likely source
-of this file) is [here](/teps/NNNN-TEP-template/README.md).
-
--->
-
-<!--
-This is the title of your TEP.  Keep it short, simple, and descriptive.  A good
-title can help communicate what the TEP is and should be considered as part of
-any review.
--->
-
-<!--
-A table of contents is helpful for quickly jumping to sections of a TEP and for
-highlighting any additional information provided beyond the standard TEP
-template.
-
-Ensure the TOC is wrapped with
-  <code>&lt;!-- toc --&rt;&lt;!-- /toc --&rt;</code>
-tags, and then generate with `hack/update-toc.sh`.
--->
 
 <!-- toc -->
 - [Summary](#summary)
@@ -96,51 +42,21 @@ The current way that Results are reported via a containers `terminationMessage` 
 
 ## Motivation
 
-<!--
-This section is for explicitly listing the motivation, goals and non-goals of
-this TEP.  Describe why the change is important and the benefits to users.  The
-motivation section can optionally provide links to [experience reports][] to
-demonstrate the interest in a TEP within the wider Tekton community.
-
-[experience reports]: https://github.com/golang/go/wiki/ExperienceReports
--->
-
-The ability to improve Task Result storage size as part of a TaskRun without needing to have access to additional storage. 
+The ability to improve Task Result storage size as part of a TaskRun while allowing the Task to continue to use the
+[`results`](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#emitting-results) feature and without needing
+to use other mechanisms such as [workspaces](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#specifying-workspaces).
 
 Additionally this will help projects that wrap/abstract Tekton where users understand how to reference Task Results between tasks and dont have the ability to adjust a Task to retrieve from a storage path. Part of the motivation for me putting this TEP together is around making that easier. With my [project](https://github.com/boomerang-io) end users run tasks without knowing YAML, they drag and drop tasks on a GUI.
 
 ### Goals
 
-<!--
-List the specific goals of the TEP.  What is it trying to achieve?  How will we
-know that this has succeeded?
--->
-
 * Allow larger storage than the current 4096 bytes of the Termination Message.
-* Allow users to reference a Task Result in its current form `$(tasks.Task Name.results.Result Name)`
-* Use existing objects (or standard ones incl CRDs) where the complexity _can_ be abstracted from a user.
-* Allow flexibility in the design for additional plug and play storage mechanisms
-* Ensure secure RBAC is in place.
 
 ### Non-Goals
-
-<!--
-What is out of scope for this TEP?  Listing non-goals helps to focus discussion
-and make progress.
--->
 
 * Not attempting to solve the storage of blobs or large format files such as JARs
 
 ### Use Cases (optional)
-
-<!--
-Describe the concrete improvement specific groups of users will see if the
-Motivations in this doc result in a fix or feature.
-
-Consider both the user's role (are they a Task author? Catalog Task user?
-Cluster Admin? etc...) and experience (what workflows or actions are enhanced
-if this problem is solved?).
--->
 
 1. Provide Task authors and end users the ability to store larger Results, such as JSON payloads from a HTTP call, that they can inspect later or pass to other tasks without the need to understand storage mechanisms.
 
@@ -159,148 +75,129 @@ if this problem is solved?).
 
 ## Requirements
 
-<!--
-Describe constraints on the solution that must be met. Examples might include
-performance characteristics that must be met, specific edge cases that must
-be handled, or user scenarios that will be affected and must be accomodated.
--->
+### Required
+
+* Allow users to reference a Task Result in its current form `$(tasks.Task Name.results.Result Name)`
+* Use existing objects (or standard ones incl CRDs) where the complexity _can_ be abstracted from a user.
+* Allow flexibility in the design for additional plug and play storage mechanisms
+* Ensure secure RBAC is in place.
+* The default mechanism for storing results out of the box should not require giving the Tekton Controller any ability
+  to modify Roles or RoleBindings (i.e. it should not require that Tekton dynamically change the permissions of the
+  ServiceAccount executing the Task that emits results)
+* It must be clear from looking at a Task whether or not a Tekton installation can support the results storage
+  requirements (i.e. we want to avoid having Tasks that require writing huge results and finding out at runtime that
+  the backing storage used by a Tekton installation doesn't support it)
+
+TBD/WIP requirements:
+
+* The TaskRun must continue to be the source of truth for the contents of the result, this requirement is TBD b/:
+    * some parties want this requirement, some explicitly do not
+    * this introduces an upper bound on the result size that is limited by
+      [the total allowed size of a CRD](https://github.com/kubernetes/kubernetes/issues/82292))
+    * this may mean sensitive information can never be stored in a result (maybe that is a reasonable restriction)
+    * this may also prevent encrypting results (unless they are encrypted within the TaskRun itself)
+* Define a clear upper limit on the expected maximum size of a result
+* Support an environment where executing pods are not permitted to make network connections within the cluster
 
 ## Proposal
 
-<!--
-This is where we get down to the specifics of what the proposal actually is.
-This should have enough detail that reviewers can understand exactly what
-you're proposing, but should not include things like API designs or
-implementation.  The "Design Details" section below is for the real
-nitty-gritty.
--->
-
-This proposal provides options for handling a change to result parameter storage and potentially involves adjusting the `entrypoint` or additional sidecar to write to this storage implementation.
+This proposal provides options for handling a change to result parameter storage and potentially involves adjusting the
+`entrypoint` or additional sidecar to write to this storage implementation.
 
 We need to consider both performance and security impacts of the changes and trade off with the amount of capacity we would gain from the option.
 
 ### Notes/Caveats (optional)
 
-<!--
-What are the caveats to the proposal?
-What are some important details that didn't come across above.
-Go in to as much detail as necessary here.
-This might be a good place to talk about core concepts and how they relate.
--->
-
 * The storage of the result parameter may still be limited by a number of scenarios, including:
-  - 1.5 MB CRD size
-  - The total size of the PipelineRun _if_ it was to be patched back into an existing TaskRun object based on aggregate size of these objects.
-
-* Eventually this may result in running into a limit with etcd, however not a problem for now. Can be solved via cleanups / offloading history.
-
+  - [1.5 MB CRD size](https://github.com/kubernetes/kubernetes/issues/82292)
+  - The total size of the PipelineRun _if_ the TaskRun content is included, however
+    [TEP-100 is removing this](https://github.com/tektoncd/community/blob/main/teps/0100-embedded-taskruns-and-runs-status-in-pipelineruns.md)
+* Eventually this may result in running into a limit with etcd overall, however not a problem for now. Can be solved via cleanups / offloading history.
 * We want to try and minimize reimplementing access control in a webhook (in part because it means the webhook needs to know which task identities can update which task runs, which starts to get annoyingly stateful)
 
 ### Risks and Mitigations
 
-<!--
-What are the risks of this proposal and how do we mitigate. Think broadly.
-For example, consider both security and how this will impact the larger
-kubernetes ecosystem.
-
-How will security be reviewed and by whom?
-
-How will UX be reviewed and by whom?
-
-Consider including folks that also work outside the WGs or subproject.
--->
-
-* Concern on using etcd as a database
+* Concern on using kubernetes (backed by etcd) as a database
+* Storing results outside of a TaskRun means that all systems integrating with Tekton that want access to that
+  result must now integrate with the results storage
+  * Mitigation: if we define an interface for accessing results storage, this can at least be limited to integrating
+    with this one interface
+* Complexity of the solution (see [Design Evaluation](#design-evaluation) )
 
 ### User Experience (optional)
-
-<!--
-Consideration about the user experience. Depending on the area of change,
-users may be task and pipeline editors, they may trigger task and pipeline
-runs or they may be responsible for monitoring the execution of runs,
-via CLI, dashboard or a monitoring system.
-
-Consider including folks that also work on CLI and dashboard.
--->
 
 * Users must be able to refer to these result parameters exactly as they currently do and still be able to reference in subsequent tasks (i.e. read access)
 
 ### Performance (optional)
 
-<!--
-Consideration about performance.
-What impact does this change have on the start-up time and execution time
-of task and pipeline runs? What impact does it have on the resource footprint
-of Tekton controllers as well as task and pipeline runs?
-
-Consider which use cases are impacted by this change and what are their
-performance requirements.
--->
+* Speed:
+  * Adding any additional communication required in order to write and read results will likely decrease performance
+* Storage:
+  * Supporting larger results may mean storing more results data
 
 ## Design Details
 
-<!--
-This section should contain enough information that the specifics of your
-change are understandable.  This may include API specs (though not always
-required) or even code snippets.  If there's any ambiguity about HOW your
-proposal will be implemented, this is the place to discuss them.
+**Solution TBD.**
 
-If it's helpful to include workflow diagrams or any other related images,
-add them under "/teps/images/". It's upto the TEP author to choose the name
-of the file, but general guidance is to include at least TEP number in the
-file name, for example, "/teps/images/NNNN-workflow.jpg".
--->
+Primary approach for consideration is the [*Result Sidecar*](#upload-results-from-sidecar) implementation for recording
+results coupled with the [*Dedicated HTTP Service*](#dedicated-http-service) (with a well defined interface that can be
+swapped out) which would abstract the backend. With this approach the default backend could be a ConfigMap (or CRD) -
+or we could even continue to use the TaskRun itself to store results - since only the HTTP service would need the
+permissions required to make teh edits (vs a solution where we need to on the fly configure every service account
+associated with every taskrun to have this permission).
 
-**Solution TBD.** Primary approach for consideration is the *Result Sidecar* implementation for recording results coupled with the *Dedicated HTTP Service* (with a well defined interface that can be swapped out) which would abstract th ebackend. With this approach the default backend could be a ConfigMap (or CRD) since only the HTTP service would need the permissions required to make ConfigMap edits (vs a solution where we need to on the fly configure every service account associated with every taskrun to have this permission).
+We are also exploring using [using logs emitted by the Task](#use-stdout-logs-from-a-dedicated-sidecar-to-return-a-json-result-object)
+as a simpler way to support larger Tasks but we need to explore this in a POC as we suspect we may not be able to rely
+on logs for this.
+
+### Next steps to unblock
+
+* [ ] Determine if WIP [requirements](#requirements) should be included:(esp the requirement that results be stored
+  on the TaskRun
+* [ ] Determine if we can agree to an upper limit on the size of a result
+* [ ] POC of a [logs based approach](#use-stdout-logs-from-a-dedicated-sidecar-to-return-a-json-result-object)
 
 ### Considerations
 
 Overall by using a plug-and-play extensible design, the question of what the storage mechanism is becomes less of an implementation design choice. Instead the questions now become
 
-1. What is the default storage mechanism shipped? We want to provide a mechanism that does not require storage or additional dependencies. Configmaps is the ideal choice here, even if it creates additional ServiceAccount changes as when it comes time to production, these can be tightened as well as an alternative Results backing mechansim chosen.
+1. **What is the default storage mechanism shipped?** We want to provide a mechanism that does not require storage or additional dependencies. Configmaps is the ideal choice here, even if it creates additional ServiceAccount changes as when it comes time to production, these can be tightened as well as an alternative Results backing mechansim chosen.
 
-2. Are we wanting a centralized or distributed design? If we combine the Result Sidecar with the Dedicated HTTP Service we potentially get the best of both worlds. A centralized controller for security and extensibility. With a sidecar of reading and processing the results.
+2. **Are we wanting a centralized or distributed design?** If we combine the Result Sidecar with the Dedicated HTTP
+   Service we potentially get the best of both worlds. A centralized service for security and extensibility. With a
+   sidecar of reading and processing the results.
 
 **Auth** 
-If we do something with network calls (on or off cluster), look at service account (projected?) volume - k8s has built in oidc provider, can materialized short lived (e.g. 10 min max) oidc token on filesystem for a service account with a configurable audience
+We could use built in k8s OIDC token suppor to materialize short lived tokens in the pod running the Task for
+authentication with the centralized service. For example:
 
-Even KIND has a built in OIDC provider, example: https://github.com/mattmoor/kind-oidc. OIDC is also how Tekton Results works.
+1. Sidecar reads result from disk
+2. Sidecar in the pod gets an OIDC token from k8s
+3. Sidecar uses OIDC token to authenticate with HTTP Result storage service
+4. Sidecar uploads result
+5. HTTP Result storage service records the result
 
 **Encryption**
-Further enhance with the encryption of the result upload
+Communication between the pods and the HTTP Results storage service could be encrypted.
 
 **Defined Interface**
-Define standard proto or REST interface that storage systems would implement + authenticate with OIDC tokens, potential for controller to give explicit authorization for a task to fill out a particular result.
-
-Once you have the proto, can implement in lots of different ways = an appealing for plugging in different storage mechanisms
-- REST annoations + GRPC mix example: https://github.com/mattmoor/grpc-example.
-
-
-
+The HTTP Results storage service would implement a standardized interface that could be implemented by anyone desiring
+to use a different mechanism to store results. TBD: depends on whether or not we have a [requirement](#requirements)
+that results are stored on the TaskRun itself
 
 ### Open Design Questions
+
+- How should the sidecar report that results-writing or param-getting failed, and how should the TaskRun controller be notified so that the TaskRun can also be failed?
 
 - Do we need the extra byRef boolean in the model? And should byRef become the default always.
 - Should the sidecar be responsible for deciding whether the result should be reported by-value or by-reference? Or is that a controller-wide configuration? 
 - Is passing by-value still useful for small pieces of data to be able to have them inlined in TaskRun/PipelineRun statuses?
-- How should the sidecar report that results-writing or param-getting failed, and how should the TaskRun controller be notified so that the TaskRun can also be failed?
 
 ## Test Plan
 
-<!--
-**Note:** *Not required until targeted at a release.*
-
-Consider the following in developing a test plan for this enhancement:
-- Will there be e2e and integration tests, in addition to unit tests?
-- How will it be tested in isolation vs with other components?
-
-No need to outline all of the test cases, just the general strategy.  Anything
-that would count as tricky in the implementation and anything particularly
-challenging to test should be called out.
-
-All code is expected to have adequate tests (eventually with coverage
-expectations).
--->
+* All end to end tests and examples that use results would be updated to setup and use the default result handling
+  mechanism
+* Any additional ways of backing results would need their own set of tests
 
 ## Design Evaluation
 <!--
@@ -308,25 +205,66 @@ How does this proposal affect the reusability, simplicity, flexibility
 and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/master/design-principles.md)
 -->
 
+* Resusablity
+  * At authoring time, it must be possible to communicate to users if there are any special assumptions a Task is making
+    about results it expects to be able to emit
+* Simplicity
+  * This makes our implementations more complex, and likley makes administration/operation more complex
+  * More potential points of failure
+* Flexibility
+  * Can use your own backing storage (depending on [the requirement we use the TaskRun as the source of truth](#requirements))
+* Conformance
+  * Must be possible to use Tasks across Tekton installations - if a Task expects to be run in an installation that
+    supports larger Task runs, this must be clear
+
 ## Drawbacks
 
-<!--
-Why should this TEP _not_ be implemented?
--->
+* Increased complexity within Tekton Pipelines execution
+* Increased complexity for systems integrating with Tekton Pipelines
+
+(See [Risks and mitigations](#risks-and-mitigations).)
 
 ## Alternatives
 
-<!--
-What other approaches did you consider and why did you rule them out?  These do
-not need to be as detailed as the proposal, but should include enough
-information to express the idea and why it was not acceptable.
--->
+### Upload results from sidecar
 
-### SideCar Result References
+In this solution we include a sidecar in all pods that back TaskRuns which waits for individual steps to write results
+and then writes these results somewhere else so they can be stored and made available.
 
-Beyond size limits of specific TaskRuns’ results, the fundamental issue is that API objects in etcd are not suitable for storing as much data as users want to be able to report in results, and pass as parameters.
+**Sidecar API:**
 
-In addition to disaggregating TaskRun statuses into PipelineRun statuses (which we should do anyway before v1), we should introduce some way to pass one TaskRun’s output results into another TaskRun’s input parameters by reference, instead of only by value as they are today.
+1. The controller is passed a flag, -sidecar-image=<image>
+2. This image is added as a container in every TaskRun Pod, with each steps’ results emptyDir volume attached as read–only, and params emptyDir volumes attached as read-write.
+3. Watch directory, and any time it sees a result file appear, it writes that content externally (GCS, datastore, cuneiform tablets, the moon)
+it must be able to produce an opaque string that represents that result value, which it writes to TaskRun status
+> TODO: Do we achieve this via terminationMessage? We can enforce that these opaque strings be small; otherwise, ConfigMap? – an example signed URL is 824 bytes, this limits to ~12 per TaskRun.
+4. the TaskRun controller updates the status to include that opaque string
+5. when the next TaskRun starts, for each passed-in param that’s passed by reference, the TaskRun controller passes opaque reference strings to the sidecar along with the associated param name. the sidecar dereferences the opaque strings and writes the real param value to the param value file mounted into steps.
+6. the sidecar reports READY only after these steps are complete, allowing the first step to begin as normal.
+
+#### Option: Supporting multiple sidecars
+
+With this API in place, Tekton can provide an implementation that writes results to a centralized HTTP service and other
+operators can implement their own that write results to cluster-local persistent volumes, external object storage,
+document store, relational database, etc.
+
+Implementations should take care to ensure the integrity of result/param contents:
+
+- ideally, content-addressed for tamper-evidence
+- ideally, incremental for speed and cost efficiency
+- ideally, with tight access controls to prevent tampering and leakage
+  for example, an implementation that stored contents in GCS could use signed URLs to only authorize one POST of object contents, only authorize GETs for only one hour, and delete the object contents entirely after one day.
+
+However we are currently leaning toward using implementations of [the HTTP service](#dedicated-http-service) as the place
+to plug in support for different backends instead.
+
+### Result References vs results in TaskRun
+
+Beyond size limits of specific TaskRuns’ results, the fundamental issue is that API objects in etcd are not suitable for
+storing arbitrarily large data.
+
+In this option we introduce a way to pass one TaskRun’s output results into another TaskRun’s input parameters by reference, instead of
+only by value as they are today.
 
 **Example:**
 
@@ -344,24 +282,6 @@ tasks:
     value: "$(tasks.first-task.results.out)"
 ```
 
-
-**Implementation:**
-
-Result references require some code to take the contents of `/tekton/results/out` in the container environment, copy them elsewhere, and mint a unique reference. It also requires some code to take that reference, locate the contents whever they are, and make them available to other TaskRuns at `/tekton/params/in`.
-
-Both of these could be satisfied by the same component: a Tekton-internal sidecar, the *Result Collector Sidecar*. 
-
-**Sidecar API:**
-
-1. The controller is passed a flag, -sidecar-image=<image>
-2. This image is added as a container in every TaskRun Pod, with each steps’ results emptyDir volume attached as read–only, and params emptyDir volumes attached as read-write.
-3. Watch directory, and any time it sees a result file appear, it writes that content externally (GCS, datastore, cuneiform tablets, the moon)
-it must be able to produce an opaque string that represents that result value, which it writes to TaskRun status
-> TODO: Do we achieve this via terminationMessage? We can enforce that these opaque strings be small; otherwise, ConfigMap? – an example signed URL is 824 bytes, this limits to ~12 per TaskRun.
-4. the TaskRun controller updates the status to include that opaque string
-5. when the next TaskRun starts, for each passed-in param that’s passed by reference, the TaskRun controller passes opaque reference strings to the sidecar along with the associated param name. the sidecar dereferences the opaque strings and writes the real param value to the param value file mounted into steps.
-6. the sidecar reports READY only after these steps are complete, allowing the first step to begin as normal.
-
 ```yaml 
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
@@ -372,14 +292,16 @@ status:
     valueRef: <opaque-string>  # <-- *new field*
 ```
 
-With this API in place, Tekton can provide an implementation that writes results to a ConfigMap, and other operators can implement their own that write results to cluster-local persistent volumes, external object storage, document store, relational database, etc.
+**Implementation:**
 
-Implementations should take care to ensure the integrity of result/param contents:
+Result references require some code to take the contents of `/tekton/results/out` in the container environment, copy
+them elsewhere, and mint a unique reference. It also requires some code to take that reference, locate the contents
+whereever they are, and make them available to other TaskRuns at `/tekton/params/in`.
 
-- ideally, content-addressed for tamper-evidence
-- ideally, incremental for speed and cost efficiency
-- ideally, with tight access controls to prevent tampering and leakage
-for example, an implementation that stored contents in GCS could use signed URLs to only authorize one POST of object contents, only authorize GETs for only one hour, and delete the object contents entirely after one day.
+Questions:
+- Do we need the extra byRef boolean in the model? And should byRef become the default always.
+- Should the sidecar be responsible for deciding whether the result should be reported by-value or by-reference? Or is that a controller-wide configuration?
+- Is passing by-value still useful for small pieces of data to be able to have them inlined in TaskRun/PipelineRun statuses?
 
 ### N Configmaps Per TaskRun with Patch Merges (c). 
 
@@ -420,6 +342,14 @@ for example, an implementation that stored contents in GCS could use signed URLs
 
   - Introducing an additional database requirement to Tekton to support the storage of information outside of etcd.
 
+### Store results on PVCs
+
+  - Use PVCs to store results
+
+Cons:
+- Any downsides of PVCs we've encountered in other places (e.g. [TEP-0044 data locality](https://github.com/tektoncd/community/blob/main/teps/0044-data-locality-and-pod-overhead-in-pipelines.md))
+- Any consumer of the results would need to mount the PVC
+
 ### No change. Use workspaces.
 
   - There is the alternative of storing result parameters as data in a workspace, however Workspaces
@@ -441,6 +371,11 @@ for example, an implementation that stored contents in GCS could use signed URLs
   
   - The controller would wait for the sidecar to exit and then read the logs based on a particular query and append info to the TaskRun
   - Potential to use a CloudEvent object to wrap result object
+
+Cons:
+- No guarantees on when logs will be available (would have to wait for this before considering a TaskRun complete)
+- No guarantee you'll be able to access a log before it disappears (e.g. logs will not be available via the k8s API
+  once a pod is deleted)
 
 ## Infrastructure Needed (optional)
 

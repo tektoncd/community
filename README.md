@@ -32,7 +32,7 @@ Find out about our processes:
 
 - [Find something to work on](process.md#finding-something-to-work-on)
 - [Propose features](process.md#proposing-features)
-- [Project OWNERS](process.md#OWNERS)
+- [Contributor ladder](process.md#contributor-ladder)
 - [Pull request reviews](process.md#reviews)
 - [Propose projects](process.md#proposing-projects)
 - [GitHub Org Management](org/README.md), including

@@ -20,7 +20,7 @@ authors:
 - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [1. Establish a new syntax in Tekton Pipelines' <code>taskRef</code> and <code>pipelineRef</code> structs for remote resources](#1-establish-a-new-syntax-in-tekton-pipelines--and--structs-for-remote-resources)
-  - [2. Implement procedure for resolution: <code>ResourceRequest</code> CRD](#2-implement-procedure-for-resolution--crd)
+  - [2. Implement procedure for resolution: <code>ResolutionRequest</code> CRD](#2-implement-procedure-for-resolution--crd)
   - [3. Create a new Tekton Resolution project](#3-create-a-new-tekton-resolution-project)
   - [Risks and Mitigations](#risks-and-mitigations)
     - [Relying on a CRD as storage for in-lined resolved data](#relying-on-a-crd-as-storage-for-in-lined-resolved-data)
@@ -31,7 +31,7 @@ authors:
   - [Performance](#performance)
 - [Design Details](#design-details)
   - [New Pipelines syntax schema](#new-pipelines-syntax-schema)
-  - [<code>ResourceRequest</code> objects](#-objects)
+  - [<code>ResolutionRequest</code> objects](#-objects)
     - [YAML Examples](#yaml-examples)
   - [Resolver specifics](#resolver-specifics)
     - [In-Cluster Resolver](#in-cluster-resolver)
@@ -312,23 +312,23 @@ eventually resolvers might be able to publish the schema they accept so
 that Pipelines can enforce it during validation of a `TaskRun` or
 `PipelineRun`.
 
-### 2. Implement procedure for resolution: `ResourceRequest` CRD
+### 2. Implement procedure for resolution: `ResolutionRequest` CRD
 
 When the Pipelines reconciler sees a `taskRef` or `pipelineRef` with a
-`resolver` field it creates a `ResourceRequest` object. The object is
+`resolver` field it creates a `ResolutionRequest` object. The object is
 populated using fields from the `taskRef` or `pipelineRef`.
 
 Once resolved the contents of the requested resource are base64-encoded
-and stored in-line in the `status.data` field of the `ResourceRequest`.
+and stored in-line in the `status.data` field of the `ResolutionRequest`.
 Metadata is set in the `status.annotations` field. Examples of metadata
 include the commit digest of a resolved `git` resource, a bundle's
-digest, or the resolved data's `content-type`. The `ResourceRequest` is
+digest, or the resolved data's `content-type`. The `ResolutionRequest` is
 marked as successfully resolved. Here is a sample of a resolved
-`ResourceRequest` with some metadata fields trimmed out for brevity:
+`ResolutionRequest` with some metadata fields trimmed out for brevity:
 
 ```yaml
 apiVersion: resolution.tekton.dev/v1alpha1
-kind: ResourceRequest
+kind: ResolutionRequest
 spec:
   params:
     repository_url: https://github.com/sbwsg/experimental.git
@@ -345,7 +345,7 @@ status:
     type: Succeeded
 ```
 
-If a `ResourceRequest` fails resolution then it is marked as failed with
+If a `ResolutionRequest` fails resolution then it is marked as failed with
 a `Succeeded/"False"` condition. The condition will include a
 machine-readable `reason` and human-readable `message` explaining the
 failure.
@@ -357,15 +357,15 @@ to the functionality described in this TEP. The intention will be to
 take this project from alpha to beta and eventually to a stable,
 production-ready state. The project will provide:
 
-- The `ResourceRequest` CRD and a controller managing the lifecycle for
+- The `ResolutionRequest` CRD and a controller managing the lifecycle for
   that CRD.
-- Code-generated clients & supporting types for `ResourceRequests`.
+- Code-generated clients & supporting types for `ResolutionRequests`.
 - Function and struct helpers for other projects to use. See more in the
   [related Design Details section](#function-and-struct-helpers).
 - A common interface for resolver implementors that abstracts away the
   underlying use of CRDs.
 
-Webhook and controller deployments for `ResourceRequest` objects will
+Webhook and controller deployments for `ResolutionRequest` objects will
 run in the `tekton-remote-resolution` namespace by default. The
 namespace is intentionally separate from `tekton-pipelines` to allow
 `RBAC` that isolates the remote resolution machinery.
@@ -376,12 +376,12 @@ move these to their own repo alongside community-contributed resolvers,
 if any are written. See the [Design Details](#design-details) section
 for more on specific resolvers.
 
-The `ResourceRequest` Lifecycle Controller will be responsible for the
+The `ResolutionRequest` Lifecycle Controller will be responsible for the
 following:
-1. Initialize `ResourceRequest` status fields on object creation.
-2. Observe `ResourceRequest` objects for populated `status.data` field
+1. Initialize `ResolutionRequest` status fields on object creation.
+2. Observe `ResolutionRequest` objects for populated `status.data` field
    and set their `Succeeded` condition to `"True"`.
-3. Enforce global timeouts for all `ResourceRequests`, marking them
+3. Enforce global timeouts for all `ResolutionRequests`, marking them
    failed if the current time minus their `metadata.creation_timestamp`
    is longer than the limit.
 
@@ -393,12 +393,12 @@ _Risk_: Relying on a CRD may introduce scaling problems that couldn't be
 discovered during proof-of-concept testing. Task and Pipeline
 definitions may only get larger until a CRD no longer provides enough
 space. In busy CI/CD clusters many rapidly created large
-`ResourceRequests` may cause API server or etcd performance to
+`ResolutionRequests` may cause API server or etcd performance to
 degrade.
 
 _Possible Mitigation_: Implement a `PipelineResource`-style artifact
 system where short-lived PVCs or an object store are used as ephemeral
-intermediary storage. A `ResourceRequest` could store a tuple of
+intermediary storage. A `ResolutionRequest` could store a tuple of
 (`status.dataRef`, `status.dataDigest`) in place of in-lined
 `status.data`.  `status.dataRef` would be a pointer to the PVC or object
 store and `status.dataDigest` would be a low collision hash of the data
@@ -426,21 +426,21 @@ impacts that shared code.
 
 #### Data Integrity
 
-_Risk_: `ResourceRequest` objects have no data integrity mechanism yet, so
+_Risk_: `ResolutionRequest` objects have no data integrity mechanism yet, so
 a motivated actor with access to the cluster and write permissions on
-`ResourceRequest` objects can modify them without detection. This
+`ResolutionRequest` objects can modify them without detection. This
 becomes a more notable concern when thinking about task verification
 occurring in Resolvers, as is planned in
 [TEP-0091](https://github.com/tektoncd/community/pull/537). A user with
-the necessary permissions could change a `ResourceRequest` object
+the necessary permissions could change a `ResolutionRequest` object
 containing a Task _after_ Task verification occurred.
 
 _Possible Mitigation_: Tekton already has solutions undergoing design to address
 this problem on two fronts, and so it would make sense to integrate directly
 with one of them:
 1. [TEP-0089 Non-falsifiable provenance support](https://github.com/tektoncd/community/pull/529)
-where Tekton's objects (i.e. a `ResourceRequest`) can be signed by authorized
-workloads (i.e. a `ResourceRequest` Reconciler).
+where Tekton's objects (i.e. a `ResolutionRequest`) can be signed by authorized
+workloads (i.e. a `ResolutionRequest` Reconciler).
 2. The solution under design in TEP-0086 ([available to read
 here](https://hackmd.io/a6Kl4oS0SaOyBqBPTirzaQ)) which includes content
 addressability as a desirable property of the storage subsystem (OCI
@@ -465,11 +465,11 @@ spec:
       path: /task/golang-fuzz/0.1/golang-fuzz.yaml
 ```
 
-2. A `ResourceRequest` is created by the `TaskRun` reconciler:
+2. A `ResolutionRequest` is created by the `TaskRun` reconciler:
 
 ```yaml
 apiVersion: resolution.tekton.dev/v1alpha1
-kind: ResourceRequest
+kind: ResolutionRequest
 metadata:
   labels:
     resolution.tekton.dev/resolver: git
@@ -486,21 +486,21 @@ spec:
     path: /task/golang-fuzz/0.1/golang-fuzz.yaml
 ```
 
-3. The `ResourceRequest` is resolved and its `status.data` updated with the in-lined base64-encoded
+3. The `ResolutionRequest` is resolved and its `status.data` updated with the in-lined base64-encoded
    contents of the `golang-fuzz` task. The taskrun reconciler uses the spec from the retrieved
    `golang-fuzz` task to execute the user's submitted `TaskRun`.
 
 ### Performance
 
 1. Caching. LFU or LRU caches make sense in multiple spots along a
-   request's path: in Pipelines' reconcilers, in the `ResourceRequest`
+   request's path: in Pipelines' reconcilers, in the `ResolutionRequest`
    reconciler, or in the resolvers themselves.
 2. De-duplication. Mentioned earlier in this doc, if pipelines'
-   reconcilers can assert that an existing `ResourceRequest` exactly
+   reconcilers can assert that an existing `ResolutionRequest` exactly
    matches the resolver and parameters of a `pipelineRef` or `taskRef`
-   then instead of creating a new `ResourceRequest` pipelines could
+   then instead of creating a new `ResolutionRequest` pipelines could
    instead attach an additional `ownerReference` on the existing
-   `ResourceRequest` and reuse it.
+   `ResolutionRequest` and reuse it.
 
 ## Design Details
 
@@ -523,15 +523,15 @@ The OpenAPI schema for the new fields added to `taskRef` and
 Pipelines' validation code will need to be updated to accomodate these
 new fields.
 
-### `ResourceRequest` objects
+### `ResolutionRequest` objects
 
-- `ResourceRequests` are namespaced and must be created in the same
+- `ResolutionRequests` are namespaced and must be created in the same
   namespace as the referencing `PipelineRun` or `TaskRun`. This is
   required to support `ownerReferences` and to keep tenants' resource
   requests separated in multi-tenant clusters.
 
 - The label `resolution.tekton.dev/resolver` is _required_ on
-  `ResourceRequests` and its omission will result in the request being
+  `ResolutionRequests` and its omission will result in the request being
   immediately failed. This is to allow for watches and filtering based
   on the resolver type.
 
@@ -544,17 +544,17 @@ new fields.
   de-duplicating requests in the same namespace for the same remote
   Tekton resource.
 
-Below are syntax examples of `ResourceRequest` objects both in
+Below are syntax examples of `ResolutionRequest` objects both in
 newly-created states, succeeded state and failed state.
 
 #### YAML Examples
 
-Example of a newly-created `ResourceRequest` for a Bundle task from the
+Example of a newly-created `ResolutionRequest` for a Bundle task from the
 public catalog:
 
 ```yaml
 apiVersion: resolution.tekton.dev/v1alpha1
-kind: ResourceRequest
+kind: ResolutionRequest
 metadata:
   name: get-task-from-bundle-12345
   namespace: bar
@@ -572,11 +572,11 @@ spec:
     name: golang-fuzz
 ```
 
-A newly-created `ResourceRequest` for a task from the catalog git repo:
+A newly-created `ResolutionRequest` for a task from the catalog git repo:
 
 ```yaml
 apiVersion: resolution.tekton.dev/v1alpha1
-kind: ResourceRequest
+kind: ResolutionRequest
 metadata:
   name: get-task-from-git-12345
   namespace: quux
@@ -595,11 +595,11 @@ spec:
     path: /task/golang-fuzz/0.1/golang-fuzz.yaml
 ```
 
-A successfully completed `ResourceRequest`:
+A successfully completed `ResolutionRequest`:
 
 ```yaml
 apiVersion: resolution.tekton.dev/v1alpha1
-kind: ResourceRequest
+kind: ResolutionRequest
 metadata:
   name: get-pipeline-from-git-12345
   namespace: quux
@@ -627,11 +627,11 @@ status:
     type: Succeeded
 ```
 
-A failed `ResourceRequest`:
+A failed `ResolutionRequest`:
 
 ```yaml
 apiVersion: resolution.tekton.dev/v1alpha1
-kind: ResourceRequest
+kind: ResolutionRequest
 metadata:
   name: get-pipeline-from-git-12345
   namespace: quux
@@ -663,30 +663,30 @@ Each Resolver runs as its own controller in the cluster. This allows an
 operator to spin up or tear down support for individual resolvers by
 `apply`ing or `delete`ing them.
 
-A resolver observes `ResourceRequest` objects, filtering on the
+A resolver observes `ResolutionRequest` objects, filtering on the
 `resolution.tekton.dev/resolver` label to find only those it is
 interested in.
 
 Each resolver is granted only the RBAC permissions needed to perform
 resolution. In most cases this will be limited to `GET`, `LIST` and
-`UPDATE` permissions on `ResourceRequests` and their `status`
+`UPDATE` permissions on `ResolutionRequests` and their `status`
 subresource. The "in-cluster" resolver will need permissions to `GET`
 and `LIST` `Tasks`, `ClusterTasks` and `Pipelines` as well. Depending on
 requirements of each, some resolvers may need `GET` on `ConfigMaps` or
 `Secrets` in the `tekton-remote-resolution` namespace as well.
 
 A resolver is only ultimately responsible for updating the `status.data`
-and `status.annotations` field of a `ResourceRequest`. The
-`ResourceRequest` lifecycle controller is responsibile for marking
-resource requests completed or timing them out. A resolver _may_ mark a
-`ResourceRequest` as failed with an accompanying error and reason.
+and `status.annotations` field of a `ResolutionRequest`. The
+`ResolutionRequest` lifecycle controller is responsibile for marking
+resolution requests completed or timing them out. A resolver _may_ mark a
+`ResolutionRequest` as failed with an accompanying error and reason.
 
 #### In-Cluster Resolver
 
 The "in-cluster" resolver will support looking up `Tasks`,
 `ClusterTasks` and `Pipelines` from the cluster it resides in. It will
 mimic Tekton Pipelines' existing built-in support for these resources.
-The parameters for this `ResourceRequest` will look like:
+The parameters for this `ResolutionRequest` will look like:
 
 ```yaml
 kind: Task
@@ -702,7 +702,7 @@ so. The precise approach to verifying a bundle will be based on the
 decisions made in
 [TEP-0091](https://github.com/tektoncd/community/pull/537).
 
-The supported paramaters for a "bundle" `ResourceRequest` will be:
+The supported paramaters for a "bundle" `ResolutionRequest` will be:
 
 ```yaml
 image_url: gcr.io/tekton-releases/catalog/upstream/golang-fuzz:0.1
@@ -710,7 +710,7 @@ name: golang-fuzz
 signer: cosign # TBD, see TEP-0091
 ```
 
-When the bundle is successfully resolved the `ResourceRequest` will be
+When the bundle is successfully resolved the `ResolutionRequest` will be
 updated with both the resource contents and an annotation with the
 digest of the fetched image.
 
@@ -736,7 +736,7 @@ Since clones of large repos can be slow, and not all providers support
 features like sparse checkout, the "git" resolver will implement caching
 as a high priority.
 
-The parameters for a "git" `ResourceRequest` will initially look as
+The parameters for a "git" `ResolutionRequest` will initially look as
 follows:
 
 ```yaml
@@ -748,9 +748,9 @@ path: /task/golang-fuzz/0.1/golang-fuzz.yaml
 
 The git resolver will need to gracefully handle concurrent requests for
 the same resource and will also need to be able to cancel in-flight
-operations if a `ResourceRequest` is failed or deleted.
+operations if a `ResolutionRequest` is failed or deleted.
 
-When the git resource is successfully resolved the `ResourceRequest`
+When the git resource is successfully resolved the `ResolutionRequest`
 will be updated with both the resource contents as well as an annotation
 with the fetched commit SHA.
 
@@ -762,7 +762,7 @@ Tekton Pipelines could consider replacing its baked-in `taskRef` and
 
 At that point Pipelines' maintainers would need to decide how best to
 provide default resolvers "out of the box". One possible approach would be
-to deploy the `ResourceRequest` lifecycle reconciler and a set of resolvers
+to deploy the `ResolutionRequest` lifecycle reconciler and a set of resolvers
 as part of Pipelines' `release.yaml`.
 
 ### Function and Struct Helpers
@@ -770,8 +770,8 @@ as part of Pipelines' `release.yaml`.
 Tekton Pipelines and any other project leveraging Tekton Resolution will
 primarily interact with the resolution machinery through helper
 libraries. These helpers are going to hide as much of the specifics of
-resource requesting as possible but may need some supporting objects passed
-in. For example, a `ResourceRequest` client/lister may need to be passed from
+requesting resources as possible but may need some supporting objects passed
+in. For example, a `ResolutionRequest` client/lister may need to be passed from
 Pipelines to the Resolution helpers but the client or lister would itself be
 generated by, and imported from, the Tekton Resolution project.
 
@@ -781,9 +781,9 @@ generated by, and imported from, the Tekton Resolution project.
 
 Unit and integration tests covering the new features including:
 - Validation of new `taskRef` and `pipelineRef` syntax.
-- Creation of `ResourceRequests`.
-- Behaviour of Pipelines on `ResourceRequest` success.
-- Behaviour of Tekton Pipelines on `ResourceRequest` failure.
+- Creation of `ResolutionRequests`.
+- Behaviour of Pipelines on `ResolutionRequest` success.
+- Behaviour of Tekton Pipelines on `ResolutionRequest` failure.
 - Timing out remote resolution requests.
 
 Eventually the resolution project may reach a point of maturity that
@@ -792,7 +792,7 @@ resolution. At this point Pipelines will need additional test coverage
 for:
 
 - Correctly translating all `taskRefs` and `pipelineRefs` to
-  `ResourceRequests`.
+  `ResolutionRequests`.
 - End-to-end behaviour of all the resolvers supported by Pipelines "out
   of the box".
 
@@ -821,10 +821,10 @@ repos and registries of `Pipelines` and `Tasks`.
 ### Reusability
 
 The CRD-based approach is reusable across any Tekton project that wants
-to utilize remote resources. Submitting `ResourceRequest` objects for
+to utilize remote resources. Submitting `ResolutionRequest` objects for
 resolution is not a feature exclusively tied to Tekton Pipelines.
 Triggers, Workflows, Pipeline-as-Code and others should all be able to
-use `ResourceRequest` objects.
+use `ResolutionRequest` objects.
 
 ### Simplicity
 
@@ -861,9 +861,9 @@ moving to beta.
 ### Coarse-Grained RBAC
 
 With the proposed design RBAC will be limited to whether or not a given
-ServiceAccount / Role can create or read  `ResourceRequest` objects. This
+ServiceAccount / Role can create or read  `ResolutionRequest` objects. This
 won't prevent situations where, for example, multiple resolvers compete
-over the same `ResourceRequest` type.
+over the same `ResolutionRequest` type.
 
 ## Alternatives
 
@@ -1169,7 +1169,7 @@ TriggerBindings, EventListeners, TriggerTemplates, and so on.
 #### Applicability For Other Tekton Projects
 
 The role of the Resolver is limited to fetching YAML strings and writing them
-to the `TektonResourceRequest`. Other Tekton projects could leverage this same
+to the `TektonResolutionRequest`. Other Tekton projects could leverage this same
 mechanism for resolving their own YAML documents and validate / apply defaults
 as they need.
 
@@ -1248,7 +1248,7 @@ needs. Possible opportunity to share controller or libraries to achieve this?
 
 ### Sync Task and Pipeline objects directly into the cluster
 
-Rather than using an intermediary data format like `ResourceRequest`
+Rather than using an intermediary data format like `ResolutionRequest`
 objects Resolvers could instead simply pull Tasks and Pipelines out of
 places like Git repos and `kubectl apply` them to the cluster. This
 would avoid any question of performance impact related to CRDs and would
@@ -1339,7 +1339,7 @@ outlined above:
 
 1. `ClusterInterceptor`-fronted HTTP servers with which Pipelines
    exchanges JSON messages to resolve pipelineRefs.
-2. A `ResourceRequest` CRD in which resources are summoned as Kubernetes
+2. A `ResolutionRequest` CRD in which resources are summoned as Kubernetes
    API Objects & resolved by independent reconcilers.
 
 The code is not production-ready and only supports `PipelineRuns`.
@@ -1353,9 +1353,9 @@ The project is split across several reconcilers:
 1. A shim reconciler watching `PipelineRuns`. Consider this a stand-in
    for Tekton Pipelines just to "make things work" without deeper
    integration.
-2. A reconciler watching `ResourceRequests`
-3. A resolver reconciler watching for Git `ResourceRequests`
-4. A resolver reconciler watching for In-Cluster `ResourceRequests`
+2. A reconciler watching `ResolutionRequests`
+3. A resolver reconciler watching for Git `ResolutionRequests`
+4. A resolver reconciler watching for In-Cluster `ResolutionRequests`
 
 Alongside the controller are two HTTP servers:
 
@@ -1366,7 +1366,7 @@ Alongside the controller are two HTTP servers:
 
 ### Implementation
 
-The project is placed into either `ResourceRequest` mode or
+The project is placed into either `ResolutionRequest` mode or
 `ClusterInterceptor` mode using an environment variable in the
 controller deployment.
 
@@ -1382,18 +1382,18 @@ The order of operations to resolve a single `pipelineRef` is as follows:
 state and type annotation.
 3. At this point the flow splits depending on which mode the project is
 running in:
-  * In `ResourceRequest` mode:
-    1. The shim reconciler creates a `ResourceRequest` object with a
+  * In `ResolutionRequest` mode:
+    1. The shim reconciler creates a `ResolutionRequest` object with a
     `resolution.tekton.dev/type` label and params.
-    2. The `ResourceRequest` reconciler initializes the object's
+    2. The `ResolutionRequest` reconciler initializes the object's
     condition to `Succeeded/Unknown`.
     3. The resolver reconcilers check if they can resolve the
-    `ResourceRequest` by filtering on its type label.
+    `ResolutionRequest` by filtering on its type label.
     4. A matching resolver reconciler performs the work needed to fetch
     the resource's content.
-    5. The resolver reconciler updates the `ResourceRequest` with the
+    5. The resolver reconciler updates the `ResolutionRequest` with the
     resolved data in its `status.data` field.
-    6. The `ResourceRequest` reconciler observes the populated
+    6. The `ResolutionRequest` reconciler observes the populated
     `status.data` and updates the object's condition to
     `Succeeded/True`.
   * In `ClusterInterceptor` mode:
@@ -1436,7 +1436,7 @@ state and condition are publicized through the fields of objects.
 
 3. Resolvers are easy to write given the appropriate framework
 
-In order to support both the `ClusterInterceptor` and `ResourceRequest`
+In order to support both the `ClusterInterceptor` and `ResolutionRequest`
 approaches with the same resolvers a common interface was introduced.
 The interface abstracts away the underlying requests or k8s objects and
 lets the resolver code focus on the fetching and returning of resources

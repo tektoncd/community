@@ -1,7 +1,7 @@
 orgs:
   tektoncd:
     admins:
-    - abayer
+    - priyawadhwa
     - bobcatfish
     - tekton-robot
     - thelinuxfoundation
@@ -17,6 +17,7 @@ orgs:
     has_repository_projects: true
     location: ''
     members:
+    - abayer
     - 16yuki0702
     - AlanGreene
     - CarolynMabbott
@@ -113,7 +114,6 @@ orgs:
     - pratap0007
     - praveen4g0
     - pritidesai
-    - priyawadhwa
     - psschwei
     - rafamqrs
     - raffamendes
@@ -155,7 +155,7 @@ orgs:
       governing-board:
         description: Tekton Governing Board members
         members:
-        - abayer
+        - priyawadhwa
         - bobcatfish
         - vdemeester
         - afrittoli

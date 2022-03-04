@@ -236,12 +236,13 @@ orgs:
         maintainers:
         - abayer
         - bobcatfish
-        - mnuttall
         members:
         - skaegi
         - dlorenc
-        - a-roberts
-        - dibbles
+        - afrittoli
+        - vdemeester
+        - dibyom
+        - priyawadhwa
         privacy: closed
         repos:
           experimental: write

@@ -163,14 +163,13 @@ orgs:
         privacy: closed
       catalog.maintainers:
         description: the catalog maintainers
-        maintainers:
-        - vdemeester
-        - ImJasonH
-        - bobcatfish
         members:
-        - kimsterv
-        - dlorenc
+        - bobcatfish
         - chmouel
+        - dlorenc
+        - ImJasonH
+        - kimsterv
+        - vdemeester
         - vinamra28
         privacy: closed
         repos:

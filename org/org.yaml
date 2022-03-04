@@ -716,6 +716,7 @@ orgs:
         - dlorenc
         - loosebazooka
         - mattmoor
+        - wlynch
         privacy: closed
         repos:
           chains: read

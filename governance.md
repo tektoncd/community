@@ -4,6 +4,15 @@ The Tekton Governance committee is the governing body of the Tekton open source
 project. It's an elected group that represents the contributors to the project,
 and has an oversight on governance and technical matters.
 
+* [Tekton Governance Committee](#tekton-governance-committee)
+* [Governance Facilitator Role (optional)](#governance-facilitator-role-optional)
+* [Maximum Representation](#maximum-representation)
+* [Committee Responsibilities and Deliverables](#committee-responsibilities-and-deliverables)
+* [Governance Meetings and Decision-Making Process](#governance-meetings-and-decision-making-process)
+* [Elections](#elections)
+* [Permissions and access](#permissions-and-access)
+* [Governing board leave policy](#governing-board-leave-policy)
+
 ## Tekton Governance Committee
 
 The Tekton governance committee consists of five elected individuals and one
@@ -303,3 +312,19 @@ Members of the governing board will be given access to these resources:
 
 They have the permissions added through a
 [script](https://github.com/tektoncd/plumbing/blob/main/adjustpermissions.py).
+
+## Governing board leave policy
+
+Any member of the governing board is welcome to take leave from being a governing board member, for any reason (which
+they are not required to disclose). The actions taken will depend on both of:
+
+1. The length of the leave: whether this is greater or less than 1/4 of their total term (since terms are 2 years, this
+   means the criteria is whether or not the leave is greater than 6 months).
+2. Whether their seat will be up for election during the period of their leave
+
+If the leave is less than or equal to 1/4 of the board member's total term, and their seat will not be up for
+re-election during that time, the governing board member may select someone to be an acting governing board member for
+the length of the leave (while maintaining the [maximum representation requirement](#maximum-representation)).
+
+If the length of the leave is greater than 1/4 of the total term, or their seat will be up for election during the
+leave period, the governing board member will be required to step down from their seat and an election will be held.

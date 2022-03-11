@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Configuring Resources at Runtime
 creation-date: '2021-11-08'
-last-updated: '2021-11-29'
+last-updated: '2022-03-11'
 authors:
 - '@lbernick'
 ---
@@ -566,3 +566,8 @@ Pros:
 Cons:
 - Prevents free naming of parameters, and could break existing `TaskRun`s that
 have parameters named in this way.
+
+Implementing pull requests:
+- [Add Step and Sidecar Overrides to TaskRun API](https://github.com/tektoncd/pipeline/pull/4575)
+- [Add functions to merge step/sidecar overrides](https://github.com/tektoncd/pipeline/pull/4617)
+- [Implement Step and Sidecar Overrides for TaskRun](https://github.com/tektoncd/pipeline/pull/4598)

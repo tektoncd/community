@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implemented
 title: Simplify metrics
 creation-date: '2021-06-23'
-last-updated: '2021-11-01'
+last-updated: '2022-02-28'
 authors:
 - "@vdemeester"
 - "@yaoxiaoqi"
@@ -414,6 +414,8 @@ Pull-request(s) merged.
 Note: This section is exclusively for merged pull requests, for this TEP.
 It will be a quick reference for those looking for implementation of this TEP.
 -->
+- [Add Configuration for Metrics Cardinality Simplification](https://github.com/tektoncd/pipeline/pull/4201)
+- [Change Default Metrics Level for Taskrun and Pipelinerun](https://github.com/tektoncd/pipeline/pull/4630)
 
 ## References (optional)
 

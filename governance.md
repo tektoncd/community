@@ -317,13 +317,16 @@ They have the permissions added through a
 Any member of the governing board is welcome to take leave from being a governing board member, for any reason (which
 they are not required to disclose). The actions taken will depend on both of:
 
-1. The length of the leave: whether this is greater or less than 1/4 of their total term (since terms are 2 years, this
-   means the criteria is whether or not the leave is greater than 6 months).
+1. The length of the leave: whether this is greater or less than approximately (at the discretion of the other governing board members)
+   1/4 of their total term (since terms are 2 years, this means the criteria is whether or not the leave is greater than 6 months).
 2. Whether their seat will be up for election during the period of their leave
 
 If the leave is less than or equal to 1/4 of the board member's total term, and their seat will not be up for
 re-election during that time, the governing board member may select someone to be an acting governing board member for
-the length of the leave (while maintaining the [maximum representation requirement](#maximum-representation)).
+the length of the leave. This person must:
+
+* Meet [the maximum representation requirement](#maximum-representation)
+* Meet [the candidate eligibility requirements](#candidate-eligibility)
 
 If the length of the leave is greater than 1/4 of the total term, or their seat will be up for election during the
 leave period, the governing board member will be required to step down from their seat and an election will be held.

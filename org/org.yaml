@@ -176,6 +176,17 @@ orgs:
         privacy: closed
         repos:
           catalog: write
+      catlin.maintainers:
+        description: the catlin maintainers
+        maintainers:
+        - vdemeester
+        - PuneetPunamiya
+        - vinamra28
+        members:
+        - piyush-garg
+        privacy: closed
+        repos:
+          catlin: write
       chains.maintainers:
         description: the chains maintainers
         maintainers:
@@ -706,6 +717,16 @@ orgs:
         privacy: closed
         repos:
           hub: read
+      catlin.collaborators:
+        description: The catlin collaborators
+        maintainers:
+        - vdemeester
+        members:
+        - SM43
+        - chmouel
+        privacy: closed
+        repos:
+          catlin: read
       chains.collaborators:
         description: The chains collaborators
         maintainers:

@@ -460,6 +460,19 @@ orgs:
         privacy: closed
         repos:
           website: read
+      community.maintainers:
+        description: The community maintainers, Tekton GB and others
+        members:
+        - bobcatfish
+        - jerop
+        - vdemeester
+        - dibyom
+        - priyawadhwa
+        - afrittoli
+        - pritidesai
+        privacy: closed
+        repos:
+          community: write
       community.collaborators:
         description: The community collaborators
         maintainers:

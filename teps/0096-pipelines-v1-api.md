@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Pipelines V1 API
 creation-date: '2021-11-29'
-last-updated: '2022-02-07'
+last-updated: '2022-03-18'
 authors:
 - '@lbernick'
 - '@jerop'

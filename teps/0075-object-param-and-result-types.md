@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Object/Dictionary param and result types
 creation-date: '2021-07-14'
-last-updated: '2022-02-02'
+last-updated: '2022-03-18'
 authors:
 - '@bobcatfish'
 - '@skaegi' # I didn't check with @skaegi before adding his name here, but I wanted to credit him b/c he proposed most of this in https://github.com/tektoncd/pipeline/issues/1393 1.5 years ago XD
@@ -421,6 +421,9 @@ Declaring defaults for parameters that are of type object would follow the patte
 [array param defaults](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#specifying-parameters) which is
 to declare the value in the expected format in yaml (which is treated as json by the k8s APIs).
 
+If a value is provided for the param, the default will not be used (i.e. there will be no behavior to merge the
+default with the provided value, if for example the provided value specified some fields but not others).
+
 Params example with default value:
 
 ```yaml
@@ -595,10 +598,12 @@ In the above example:
 cat /place/with/actual/cloned/gitrepo.json > $(results.cloned-gitrepo.path)
 ```
 
-`$(results.cloned-gitrepo.path)` refers to the path at which to write the `clone-gitrepo` object as json (tt does not
+`$(results.cloned-gitrepo.path)` refers to the path at which to write the `clone-gitrepo` object as json (it does not
 refer to an attribute of `cloned-gitrepo` called `path`, and even if `cloned-gitrepo` had a `path` attribute, there
 would be no collision because variable replacement for individual attributes of the result is not supported within the
 Task.
+
+(See [emitting object reesults](#emitting-object-results) for more details.)
 
 #### Within a Pipeline Task
 

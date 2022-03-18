@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Array result types
 creation-date: '2021-07-14'
-last-updated: '2022-02-03'
+last-updated: '2022-03-18'
 authors:
 - '@bobcatfish'
 ---

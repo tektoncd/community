@@ -151,6 +151,7 @@ orgs:
     - ywluogg
     - zhangtbj
     - ziheng
+    - austinzhao-go
     teams:
       governing-board:
         description: Tekton Governing Board members

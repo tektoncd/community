@@ -1,11 +1,12 @@
 ---
-status: implementable
+status: implementing
 title: Embedded TaskRuns and Runs Status in PipelineRuns
 creation-date: '2022-01-24'
-last-updated: '2022-02-14'
+last-updated: '2022-03-23'
 authors:
 - '@lbernick'
 - '@jerop'
+- '@abayer'
 see-also:
 - TEP-0021
 - TEP-0056
@@ -221,13 +222,16 @@ identify related objects.
 
 #### 1. Add Minimal Embedded Status
 
-We will introduce a new struct to hold references to child `TaskRuns` and `Runs`:
+We will introduce a new struct to hold references to child `TaskRuns` and `Runs`, and
+their corresponding `WhenExpressions` and `ConditionChecks`:
 
 ```go
-type childReference struct {
-  runtime.TypeMeta           `json:",inline"` // contains API version and Kind
-  Name              string   `json:"name,omitempty"` // name of the TaskRun/Run
-  PipelineTaskName  string   `json:"pipelineTaskName,omitempty"` // name of the PipelineTask used to create the TaskRun/Run
+type ChildStatusReference struct {
+  runtime.TypeMeta                                          `json:",inline"` // contains API version and Kind
+  Name              string                                  `json:"name,omitempty"` // name of the TaskRun/Run
+  PipelineTaskName  string                                  `json:"pipelineTaskName,omitempty"` // name of the PipelineTask used to create the TaskRun/Run
+  ConditionChecks   []*PipelineRunChildConditionCheckStatus `json:"conditionChecks,omitempty"` // the condition checks for the TaskRun/Run in the pipeline
+  WhenExpressions   []WhenExpression                        `json:"whenExpressions,omitempty"` // the WhenExpressions for the TaskRun/Run in the pipeline
 }
 ```
 
@@ -239,6 +243,37 @@ While the names of `TaskRuns` and `Runs` are concatenations of the names of the
 `PipelineRuns` and `PipelineTasks`, they are sometimes truncated when they are
 too long. Therefore, we include the `PipelineTask` name because tools, such as
 the Tekton Dashboard, would still need the `PipelineTask` name in these situations.
+
+`ConditionChecks` is present in the existing `PipelineRunTaskRunStatus` struct,
+and `WhenExpressions` is present in both the existing `PipelineRunTaskRunStatus`
+and `PipelineRunRunStatus` structs. They provide information which is not available
+from the individual `TaskRun` or `Run` status, since they represent concepts which
+only exist at the `PipelineRun` level. Therefore, they need to be preserved.
+
+To support `ConditionChecks`, we will add a new struct `PipelineRunChildConditionCheckStatus`
+which will hold the names and statuses of condition checks for the `PipelineTask`. It
+will inline the `PipelineRunConditionCheckStatus` currently used in the full embedded
+statuses. This is needed because `PipelineRunConditionCheckStatus` doesn't contain
+the `ConditionCheckName`, which is the equivalent of a `PipelineTask`'s name, just
+`ConditionName`, which is the equivalent of a `TaskRun` or `Run`'s name. Since we're 
+going to store an array of `PipelineRunChildConditionCheckStatus` rather than a map of 
+`ConditionCheckName` to `PipelineRunConditionCheckStatus`, we need the `ConditionCheckName`
+in the new struct.
+
+This struct, and `ChildStatusReferences.ConditionChecks`, will be removed once 
+`Conditions`, which have been deprecated, are removed completely. We are not using child
+references for the `conditions`' statuses, because `ConditionCheckStatus`, the only thing
+in `PipelineRunConditionCheckStatus` other than the `ConditionName`, isn't replicated
+anywhere else, and contains a fairly minimal amount of data - the pod name, start and
+completion times, and a `corev1.ContainerState`. See [the issue for deprecating `Conditions`](issue-3377)
+for more information on the planned removal of `Conditions`.
+
+```go
+type PipelineRunChildConditionCheckStatus struct {
+	PipelineRunConditionCheckStatus         `json:",inline"` // the inlined condition check status
+	ConditionCheckName               string `json:"conditionCheckName,omitempty"` // the condition check's name
+}
+```
 
 ###### Alternatives
 * [Separate TaskRuns and Runs](#add-minimal-embedded-status-for-taskruns-and-runs)
@@ -740,6 +775,9 @@ support this expansion.
     * [TEP-0090: Matrix][tep-0090]
     * [TEP-0096: Pipelines V1 API][tep-0096]
 * [Tekton Results][results-api]
+* Pull Requests:
+  * [[TEP-0100] Fields/flags/docs for embedded TaskRun and Run statuses in PipelineRuns](https://github.com/tektoncd/pipeline/pull/4705)
+  * [[TEP-0100] Implementation for embedded TaskRun and Run statuses in PipelineRuns](https://github.com/tektoncd/pipeline/pull/4706)
 
 [tep-0056]: https://github.com/tektoncd/community/blob/main/teps/0056-pipelines-in-pipelines.md
 [tep-0090]: https://github.com/tektoncd/community/blob/main/teps/0090-matrix.md

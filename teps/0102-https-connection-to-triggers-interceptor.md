@@ -44,6 +44,7 @@ and also helps triggers users where there is a hard requirement to handle all co
 ## Proposal
 
 Triggers now have full support of end to end secure connection by Running ClusterInterceptor as `HTTPS`.
+Triggers uses knative libraries to generate self signed certs in the same way that knative/pkg uses it for admission webhooks.
 
 ### User Stories
 
@@ -71,12 +72,14 @@ Hence the goal is to make sure that all ClusterInterceptor calls are using HTTPS
 At high level below are few implementation details
 * Port and ENV changes in [core-interceptors-deployment.yaml](https://github.com/tektoncd/triggers/blob/main/config/interceptors/core-interceptors-deployment.yaml).
 * Add new secret file to [config/interceptors](https://github.com/tektoncd/triggers/tree/main/config/interceptors) folder.
-* Update roles, clusterroles.
+* Update roles, clusterroles in order to give permission to interceptor to access/create secrets.
 * Changes to ClusterInterceptor server to run as `HTTPS`.
-* Changes to EventListener in order to connect with ClusterInterceptor securely.  
+* Changes to EventListener in order to connect with ClusterInterceptor securely.
+    For now EventListener find `cacert` internally from `Sink` object but later we can add a field like cabundle to ClusterInterceptor CRD similar to WebhookConfiguration CR.
 
 ## A look into the future
 * Providing a way to user to pass their own certificate to run ClusterInterceptor server.
+    It can be done by adding a field `cabundle` to ClusterInterceptor CRD similar to WebhookConfiguration CR.
 
 ## References 
 1. GitHub issue: [#871](https://github.com/tektoncd/triggers/issues/871)

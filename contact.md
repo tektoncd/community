@@ -30,6 +30,8 @@ group, so please join if you are interested in accessing those docs.
 Our mailing list for end users of Tekton is
 [tekton-users@](https://groups.google.com/forum/#!forum/tekton-users).
 
+To report or enquiry about security issues, please refer to our [security policy](https://github.com/tektoncd/community/security/policy).
+
 ## Calendar
 
 Tekton events such as [working group](./working-groups.md) and other meetings

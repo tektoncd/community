@@ -222,7 +222,7 @@ This is the complete list of Tekton teps:
 |[TEP-0072](0072-results-json-serialized-records.md) | Results: JSON Serialized Records | implementable | 2021-07-26 |
 |[TEP-0073](0073-simplify-metrics.md) | Simplify metrics | implemented | 2022-02-28 |
 |[TEP-0074](0074-deprecate-pipelineresources.md) | Deprecate PipelineResources | proposed | 2022-02-25 |
-|[TEP-0075](0075-object-param-and-result-types.md) | Object/Dictionary param and result types | implementable | 2022-03-18 |
+|[TEP-0075](0075-object-param-and-result-types.md) | Object/Dictionary param and result types | implementable | 2022-04-08 |
 |[TEP-0076](0076-array-result-types.md) | Array result types | implementable | 2022-03-18 |
 |[TEP-0079](0079-tekton-catalog-support-tiers.md) | Tekton Catalog Support Tiers | proposed | 2022-01-25 |
 |[TEP-0080](0080-support-domainscoped-parameterresult-names.md) | Support domain-scoped parameter/result names | implemented | 2021-08-19 |

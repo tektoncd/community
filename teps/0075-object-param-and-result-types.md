@@ -2,10 +2,10 @@
 status: implementable
 title: Object/Dictionary param and result types
 creation-date: '2021-07-14'
-last-updated: '2022-03-18'
+last-updated: '2022-04-08'
 authors:
 - '@bobcatfish'
-- '@skaegi' # I didn't check with @skaegi before adding his name here, but I wanted to credit him b/c he proposed most of this in https://github.com/tektoncd/pipeline/issues/1393 1.5 years ago XD
+- '@skaegi' # proposed most of this in https://github.com/tektoncd/pipeline/issues/1393 2.5 years ago XD
 ---
 
 # TEP-0075: Object/Dictionary param and result types
@@ -99,10 +99,7 @@ an interface and which are specific to the task.
 * Supporting use of the entire object in a Task or Pipeline field, i.e. as the values for a field that requires a
   object, the way we do
   [for arrays](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#substituting-array-parameters). Keeping this
-  out of scope because we would need to explictly decide what fields we want to support this for. We'll likely add it
-  later; at that point we'd want to support the same syntaxes we use
-  [for arrays](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#substituting-array-parameters) (including
-  `[*]`)
+  out of scope because we would need to explictly decide what fields we want to support this for.
 
 ### Use Cases
 
@@ -197,8 +194,8 @@ an interface and which are specific to the task.
 * Must be possible to programmatically determine the structure of the object
 * Must be possible for a result object to be empty
 * Must be possible to use the object results of one Task in a Pipeline as the param of another Task in the pipeline
-  which has a object param when the interface matches (more detail in
-  [required vs optional keys](#required-vs-optional-keys))
+  which has a object param when the interface matches (more detail in [matching interfaces](#matching-interfaces-and-extra-keys)
+  and [required vs optional keys](#required-vs-optional-keys))
 * Must be possible to use one specific value in an object result of one Task in a Pipeline as the param of another Task
   in the pipeline which has a string param
     * If there is no value for the specified key, the Pipeline execution should fail
@@ -283,12 +280,12 @@ Assuming we move forward with using JSON to specify results (see "why json" in
 us to define schemas for JSON.
 
 Since JSON schema was created for exactly that purpose, it seems like a reasonable choice
-([see original suggestion](https://github.com/tektoncd/pipeline/issues/1393#issuecomment-558833526).
+([see original suggestion](https://github.com/tektoncd/pipeline/issues/1393#issuecomment-558833526)).
 [OpenAPI schema objects](https://swagger.io/specification/#schema-object) are an interesting alternative which builds on
 JSON schema and are already used by Kubernetes
 [to publish schema valiation for CRDs](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#publish-validation-schema-in-openapi-v2)
 . The subset of JSON Schema that we are proposing to adopt in this TEP is compatible with OpenAPI schema
-([Open API supported JSON Schema Keywords](https://swagger.io/docs/specification/data-models/keywords/)), so at the
+([Open API supports JSON Schema Keywords](https://swagger.io/docs/specification/data-models/keywords/)), so at the
 point when we start proposing more JSON Schema support we should consider if we want to support the Open API schema
 variations instead.
 
@@ -350,36 +347,65 @@ if they would like to override this and not allow additional keys to be provided
 
 We have several options for how we define and handle required and optional keys:
 
+1. Initially do not support the `required` field and imply implicitly that all keys are required (i.e. make the
+   assumption in the controller but do not reflect it in the types themselves).
+   * Pro: By not supporting the `required` field at all (initially) there will be no ambiguity or confusion in the
+     initial version of this behavior. This approach lets us postpone answering the question of how to effectively
+     support required vs. optional fields. We've been going back and forth on this issue, and by punting the question
+     for now, we can let people use the feature and gather feedback before deciding (e.g. maybe we won't need to support
+     optional fields at all)
+   * Pro: We are already suggesting infering some things such as
+     [that `type: string` is being used for empty properties](#declaring-object-results-and-params), so we're already
+     setting a precedent for infering some parts of the schema definition 
+   * Con: Anyone reading the JSON Schema in the Task would think the attributes are optional when they are not
 1. Embrace the optional by default behavior of JSON Schema; instead of validating the presences of "required" keys via
    jsonschema, we could do the validation based on the declared variable replacement, e.g. say a Task declares it needs
    an object called `foo` with an attribute called `bar`. At runtime if the Task is provided with an object
    `foo` that doesn't have an attribute called `bar` this will be okay unless the Task contains variable replacement
-   that uses it (`$(params.foo.bar)`). Con: weird because effectively we're implying `required` (assuming the fields are
-   used, and if they aren't used, why are they there) even though the JSON Schema declaration says the fields are
-   optional.
-2. Infer that all keys are required, e.g. take
-   the [TEP-0023 implicit param approach](https://github.com/tektoncd/community/blob/main/teps/0023-implicit-mapping.md)
-   and in a mutating admission controller, add the `required` section for all properties in the dictionary (unless
-   a `required` field is already added). Con: TEP-0023 deals with making changes to runtime types (PipelineRun, TaskRun)
-   and it would be strange to mutate instances that will be reused; in fact mutations like this would interfere with
-   efforts we might explore in the future to provides hashes of Tasks and Pipelines so folks can ensure the are running
-   what they think they are running.
-3. Like the previous version but instead of mutating the Tasks and Pipelines, imply this implicitly (i.e. make the
-   assumption in the controller but do not reflect it in the types themselves). Pro: We are already suggesting infering
-   some things such as
-   [that `type: string` is being used for empty properties](#declaring-object-results-and-params), so adding this kind
-   of inference as well isn't totally out of the question. Con: Anyone reading the JSON Schema in the Task would think the
-   attributes are optional when they are not
-4. Make our version of JSON Schema deviate from the official version: default to `required` and instead introduce syntax
+   that uses it (`$(params.foo.bar)`).
+   * Pro: Allows us to use JSON Schema as is and gives us the behavior we want.
+   * Pro: Optional by default behavior will be useful if we pursue
+     [the future option of supporting pre-defined schemas](#potential-future-work): optional by default will allow Tasks to
+     refer to schemas for their params, and additive changes can be made to those schemas without requiring all Tasks using
+     them to be updated.
+   * Con: weird because effectively we're implying `required` (assuming the fields are used, and if they aren't used,
+     why are they there) even though the JSON Schema declaration says the fields are optional.
+1. Infer that all keys are required and add the required field via a mutating admission controller for all properties in
+   the dictionary (unless a `required` field is already added).
+   * Con: it would be strange to mutate instances that will
+     be reused; in fact mutations like this would interfere with efforts we might explore in the future to provides hashes
+     of Tasks and Pipelines so folks can ensure the are running what they think they are running.
+1. Make our version of JSON Schema deviate from the official version: default to `required` and instead introduce syntax
    for `optional` (in fact
    [early versions of JSON Schema used `optional` instead of `required`](https://datatracker.ietf.org/doc/html/draft-zyp-json-schema-03#appendix-A))
-5. [Create our own JSON Schema based syntax instead](#alternative-2-create-a-wrapper-for-json-schema)
+1. [Create our own JSON Schema based syntax instead](#alternative-2-create-a-wrapper-for-json-schema)
+1. When using variable replacement with optional fields (i.e. fields that are not explicitly listed in the `required`
+   stanza), if they are not provided at runtime, replace them with a default zero value (e.g. "" for string types)
+   * [TEP-0048](https://github.com/tektoncd/community/blob/main/teps/0048-task-results-without-results.md) is exploring
+     a similar feature, i.e. a way of providing defaults when values are not available when doing variable replacment.
+     Suggest we let TEP-0048 progress and if we decide to provide zero values for optional fields we follow a similar
+     approach. If we support this we may also need a syntax to allow authors to check if a value has been set or is
+     a default value.
 
-This proposal suggests we take approach (1) as it allows us to use JSON Schema as is and gives us the behavior we want.
-Additionally, optional by default behavior will be useful if we pursue
-[the future option of supporting pre-defined schemas](#potential-future-work): optional by default will allow Tasks to
-refer to schemas for their params, and additive changes can be made to those schemas without requiring all Tasks using
-them to be updated.
+This proposal suggests we use (1):
+* Do not support the `required` field (at least initially)
+* Imply that all fields are `reuquired` (as if the `required` field was present and all object fields were listed.)
+
+For example in the following param `gitrepo` the `url` and `commitish` fields will both be required; if at runtime one
+or both of them are not present in the object provided for the `gitrepo` parameter, execution will fail (in the same
+way as it would for a parameter that is entirely missing and has no default specified):
+
+```yaml
+spec:
+  params:
+    - name: gitrepo
+      type: object
+      properties:
+        url: {}
+        commitish: {}
+```
+
+The behavior will be as if the above param specification included `required: [url, commitish]`.
 
 ### Notes/Caveats
 
@@ -555,8 +581,9 @@ _This proposal does not include adding support for any additional syntax (though
 
 **When providing values for objects** Task and Pipeline authors can provide an entire object as a value only when the
 value is also an object (see [matching interface and extra keys](#matching-interfaces-and-extra-keys)) by using
-[the same `[*]` syntax used to provide entire arrays](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#substituting-array-parameters)
-.
+[the same `[*]` syntax used to provide entire arrays](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#substituting-array-parameters).
+(Note that supporting this replacement for arbitrary Task and Pipeline fields [is currently out of scope](#non-goals);
+this feature would apply to binding results to params only.
 
 In the above example:
 
@@ -883,6 +910,35 @@ e.g. array or dict values?
 be completely backwards compatible.
 
 ## Potential future work
+
+### Support for "no schema"
+
+To make authoring time easier, we could support users declaring that a param or result is of type object, but not
+require them to specify anything further, including the keys they expect the object to support. For example inside
+of a Task you could do something like this:
+
+```yaml
+spec:
+  params:
+    - name: grab-bag
+      type: object
+  steps:
+    - name: grab-specific-key-from-bag
+      image: ubuntu
+      script: |
+        echo $(params.grab-bag.magic-key)"
+    ...
+  results:
+    - name: buncha-stuff
+      type: object
+```
+
+The use of `$(params.grab-bag.magic-key)` would imply that the `grab-bag` param is expected to have a key called
+`magic-key` but this would not need to be specified in the schema.
+
+The result `buncha-stuff` could include any keys (no keys would also be valid); no schema would be enforced at runtime.
+
+### Increased schema support
 
 Once Task and Pipeline authors are able to define object schemas for Tasks and Params, it would be very useful to:
 

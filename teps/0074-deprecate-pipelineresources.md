@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Deprecate PipelineResources
 creation-date: '2021-07-14'
-last-updated: '2022-02-25'
+last-updated: '2022-04-11'
 authors:
 - '@bobcatfish'
 ---
@@ -17,7 +17,7 @@ authors:
   - [Use Cases](#use-cases)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
-  - [Requirements to mark as <code>implementable</code>](#requirements-to-mark-as-)
+  - [Features that will replace PipelineResources functionality](#features-that-will-replace-pipelineresources-functionality)
   - [New repo: tektoncd/images](#new-repo-tektoncdimages)
   - [Risks and Mitigations](#risks-and-mitigations)
   - [User Experience](#user-experience)
@@ -150,43 +150,35 @@ that maybe this concept, at least in its current form, isn't required).
 
 ## Proposal
 
-1. Update dogfooding to use [the experimental Pipeline to TaskRun custom task](https://github.com/tektoncd/experimental/pull/770)
-   as a POC that combining Tasks is a viable way to extend Tasks instead of using PipelineResources
-1. Merge this proposal as "proposed"
-1. Mark PipelineResources as deprecated in our Pipelines documentation; announce it officially in the next
-   Pipelines release.
-1. Continue to support `PipelineResources` in the Pipelines `v1beta1` API until we no longer support `v1beta1` and
-   only support `v1`+. `PipelineResources` may be removed in `v1` even if this TEP is not yet implementable.
-1. Wait for the TEPs that this proposal depends on for replacing `PipelineResources` functionality (listed in
-   [Design details](#design-details) and prioritized in [Risks and Mitigations](#risks-and-mitigations)) 
-   to be merged as `implementable`, implemented, and promoted to beta, i.e.:
-    * [TEP-0056 Pipelines in Pipelines](https://github.com/tektoncd/community/blob/main/teps/0056-pipelines-in-pipelines.md)
-      must be at a beta level of stability
-    * [TEP-0075 Object/Dictionary support](https://github.com/tektoncd/community/pull/479) must be at a beta level of
-      stability
-    * [TEP-0076 Array support](https://github.com/tektoncd/community/pull/479) must be at a beta level of stability
-    * [TEP-0044 Data Locality and Pod Overhead in Pipelines](https://github.com/tektoncd/community/blob/main/teps/0044-data-locality-and-pod-overhead-in-pipelines.md)
-      must be implemented at an alpha level of stability, to give users a reasonable migration path off of PipelineResources
-1. If any of these TEPs this proposal depends on are rejected, we must create a new TEP to fill the gap in functionality
-   before moving forward
-1. [Once we meet these requirements](#requirements-to-mark-as-implementable), update this TEP to be `implementable`
+1. ~~Update dogfooding to use [the experimental Pipeline to TaskRun custom task](https://github.com/tektoncd/experimental/pull/770)
+   in at least one Pipeline as a POC that combining Tasks is a viable way to extend Tasks instead of using PipelineResources~~
+   - Dogfooding already [uses](https://github.com/tektoncd/plumbing/blob/f266eeeb78b5bd46010d6f29d623488bfb644251/tekton/mario-bot/mario-github-comment.yaml#L57)
+   the Pipeline to TaskRun custom task, showing that this is a viable strategy.
+   - We should update dogfooding to use the latest approach to running a Pipeline in a pod, the experimental
+   [ColocatedPipelineRun custom Task](https://github.com/tektoncd/experimental/tree/main/pipeline-in-pod)
+1. ~~Mark PipelineResources as deprecated in our Pipelines documentation; announce it officially in the next
+   Pipelines release.~~
+1. Update tutorials, examples (except those used for testing), and dogfooding Pipelines to not use PipelineResources.
+1. Continue to support `PipelineResources` in the Pipelines `v1beta1` API for at least 9 months after announcing their deprecation,
+   following our [stability policy](https://github.com/tektoncd/pipeline/blob/main/api_compatibility_policy.md).
 1. Once this TEP is marked as `implementable`, create [tektoncd/images](#new-repo-tektoncdimages) and move the logic
    backing these images to this repo; update the Tekton Pipelines release to reference these images release from there
    instead of within the Tekton Pipelines release itself
 
-### Requirements to mark as `implementable`
+### Features that will replace PipelineResources functionality
 
-- [ ] Update dogfooding to use [the experimental Pipeline to TaskRun custom task](https://github.com/tektoncd/experimental/pull/770)
+- [ ] Update dogfooding to use [the experimental ColocatedPipelineRun custom task](https://github.com/tektoncd/experimental/tree/main/pipeline-in-pod)
   - [x] Update uses of `PipelineResources` in plumbing to use `Pipelines` instead of `Tasks` with `PipelineResources`
     - Configuration in [ci-workspaces](https://github.com/tektoncd/plumbing/tree/main/tekton/ci-workspace/jobs) represents
       `Pipeline` and `Task` usage which is being updated to use `workspaces` and `when expressions` and to no longer use
       `PipelineResources`
-  - [ ] Update some or all resulting `Pipelines` to run "in a pod" using [the experimental Pipeline to TaskRun custom task](https://github.com/tektoncd/experimental/pull/770)
-- [ ] [TEP-0056 Pipelines in Pipelines](https://github.com/tektoncd/community/blob/main/teps/0056-pipelines-in-pipelines.md) is implemented and promoted to beta
+  - [ ] Update some or all resulting `Pipelines` to run "in a pod" using [the experimental ColocatedPipelineRun custom task](https://github.com/tektoncd/experimental/tree/main/pipeline-in-pod)
 - [ ] [TEP-0075 Object/Dictionary support](https://github.com/tektoncd/community/pull/479) is implemented and promoted to beta
 - [ ] [TEP-0076 Array support](https://github.com/tektoncd/community/pull/479) is implemented and promoted to beta
 - [ ] [TEP-0044 Data Locality and Pod Overhead in Pipelines](https://github.com/tektoncd/community/blob/main/teps/0044-data-locality-and-pod-overhead-in-pipelines.md)
   is implemented at alpha
+  - [ ] If the solution to TEP-0044 requires [TEP-0056 Pipelines in Pipelines](https://github.com/tektoncd/community/blob/main/teps/0056-pipelines-in-pipelines.md),
+  this should also be in beta
   
 ### New repo: tektoncd/images
 
@@ -326,9 +318,10 @@ without requiring PipelineResources:
 
 ## Test Plan
 
-Since this is about removing an existing feature, not exactly sure what to put in the test plan. Once we start working
-on the v1 release we'll need to do some work to make sure that we can continue to support the beta API with references
-to PipelineResources until we stop supporting beta.
+Since this is about removing an existing feature, not exactly sure what to put in the test plan.
+If v1 is released before PipelineResources are removed from the v1beta1 API, we will need to make sure
+that we can continue to support the beta API with references to PipelineResources until 9 months after the deprecation
+announcement or until we stop supporting the beta API, whichever comes first.
 
 ## Design Evaluation
 
@@ -382,15 +375,16 @@ Two ways we could potentially tackle the extensibilitiy problems in PipelineReso
 ## Upgrade & Migration Strategy
 
 1. Announce [the deprecation](https://github.com/tektoncd/pipeline/blob/main/docs/deprecations.md)
+1. Remove usages of PipelineResources in our tutorials and dogfooding.
 1. When we create v1, do not include PipelineResources in any of the API surfaces
   1. Provide users with docs and examples showing how to migrate from PipelineResources
-1. Once we stop supporting the beta types, we would completely delete PipelineResources from our codebase
+1. At least 9 months after announcing PipelineResources deprecation, we can completely delete PipelineResources from our codebase
 
 _See details in [Proposal](#proposal)_
 
 ## Implementation Pull request(s)
 
-TBD
+- [Mark PipelineResources as deprecated](https://github.com/tektoncd/pipeline/pull/4376)
 
 ## References
 

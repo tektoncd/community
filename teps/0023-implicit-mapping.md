@@ -6,6 +6,8 @@ authors:
 creation-date: 2020-10-01
 last-updated: 2021-12-15
 status: implemented
+superseded-by:
+- TEP-0107
 ---
 
 # TEP-0023: Implicit Parameter Mapping for Embedded Specs

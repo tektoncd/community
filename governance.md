@@ -21,13 +21,19 @@ one year: every year either two or three of the seats are up for election.
 
 ### Current members
 
+| Full Name                                  |  Company   | GitHub                                        | Slack                                                         | Elected On | Until    |
+|-------------------                         |:----------:|-----------------------------------------------|---------------------------------------------------------------|------------|----------|
+| Priya Wadhwa                               | ChainGuard | [priyawadhwa](https://github.com/priyawadhwa) | [@Priya Wadhwa](https://tektoncd.slack.com/team/U02T0CS9PN0)  | Feb 2022   | Feb 2024 |
+| Vincent Deemester                          |  Red Hat   | [vdemeester](https://github.com/vdemeester)   | [@vdemeester](https://tektoncd.slack.com/team/UHSQGV1L3)      | Feb 2021   | Feb 2023 |
+| Jerop Kipruto (while Christie is on leave) |   Google   | [jerop](https://github.com/jerop)             | [@Jerop Kipruto](https://tektoncd.slack.com/team/U011DPQSP0V) | Apr 2022   | Oct 2022 |
+| Andrea Frittoli                            |    IBM     | [afrittoli](https://github.com/afrittoli)     | [@Andrea Frittoli](https://tektoncd.slack.com/team/UJ411P2CC) | Feb 2022   | Feb 2024 |
+| Dibyo Mukherjee                            |   Google   | [dibyom](https://github.com/dibyom)           | [@Dibyo Mukherjee](https://tektoncd.slack.com/team/UJ73HM7PZ) | Feb 2021   | Feb 2023 |
+
+On leave until Oct 3, 2022:
+
 | Full Name         |  Company   | GitHub                                        | Slack                                                         | Elected On | Until    |
 |-------------------|:----------:|-----------------------------------------------|---------------------------------------------------------------|------------|----------|
-| Priya Wadhwa      | ChainGuard | [priyawadhwa](https://github.com/priyawadhwa) | [@Priya Wadhwa](https://tektoncd.slack.com/team/U02T0CS9PN0)  | Feb 2022   | Feb 2024 |
-| Vincent Deemester |  Red Hat   | [vdemeester](https://github.com/vdemeester)   | [@vdemeester](https://tektoncd.slack.com/team/UHSQGV1L3)      | Feb 2021   | Feb 2023 |
 | Christie Wilson   |   Google   | [bobcatfish](https://github.com/bobcatfish)   | [@Christie Wilson](https://tektoncd.slack.com/team/UJ6DECY78) | Feb 2021   | Feb 2023 |
-| Andrea Frittoli   |    IBM     | [afrittoli](https://github.com/afrittoli)     | [@Andrea Frittoli](https://tektoncd.slack.com/team/UJ411P2CC) | Feb 2022   | Feb 2024 |
-| Dibyo Mukherjee   |   Google   | [dibyom](https://github.com/dibyom)           | [@Dibyo Mukherjee](https://tektoncd.slack.com/team/UJ73HM7PZ) | Feb 2021   | Feb 2023 |
 
 There is no designated facilitator at the moment, the responsibility is
 distributed across the five members of the committee.
@@ -253,15 +259,17 @@ Note that we have constrained the board such that no single employer can have mo
 
 When someone joins the governing board:
 
+- They should be added to [the list of current governing board members](#current-members)
 - They should be granted
   [the permissions given them as members of the governing board](#permissions-and-access)
 - They will be added to the `#governance-private` and `#governance`
   [slack](contact.md#slack) channels
-- They will be added to the "Tekton Governing Board Meeting" which occurs every
-  2 weeks and to the facilitator rotation, and added to the document as owners
+- They will be added as facilitators to [the Governing Board and Community meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#governing-board--community)
 - They will be added as managers to
   [the Tekton community Google Drive](https://github.com/tektoncd/community/blob/main/contact.md#shared-drive)
 - They will be added as admins to
+  [the tektoncd GitHub org](https://github.com/tektoncd/community/blob/main/org/org.yaml)
+- They will be added as team members to the `governing-board` team in
   [the tektoncd GitHub org](https://github.com/tektoncd/community/blob/main/org/org.yaml)
 - They will be added as owners to
   [the community repo](https://github.com/tektoncd/community/blob/main/OWNERS)
@@ -274,16 +282,19 @@ When someone joins the governing board:
 
 When someone leaves the governing board:
 
+- They should be moved from [the list of current governing board members](#current-members) to [the list of former members](#former-members-%EF%B8%8F)
 - [The permissions given them as members of the governing board](#permissions-and-access)
   should be revoked, unless they need them to continue to
-  [act as build cop](https://github.com/tektoncd/plumbing/tree/main/bots/buildcaptain#tekton-buildcaptain)
-- They will be removed from the "Tekton Governing Board Meeting" and removed as
-  editors from the agenda doc
+  [act as build captain](https://github.com/tektoncd/plumbing/tree/main/bots/buildcaptain#tekton-buildcaptain)
+- They may want to be removed as facilitators to [the Governing Board and Community meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#governing-board--community)
+  (ask them their preference) - they are welcome to continue
 - They will be removed from the `#governance-private` [slack](contact.md#slack)
   channel
 - They will be removed as managers from
   [the Tekton community Google Drive](https://github.com/tektoncd/community/blob/main/contact.md#shared-drive)
 - They will be removed as admins from
+  [the tektoncd GitHub org](https://github.com/tektoncd/community/blob/main/org/org.yaml)
+- They will be removed as team members to the `governing-board` team in
   [the tektoncd GitHub org](https://github.com/tektoncd/community/blob/main/org/org.yaml)
 - They will be removed as owners from
   [the community repo](https://github.com/tektoncd/community/blob/main/OWNERS)

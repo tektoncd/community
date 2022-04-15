@@ -64,7 +64,6 @@ We altenate between two meeting times, a time that is friendly for Europe + Nort
 
 | &nbsp;                                                     | Facilitators    | Company | Profile                                     |
 | --------------------------------------------------------   | ----------      | ------- | ---------------------------------------     |
-| <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson | Google  | [bobcatfish](https://github.com/bobcatfish) |
 | <img width="30px" src="https://github.com/skaegi.png">     | Simon Kaegi     | IBM     | [skaegi](https://github.com/skaegi)         |
 | <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee | Google  | [dibyom](https://github.com/dibyom)         |
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai     | IBM     | [pritidesai](https://github.com/pritidesai) |
@@ -181,7 +180,6 @@ Connecting to the Meeting VC requires a Zoom account.
 | --------------------------------------------------------      | ----------        | ------- | ---------------------------------------           |
 | <img width="30px" src="https://github.com/vdemeester.png">    | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester)       |
 | <img width="30px" src="https://github.com/afrittoli.png">     | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli)         |
-| <img width="30px" src="https://github.com/bobcatfish.png">    | Christie Wilson   | Google  | [bobcatfish](https://github.com/bobcatfish)       |
 
 ### Europe + Asia
 
@@ -218,7 +216,6 @@ Tekton projects.
 
 | &nbsp;                                                     | Facilitators      | Company | Profile                                     |
 | --------------------------------------------------------   | ----------        | ------- | ---------------------------------------     |
-| <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson   | Google  | [bobcatfish](https://github.com/bobcatfish) |
 | <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |
 | <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli)   |
 | <img width="30px" src="https://github.com/skaegi.png">     | Simon Kaegi       | IBM     | [skaegi](https://github.com/skaegi)         |
@@ -234,7 +231,6 @@ Tekton projects.
 
 | &nbsp;                                                      | Facilitators      | Company      | Profile                                       |
 | --------------------------------------------------------    | ----------        | -------      | ---------------------------------------       |
-| <img width="30px" src="https://github.com/bobcatfish.png">  | Christie Wilson   | Google       | [bobcatfish](https://github.com/bobcatfish)   |
 | <img width="30px" src="https://github.com/skaegi.png">      | Simon Kaegi       | IBM          | [skaegi](https://github.com/skaegi)           |
 | <img width="30px" src="https://github.com/jerop.png">       | Jerop Kipruto     | Google       | [jerop](https://github.com/jerop)             |
 
@@ -316,7 +312,6 @@ This is the working group for [`tektoncd/chains`](https://github.com/tektoncd/ch
 | -----------------------------------------------------------    | ----------      | ---------- | ------------------------------------------------  |
 | <img width="30px" src="https://github.com/priyawadhwa.png">    | Priya Wadhwa    | Chainguard | [priyawadhwa](https://github.com/priyawadhwa)     |
 | <img width="30px" src="https://github.com/pritidesai.png">     | Priti Desai     | IBM        | [pritidesai](https://github.com/pritidesai) |
-| <img width="30px" src="https://github.com/bobcatfish.png">     | Christie Wilson | Google     | [bobcatfish](https://github.com/bobcatfish) |
 | <img width="30px" src="https://github.com/wlynch.png">         | Billy Lynch     | Google     | [wlynch](https://github.com/wlynch) |
 
 ## Workflows
@@ -356,7 +351,6 @@ Connecting to the Meeting VC requires a Zoom account.
 | &nbsp;                                                     | Facilitators      | Company | Profile                                     |
 | --------------------------------------------------------   | ----------        | ------- | ---------------------------------------     |
 | <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli)   |
-| <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson   | Google  | [bobcatfish](https://github.com/bobcatfish) |
 | <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee   | Google  | [dibyom](https://github.com/dibyom)         |
 | <img width="30px" src="https://github.com/jerop.png">      | Jerop Kipruto     | Google  | [jerop](https://github.com/jerop)           |
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai       | IBM     | [pritidesai](https://github.com/pritidesai) |
@@ -380,7 +374,6 @@ and a place to discuss community operations and process.
 | --------------------------------------------------------    | ----------        | -------    | ---------------------------------------      |
 | <img width="30px" src="https://github.com/abayer.png">      | Andrew Bayer      | CloudBees  | [abayer](https://github.com/abayer)          |
 | <img width="30px" src="https://github.com/afrittoli.png">   | Andrea Frittoli   | IBM        | [afrittoli](https://github.com/afrittoli)    |
-| <img width="30px" src="https://github.com/bobcatfish.png">  | Christie Wilson   | Google     | [bobcatfish](https://github.com/bobcatfish)  |
 | <img width="30px" src="https://github.com/dibyom.png">      | Dibyo Mukherjee   | Google     | [dibyom](https://github.com/dibyom)          |
 | <img width="30px" src="https://github.com/vdemeester.png">  | Vincent Demeester | Red Hat    | [vdemeester](https://github.com/vdemeester)  |
 | <img width="30px" src="https://github.com/pritidesai.png">  | Priti Desai       | IBM        | [pritidesai](https://github.com/pritidesai)  |
@@ -405,6 +398,5 @@ TBD [community#629](https://github.com/tektoncd/community/issues/629)).
 | --------------------------------------------------------   | ----------        | -------   | ---------------------------------------     |
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai       | IBM       | [pritidesai](https://github.com/pritidesai) |
 | <img width="30px" src="https://github.com/imjasonh.png">   | Jason Hall        | Red Hat   | [imjasonh](https://github.com/imjasonh)     |
-| <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson   | Google    | [bobcatfish](https://github.com/bobcatfish) |
 | <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli   | IBM       | [afrittoli](https://github.com/afrittoli)   |
 | <img width="30px" src="https://github.com/xchapter7x.png"> | John Calabrese    | Google    | [xchapter7x](https://github.com/xchapter7x) |

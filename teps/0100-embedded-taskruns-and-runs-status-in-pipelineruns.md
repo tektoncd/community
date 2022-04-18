@@ -1,8 +1,8 @@
 ---
-status: implementing
+status: implemented
 title: Embedded TaskRuns and Runs Status in PipelineRuns
 creation-date: '2022-01-24'
-last-updated: '2022-03-23'
+last-updated: '2022-04-18'
 authors:
 - '@lbernick'
 - '@jerop'
@@ -777,7 +777,11 @@ support this expansion.
 * [Tekton Results][results-api]
 * Pull Requests:
   * [[TEP-0100] Fields/flags/docs for embedded TaskRun and Run statuses in PipelineRuns](https://github.com/tektoncd/pipeline/pull/4705)
-  * [[TEP-0100] Implementation for embedded TaskRun and Run statuses in PipelineRuns](https://github.com/tektoncd/pipeline/pull/4706)
+  * [[TEP-0100] Prepare for testing of minimal status implementation](https://github.com/tektoncd/pipeline/pull/4734)
+  * [[TEP-0100] Switch ApplyTaskResultsToPipelineResults to not use status maps](https://github.com/tektoncd/pipeline/pull/4753)
+  * [[TEP-0100] Add functionality to be used in supporting minimal embedded status](https://github.com/tektoncd/pipeline/pull/4757)
+  * [[TEP-0100] Add new updatePipelineRunStatusFromChildRefs function](https://github.com/tektoncd/pipeline/pull/4760)
+  * [[TEP-0100] Implementation for embedded TaskRun and Run statuses in PipelineRuns](https://github.com/tektoncd/pipeline/pull/4739)
 
 [tep-0056]: https://github.com/tektoncd/community/blob/main/teps/0056-pipelines-in-pipelines.md
 [tep-0090]: https://github.com/tektoncd/community/blob/main/teps/0090-matrix.md

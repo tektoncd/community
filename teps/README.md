@@ -242,3 +242,4 @@ This is the complete list of Tekton teps:
 |[TEP-0100](0100-embedded-taskruns-and-runs-status-in-pipelineruns.md) | Embedded TaskRuns and Runs Status in PipelineRuns | implementing | 2022-03-23 |
 |[TEP-0102](0102-https-connection-to-triggers-interceptor.md) | HTTPS Connection to Triggers ClusterInterceptor | proposed | 2022-03-21 |
 |[TEP-0103](0103-skipping-reason.md) | Skipping Reason | implementable | 2022-04-06 |
+|[TEP-0105](0105-remove-pipeline-v1alpha1-api.md) | Remove Pipeline v1alpha1 API | proposed | 2022-04-11 |

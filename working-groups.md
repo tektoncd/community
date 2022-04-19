@@ -44,9 +44,7 @@ The current working groups are:
 
 ## General
 
-This is the general working group, where we discuss each project's
-update and cross-project subjects. This is also the main working group
-to discuss the `tektoncd/pipeline` project.
+This is the general working group, where we demo projects across Tekton.
 
 We altenate between two meeting times, a time that is friendly for Europe + North America
 (PST+EST+CEST) and a time that is friendly for Asia + Europe (CEST+IST+CST).
@@ -55,18 +53,17 @@ We altenate between two meeting times, a time that is friendly for Europe + Nort
 | -------------------------- | -------------------------- |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
 | Slack Channel              | [#pipeline](https://tektoncd.slack.com/messages/pipeline) |
-| Meeting Notes              | [Notes](https://docs.google.com/document/d/1rPR7m1Oj0ip3bpd_bcS1sjZyPgGi_g9asF5YrExeESc) |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1h6dcP2VgQvr8yRZenKhLgK37v9hSDM8S8Ky24BI8WM8/edit) |
 
 ### Europe + North America
 
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
-| Community Meeting VC       | [https://meet.google.com/gnx-mwhf-wqt](https://meet.google.com/gnx-mwhf-wqt) |
-| Community Meeting Calendar | Wednesdays 9:00am-10:00am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=bjc0aWJqMzVtYm04ZWt2NHJlajJmajdvNGtfMjAxOTA1MjlUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/99734196603?pwd=QkdPaDlXUjB6ZVVEYVF3bHdHTzBMZz09) |
+| Community Meeting Calendar | Wednesday 9:00am-10:00am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=bjc0aWJqMzVtYm04ZWt2NHJlajJmajdvNGtfMjAxOTA1MjlUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 
 | &nbsp;                                                     | Facilitators    | Company | Profile                                     |
 | --------------------------------------------------------   | ----------      | ------- | ---------------------------------------     |
-| <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson | Google  | [bobcatfish](https://github.com/bobcatfish) |
 | <img width="30px" src="https://github.com/skaegi.png">     | Simon Kaegi     | IBM     | [skaegi](https://github.com/skaegi)         |
 | <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee | Google  | [dibyom](https://github.com/dibyom)         |
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai     | IBM     | [pritidesai](https://github.com/pritidesai) |
@@ -76,8 +73,8 @@ We altenate between two meeting times, a time that is friendly for Europe + Nort
 
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
-| Community Meeting VC       | [meet.google.com/xgi-shbo-mym](https://meet.google.com/xgi-shbo-mym) |
-| Community Meeting Calendar | Wednesdays 8:30pm-9:30pm CST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=M3Rsa2lsdnA5ZGc2aHJ1bGlqdGUzOXFnYjNfMjAyMDAxMjJUMTIzMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/92700905098?pwd=aHJzWVlacGJKWVROcHVMTW4vbDVnQT09) |
+| Community Meeting Calendar | Wednesdays 6:30am-7:30pm CST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=M3Rsa2lsdnA5ZGc2aHJ1bGlqdGUzOXFnYjNfMjAyMDAxMjJUMTIzMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 
 | &nbsp;                                                     | Facilitators      | Company | Profile                                     |
 | --------------------------------------------------------   | ----------        | ------- | ---------------------------------------     |
@@ -91,7 +88,7 @@ This is the [`tektoncd/triggers`](https://github.com/tektoncd/triggers) working 
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Community Meeting VC       | [https://meet.google.com/oqm-imjh-uzu](https://meet.google.com/oqm-imjh-uzu) |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/94896723762?pwd=VmFvSFlVbkdheUtMd1M2QVpycWxTQT09) |
 | Community Meeting Calendar | Wednesdays every week, 11:00p-11:30p EST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=ZDA3YzZldXZqZ2M1ajBndWVkNzRlNTdzN2ZfMjAyMDExMThUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/16dtgpeNQgpC33gjZEFUqQv-G7QwVDHbuwJQOGmy1l7w/edit) |
 | Document Folder            | [Folder](https://drive.google.com/drive/folders/1-UOR-sodtMeYqtUEzVW12nkfJCr7EQRO) |
@@ -111,7 +108,7 @@ This is the [`tektoncd/cli`](https://github.com/tektoncd/cli) working group.
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Community Meeting VC       | [https://meet.google.com/mwj-mfpy-ybk](https://meet.google.com/mwj-mfpy-ybk) |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/91680234547?pwd=QXMrNisvRWpsTll0S2FPZWo3ZDd4QT09) |
 | Community Meeting Calendar | Tuesdays 08:00a-08:30a EST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=ZmV1ZmI2dnJjYm9wYWFkaXNxdWJuOWo1bWRfMjAyMDAxMjhUMTMwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/1J1LkrmLtMdtdJqFcsyOKsJJc4lEm7YL-97D51PzpHrQ/edit) |
 | Document Folder            | [Folder](https://drive.google.com/drive/folders/1FnMx4h8WkeBEo3vYl3w2IAOa-otf_a2j) |
@@ -183,7 +180,6 @@ Connecting to the Meeting VC requires a Zoom account.
 | --------------------------------------------------------      | ----------        | ------- | ---------------------------------------           |
 | <img width="30px" src="https://github.com/vdemeester.png">    | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester)       |
 | <img width="30px" src="https://github.com/afrittoli.png">     | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli)         |
-| <img width="30px" src="https://github.com/bobcatfish.png">    | Christie Wilson   | Google  | [bobcatfish](https://github.com/bobcatfish)       |
 
 ### Europe + Asia
 
@@ -215,12 +211,11 @@ Tekton projects.
 
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
-| Community Meeting VC       | [https://meet.google.com/tse-axnh-mdv](https://meet.google.com/tse-axnh-mdv) |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/93099582210?pwd=V3VRU0hPWWxFdVYybUVQNzdWbmhQQT09) |
 | Community Meeting Calendar | Mondays every week, 09:00a-10:00a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=YnBscG9lcGk3b3ZrN3VxZWpjaXRsMm1uNmJfMjAyMDA0MTNUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL)
 
 | &nbsp;                                                     | Facilitators      | Company | Profile                                     |
 | --------------------------------------------------------   | ----------        | ------- | ---------------------------------------     |
-| <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson   | Google  | [bobcatfish](https://github.com/bobcatfish) |
 | <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |
 | <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli)   |
 | <img width="30px" src="https://github.com/skaegi.png">     | Simon Kaegi       | IBM     | [skaegi](https://github.com/skaegi)         |
@@ -231,12 +226,11 @@ Tekton projects.
 
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
-| Community Meeting VC       | [https://meet.google.com/nyw-cwme-iia](https://meet.google.com/nyw-cwme-iia) |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/96005376824?pwd=NFdQcXlUTkN5Tm0zcXU3ODljSXNOZz09) |
 | Community Meeting Calendar | Mondays every other week, 3:00pm-3:30pm PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=Mm40OXM2NzRuaXY1Z3J2dTRnNDBiZzk0N3FfMjAyMTA0MjZUMjIwMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL)|
 
 | &nbsp;                                                      | Facilitators      | Company      | Profile                                       |
 | --------------------------------------------------------    | ----------        | -------      | ---------------------------------------       |
-| <img width="30px" src="https://github.com/bobcatfish.png">  | Christie Wilson   | Google       | [bobcatfish](https://github.com/bobcatfish)   |
 | <img width="30px" src="https://github.com/skaegi.png">      | Simon Kaegi       | IBM          | [skaegi](https://github.com/skaegi)           |
 | <img width="30px" src="https://github.com/jerop.png">       | Jerop Kipruto     | Google       | [jerop](https://github.com/jerop)             |
 
@@ -247,7 +241,7 @@ This is the [`tektoncd/dashboard`](https://github.com/tektoncd/dashboard) workin
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Community Meeting VC       | [https://meet.google.com/zxa-zefw-zum](https://meet.google.com/zxa-zefw-zum) |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/97263081827?pwd=R3paT04xOWNhaUpTQzJWUTQxRHlBQT09) |
 | Community Meeting Calendar | Mondays every week, 4:00pm-4:30pm CET <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=b3NxODE2YjlrY3NzMnYwMmpmamY5NnVobHFfMjAyMDAzMTZUMTUwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/1bG4mbjycmFtIBezA6AJoQvaB4-v3874dhX7n-DhGAx0/edit) |
 | Document Folder            | [Folder](https://drive.google.com/drive/folders/1SCS7q9Ns9m8p7MG_4URiFKirz1SgID_B) |
@@ -269,8 +263,8 @@ This is the working group for [`tektoncd/catalog`](https://github.com/tektoncd/c
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Community Meeting VC       | [https://meet.google.com/nkt-mziz-ifz](https://meet.google.com/nkt-mziz-ifz) |
-| Community Meeting Calendar | Thursdays every week, 10:30am-11am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NzFzcWhkOGk2MWNzMTI0cGg3MDA4YmUzMHZfMjAyMDA1MTRUMTczMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/92196626411?pwd=bGN4Y3RtaFRGZEpNVkdGa1RHYTFUQT09) |
+| Community Meeting Calendar | Thursdays every second week, 8:30am-9am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NzFzcWhkOGk2MWNzMTI0cGg3MDA4YmUzMHZfMjAyMDA1MTRUMTczMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/12180Mqmhoj5JK17zE07DG3OdqYHcUAWVBGydavoxhec/edit) |
 | Slack Channels             | [#catalog](https://tektoncd.slack.com/messages/catalog) and [#hub](https://tektoncd.slack.com/messages/hub) |
 
@@ -289,8 +283,8 @@ This is the working group for [`tektoncd/operator`](https://github.com/tektoncd/
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Community Meeting VC       | [https://meet.google.com/zzp-gzmd-dys](https://meet.google.com/zzp-gzmd-dys) |
-| Community Meeting Calendar | Thursdays every week, 4am -4:30am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NzFzcWhkOGk2MWNzMTI0cGg3MDA4YmUzMHZfMjAyMDA1MTRUMTczMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/91950406101?pwd=Uk1CV2ljcW9FY2tkWVBpWWRFTTNlUT09)|
+| Community Meeting Calendar | Thursdays every week, 5am -5:30am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NzFzcWhkOGk2MWNzMTI0cGg3MDA4YmUzMHZfMjAyMDA1MTRUMTczMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/1mMbwPCTzDCRgr0FNtv8TJaKDfiOfD9pgz1zFmncZReg/edit) |
 | Slack Channels             | [#operator](https://tektoncd.slack.com/messages/operator) |
 
@@ -309,7 +303,7 @@ This is the working group for [`tektoncd/chains`](https://github.com/tektoncd/ch
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Community Meeting VC       | [https://meet.google.com/ktu-xuqo-uyc](https://meet.google.com/ktu-xuqo-uyc) |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/92605590091?pwd=dk50d0VGSVRZMU9OTlRRdDV6UjRRQT09) |
 | Community Meeting Calendar | Thursdays every other week, 9am -9:30am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=Nzc3N2VjZjk3amZnZzc5MDQwODYxNzRrZHVfMjAyMTA4MTlUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/1UVPSCDyNO-TzEFSv8jrqrEOF_FmV8NFuXncFm1gwmeY/edit) |
 | Slack Channels             | [#chains](https://tektoncd.slack.com/messages/chains) |
@@ -318,7 +312,6 @@ This is the working group for [`tektoncd/chains`](https://github.com/tektoncd/ch
 | -----------------------------------------------------------    | ----------      | ---------- | ------------------------------------------------  |
 | <img width="30px" src="https://github.com/priyawadhwa.png">    | Priya Wadhwa    | Chainguard | [priyawadhwa](https://github.com/priyawadhwa)     |
 | <img width="30px" src="https://github.com/pritidesai.png">     | Priti Desai     | IBM        | [pritidesai](https://github.com/pritidesai) |
-| <img width="30px" src="https://github.com/bobcatfish.png">     | Christie Wilson | Google     | [bobcatfish](https://github.com/bobcatfish) |
 | <img width="30px" src="https://github.com/wlynch.png">         | Billy Lynch     | Google     | [wlynch](https://github.com/wlynch) |
 
 ## Workflows
@@ -328,7 +321,7 @@ Topics for this WG include the experimental [Tekton Workflows](https://github.co
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Community Meeting VC       | [meet.google.com/jwa-pxmv-vpi](https://meet.google.com/jwa-pxmv-vpi) |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/95023453163?pwd=VVU1L1o2UWpxOURKbXpRVC9EaGtNdz09) |
 | Community Meeting Calendar | Tuesdays every week, 10am -10:30am ET <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NDl0bzN1OWl2dWxlMXBpNGFnaDhjM2N2NjRfMjAyMTA5MDdUMTQwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/1di4ikeVb8Mksgbq4CzW4m4xUQPZ2dQMLvK1VIJw7OQg/edit) |
 | Slack Channels             | [#workflows](https://tektoncd.slack.com/messages/workflows) |
@@ -358,7 +351,6 @@ Connecting to the Meeting VC requires a Zoom account.
 | &nbsp;                                                     | Facilitators      | Company | Profile                                     |
 | --------------------------------------------------------   | ----------        | ------- | ---------------------------------------     |
 | <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli)   |
-| <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson   | Google  | [bobcatfish](https://github.com/bobcatfish) |
 | <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee   | Google  | [dibyom](https://github.com/dibyom)         |
 | <img width="30px" src="https://github.com/jerop.png">      | Jerop Kipruto     | Google  | [jerop](https://github.com/jerop)           |
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai       | IBM     | [pritidesai](https://github.com/pritidesai) |
@@ -372,19 +364,21 @@ and a place to discuss community operations and process.
 | Artifact                   | Link                       |
 | -------------------------- | -------------------------- |
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Meeting Notes              | [Notes](https://docs.google.com/document/d/1rb-JgpZGVRvY6tj5yjh3jeaxUxqeyk8Sudd7gMFtqqA/edit)
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1g2HQk_4ypYEWPX2WjOFa6vOMpwYoRNprph_P09TS1UM/edit)
 | Slack Channel              | [#governance](https://tektoncd.slack.com/messages/governance) |
-| Community Meeting VC       | [meet.google.com/nas-vyqv-ftg](https://meet.google.com/nas-vyqv-ftg) |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/96566024785?pwd=WjRKQkNzK1ZDQm9URitaV0w5eVBldz09) |
 | Community Meeting Calendar | Tuesday every other week, 09:00a-09:30a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NjFvcHNib2E2cjNwcGc2dGhnMmY2OGU4YTFfMjAyMjAxMThUMTcwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 
 
-| &nbsp;                                                     | Facilitators      | Company   | Profile                                     |
-| --------------------------------------------------------   | ----------        | -------   | ---------------------------------------     |
-| <img width="30px" src="https://github.com/abayer.png">     | Andrew Bayer      | CloudBees | [abayer](https://github.com/abayer) |
-| <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli   | IBM       | [afrittoli](https://github.com/afrittoli)   |
-| <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson   | Google    | [bobcatfish](https://github.com/bobcatfish) |
-| <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee   | Google    | [dibyom](https://github.com/dibyom)         |
-| <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat   | [vdemeester](https://github.com/vdemeester) |
+| &nbsp;                                                      | Facilitators      | Company    | Profile                                      |
+| --------------------------------------------------------    | ----------        | -------    | ---------------------------------------      |
+| <img width="30px" src="https://github.com/abayer.png">      | Andrew Bayer      | CloudBees  | [abayer](https://github.com/abayer)          |
+| <img width="30px" src="https://github.com/afrittoli.png">   | Andrea Frittoli   | IBM        | [afrittoli](https://github.com/afrittoli)    |
+| <img width="30px" src="https://github.com/dibyom.png">      | Dibyo Mukherjee   | Google     | [dibyom](https://github.com/dibyom)          |
+| <img width="30px" src="https://github.com/vdemeester.png">  | Vincent Demeester | Red Hat    | [vdemeester](https://github.com/vdemeester)  |
+| <img width="30px" src="https://github.com/pritidesai.png">  | Priti Desai       | IBM        | [pritidesai](https://github.com/pritidesai)  |
+| <img width="30px" src="https://github.com/priyawadhwa.png"> | Priya Wadhwa      | Chainguard | [priyawadhwa](https://github.com/priyawadhwa)|
+| <img width="30px" src="https://github.com/jerop.png">       | Jerop Kipruto     | Google     | [jerop](https://github.com/jerop)            |
 
 ## Software Supply Chain Security (s3c)
 
@@ -404,6 +398,5 @@ TBD [community#629](https://github.com/tektoncd/community/issues/629)).
 | --------------------------------------------------------   | ----------        | -------   | ---------------------------------------     |
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai       | IBM       | [pritidesai](https://github.com/pritidesai) |
 | <img width="30px" src="https://github.com/imjasonh.png">   | Jason Hall        | Red Hat   | [imjasonh](https://github.com/imjasonh)     |
-| <img width="30px" src="https://github.com/bobcatfish.png"> | Christie Wilson   | Google    | [bobcatfish](https://github.com/bobcatfish) |
 | <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli   | IBM       | [afrittoli](https://github.com/afrittoli)   |
 | <img width="30px" src="https://github.com/xchapter7x.png"> | John Calabrese    | Google    | [xchapter7x](https://github.com/xchapter7x) |

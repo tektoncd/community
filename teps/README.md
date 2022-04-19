@@ -222,8 +222,8 @@ This is the complete list of Tekton teps:
 |[TEP-0072](0072-results-json-serialized-records.md) | Results: JSON Serialized Records | implementable | 2021-07-26 |
 |[TEP-0073](0073-simplify-metrics.md) | Simplify metrics | implemented | 2022-02-28 |
 |[TEP-0074](0074-deprecate-pipelineresources.md) | Deprecate PipelineResources | proposed | 2022-02-25 |
-|[TEP-0075](0075-object-param-and-result-types.md) | Object/Dictionary param and result types | proposed | 2022-02-02 |
-|[TEP-0076](0076-array-result-types.md) | Array result types | proposed | 2022-02-03 |
+|[TEP-0075](0075-object-param-and-result-types.md) | Object/Dictionary param and result types | implementable | 2022-04-08 |
+|[TEP-0076](0076-array-result-types.md) | Array result types | implementable | 2022-03-18 |
 |[TEP-0079](0079-tekton-catalog-support-tiers.md) | Tekton Catalog Support Tiers | proposed | 2022-01-25 |
 |[TEP-0080](0080-support-domainscoped-parameterresult-names.md) | Support domain-scoped parameter/result names | implemented | 2021-08-19 |
 |[TEP-0081](0081-add-chains-subcommand-to-the-cli.md) | Add Chains sub-command to the CLI | implementable | 2021-10-21 |
@@ -232,10 +232,14 @@ This is the complete list of Tekton teps:
 |[TEP-0084](0084-endtoend-provenance-collection.md) | end-to-end provenance collection | proposed | 2021-09-16 |
 |[TEP-0085](0085-per-namespace-controller-configuration.md) | Per-Namespace Controller Configuration | proposed | 2021-10-14 |
 |[TEP-0088](0088-result-summaries.md) | Tekton Results - Record Summaries | proposed | 2021-10-01 |
-|[TEP-0089](0089-nonfalsifiable-provenance-support.md) | Non-falsifiable provenance support | proposed | 2022-01-18 |
+|[TEP-0089](0089-nonfalsifiable-provenance-support.md) | Non-falsifiable provenance support | implementable | 2022-01-18 |
 |[TEP-0090](0090-matrix.md) | Matrix | implementable | 2022-02-14 |
+|[TEP-0092](0092-scheduling-timeout.md) | Scheduling Timeout | implementable | 2022-04-11 |
 |[TEP-0094](0094-configuring-resources-at-runtime.md) | Configuring Resources at Runtime | implemented | 2022-03-11 |
 |[TEP-0095](0095-common-repository-configuration.md) | Common Repository Configuration | proposed | 2021-11-29 |
 |[TEP-0096](0096-pipelines-v1-api.md) | Pipelines V1 API | implementable | 2022-03-18 |
 |[TEP-0098](0098-workflows.md) | Workflows | proposed | 2021-12-06 |
-|[TEP-0100](0100-embedded-taskruns-and-runs-status-in-pipelineruns.md) | Embedded TaskRuns and Runs Status in PipelineRuns | implementable | 2022-02-14 |
+|[TEP-0100](0100-embedded-taskruns-and-runs-status-in-pipelineruns.md) | Embedded TaskRuns and Runs Status in PipelineRuns | implementing | 2022-03-23 |
+|[TEP-0102](0102-https-connection-to-triggers-interceptor.md) | HTTPS Connection to Triggers ClusterInterceptor | proposed | 2022-03-21 |
+|[TEP-0103](0103-skipping-reason.md) | Skipping Reason | implementable | 2022-04-06 |
+|[TEP-0105](0105-remove-pipeline-v1alpha1-api.md) | Remove Pipeline v1alpha1 API | proposed | 2022-04-11 |

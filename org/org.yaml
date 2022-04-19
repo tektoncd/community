@@ -8,6 +8,7 @@ orgs:
     - vdemeester
     - afrittoli
     - dibyom
+    - jerop
     billing_email: info@cd.foundation
     company: ''
     default_repository_permission: none
@@ -73,7 +74,6 @@ orgs:
     - hrishin
     - iancoffey
     - ispasov
-    - jerop
     - jessm12
     - jinchihe
     - jjasghar
@@ -83,6 +83,7 @@ orgs:
     - jonjohnsonjr
     - joseblas
     - jromero
+    - jtudelag
     - khalkie
     - khrm
     - kimholmes
@@ -152,6 +153,7 @@ orgs:
     - zhangtbj
     - ziheng
     - austinzhao-go
+    - aleromerog
     teams:
       governing-board:
         description: Tekton Governing Board members
@@ -161,21 +163,32 @@ orgs:
         - vdemeester
         - afrittoli
         - dibyom
+        - jerop
         privacy: closed
       catalog.maintainers:
         description: the catalog maintainers
-        maintainers:
-        - vdemeester
-        - ImJasonH
-        - bobcatfish
         members:
-        - kimsterv
-        - dlorenc
+        - bobcatfish
         - chmouel
+        - dlorenc
+        - ImJasonH
+        - kimsterv
+        - vdemeester
         - vinamra28
         privacy: closed
         repos:
           catalog: write
+      catlin.maintainers:
+        description: the catlin maintainers
+        maintainers:
+        - vdemeester
+        - PuneetPunamiya
+        - vinamra28
+        members:
+        - piyush-garg
+        privacy: closed
+        repos:
+          catlin: write
       chains.maintainers:
         description: the chains maintainers
         maintainers:
@@ -472,6 +485,8 @@ orgs:
         - afrittoli
         - vinamra28
         - pierretasci
+        - priyawadhwa
+        - lbernick
         privacy: closed
         repos:
           community: read
@@ -705,6 +720,16 @@ orgs:
         privacy: closed
         repos:
           hub: read
+      catlin.collaborators:
+        description: The catlin collaborators
+        maintainers:
+        - vdemeester
+        members:
+        - SM43
+        - chmouel
+        privacy: closed
+        repos:
+          catlin: read
       chains.collaborators:
         description: The chains collaborators
         maintainers:

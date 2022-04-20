@@ -525,6 +525,7 @@ orgs:
         - bobcatfish
         members:
         - carlos-logro
+        - chuangw6
         - sthaha
         - iancoffey
         - a-roberts
@@ -573,6 +574,7 @@ orgs:
         - bobcatfish
         - afrittoli
         - sbwsg
+        - lbernick
         privacy: closed
         repos:
           plumbing: read

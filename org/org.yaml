@@ -573,6 +573,7 @@ orgs:
         - bobcatfish
         - afrittoli
         - sbwsg
+        - lbernick
         privacy: closed
         repos:
           plumbing: read

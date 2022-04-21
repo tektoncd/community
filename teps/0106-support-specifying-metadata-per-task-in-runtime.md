@@ -15,10 +15,10 @@ authors:
   - [Motivation](#motivation)
     - [Goals](#goals)
     - [Non-Goals](#non-goals)
-    - [Use Cases](#use-cases)
-      - [Vault Sidecar Injection](#vault-sidecar-injection)
-      - [Hermetically Executed Task](#hermetically-executed-task)
-      - [General Use Case](#general-use-case)
+  - [Use Cases](#use-cases)
+    - [Vault Sidecar Injection](#vault-sidecar-injection)
+    - [Hermetically Executed Task](#hermetically-executed-task)
+    - [General Use Case](#general-use-case)
   - [Proposal](#proposal)
   - [Notes and Caveats](#notes-and-caveats)
   - [Design Details](#design-details)
@@ -57,11 +57,11 @@ The below consideration is applied to limit the problem scope:
 - This support will only be offered for a `PipelineRun` entity.
 - The metadata will only mean annotations and labels.
 
-### Use Cases
+## Use Cases
 
-#### Vault Sidecar Injection
+### Vault Sidecar Injection
 
-A user wants to use [Vault Agent Injector](https://www.vaultproject.io/docs/platform/k8s/injector) to offer required secrets, like API keys, credentials etc., into a target `Pod`, so a `TaskRun` for the Tekton context. And the Injector will need the related Vault Agent to render the secrets which are specified either by annotations or templates. This configuration will be done based on the required secrets for each `TaskRun` in the runtime as they can not be statically defined in a `Task`.
+A user wants to use [Vault Agent Injector](https://www.vaultproject.io/docs/platform/k8s/injector) to offer required secrets, like API keys, credentials etc., into a target `Pod`, so via a `TaskRun` for the Tekton context. And the Injector will need the related Vault Agent to render the secrets which are specified either by annotations or templates. This configuration will be done based on the required secrets for each `TaskRun` in the runtime as they can not be statically defined in a `Task`.
 
 Here is an example of configuring the secrets:
 
@@ -81,7 +81,7 @@ vault.hashicorp.com/role: ${role}
 
 So for either way, the needed annotations will depend on the secrets a user wants to pass into a `TaskRun`.
 
-#### Hermetically Executed Task
+### Hermetically Executed Task
 
 Supported by the [Hermetic Execution Mode](https://github.com/tektoncd/pipeline/blob/main/docs/hermetic.md#enabling-hermetic-execution-mode), a `Task` can be run hermetically by specifying an annotation as:
 
@@ -93,7 +93,7 @@ So depending on a user’s context, a `Task` could be executed as a `TaskRun` un
 
 _(Note: Activating the hermetic execution via an annotation is an alpha feature for this moment, which can be changed in the stable version.)_
 
-#### General Use Case
+### General Use Case
 
 Generalized from above use cases, a user can decide to pass metadata into a `Pod` in the runtime while configuring a `PipelineRun`. Under the Tekton context, the provided metadata for a referenced `Task` in a `PipelineRun` will be propagated into the corresponding `TaskRun`, and then to the target `Pod`.
 
@@ -105,7 +105,7 @@ A metadata field is proposed to be added under the `PipelineRun` type.
 
 The below considerations could be further digged into:
 
-- Check if possible conflict will come from the metadata specified in the different positions, such as `Task`, `TaskSpec`, `EmbeddedTask`, `PipelineTaskRunSpec` etc.
+- Check if possible conflicts will come from the metadata specified in the different positions, such as `Task`, `TaskSpec`, `EmbeddedTask`, `PipelineTaskRunSpec` etc. - think this can be enhanced by validation and unit tests.
 
 ## Design Details
 
@@ -123,8 +123,8 @@ type PipelineTaskRunSpec struct {
         StepOverrides          []TaskRunStepOverride    json:"stepOverrides,omitempty"
         SidecarOverrides       []TaskRunSidecarOverride json:"sidecarOverrides,omitempty"
 
-+      // +optional
-+      Metadata PipelineTaskMetadata json:"metadata,omitempty"
++       // +optional
++       Metadata PipelineTaskMetadata json:"metadata,omitempty"
 }
 ```
 
@@ -147,22 +147,16 @@ An `PipelineRun` example to show the structure (addition marked with +):
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  generateName: runtime-metadata-example-
+  name: ${pipeline-run-name} 
 spec:
   pipelineRef:
-    name: add-pipeline-taskspec
+    name: ${pipeline-name}
   taskRunSpecs:
-  - pipelineTaskName: first-add-taskspec
-    taskServiceAccountName: 'default'
+  - pipelineTaskName: ${task-name}
 +   metadata: 
 +     annotations:
-+       vault.hashicorp.com/agent-inject-secret-<unique-name>: /path/to/secret
++       vault.hashicorp.com/agent-inject-secret-${unique-name}: ${/path/to/secret}
 +       vault.hashicorp.com/role: ${role}
-  params:
-    - name: first
-      value: "2"
-    - name: second
-      value: "10"
 ```
 
 ## Design Evaluation
@@ -171,11 +165,11 @@ This work is a user-facing change on API while following the `Reusability` princ
 
 ### Reusability
 
-A `Task` is expected to be better reused and keep flexibility while the runtime-related metadata could be independently added.  
+A `Task` is expected to be better reused and keep flexibility while the runtime-related metadata can be independently added.  
 
 ### Simplicity
 
-With this work, a user is expected to avoid defining multi `Task` which only differentiates on some required metadata in the runtime.
+With this work, a user is expected to avoid defining multi `Task`s which only differentiate on certain required metadata in the runtime.
 
 ### Drawbacks
 
@@ -187,17 +181,17 @@ With this work, a user is expected to avoid defining multi `Task` which only dif
 
 While referring to the [`EmbeddedTask`](https://pkg.go.dev/github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1#EmbeddedTask) type under the `Pipeline` type, a possible solution will be adding a metadata field under the `TaskRef` as discussed [here](https://github.com/tektoncd/pipeline/issues/4105#issuecomment-1075335509).
 
-But when considering that the required metadata will depend on the execution context (runtime), this solution is not chosen as the `taskRef` under `Pipeline` belongs to the authoring time. Here the authoring time means a user will expect to complete the configuration (authoring) for the `Task`.
+But when considering that the required metadata will depend on the execution context (runtime), this solution is not chosen, because the `taskRef` under `Pipeline` belongs to the authoring time. Here the authoring time means a user will be expected to complete the configuration (authoring) for the `Task`.
 
 ### Create a `PipelineTaskRef` type
 
-As a metadata field will be needed for the runtime, a possible solution will be creating a new type, so field, under `PipelineRun` as discussed [here](https://github.com/tektoncd/pipeline/issues/4105#issuecomment-1084816779).
+As a metadata field will be needed for the runtime, a possible solution will be creating a new type / field, under `PipelineRun` as discussed [here](https://github.com/tektoncd/pipeline/issues/4105#issuecomment-1084816779).
 
-While thinking that the work will be limited to adding a metadata field, this solution is not chosen because an existing `PipelineTaskRunSpec` field can be used for this function augmentation.  
+While thinking that the work will be limited to adding a metadata field, this solution is not chosen, because an existing `PipelineTaskRunSpec` field can be used for this function augmentation.  
 
 ### Utilize Parameter Substitutions
 
-As for defining a field value based on user inputs, the parameter substitution method can be considered to concatenate the required metadata. 
+As for defining a field value based on user inputs, the parameter substitution method can be considered to concatenate the required metadata.
 
 However, the key of annotations will need to follow [the naming syntax](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set). And if using a key like `$(params.foo)`, it will cause a validation error. Moreover, parameter values can’t be populated from the `params` field for the `metadata` field due to the different scope of the fields.
 

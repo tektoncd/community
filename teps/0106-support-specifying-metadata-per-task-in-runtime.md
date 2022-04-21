@@ -9,56 +9,6 @@ authors:
 
 # TEP-0106: Support Specifying Metadata per Task in Runtime
 
-<!--
-**Note:** Please remove comment blocks for sections you've filled in.
-When your TEP is complete, all of these comment blocks should be removed.
-
-To get started with this template:
-
-- [ ] **Fill out this file as best you can.**
-  At minimum, you should fill in the "Summary", and "Motivation" sections.
-  These should be easy if you've preflighted the idea of the TEP with the
-  appropriate Working Group.
-- [ ] **Create a PR for this TEP.**
-  Assign it to people in the Working Group that are sponsoring this process.
-- [ ] **Merge early and iterate.**
-  Avoid getting hung up on specific details and instead aim to get the goals of
-  the TEP clarified and merged quickly. The best way to do this is to just
-  start with the high-level sections and fill out details incrementally in
-  subsequent PRs.
-
-Just because a TEP is merged does not mean it is complete or approved. Any TEP
-marked as a `proposed` is a working document and subject to change. You can
-denote sections that are under active debate as follows:
-
-```
-<<[UNRESOLVED optional short context or usernames ]>>
-Stuff that is being argued.
-<<[/UNRESOLVED]>>
-```
-
-When editing TEPS, aim for tightly-scoped, single-topic PRs to keep discussions
-focused. If you disagree with what is already in a document, open a new PR
-with suggested changes.
-
-If there are new details that belong in the TEP, edit the TEP. Once a
-feature has become "implemented", major changes should get new TEPs.
-
-The canonical place for the latest set of instructions (and the likely source
-of this file) is [here](/teps/tools/tep-template.md.template).
-
--->
-
-<!--
-A table of contents is helpful for quickly jumping to sections of a TEP and for
-highlighting any additional information provided beyond the standard TEP
-template.
-
-Ensure the TOC is wrapped with
-  <code>&lt;!-- toc --&rt;&lt;!-- /toc --&rt;</code>
-tags, and then generate with `hack/update-toc.sh`.
--->
-
 <!-- toc -->
 - [TEP-0106: Support Specifying Metadata per Task in Runtime](#tep-0106-support-specifying-metadata-per-task-in-runtime)
   - [Summary](#summary)
@@ -70,69 +20,38 @@ tags, and then generate with `hack/update-toc.sh`.
       - [Hermetically Executed Task](#hermetically-executed-task)
       - [General Use Case](#general-use-case)
   - [Proposal](#proposal)
-    - [Notes and Caveats](#notes-and-caveats)
+  - [Notes and Caveats](#notes-and-caveats)
   - [Design Details](#design-details)
   - [Design Evaluation](#design-evaluation)
     - [Reusability](#reusability)
     - [Simplicity](#simplicity)
     - [Drawbacks](#drawbacks)
   - [Alternatives](#alternatives)
-    - [Test Plan](#test-plan)
-    - [Implementation Pull Requests](#implementation-pull-requests)
+    - [Add Metadata under `TaskRef` in `Pipeline`](#add-metadata-under-taskref-in-pipeline)
+    - [Create a `PipelineTaskRef` type](#create-a-pipelinetaskref-type)
+    - [Utilize Parameter Substitutions](#utilize-parameter-substitutions)
+  - [Test Plan](#test-plan)
+  - [Implementation Pull Requests](#implementation-pull-requests)
   - [References](#references)
 <!-- /toc -->
 
 ## Summary
 
-<!--
-This section is incredibly important for producing high quality user-focused
-documentation such as release notes or a development roadmap. It should be
-possible to collect this information before implementation begins in order to
-avoid requiring implementors to split their attention between writing release
-notes and implementing the feature itself.
-
-A good summary is probably at least a paragraph in length.
-
-Both in this section and below, follow the guidelines of the [documentation
-style guide]. In particular, wrap lines to a reasonable length, to make it
-easier for reviewers to cite specific portions, and to minimize diff churn on
-updates.
-
-[documentation style guide]: https://github.com/kubernetes/community/blob/master/contributors/guide/style-guide.md
--->
-
 This work will support a user specifying the required metadata (annotations and/or labels) for a referenced `Task` in a `PipelineRun`. So the metadata depending on an execution context can be added in the runtime when they can not be statically defined in a `Task` during the "authoring" time.
 
 ## Motivation
 
-<!--
-This section is for explicitly listing the motivation, goals and non-goals of
-this TEP. Describe why the change is important and the benefits to users. The
-motivation section can optionally provide links to [experience reports][experience reports]
-to demonstrate the interest in a TEP within the wider Tekton community.
-
-[experience reports]: https://github.com/golang/go/wiki/ExperienceReports
--->
 The required metadata currently can be added under a `Task` entity while a user is authoring/configuring the template for a `TaskRun`. As two contexts are considered for Tetkon - the “authoring time” and “runtime”, a stretch of thinking will lead to if the metadata could be defined “dynamically” under the runtime.
 
 The [issue #4105](https://github.com/tektoncd/pipeline/issues/4105) brings a solid usage case where annotations needed for a sidecar injection will depend on the user input and can not be statically defined in a `Task`. So this work could meet the requirements on metadata while keeping a loose coupling between defining a `Task` and a `TaskRun`.
 
 ### Goals
 
-<!--
-List the specific goals of the TEP.
-- What is it trying to achieve?
-- How will we know that this has succeeded?
--->
 - Support a user specify metadata in a referenced `Task` in a `PipelineRun`.
 - The allowed metadata will be annotations and labels.
 
 ### Non-Goals
 
-<!--
-Listing non-goals helps to focus discussion and make progress.
-- What is out of scope for this TEP?
--->
 The below consideration is applied to limit the problem scope:
 
 - This support will only be offered for a `PipelineRun` entity.
@@ -140,16 +59,6 @@ The below consideration is applied to limit the problem scope:
 
 ### Use Cases
 
-<!--
-Describe the concrete improvement specific groups of users will see if the
-Motivations in this doc result in a fix or feature.
-
-Consider the user's:
-- [role][role] - are they a Task author? Catalog Task user? Cluster Admin? e.t.c.
-- experience - what workflows or actions are enhanced if this problem is solved?
-
-[role]: https://github.com/tektoncd/community/blob/main/user-profiles.md
--->
 #### Vault Sidecar Injection
 
 A user wants to use [Vault Agent Injector](https://www.vaultproject.io/docs/platform/k8s/injector) to offer required secrets, like API keys, credentials etc., into a target `Pod`, so a `TaskRun` for the Tekton context. And the Injector will need the related Vault Agent to render the secrets which are specified either by annotations or templates. This configuration will be done based on the required secrets for each `TaskRun` in the runtime as they can not be statically defined in a `Task`.
@@ -190,44 +99,15 @@ Generalized from above use cases, a user can decide to pass metadata into a `Pod
 
 ## Proposal
 
-<!--
-This is where we get down to the specifics of what the proposal actually is.
-This should have enough detail that reviewers can understand exactly what
-you're proposing, but should not include things like API designs or
-implementation. The "Design Details" section below is for the real
-nitty-gritty.
--->
-
 A metadata field is proposed to be added under the `PipelineRun` type.  
 
-### Notes and Caveats
-
-<!--
-(optional)
-
-Go in to as much detail as necessary here.
-- What are the caveats to the proposal?
-- What are some important details that didn't come across above?
-- What are the core concepts and how do they relate?
--->
+## Notes and Caveats
 
 The below considerations could be further digged into:
 
 - Check if possible conflict will come from the metadata specified in the different positions, such as `Task`, `TaskSpec`, `EmbeddedTask`, `PipelineTaskRunSpec` etc.
 
 ## Design Details
-
-<!--
-This section should contain enough information that the specifics of your
-change are understandable. This may include API specs (though not always
-required) or even code snippets. If there's any ambiguity about HOW your
-proposal will be implemented, this is the place to discuss them.
-
-If it's helpful to include workflow diagrams or any other related images,
-add them under "/teps/images/". It's upto the TEP author to choose the name
-of the file, but general guidance is to include at least TEP number in the
-file name, for example, "/teps/images/NNNN-workflow.jpg".
--->
 
 Guided by the stated “Reusability” by [Tekton Design Principles](https://github.com/tektoncd/community/blob/main/design-principles.md), the added metadata will be located under the `taskRunSpecs` / `spec` field of the `PipelineRun` type. This will allow a user specify more execution-context-related metadata in `PipelineRun` rather than being limited by a static definition for a `Task`.
 
@@ -303,42 +183,33 @@ With this work, a user is expected to avoid defining multi `Task` which only dif
 
 ## Alternatives
 
-- [ ] #TODO
+### Add Metadata under `TaskRef` in `Pipeline`
 
-### Test Plan
+While referring to the [`EmbeddedTask`](https://pkg.go.dev/github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1#EmbeddedTask) type under the `Pipeline` type, a possible solution will be adding a metadata field under the `TaskRef` as discussed [here](https://github.com/tektoncd/pipeline/issues/4105#issuecomment-1075335509).
 
-<!--
-Consider the following in developing a test plan for this enhancement:
-- Will there be e2e and integration tests, in addition to unit tests?
-- How will it be tested in isolation vs with other components?
+But when considering that the required metadata will depend on the execution context (runtime), this solution is not chosen as the `taskRef` under `Pipeline` belongs to the authoring time. Here the authoring time means a user will expect to complete the configuration (authoring) for the `Task`.
 
-No need to outline all the test cases, just the general strategy. Anything
-that would count as tricky in the implementation and anything particularly
-challenging to test should be called out.
+### Create a `PipelineTaskRef` type
 
-All code is expected to have adequate tests (eventually with coverage
-expectations).
--->
-- [ ] #TODO
+As a metadata field will be needed for the runtime, a possible solution will be creating a new type, so field, under `PipelineRun` as discussed [here](https://github.com/tektoncd/pipeline/issues/4105#issuecomment-1084816779).
 
-### Implementation Pull Requests
+While thinking that the work will be limited to adding a metadata field, this solution is not chosen because an existing `PipelineTaskRunSpec` field can be used for this function augmentation.  
 
-<!--
-Once the TEP is ready to be marked as implemented, list down all the GitHub
-merged pull requests.
+### Utilize Parameter Substitutions
 
-Note: This section is exclusively for merged pull requests for this TEP.
-It will be a quick reference for those looking for implementation of this TEP.
--->
+As for defining a field value based on user inputs, the parameter substitution method can be considered to concatenate the required metadata. 
+
+However, the key of annotations will need to follow [the naming syntax](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set). And if using a key like `$(params.foo)`, it will cause a validation error. Moreover, parameter values can’t be populated from the `params` field for the `metadata` field due to the different scope of the fields.
+
+## Test Plan
+
+Unit tests will be added to check if the metadata was supported in the `PipelineRun`.
+
+## Implementation Pull Requests
+
 - [ ] #TODO: after TEP marked as implemented
 
 ## References
 
-<!--
-(optional)
-
-Use this section to add links to GitHub issues, other TEPs, design docs in Tekton
-shared drive, examples, etc. This is useful to refer back to any other related links
-to get more details.
--->
 - The related [Tekton Pipeline Issue #4105](https://github.com/tektoncd/pipeline/issues/4105)
+- Design Doc [Support Specifying Metadata per Task in Runtime](https://docs.google.com/document/d/1JyeE_TEKDpnqr1uygxkALJyPKXMOypAwPfnEAx7HKyY/edit?usp=sharing)

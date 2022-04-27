@@ -1,54 +1,16 @@
 ---
-status: implementable
+status: implemented
 title: Add Chains sub-command to the CLI
-creation-date: '2021-08-31'
-last-updated: '2021-10-21'
+creation-date: "2021-08-31"
+last-updated: "2022-04-27"
 authors:
-- '@rgreinho'
+  - "@rgreinho"
 ---
 
 # TEP-0081: Add Chains sub-command to the CLI
 
-<!--
-**Note:** When your TEP is complete, all of these comment blocks should be removed.
-
-To get started with this template:
-
-- [X] **Fill out this file as best you can.**
-  At minimum, you should fill in the "Summary", and "Motivation" sections.
-  These should be easy if you've preflighted the idea of the TEP with the
-  appropriate Working Group.
-- [ ] **Create a PR for this TEP.**
-  Assign it to people in the SIG that are sponsoring this process.
-- [ ] **Merge early and iterate.**
-  Avoid getting hung up on specific details and instead aim to get the goals of
-  the TEP clarified and merged quickly.  The best way to do this is to just
-  start with the high-level sections and fill out details incrementally in
-  subsequent PRs.
-
-Just because a TEP is merged does not mean it is complete or approved.  Any TEP
-marked as a `proposed` is a working document and subject to change.  You can
-denote sections that are under active debate as follows:
-
-```
-<<[UNRESOLVED optional short context or usernames ]>>
-Stuff that is being argued.
-<<[/UNRESOLVED]>>
-```
-
-When editing TEPS, aim for tightly-scoped, single-topic PRs to keep discussions
-focused.  If you disagree with what is already in a document, open a new PR
-with suggested changes.
-
-If there are new details that belong in the TEP, edit the TEP.  Once a
-feature has become "implemented", major changes should get new TEPs.
-
-The canonical place for the latest set of instructions (and the likely source
-of this file) is [here](/teps/NNNN-TEP-template/README.md).
-
--->
-
 <!-- toc -->
+
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goals](#goals)
@@ -80,10 +42,11 @@ by adding a new command to the Tekton CLI.
 
 When working with `Chains`, the user experience will be enhanced if users are
 able to:
-*  use the Tekton CLI rather than a combination of other tools like `kubectl`,
-`jq`, and `base64`
-* not having to memorize which exact TaskRun annotation or key to query.
-* discover available `Chains` features via the CLI and/or its documentation.
+
+- use the Tekton CLI rather than a combination of other tools like `kubectl`,
+  `jq`, and `base64`
+- not having to memorize which exact TaskRun annotation or key to query.
+- discover available `Chains` features via the CLI and/or its documentation.
 
 ### Goals
 
@@ -95,9 +58,9 @@ While the idea is to use the Tekton CLI to replace a combination of shell
 commands, we may not want to implement all exotic variations and focus only on
 the most common use cases in order to avoid overloading the `chains` command.
 
-A command allowing to configure Tekton Chains. While it would be a great
-feature to have, ths ideal implementation would require creating a new command,
-for instance `tkn adm chains`. This will be part of a future TEP.
+A command allowing to configure Tekton Chains. While it would be a great feature
+to have, ths ideal implementation would require creating a new command, for
+instance `tkn adm chains`. This will be part of a future TEP.
 
 ### Use Cases
 
@@ -162,7 +125,7 @@ kubectl get taskrun $TASKRUN -o=json \
 Change the provenance format:
 
 ```bash
-$ tkn chains format in-toto
+tkn chains format in-toto
 ```
 
 instead of:
@@ -176,9 +139,9 @@ instead of:
 
 #### Other Use Case ideas
 
-* Generate and configure `cosign` keys
-* Verify `cosign` signatures
-* Validate `in-toto` layout
+- Generate and configure `cosign` keys
+- Verify `cosign` signatures
+- Validate `in-toto` layout
 
 ## Requirements
 
@@ -225,9 +188,9 @@ import the `chains` module, there won't be any issue.
 
 ### User Experience
 
-* Keep the CLI simple
-* Ensure auto-completion is available
-* Keep only to 2 levels of commands, i.e `tkn <command> <action> [parameter]...`
+- Keep the CLI simple
+- Ensure auto-completion is available
+- Keep only to 2 levels of commands, i.e `tkn <command> <action> [parameter]...`
 
 ## Design Details
 
@@ -242,14 +205,8 @@ DRYer.
 
 ## Test Plan
 
-* Unit test and e2e tests will be added or updated to the `chains` module.
-* For the CLI, the tests should be similar to any other tekton command.
-
-## Design Evaluation
-<!--
-How does this proposal affect the reusability, simplicity, flexibility
-and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/master/design-principles.md)
--->
+- Unit test and e2e tests will be added or updated to the `chains` module.
+- For the CLI, the tests should be similar to any other tekton command.
 
 ## Drawbacks
 
@@ -260,27 +217,19 @@ Why should this TEP _not_ be implemented?
 ## Alternatives
 
 The alternative is to use a combination of shell tools and to know which exact
-annotation or key to query/update. It was ruled out since it complicates
-the operations for no good reason. See the
+annotation or key to query/update. It was ruled out since it complicates the
+operations for no good reason. See the
 [Use Cases (optional)](use-cases-optional) section for some examples.
 
-One other alternative would be that chains provides a `tkn-chains` binary,
-and with the "execution model" we have in `tkn`, it would appear as a
-subcommand.One downside of this, is that it wouldn't be available by default and
-would complicate a bit the "packaging part". I'd rather have the chains command
-in, and secure by default (if history teach us anything is that things not
-enable or shipped by default are less adopted 😓)
+One other alternative would be that chains provides a `tkn-chains` binary, and
+with the "execution model" we have in `tkn`, it would appear as a subcommand.One
+downside of this, is that it wouldn't be available by default and would
+complicate a bit the "packaging part". I'd rather have the chains command in,
+and secure by default (if history teach us anything is that things not enable or
+shipped by default are less adopted 😓)
 [[ref](https://github.com/tektoncd/community/pull/508#discussion_r712816640)].
 
 ## Implementation Pull request(s)
 
-* <https://github.com/tektoncd/cli/pull/1440>
-* <https://github.com/tektoncd/chains/pull/245>
-
-## References (optional)
-
-<!--
-Use this section to add links to GitHub issues, other TEPs, design docs in Tekton
-shared drive, examples, etc. This is useful to refer back to any other related links
-to get more details.
--->
+- <https://github.com/tektoncd/cli/pull/1440>
+- <https://github.com/tektoncd/chains/pull/245>

@@ -183,6 +183,8 @@ While referring to the [`EmbeddedTask`](https://pkg.go.dev/github.com/tektoncd/p
 
 But when considering that the required metadata will depend on the execution context (runtime), this solution is not chosen, because the `taskRef` under `Pipeline` belongs to the authoring time. Here the authoring time means a user will be expected to complete the configuration (authoring) for the `Task`.
 
+_(Note: This approach can meet use cases which require metadata specified during configuring a `Pipeline`, such as always enabling hermetic execution mode for certain referenced `Task`(s).)_
+
 ### Create a `PipelineTaskRef` type
 
 As a metadata field will be needed for the runtime, a possible solution will be creating a new type / field, under `PipelineRun` as discussed [here](https://github.com/tektoncd/pipeline/issues/4105#issuecomment-1084816779).

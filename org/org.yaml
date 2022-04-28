@@ -214,6 +214,7 @@ orgs:
         - hrishin
         - danielhelfand
         - pradeepitm12
+        - vinamra28
         privacy: closed
         repos:
           cli: write

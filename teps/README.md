@@ -221,7 +221,7 @@ This is the complete list of Tekton teps:
 |[TEP-0071](0071-custom-task-sdk.md) | Custom Task SDK | proposed | 2021-06-15 |
 |[TEP-0072](0072-results-json-serialized-records.md) | Results: JSON Serialized Records | implementable | 2021-07-26 |
 |[TEP-0073](0073-simplify-metrics.md) | Simplify metrics | implemented | 2022-02-28 |
-|[TEP-0074](0074-deprecate-pipelineresources.md) | Deprecate PipelineResources | proposed | 2022-02-25 |
+|[TEP-0074](0074-deprecate-pipelineresources.md) | Deprecate PipelineResources | implementable | 2022-04-11 |
 |[TEP-0075](0075-object-param-and-result-types.md) | Object/Dictionary param and result types | implementable | 2022-04-08 |
 |[TEP-0076](0076-array-result-types.md) | Array result types | implementable | 2022-03-18 |
 |[TEP-0079](0079-tekton-catalog-support-tiers.md) | Tekton Catalog Support Tiers | proposed | 2022-01-25 |
@@ -242,5 +242,6 @@ This is the complete list of Tekton teps:
 |[TEP-0100](0100-embedded-taskruns-and-runs-status-in-pipelineruns.md) | Embedded TaskRuns and Runs Status in PipelineRuns | implemented | 2022-04-18 |
 |[TEP-0102](0102-https-connection-to-triggers-interceptor.md) | HTTPS Connection to Triggers ClusterInterceptor | proposed | 2022-03-21 |
 |[TEP-0103](0103-skipping-reason.md) | Skipping Reason | implementable | 2022-04-06 |
+|[TEP-0104](0104-tasklevel-resource-requests.md) | Task-level Resource Requests | implementable | 2022-04-08 |
 |[TEP-0105](0105-remove-pipeline-v1alpha1-api.md) | Remove Pipeline v1alpha1 API | proposed | 2022-04-11 |
 |[TEP-0106](0106-support-specifying-metadata-per-task-in-runtime.md) | Support Specifying Metadata per Task in Runtime | proposed | 2022-04-19 |

@@ -231,6 +231,7 @@ orgs:
         - dlorenc
         - dibyom
         - jerop
+        - lbernick
         privacy: closed
         repos:
           pipeline: write

@@ -22,6 +22,7 @@ authors:
   - [Proposal](#proposal)
   - [Notes and Caveats](#notes-and-caveats)
   - [Design Details](#design-details)
+    - [Metadata Precedence](#metadata-precedence)
   - [Design Evaluation](#design-evaluation)
     - [Reusability](#reusability)
     - [Simplicity](#simplicity)
@@ -41,7 +42,7 @@ This work will support a user specifying the required metadata (annotations and/
 
 ## Motivation
 
-The required metadata currently can be added under a `Task` entity while a user is authoring/configuring the template for a `TaskRun`. As two contexts are considered for Tetkon - the “authoring time” and “runtime”, a stretch of thinking will lead to if the metadata could be defined “dynamically” under the runtime.
+The required metadata currently can be added under a `Task` entity while a user is authoring/configuring the template for a `TaskRun`. As two contexts are considered for Tekton - the “authoring time” and “runtime”, a stretch of thinking will lead to if the metadata could be defined “dynamically” under the runtime.
 
 The [issue #4105](https://github.com/tektoncd/pipeline/issues/4105) brings a solid usage case where annotations needed for a sidecar injection will depend on the user input and can not be statically defined in a `Task`. So this work could meet the requirements on metadata while keeping a loose coupling between defining a `Task` and a `TaskRun`.
 
@@ -111,7 +112,7 @@ The below considerations could be further digged into:
 
 Guided by the stated “Reusability” by [Tekton Design Principles](https://github.com/tektoncd/community/blob/main/design-principles.md), the added metadata will be located under the `taskRunSpecs` / `spec` field of the `PipelineRun` type. This will allow a user specify more execution-context-related metadata in `PipelineRun` rather than being limited by a static definition for a `Task`.
 
-So the metadata field will be added as (addition marked with +):
+So the metadata field will be added as (the addition marked with +):
 
 ```go
 // PipelineTaskRunSpec an be used to configure specific
@@ -141,7 +142,7 @@ type PipelineTaskMetadata struct {
 }
 ```
 
-An `PipelineRun` example to show the structure (addition marked with +):
+An `PipelineRun` example to show the structure (the addition marked with +):
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -158,6 +159,55 @@ spec:
 +       vault.hashicorp.com/agent-inject-secret-${unique-name}: ${/path/to/secret}
 +       vault.hashicorp.com/role: ${role}
 ```
+
+### Metadata Precedence
+
+From the point mentioned in [Notes and Caveats](#notes-and-caveats), the metadata precedence is taken into consideration for different positions which can be used to add metadata as needs.
+
+The proposed order will be as (the addition marked with +[]):
+
+```markdown
++[PipelineTaskRunSpec (of PipelineRun)] > PipelineRun (metadata field) -> TaskRun (metadata field) > TaskSpec (of PipelineTask in Pipeline type)
+```
+
+_(Note: `->` means the metadata will be propagated from `PipelineRun` into the corresponding `TaskRun`(s).)_
+
+Here is an example (the addition marked with +):
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+spec:
+  tasks:
+  - name: ${pipeline-task-name}
+    taskSpec:
+      metadata:
+        annotations:
+          test: pipeline-taskSpec-annotations
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: ${pipelineRun-name} 
+  annotations: 
+    test: pipelineRun-annotations
+spec:
+  pipelineRef:
+    name: ${pipelineRef-name}
+  taskRunSpecs:
+  - pipelineTaskName: ${pipeline-task-name}
++   metadata: 
++     annotations:
++       test: pipelineRun-taskRunSpec-annotations
+```
+
+So by the stated precedence order, the `test` annotation finally propagated into the `TaskRun`, then into the target `Pod`, will have a value as `pipelineRun-taskRunSpec-annotations`.
+
+As annotations to be used in runtime (supported by this work) will more depend on an execution context, it will be less likely to have a same key annotation in other places, like for the [vault sidecar injection](#vault-sidecar-injection). Otherwise, a user can consider placing an annotation, which possibly can be defined statically, under the `Pipeline`.
+
+The reason with this order is that the runtime metadata added per task will be closely related to the execution context, like enabling the hermetical mode for a task, and should be able to overwrite metadata, defined either in the "authoring time" or for all tasks in a `PipelineRun`, if have to.
+
+Also this addition follows the current order which gives a higher precedence for annotations specified in `PipelineRun`, so runtime > authoring time.
 
 ## Design Evaluation
 

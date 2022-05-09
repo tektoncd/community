@@ -249,7 +249,7 @@ storing arbitrarily large data.
 
 In this option we introduce a way to pass one TaskRun’s output results into another TaskRun’s input parameters by reference, instead of
 only by value as they are today.
-
+The `byRef` could also be configured and handled by the controller and not something that needs to be made explicit at authoring time.
 **Example:**
 
 ```yaml

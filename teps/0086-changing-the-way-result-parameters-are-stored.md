@@ -92,7 +92,6 @@ Additionally, this will help projects that wrap/abstract Tekton where users unde
 
 ## Requirements
 
-### Required
 
 * Allow users to reference a Task Result in its current form `$(tasks.Task Name.results.Result Name)`
 * Use existing objects (or standard ones incl CRDs) where the complexity _can_ be abstracted from a user.

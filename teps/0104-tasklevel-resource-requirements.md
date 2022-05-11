@@ -1,15 +1,15 @@
 ---
 status: implementable
-title: Task-level Resource Requests
+title: Task-level Resource Requirements
 creation-date: '2022-04-08'
-last-updated: '2022-04-08'
+last-updated: '2022-05-11'
 authors:
 - '@lbernick'
 - '@vdemeester'
 - '@jerop'
 ---
 
-# TEP-0104: Task-level Resource Requests
+# TEP-0104: Task-level Resource Requirements
 
 <!-- toc -->
 - [Summary](#summary)
@@ -22,7 +22,6 @@ authors:
 - [Existing Strategies for Controlling Resource Consumption](#existing-strategies-for-controlling-resource-consumption)
 - [Proposal](#proposal)
   - [API Changes](#api-changes)
-  - [Requests vs Limits](#requests-vs-limits)
   - [Applying Task Resources to Containers](#applying-task-resources-to-containers)
   - [Sidecars](#sidecars)
   - [Interaction with Step resource requirements](#interaction-with-step-resource-requirements)
@@ -67,6 +66,8 @@ In addition, if a pod exceeds its memory requests, it may be evicted from the no
 For more information, see [“Resource Management for Pods and Containers”][management].
 Resource requirements are also used to determine a pod’s quality of service, which affect how likely it is to be scheduled or evicted.
 
+Resource requirements [can't be updated after pods are created][update].
+
 ### Resource requirements in Tekton
 Tekton [Steps][step] correspond to containers, and resource requirements can be specified on a per-Step basis.
 Step resource requirements can be specified via [Task.StepTemplate][stepTemplate], [Task.Steps][step],
@@ -78,7 +79,7 @@ as close to the user’s configuration as possible, subject to the [minimum/maxi
 TaskRuns are rejected if there is no configuration that meets these constraints.
 
 ## Goals
-- Task-level resource requests are configurable at authoring time (i.e. on Task) and runtime (i.e. on TaskRun).
+- Task-level resource requirements are configurable at authoring time (i.e. on Task) and runtime (i.e. on TaskRun).
   - Authoring time configuration is provided for consistency with existing functionality (Task.Step.Resources).
   - The reasons for runtime configuration are discussed in more detail in [TEP-0094][tep-0094].
 
@@ -102,9 +103,8 @@ depending on its inputs. In addition, LimitRanges don’t distinguish between Te
 
 ### API Changes
 
-Augment the Task and TaskRun APIs with a resources field that allows the user to configure the resource requests
-of a Task. Resource limits will not be permitted (see [“Requests vs Limits”](#requests-vs-limits)).
-An example Task is as follows.
+Augment the Task and TaskRun APIs with a resources field that allows the user to configure the resource requirements
+of a Task. An example Task is as follows.
 
 ```
 apiVersion: tekton.dev/v1beta1
@@ -118,63 +118,74 @@ spec:
   resources:
     requests:
       memory: 1Gi
+    limits:
+      memory: 2Gi
 ```
 
 This field should also be added to [PipelineRun.TaskRunSpecs][taskRunSpecs].
 
-### Requests vs Limits
-
-Because Kubernetes considers [containers without resource limits to have higher limits than those with limits configured][effective],
-configuration for limits is more challenging than configuration for requests. Task-level resource limits could be
-implemented several ways, each with their own problems:
-- If the task resource limit is applied to only one container, the pod will not have an effective limit
-due to the other containers without limits. This defeats the purpose of the feature.
-- If the task limit is applied to each container, the pod has a much higher limit than desired.
-This is especially problematic if requests are not set, because the request will then automatically be set
-to the same value as the limit, and the pod may have difficulty being scheduled.
-- If the task limit is spread out among containers, a task where one step is more resource intensive
-than all the others could get oomkilled or throttled.
-- Limits cannot be dynamically adjusted as steps run, since container resource requirements can't be [updated][update].
-
-Therefore, this proposal will focus only on task-level resource requests, not limits.
+**Note**: Currently, `Task.Resources` is used for PipelineResources. Appropriate naming for this field is still
+under discussion.
 
 ### Applying Task Resources to Containers
 
-When a user configures a resource request for a Task, that request should be applied to one container only in the pod.
+#### Requests
+
+As mentioned in [Resource Requirements in Kubernetes](#resource-requirements-in-kubernetes),
+the effective resource requests of a pod are the sum of the resource requests of its containers,
+and this value is used to determine the resources reserved by the kubelet when scheduling a pod.
+Therefore, when a user configures a resource request for a Task, that request should be applied to one container only in the pod.
 (See [Interaction with LimitRanges](#interaction-with-limitranges) for caveats.)
 All other containers will not have resource requests. This will result in a pod with an effective resource request
 that is the same as that of the Task, and will be scheduled correctly. This is similar to
 Tekton’s [handling of resource requests pre v0.28.0][pre-v28], where the maximum resource request of all containers
 was applied to only one container, and the rest were left without resource requests.
 
+#### Limits
+
+Because Kubernetes considers [containers without resource limits to have higher limits than those with limits configured][effective],
+configuration for limits is different than configuration for requests. There are several options for how Task-level resource limits
+could be implemented:
+- If the task resource limit is applied to only one container, the pod will not have an effective limit
+due to the other containers without limits. This defeats the purpose of the feature.
+- If the task limit is spread out among containers, a task where one step is more resource intensive
+than all the others could get oomkilled or throttled.
+- If the task limit is applied to each container, the pod has a much higher effective limit than desired.
+
+However, the effective resource limit of a pod are not used for scheduling (see
+[How Pods with resource requests are scheduled][scheduling] and [How Kubernetes applies resource requests and limits][enforcement]).
+Instead, container limits are enforced by the container runtime.
+
+This means that applying the task resource limits to each container in the pod will result in a pod with higher effective limits than
+desired, but which prevents any individual Step from exceeding configured limits, as is likely desired.
+
+If Task-level limits are set, Tekton should apply the smallest possible resource request to each container.
+This is because containers with limits but not requests automatically have their requests set to their limits,
+which would result in a pod with much higher effective requests than desired.
+
 ### Sidecars
 
 Sidecar containers run in parallel with Steps, meaning that their resource requests and limits
-should actually be summed with Steps’ resource requirements. However, the Task-level resource requests
-should still be interpreted as the overall resource requests of a Task, including Steps and Sidecars.
-Applying resource requests to a single container still results in a pod with the correct overall resource requests. 
-Users should not be able to specify both Task resource requirements and Sidecar resource requirements.
+should actually be summed with Steps’ resource requirements. In the case of Task-level limits, it is not clear how to
+distribute the limit between a Sidecar and Steps, since they run at the same time. Therefore, the Task-level resource limit
+should be interpreted as the limit only for Steps, and Sidecar limits should be set separately. For consistency, Task-level
+requests should also be interpreted as requests for Steps only.
+Users should be able to specify both Task resource requirements and Sidecar resource requirements.
 
 ### Interaction with Step resource requirements
 
 Because Tekton will handle the logic for the combined resource requests of a Task or TaskRun,
 users should not be able to specify resource requests for both the Task or TaskRun and individual Steps.
 This means:
-- If a Task defines [StepTemplate.Resources.Requests][stepTemplate] or [Step.Resources.Requests][step]:
-  - If the Task also defines Resources.Requests, it will be rejected.
-  - If the corresponding TaskRun defines Resources.Requests, the value from the TaskRun will apply
+- If a Task defines [StepTemplate.Resources][stepTemplate] or [Step.Resources][step]:
+  - If the Task also defines Resources, the Task will be rejected by the admission webhook.
+  - If the corresponding TaskRun defines Resources, the value from the TaskRun will apply
   and the value from the Task will be ignored.
-- If a Task or TaskRun defines Resources.Requests, the admission webhook should reject TaskRuns
-that also define [StepOverrides.Resources.Requests][stepOverride].
+- If a Task or TaskRun defines Resources, the admission webhook should reject TaskRuns
+that also define [StepOverrides.Resources][stepOverride].
 
-Users may choose to set Step resource limits in addition to Task-level resource requirements.
-If both Task resource requests and Step resource limits are configured, this is permissible
-as long as the maximum Step resource limit is greater than the Task resource request.
-The Task resource request should be applied to the container with the greatest resource limit
-(or with no limit, if such a container exists).
-
-Resource types (CPU, memory, hugepages) should be considered independently. For example,
-if a Step definition has a CPU request and the TaskRun has an overall memory request, both will be applied.
+Users should not be able to mix and match Step resource requirements and Task resource requirements, even for different
+types of compute resources (e.g. CPU, memory).
 
 ### Interaction with LimitRanges
 
@@ -192,7 +203,92 @@ If there is no container configuration that satisfies the LimitRange, the TaskRu
 - Tekton pods currently have a [burstable quality of service class][qos], which will not change as a result of this implementation.
 - We should consider updating our catalog Task guidelines with guidance around when to specify resource requirements. 
 
+### Future Work
+
+We should consider deprecating `Task.Step.Resources`, `Task.StepTemplate.Resources`, and `TaskRun.StepOverrides`.
+Specifying resource requirements for individual Steps is confusing and likely too granular for many CI/CD workflows.
+
+We could also consider support for both Task-level and Step-level resource requirements if the requirements are for different types
+of compute resources (for example, specifying CPU request at the Step level and memory request at the Task level). However,
+this functionality will not be supported by the initial implementation of this proposal; it can be added later if desired.
+
 ## Examples
+
+### Example with requests only
+
+```
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: my-task
+spec:
+  steps:
+    - name: step-1
+    - name: step-2
+    - name: step-3
+  resources:
+    requests:
+      cpu: 1.5
+```
+
+| Step name | CPU request | CPU limit |
+| --------- | ----------- | --------- |
+| step-1    | N/A         | N/A       |
+| step-2    | N/A         | N/A       |
+| step-3    | 1.5         | N/A       |
+
+### Example with limits only
+
+```
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: my-task
+spec:
+  steps:
+    - name: step-1
+    - name: step-2
+    - name: step-3
+  resources:
+    limits:
+      cpu: 2
+```
+
+| Step name | CPU request       | CPU limit |
+| --------- | ----------------- | --------- |
+| step-1    | smallest possible | 2         |
+| step-2    | smallest possible | 2         |
+| step-3    | smallest possible | 2         |
+
+(Here, the smallest possible request is based on both what the kubelet will allow, and the minimum values allowed by any LimitRange.)
+
+### Example with both requests and limits
+
+```
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: my-task
+spec:
+  steps:
+    - name: step-1
+    - name: step-2
+    - name: step-3
+  resources:
+    requests:
+      cpu: 1.5
+    limits:
+      cpu: 2
+```
+
+| Step name | CPU request       | CPU limit |
+| --------- | ----------------- | --------- |
+| step-1    | smallest possible | 2         |
+| step-2    | smallest possible | 2         |
+| step-3    | 1.5               | 2         |
+
+(Here, the smallest possible request is based on both what the kubelet will allow, and the minimum values allowed by any LimitRange.)
+
 
 ### Example with Sidecar
 
@@ -207,6 +303,11 @@ spec:
     - name: step-2
   sidecars:
     - name: sidecar-2
+      resources:
+        requests:
+          cpu: 750m
+        limits:
+          cpu: 1
   resources:
     requests:
       cpu: 1.5
@@ -218,7 +319,7 @@ The resulting pod would have the following containers:
 | ----------------- | ----------- | --------- |
 | step-1            | N/A         | N/A       |
 | step-2            | 1.5         | N/A       |
-| sidecar-1         | N/A         | N/A       |
+| sidecar-1         | 750m        | 1         |
 
 ### Example with LimitRange
 
@@ -302,7 +403,7 @@ The resulting pod would have the following containers:
 If the “Resources.Requests” field were present on the Task instead of the TaskRun,
 the Task would be rejected.
 
-### Example with Step resource requests
+### Example with Step resource requests overridden by TaskRun
 
 ```
 apiVersion: tekton.dev/v1beta1
@@ -376,35 +477,6 @@ spec:
 
 This TaskRun would be rejected.
 
-### Example with both requests and limits
-
-```
-apiVersion: tekton.dev/v1beta1
-kind: Task
-metadata:
-  name: my-task
-spec:
-  steps:
-    - name: step-1
-      resources:
-        limits:
-         cpu: 500m
-    - name: step-2
-      resources:
-        limits:
-         cpu: 1
-    - name: step-3
-  resources:
-    requests:
-      cpu: 1.5
-```
-
-| Step name | CPU request | CPU limit |
-| --------- | ----------- | --------- |
-| step-1    | N/A         | 500m      |
-| step-2    | N/A         | 1         |
-| step-3    | 1.5         | N/A       |
-
 ### Example with both CPU and memory
 
 ```
@@ -415,26 +487,21 @@ metadata:
 spec:
   steps:
     - name: step-1
-      resources:
-        requests:
-         memory: 500Mi
     - name: step-2
-      resources:
-        requests:
-          memory: 750Mi
-        limits:
-         memory: 1Gi
   resources:
     requests:
       cpu: 1.5
+      memory: 500Mi
+    limits:
+      memory: 1Gi
 ```
 
 The resulting pod would have the following containers:
 
-| Step name | CPU request | CPU limit | Memory request | Memory limit |
-| --------- | ----------- | --------- | -------------- | ------------ |
-| step-1    | N/A         | N/A       | 500Mi          | N/A          |
-| step-2    | 1.5         | N/A       | 750Mi          | 1Gi          |
+| Step name | CPU request | CPU limit | Memory request    | Memory limit |
+| --------- | ----------- | --------- | ----------------- | ------------ |
+| step-1    | N/A         | N/A       | 500Mi             | 1Gi          |
+| step-2    | 1.5         | N/A       | smallest possible | 1Gi          |
 
 ## Alternatives
 
@@ -466,6 +533,8 @@ reverting to pre-0.28.0 behavior.
 (for how resource requests are currently handled)
 
 [resources]: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+[scheduling]: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#how-pods-with-resource-requests-are-scheduled
+[enforcement]: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#how-pods-with-resource-limits-are-run
 [effective]: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/#resources
 [update]: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#resources
 [init]: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/

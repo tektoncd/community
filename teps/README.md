@@ -244,7 +244,7 @@ This is the complete list of Tekton teps:
 |[TEP-0101](0101-env-in-pod-template.md) | Env in POD template | proposed | 2022-05-09 |
 |[TEP-0102](0102-https-connection-to-triggers-interceptor.md) | HTTPS Connection to Triggers ClusterInterceptor | implementable | 2022-04-20 |
 |[TEP-0103](0103-skipping-reason.md) | Skipping Reason | implemented | 2022-05-05 |
-|[TEP-0104](0104-tasklevel-resource-requests.md) | Task-level Resource Requests | implementable | 2022-04-08 |
+|[TEP-0104](0104-tasklevel-resource-requirements.md) | Task-level Resource Requirements | implementable | 2022-05-11 |
 |[TEP-0105](0105-remove-pipeline-v1alpha1-api.md) | Remove Pipeline v1alpha1 API | proposed | 2022-04-11 |
 |[TEP-0106](0106-support-specifying-metadata-per-task-in-runtime.md) | Support Specifying Metadata per Task in Runtime | proposed | 2022-04-19 |
 |[TEP-0107](0107-propagating-parameters.md) | Propagating Parameters | implementable | 2022-05-02 |

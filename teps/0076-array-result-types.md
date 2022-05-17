@@ -472,7 +472,7 @@ params:
         - 'value1'
         - 'value2'
 ```
-Another example will be thw following if `tasks.get-environments.results.environments` and `environments` are both arrays of strings:
+Another example will be the following if `tasks.get-environments.results.environments` and `environments` are both arrays of strings:
 ```yaml
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline

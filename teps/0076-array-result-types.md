@@ -452,7 +452,7 @@ tasks:
 Additionally, array results can be passed directly to Tasks which take arrays as parameters using
 [the `[*]` variable replacement syntax](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#substituting-array-parameters).
 
-For example, when params `update-all-environments` in array type is substituted with another array type `tasks.get-environments.results.environments`:
+For example, when params `environments` in array type is substituted with another array type `tasks.get-environments.results.environments`:
 ```yaml
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline

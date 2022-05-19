@@ -773,6 +773,7 @@ orgs:
         - vdemeester
         members:
         - sbwsg
+        - chitrangpatel
         privacy: closed
         repos:
           resolution: write

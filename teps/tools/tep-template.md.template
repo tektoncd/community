@@ -229,6 +229,17 @@ required for these dependencies?
 their own choices?
 -->
 
+### Conformance
+
+<!--
+https://github.com/tektoncd/community/blob/main/design-principles.md#conformance
+
+- Does this proposal require the user to understand how the Tekton API is implemented?
+- Does this proposal introduce additional Kubernetes concepts into the API? If so, is this necessary?
+- If the API is changing as a result of this proposal, what updates are needed to the
+[API spec](https://github.com/tektoncd/pipeline/blob/main/docs/api-spec.md)?
+-->
+
 ### User Experience
 
 <!--

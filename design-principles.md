@@ -28,5 +28,13 @@
 
 ## Conformance
 1. Tekton features should work as the user expects in varied environment setup.
-1. Tekton should not contain kubernetes-specific features, such as configuations for a `Pod`, in the API as much as possible. When kubernetes-specific features have to be added, they should be explicitly called out in the design docs and consider shunting them together into a section of the API, such as `podTemplate`.  
+1. Tekton users should not need to understand the implementation details of the API on any specific platform.
+In general, TEPs should make Tekton more platform-agnostic, not more platform-specific. 
+1. To the greatest extent possible, the Tekton API should not contain Kubernetes-specific features, such as configuration for `Pods`.
+While the "main" implementation of the Tekton API is built on Kubernetes, there is also (for example) a [buildkit implementation](https://github.com/vdemeester/buildkit-tekton)
+of Tekton, and platform builders may choose to implement the Tekton API in other ways that don't rely on Kubernetes.
+When Kubernetes-specific features have to be added, they should be explicitly called out in the design docs, and consider shunting them together into a section of the API, such as `podTemplate`.
+The Tekton API currently contains some Kubernetes-isms. These should be treated as potentential long-term opportunities for improvement of our abstractions.
 1. In TEPs, discuss how the proposal affects [conformance](https://github.com/tektoncd/community/blob/main/teps/0012-api-spec.md).
+As mentioned in the conformance document, newly added API fields shouldn't be required for Tekton conformance, but can
+transition to becoming required over time.

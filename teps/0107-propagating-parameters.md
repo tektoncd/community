@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Propagating Parameters
 creation-date: '2022-04-11'
-last-updated: '2022-05-02'
+last-updated: '2022-05-26'
 authors:
 - '@jerop'
 - '@bobcatfish'
@@ -769,6 +769,9 @@ for this proposal, but is a path we can pursue afterwards.
 
 ## References
 
+* Implementation Pull Requests:
+  * [Tekton Pipelines PR #4906 - Remove Implicit Parameters][pr-4906]
+  * [Tekton Pipelines PR #4845 - Implement Propagated Parameters][pr-4845]
 * [TEP-0023: Implicit Parameters][tep-0023]
 * [Implicit Parameters Documentation][ip-docs]
 * [Tekton Pipelines Issue #4388][issue-4388]
@@ -778,3 +781,5 @@ for this proposal, but is a path we can pursue afterwards.
 [ip-docs]: https://github.com/tektoncd/pipeline/blob/adc127a5f1215019863768d58ad88bdf1a44fb5f/docs/pipelineruns.md#implicit-parameters
 [issue-4388]: https://github.com/tektoncd/pipeline/issues/4388
 [pr-4484]: https://github.com/tektoncd/pipeline/pull/4484
+[pr-4906]: https://github.com/tektoncd/pipeline/pull/4906
+[pr-4845]: https://github.com/tektoncd/pipeline/pull/4845

@@ -645,7 +645,8 @@ value: "cloned $(tasks.cloned-git.results.cloned-gitrepo.url) at $(tasks.cloned-
 
 [As with params](#variable-replacement-with-object-params) only access to individual keys will be allowed initially.
 
-#### Collisions with builtin variable replacement
+### Conflicts
+#### **1. Collisions with builtin variable replacement**
 
 Tekton provides builtin variable replacements which may one day conflict with the keys in a dictionary. Existing
 variable replacements will not conflict (the closest candidate is `path`, as in `$(results.foo.path)` but since this is
@@ -678,6 +679,74 @@ the ambiguity here would only require using `$params.foo.bound` to refer to the 
       stop working after the `bound` feature is introduced
 2. Let the defined object override the variable replacement; i.e. in this case the built in replacement will not be
    available
+
+#### **2. Collisions when other string/array parameter names contain dots `.`**
+
+***Problem:*** It has been supported to have dots`.` in parameter names. But things get tricky when both a string/array parameter named `foo.bar` and an object parameter named `foo` with a key called `bar` are declared in the same taskSpec.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  generateName: object-param-test-
+spec:
+  taskSpec:
+    params:
+      - name: foo
+        properties:
+          key1: {}
+          bar: {}
+        default:
+          key1: "val1"
+          bar: "val2"
+      - name: foo.bar
+        default: "tricky"
+    results:
+      - name: echo-output
+    steps:
+      - name: echo-params
+        image: bash
+        script: |
+          set -e
+          echo $(params.foo.bar) | tee $(results.echo-output.path)
+```
+
+***Design:*** `$(params.foo.bar)` would be treated as a reference to the key `bar` of the object parameter `foo`. Similar design applies to result names i.e. `$(tasks.task1.results.foo.bar)` refers to the key `bar` of the object result `foo` from `task1`.
+
+***Reason:*** Without this TEP-0075 implemented, `$(params.foo.bar)` would be treated by the validation webhook as an invalid reference for the parameter named `foo.bar` since parameter names containing dots can only be referenced using bracket notation i.e. `$(params["foo.bar"])` because [TEP-0080](https://github.com/tektoncd/community/blob/main/teps/0080-support-domainscoped-parameterresult-names.md#proposal) added support for using `[]` syntax instead of dots `.` to support variables which are have names that include dots `.` ([This doc](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#specifying-parameters) also mentioned this.). Therefore, after this TEP-0075 is implemented, `$(params.foo.bar)` will be treated naturally as a reference to a key of an object parameter without any conflicts.
+
+
+#### **3. Problem when the object parameter name itself or its key name contains dots `.`**
+
+***Problem:*** If a parameter of object type is named `foo.bar` and has two keys `mykey` and `my.dot.key` like the example below, it would become confusing to users how to reference the whole object parameter itself, and how to reference its individual keys.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  generateName: object-param-test-
+spec:
+  taskSpec:
+    params:
+      - name: foo.bar
+        properties:
+          mykey: {}
+          my.dot.key: {}
+      - name: foo
+        properties:
+          bar: {}
+          anotherkey: {}
+```
+
+***Design:*** For parameters of object type, using dots in its names or its key names is NOT allowed (at least in the initial implementation). Similarly, object result and key names shouldn't contain dots.
+
+***Reason:*** [The motivation of TEP-0080](https://github.com/tektoncd/community/blob/main/teps/0080-support-domainscoped-parameterresult-names.md#motivation) supporting dots in variable names is using domain-scoped names as a way for the domain owner to "own" the definition of what those parameters and results are for and how they will be used. For parameters of object type, the parameter name and its individual key names are already _domain-scoped_, which means there seems no need to still use dots in object parameter names or its key names.
+
+***Alternatives***: Allow users to use dots in object parameter names and its key names. That means names containing dots must be referenced in bracket `[]`. Possible ways to reference individual keys
+  1. using brackets only: `$(params["my.object"]["mykey"])`
+  2. mixing bracket and dot: `$(params["my.object"].mykey)`
+
+> NOTE: If the key name also contain dots i.e. `my.key`, only #1 is allowed i.e. `$(params["my.object"]["my.key"])`.
 
 ## Test Plan
 

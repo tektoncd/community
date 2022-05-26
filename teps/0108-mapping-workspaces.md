@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Mapping Workspaces
 creation-date: '2022-05-03'
-last-updated: '2022-05-03'
+last-updated: '2022-05-26'
 authors:
 - '@jerop'
 - '@bobcatfish'
@@ -118,5 +118,6 @@ spec:
 
 ## References
 
+- [Implementation Pull Request](https://github.com/tektoncd/pipeline/pull/4887)
 - [TEP-0107: Propagating `Parameters`](0107-propagating-parameters.md)
 - [`Workspaces` Documentation](https://github.com/tektoncd/pipeline/blob/main/docs/workspaces.md)

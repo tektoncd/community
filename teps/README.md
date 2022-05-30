@@ -246,6 +246,6 @@ This is the complete list of Tekton teps:
 |[TEP-0103](0103-skipping-reason.md) | Skipping Reason | implemented | 2022-05-05 |
 |[TEP-0104](0104-tasklevel-resource-requests.md) | Task-level Resource Requests | implementable | 2022-04-08 |
 |[TEP-0105](0105-remove-pipeline-v1alpha1-api.md) | Remove Pipeline v1alpha1 API | proposed | 2022-04-11 |
-|[TEP-0106](0106-support-specifying-metadata-per-task-in-runtime.md) | Support Specifying Metadata per Task in Runtime | implementable | 2022-05-10 |
+|[TEP-0106](0106-support-specifying-metadata-per-task-in-runtime.md) | Support Specifying Metadata per Task in Runtime | implemented | 2022-05-27 |
 |[TEP-0107](0107-propagating-parameters.md) | Propagating Parameters | implemented | 2022-05-26 |
 |[TEP-0108](0108-mapping-workspaces.md) | Mapping Workspaces | implemented | 2022-05-26 |

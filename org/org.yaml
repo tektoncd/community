@@ -745,13 +745,13 @@ orgs:
         - bobcatfish
         - ImJasonH
         - vdemeester
+        - wlynch
         members:
         - pritidesai
         - dlorenc
         - lcarva
         - loosebazooka
         - mattmoor
-        - wlynch
         privacy: closed
         repos:
           chains: read

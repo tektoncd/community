@@ -249,4 +249,4 @@ This is the complete list of Tekton teps:
 |[TEP-0106](0106-support-specifying-metadata-per-task-in-runtime.md) | Support Specifying Metadata per Task in Runtime | implemented | 2022-05-27 |
 |[TEP-0107](0107-propagating-parameters.md) | Propagating Parameters | implemented | 2022-05-26 |
 |[TEP-0108](0108-mapping-workspaces.md) | Mapping Workspaces | implemented | 2022-05-26 |
-|[TEP-0110](0110-decouple-catalog-organization-and-reference.md) | Decouple Catalog Organization and Resource Reference | implementable | 2022-05-26 |
+|[TEP-0110](0110-decouple-catalog-organization-and-reference.md) | Decouple Catalog Organization and Resource Reference | implementable | 2022-06-06 |

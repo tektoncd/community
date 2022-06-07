@@ -2,7 +2,7 @@
 status: implementable
 title: Decouple Catalog Organization and Resource Reference
 creation-date: '2022-03-21'
-last-updated: '2022-05-26'
+last-updated: '2022-06-06'
 authors:
 - '@vdemeester'
 - '@jerop'
@@ -22,7 +22,7 @@ authors:
     - [HTTP Endpoint](#http-endpoint)
     - [Remote Resolution - Hub Resolver](#remote-resolution---hub-resolver)
     - [CLI](#cli)
-  - [Tekton Catalog](#tekton-catalog)
+- [Alternatives](#alternatives)
     - [Remote Resolution - Git Resolver](#remote-resolution---git-resolver)
 - [Future Work](#future-work)
   - [Tekton Catalog Reorganization](#tekton-catalog-reorganization)
@@ -42,9 +42,8 @@ users.
 
 This TEP proposes to make the *Hub* and any other **official** mean of consuming Tekton resources from the community
 decoupled from where we author them. In a gist, this aims to make the repository `tektoncd/catalog` an implementation
-detail. One approach is to support long-term and non-changing URI to refer to resources via `https://` endpoints, such
-as the Hub or OCI images. Another approach is to support remote resolution, through Hub Resolver and Git Resolver,
-that does not depend on the organization of the Catalogs.
+detail. One approach is to support long-term and non-changing URI to refer to resources via endpoints. Another approach
+is to support remote resolution, through Hub Resolver, that does not depend on the organization of the Tekton Catalogs.
 
 ## Motivation
 
@@ -109,7 +108,7 @@ clusters, similarly the current experience using GitHub HTTP endpoint:
 kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/buildpacks/0.4/buildpacks.yaml
 
 # Proposal: using the HTTP Endpoint from Tekton Catalog - should serve same yaml as the one above
-kubectl apply -f https://hub.tekton.dev/tekton//task/buildpacks/0.4
+kubectl apply -f https://hub.tekton.dev/tekton//task/buildpacks/0.4/
 ```
 
 #### Remote Resolution - Hub Resolver
@@ -145,7 +144,7 @@ using it to install resources, even after we reorganize the Catalog - the update
 tkn hub install task buildpacks --version 0.4 --from tekton
 ```
 
-### Tekton Catalog
+## Alternatives
 
 #### Remote Resolution - Git Resolver
 
@@ -159,7 +158,7 @@ kind: TaskRun
 metadata:
   name: buildpacks
 spec:
-  pipelineRef:
+  taskRef:
     resolver: git
     resource:
     - name: url
@@ -181,7 +180,7 @@ kind: TaskRun
 metadata:
   name: buildpacks
 spec:
-  pipelineRef:
+  taskRef:
     resolver: git
     resource:
     - name: url
@@ -197,6 +196,11 @@ spec:
 ```
 
 For more information on remote resolution, see [TEP-0060: Remote Resource Resolution][tep-0060].
+
+However, this change would specialize the Git Resolver to work for the Tekton Catalogs only. Users may need the `path`
+field to reference a resource in any repository - including those that don't comply with the Tekton Catalog organization
+contract. We could support new Catalog Resolver that does the same as above, but that's exactly what is provided by the
+[Hub Resolver](#remote-resolution---hub-resolver) discussed above.
 
 ## Future Work
 

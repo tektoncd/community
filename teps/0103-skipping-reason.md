@@ -43,7 +43,9 @@ There are many [reasons][reasons] why a `PipelineTask` could be skipped, includi
 * the `PipelineRun` was gracefully stopped
 
 When users see a `PipelineTask` has been skipped without knowing the reason, they may get
-confused about the behavior of the `PipelineRun` e.g. [issue][issue] and [thread][slack].
+confused about the behavior of the `PipelineRun` - see [Slack thread][slack] and issues:
+* [Tekton Pipelines Issue 4571: Task skipped when parallel task fails][issue-4571].
+* [Tekton Pipelines Issue 4438: Finally tasks should be triggered in case of missing results][issue-4438].
 
 ### Goals
 
@@ -204,6 +206,7 @@ status:
 * Issues:
   * [Tekton Pipelines Issue 4738: Skipping Reason][issue-4738]
   * [Tekton Pipelines Issue 4571: Task skipped when parallel task fails][issue-4571]
+  * [Tekton Pipelines Issue 4438: Finally tasks should be triggered in case of missing results][issue-4438]
   * [Tekton Community Slack Thread][slack]
 * Pull Requests:
   * [Tekton Pipelines Pull Request 4829][pr-4829]
@@ -213,6 +216,7 @@ status:
 [skipped-tasks]: https://github.com/tektoncd/pipeline/blob/053833cb10f3829d5a366daa1f431b293dcf3285/pkg/apis/pipeline/v1beta1/pipelinerun_types.go#L466-L476
 [issue-4738]: https://github.com/tektoncd/pipeline/issues/4738
 [issue-4571]: https://github.com/tektoncd/pipeline/issues/4571
+[issue-4438]: https://github.com/tektoncd/pipeline/issues/4438
 [slack]: ../teps/images/0103-slack-thread.png
 [reasons]: https://github.com/tektoncd/pipeline/blob/053833cb10f3829d5a366daa1f431b293dcf3285/pkg/reconciler/pipelinerun/resources/pipelinerunresolution.go#L42-L62
 [pr-4829]: https://github.com/tektoncd/pipeline/pull/4829

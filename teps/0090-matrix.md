@@ -42,6 +42,7 @@ see-also:
       - [Alternatives](#alternatives)
   - [Fan Out](#fan-out)
   - [Concurrency Control](#concurrency-control)
+  - [Failure Strategies](#failure-strategies)
 - [Design](#design)
   - [Parameters](#parameters)
     - [Substituting String Parameters in the Tasks](#substituting-string-parameters-in-the-tasks)
@@ -206,15 +207,13 @@ specified in a `matrix`.
 
 The following are out of scope for this TEP:
 
-1. Terminating early when one of the `TaskRuns` or `Runs` created in parallel fails. As is currently, running `TaskRuns` 
-and `Runs` have to complete execution before termination.
-2. Configuring the `TaskRuns` or `Runs` created in a given `matrix` to execute sequentially. This remains an option 
+1. Configuring the `TaskRuns` or `Runs` created in a given `matrix` to execute sequentially. This remains an option 
 that we can explore later.
-3. Excluding generating a `TaskRun` or `Run` for a specific combination in the `matrix`. This remains an option we can
+2. Excluding generating a `TaskRun` or `Run` for a specific combination in the `matrix`. This remains an option we can
 explore later if needed.
-4. Including generating a `TaskRun` or `Run` for a specific combination in the `matrix`. This can be handled by adding 
+3. Including generating a `TaskRun` or `Run` for a specific combination in the `matrix`. This can be handled by adding 
 the items that produce that combination into the `matrix`. This remains an option we can explore later if needed.
-5. Supporting producing `Results` from fanned out `PipelineTasks`. We plan to address this after [TEP-0075][tep-0075]
+4. Supporting producing `Results` from fanned out `PipelineTasks`. We plan to address this after [TEP-0075][tep-0075]
 and [TEP-0076][tep-0076] have landed. 
 
 ### Requirements
@@ -717,6 +716,18 @@ the limit to run at a time, in a follow-up TEP.
 If needed, we can also explore providing more granular controls for maximum number of `TaskRuns`
 or `Runs` from `Matrices` - either at `PipelineRun`, `Pipeline` or `PipelineTask` levels - later.
 This is an option we can pursue after gathering user feedback - it's out of scope for this TEP.
+
+### Failure Strategies
+
+In failure scenarios, the `TaskRuns` or `Runs` created from a `Matrix` will fail fast. That is, when
+any `TaskRun` or `Run` from a given fanned-out `PipelineTask` fails or is cancelled then the other
+`TaskRuns` or `Runs` from the same `PipelineTask` will be cancelled.
+
+This approach makes it easier to control the execution of the many `TaskRuns` or `Runs` that can be
+created from a `Matrix` (up to 256 for now). Moreover, failing fast is the default behavior of `Matrix`
+in other Continuous Delivery systems - see [GitHub Actions - Handling Failures in Matrix][ghm-failfast].
+
+If needed, we can explore supporting other failure strategies later. 
 
 ## Design 
 
@@ -1648,3 +1659,4 @@ However, this approach has the following disadvantages:
 [when]: https://github.com/tektoncd/pipeline/blob/6cb0f4ccfce095495ca2f0aa20e5db8a791a1afe/docs/pipelines.md#guard-task-execution-using-when-expressions
 [retries]: https://github.com/tektoncd/pipeline/blob/6cb0f4ccfce095495ca2f0aa20e5db8a791a1afe/docs/pipelines.md#using-the-retries-parameter
 [timeouts]: https://github.com/tektoncd/pipeline/blob/6cb0f4ccfce095495ca2f0aa20e5db8a791a1afe/docs/pipelines.md#configuring-the-failure-timeout
+[ghm-failfast]: https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs#handling-failures

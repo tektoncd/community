@@ -234,7 +234,7 @@ This is the complete list of Tekton teps:
 |[TEP-0086](0086-changing-the-way-result-parameters-are-stored.md) | Changing the way result parameters are stored | proposed | 2022-04-07 |
 |[TEP-0088](0088-result-summaries.md) | Tekton Results - Record Summaries | proposed | 2021-10-01 |
 |[TEP-0089](0089-nonfalsifiable-provenance-support.md) | Non-falsifiable provenance support | implementable | 2022-01-18 |
-|[TEP-0090](0090-matrix.md) | Matrix | implementable | 2022-02-14 |
+|[TEP-0090](0090-matrix.md) | Matrix | implementable | 2022-06-09 |
 |[TEP-0092](0092-scheduling-timeout.md) | Scheduling Timeout | implementable | 2022-04-11 |
 |[TEP-0094](0094-configuring-resources-at-runtime.md) | Configuring Resources at Runtime | implemented | 2022-03-11 |
 |[TEP-0095](0095-common-repository-configuration.md) | Common Repository Configuration | proposed | 2021-11-29 |

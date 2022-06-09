@@ -2,7 +2,7 @@
 status: implementable
 title: Matrix
 creation-date: '2021-10-13'
-last-updated: '2022-02-14'
+last-updated: '2022-06-09'
 authors:
 - '@jerop'
 - '@pritidesai'
@@ -208,16 +208,13 @@ The following are out of scope for this TEP:
 
 1. Terminating early when one of the `TaskRuns` or `Runs` created in parallel fails. As is currently, running `TaskRuns` 
 and `Runs` have to complete execution before termination.
-2. Controlling the concurrency of `TaskRuns` or `Runs` created in a given `matrix`. This will be addressed more broadly 
-in Tekton Pipelines ([tektoncd/pipeline: issue#2591][issue-2591], [tektoncd/experimental: issue#804][issue-804]).
-3. Configuring the `TaskRuns` or `Runs` created in a given `matrix` to execute sequentially. This remains an option that 
-we can explore later.
-4. Excluding generating a `TaskRun` or `Run` for a specific combination in the `matrix`. This can be handled using 
-guarded execution through `when` expressions. This remains an option we can explore later if needed.
-5. Including generating a `TaskRun` or `Run` for a specific combination in the `matrix`. This can be handled by adding 
-the items that produce that combination into the `matrix`, and using guarded execution through `when` expressions to 
-exclude the combinations that should be skipped. This remains an option we can explore later if needed.
-6. Supporting producing `Results` from fanned out `PipelineTasks`. We plan to address this after [TEP-0075][tep-0075]
+2. Configuring the `TaskRuns` or `Runs` created in a given `matrix` to execute sequentially. This remains an option 
+that we can explore later.
+3. Excluding generating a `TaskRun` or `Run` for a specific combination in the `matrix`. This remains an option we can
+explore later if needed.
+4. Including generating a `TaskRun` or `Run` for a specific combination in the `matrix`. This can be handled by adding 
+the items that produce that combination into the `matrix`. This remains an option we can explore later if needed.
+5. Supporting producing `Results` from fanned out `PipelineTasks`. We plan to address this after [TEP-0075][tep-0075]
 and [TEP-0076][tep-0076] have landed. 
 
 ### Requirements

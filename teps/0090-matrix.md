@@ -46,7 +46,6 @@ see-also:
   - [Parameters](#parameters)
     - [Substituting String Parameters in the Tasks](#substituting-string-parameters-in-the-tasks)
     - [Substituting Array Parameters in the Tasks](#substituting-array-parameters-in-the-tasks)
-    - [Combinations of Parameters in the Matrix](#combinations-of-parameters-in-the-matrix)
   - [Results](#results)
     - [Specifying Results in the Matrix](#specifying-results-in-the-matrix)
     - [Results from Fanned Out PipelineTasks](#results-from-fanned-out-pipelinetasks)
@@ -61,6 +60,7 @@ see-also:
   - [When Expressions](#when-expressions)
   - [Retries](#retries)
   - [Timeouts](#timeouts)
+  - [Status](#status)
 - [Design Evaluation](#design-evaluation)
   - [API Conventions](#api-conventions)
   - [Reusability](#reusability)
@@ -1018,34 +1018,6 @@ We plan to provide minimum feature set needed to meet the use cases, as describe
 [simplicity][simplicity] design principle. However, this remains an option we can explore
 later if we have use cases for it and already support `Arrays of Arrays` in Tekton Pipelines.
 
-#### Combinations of Parameters in the Matrix
-
-We need a way to identify a specific combination of `Parameters` in the `Matrix` so that
-we can map it to a given `TaskRun` and its components, such as `Results`. We cannot rely
-on the ordering of the `Parameters` in the `Matrix` to be maintained as specified in the
-`Pipeline`. We propose that we add the generated combinations identifications to the
-`PipelineRunStatusFields` in `PipelineRunStatus`. For example:
-
-```yaml
-  taskRuns:
-    matrixed-pr-foo-0:
-      pipelineTaskName: foo
-      matrixId: 0
-      status:
-        ...
-    matrixed-pr-foo-1:
-      pipelineTaskName: foo
-      matrixId: 1
-      status:
-        ...
-```
-
-The `Parameters` were used for a given `TaskRun` or `Runs` would available in the `TaskRun`
-status itself. The `matrixId` in the `PipelineRunStatus` is useful in identifying that the
-`TaskRun` is part of a `Matrix`, especially if the `TaskRun` name was too long so got hashed.
-This is also in line with providing the minimal information needed in the `PipelineRunStatus`
-as discussed in [TEP-0100: Embedded TaskRuns and Runs Status in PipelineRuns][tep-0100].
-
 ### Results
 
 #### Specifying Results in the Matrix
@@ -1336,6 +1308,48 @@ spec:
       taskRef:
         name: build-push
 ```
+
+### Status
+
+The status of `PipelineRuns` with fanned-out `PipelineTasks` will list all the `TaskRuns` and `Runs` created.
+
+In [TEP-0100][tep-0100] we proposed changes to `PipelineRun` status to reduce the amount of information stored about
+the status of `TaskRuns` and `Runs` to improve performance, reduce memory bloat and improve extensibility. Now that
+those changes have been implemented, the `PipelineRun` status is set up to handle `Matrix` without exacerbating the
+performance and storage issues that were there before.
+
+We will populate `ChildReferences` for all fanned out `TaskRuns` and `Runs`, as shown below:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: matrixed-pr
+  ...
+spec:
+  ...
+status:
+  completionTime: "2020-05-04T02:19:14Z"
+  conditions:
+    - lastTransitionTime: "2020-05-04T02:19:14Z"
+      message: "Tasks Completed: 4, Skipped: 0"
+      reason: Succeeded
+      status: "True"
+      type: Succeeded
+  startTime: "2020-05-04T02:00:11Z"
+  childReferences:
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun
+      name: matrixed-pr-foo-0
+      pipelineTaskName: foo
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun
+      name: matrixed-pr-foo-1
+      pipelineTaskName: foo
+```
+
+The `ChildReferences` will be populated for matrixed `PipelineTasks` regardless of the embedded status flags
+because that is the API behavior we're migrating to.
 
 ## Design Evaluation
 

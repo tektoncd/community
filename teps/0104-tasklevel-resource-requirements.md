@@ -24,6 +24,7 @@ authors:
   - [API Changes](#api-changes)
   - [Applying Task Resources to Containers](#applying-task-resources-to-containers)
   - [Sidecars](#sidecars)
+  - [Authoring Time (Task) vs Runtime (TaskRun) configuration](#authoring-time-task-vs-runtime-taskrun-configuration)
   - [Interaction with Step resource requirements](#interaction-with-step-resource-requirements)
   - [Interaction with LimitRanges](#interaction-with-limitranges)
   - [Naming](#naming)
@@ -80,8 +81,7 @@ as close to the user’s configuration as possible, subject to the [minimum/maxi
 TaskRuns are rejected if there is no configuration that meets these constraints.
 
 ## Goals
-- Task-level resource requirements are configurable at authoring time (i.e. on Task) and runtime (i.e. on TaskRun).
-  - Authoring time configuration is provided for consistency with existing functionality (Task.Step.Resources).
+- Task-level resource requirements are configurable at runtime (i.e. on TaskRun).
   - The reasons for runtime configuration are discussed in more detail in [TEP-0094][tep-0094].
 
 ## Non-Goals
@@ -104,18 +104,15 @@ depending on its inputs. In addition, LimitRanges don’t distinguish between Te
 
 ### API Changes
 
-Augment the Task and TaskRun APIs with a "computeResources" field that allows the user to configure the resource requirements
-of a Task. An example Task is as follows.
+Augment the TaskRun API with a "computeResources" field that allows the user to configure the resource requirements
+of a Task. An example TaskRun is as follows.
 
 ```
 apiVersion: tekton.dev/v1beta1
-kind: Task
+kind: TaskRun
 metadata:
-  name: image-build-task
+  name: image-build-taskrun
 spec:
-  steps:
-  - name: step-1
-  - name: step-2
   computeResources:
     requests:
       memory: 1Gi
@@ -125,17 +122,17 @@ spec:
 
 This field should also be added to [PipelineRun.TaskRunSpecs][taskRunSpecs].
 
-### Applying Task Resources to Containers
+### Applying Task-level Resources to Containers
 
 #### Requests
 
 As mentioned in [Resource Requirements in Kubernetes](#resource-requirements-in-kubernetes),
 the effective resource requests of a pod are the sum of the resource requests of its containers,
 and this value is used to determine the resources reserved by the kubelet when scheduling a pod.
-Therefore, when a user configures a resource request for a Task, that request should be applied to one container only in the pod.
+Therefore, when a user configures a resource request for a TaskRun, that request should be applied to one container only in the pod.
 (See [Interaction with LimitRanges](#interaction-with-limitranges) for caveats.)
 All other containers will not have resource requests. This will result in a pod with an effective resource request
-that is the same as that of the Task, and will be scheduled correctly. This is similar to
+that is the same as that of the TaskRun, and will be scheduled correctly. This is similar to
 Tekton’s [handling of resource requests pre v0.28.0][pre-v28], where the maximum resource request of all containers
 was applied to only one container, and the rest were left without resource requests.
 
@@ -144,11 +141,11 @@ was applied to only one container, and the rest were left without resource reque
 Because Kubernetes considers [containers without resource limits to have higher limits than those with limits configured][effective],
 configuration for limits is different than configuration for requests. There are several options for how Task-level resource limits
 could be implemented:
-- If the task resource limit is applied to only one container, the pod will not have an effective limit
+- If the task-level resource limit is applied to only one container, the pod will not have an effective limit
 due to the other containers without limits. This defeats the purpose of the feature.
-- If the task limit is spread out among containers, a task where one step is more resource intensive
+- If the task-level limit is spread out among containers, a task where one step is more resource intensive
 than all the others could get oomkilled or throttled.
-- If the task limit is applied to each container, the pod has a much higher effective limit than desired.
+- If the task-level limit is applied to each container, the pod has a much higher effective limit than desired.
 
 However, the effective resource limit of a pod are not used for scheduling (see
 [How Pods with resource requests are scheduled][scheduling] and [How Kubernetes applies resource requests and limits][enforcement]).
@@ -168,21 +165,41 @@ should actually be summed with Steps’ resource requirements. In the case of Ta
 distribute the limit between a Sidecar and Steps, since they run at the same time. Therefore, the Task-level resource limit
 should be interpreted as the limit only for Steps, and Sidecar limits should be set separately. For consistency, Task-level
 requests should also be interpreted as requests for Steps only.
-Users should be able to specify both Task resource requirements and Sidecar resource requirements.
+Users should be able to specify both Task-level resource requirements and Sidecar resource requirements.
+
+### Authoring Time (Task) vs Runtime (TaskRun) configuration
+
+There are clear reasons to allow compute resources to be configured at runtime, as detailed in
+[TEP-0094](./0094-configuring-resources-at-runtime.md). For example, an image build Task may
+use different amounts of compute resources depending on what image is being built.
+
+The reasons for configuring compute resources at authoring time are less clear. Tasks that set
+compute resources are less reusable in different environments, and such configuration wouldn't be
+appropriate for Tasks in the Tekton catalog.
+
+Tekton currently allows users to specify resource requirements at authoring time via Task.Step.
+This feature exists because Tekton used to embed the Kubernetes container definition in a Step.
+As part of the future work for this proposal, we may choose to explore deprecating this field.
+Therefore, it does not make sense to add resource requirements to Task for consistency with
+resource requirements on Steps.
+
+In addition, adding resource requirements to Tasks implies that Tasks will always be run in a way
+where this field has meaning. This assumption is not true for situations where multiple Tasks may
+be run in a pod, such as in [TEP-0044](./0044-data-locality-and-pod-overhead-in-pipelines.md).
 
 ### Interaction with Step resource requirements
 
-Because Tekton will handle the logic for the combined resource requests of a Task or TaskRun,
-users should not be able to specify resource requests for both the Task or TaskRun and individual Steps.
+Because Tekton will handle the logic for the combined resource requests of a TaskRun,
+users should not be able to specify resource requests for both the TaskRun and individual Steps.
 This means:
-- If a Task defines [StepTemplate.Resources][stepTemplate] or [Step.Resources][step]:
-  - If the Task also defines ComputeResources, the Task will be rejected by the admission webhook.
-  - If the corresponding TaskRun defines ComputeResources, the value from the TaskRun will apply
-  and the value from the Task will be ignored.
-- If a Task or TaskRun defines ComputeResources, the admission webhook should reject TaskRuns
-that also define [StepOverrides.Resources][stepOverride].
+- If a Task defines [StepTemplate.Resources][stepTemplate] or [Step.Resources][step], and
+the TaskRun defines ComputeResources, the value from the TaskRun will apply and the value
+from the Task will be ignored.
+- The admission webhook should reject TaskRuns that specify both ComputeResources and
+[StepOverrides.Resources][stepOverride]. (TaskRuns should be able to define both ComputeResources
+and SidecarOverrides.Resources, however.)
 
-Users should not be able to mix and match Step resource requirements and Task resource requirements, even for different
+Users should not be able to mix and match Step resource requirements and TaskRun resource requirements, even for different
 types of compute resources (e.g. CPU, memory).
 
 ### Interaction with LimitRanges
@@ -214,7 +231,7 @@ Step-level compute resource requirements, this will no longer be a concern.
 ### Other Considerations
 
 - Tekton pods currently have a [burstable quality of service class][qos], which will not change as a result of this implementation.
-- We should consider updating our catalog Task guidelines with guidance around when to specify resource requirements. 
+- We should consider updating our catalog Task guidelines with guidance not to use Step resource requirements. 
 
 ### Future Work
 
@@ -224,6 +241,8 @@ Specifying resource requirements for individual Steps is confusing and likely to
 We could also consider support for both Task-level and Step-level resource requirements if the requirements are for different types
 of compute resources (for example, specifying CPU request at the Step level and memory request at the Task level). However,
 this functionality will not be supported by the initial implementation of this proposal; it can be added later if desired.
+
+Lastly, we can consider adding a `Resources` field to Task if there is a clear use case for it.
 
 ## Examples
 
@@ -239,6 +258,16 @@ spec:
     - name: step-1
     - name: step-2
     - name: step-3
+```
+
+```
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: my-task-run
+spec:
+  taskRef:
+    name: my-task
   computeResources:
     requests:
       cpu: 1.5
@@ -262,6 +291,15 @@ spec:
     - name: step-1
     - name: step-2
     - name: step-3
+```
+```
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: my-task
+spec:
+  taskRef:
+    name: my-task
   computeResources:
     limits:
       cpu: 2
@@ -287,6 +325,16 @@ spec:
     - name: step-1
     - name: step-2
     - name: step-3
+```
+
+```
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: my-taskrun
+spec:
+  taskRef:
+    name: my-task
   computeResources:
     requests:
       cpu: 1.5
@@ -321,6 +369,16 @@ spec:
           cpu: 750m
         limits:
           cpu: 1
+```
+
+```
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: my-taskrun
+spec:
+  taskRef:
+    name: my-task
   computeResources:
     requests:
       cpu: 1.5
@@ -360,6 +418,16 @@ spec:
     - name: step-1
     - name: step-2
     - name: step-3
+```
+
+```
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: my-taskrun
+spec:
+  taskRef:
+    name: my-task
   computeResources:
     requests:
       cpu: 1.5
@@ -413,9 +481,6 @@ The resulting pod would have the following containers:
 | step-1    | N/A         | N/A       |
 | step-2    | 1.5         | N/A       |
 
-If the “Resources.Requests” field were present on the Task instead of the TaskRun,
-the Task would be rejected.
-
 ### Example with Step resource requests overridden by TaskRun
 
 ```
@@ -455,8 +520,6 @@ The resulting pod would have the following containers:
 | step-1    | N/A         | N/A       |
 | step-2    | 2           | N/A       |
 
-If the “computeResources.Requests” field were present on the Task instead of the TaskRun, the Task would be rejected.
-
 ### Example with StepOverrides
 
 ```
@@ -468,9 +531,6 @@ spec:
   steps:
     - name: step-1
     - name: step-2
-  computeResources:
-    requests:
-      cpu: 1.5
 ```
 
 ```
@@ -486,6 +546,9 @@ spec:
       resources:
         requests:
           cpu: 1
+  computeResources:
+    requests:
+      cpu: 1.5
 ```
 
 This TaskRun would be rejected.
@@ -501,6 +564,16 @@ spec:
   steps:
     - name: step-1
     - name: step-2
+```
+
+```
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: my-taskrun
+spec:
+  taskRef:
+    name: my-task
   computeResources:
     requests:
       cpu: 1.5

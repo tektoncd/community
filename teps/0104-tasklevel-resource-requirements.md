@@ -2,7 +2,7 @@
 status: implementable
 title: Task-level Resource Requirements
 creation-date: '2022-04-08'
-last-updated: '2022-05-11'
+last-updated: '2022-06-10'
 authors:
 - '@lbernick'
 - '@vdemeester'
@@ -26,6 +26,7 @@ authors:
   - [Sidecars](#sidecars)
   - [Interaction with Step resource requirements](#interaction-with-step-resource-requirements)
   - [Interaction with LimitRanges](#interaction-with-limitranges)
+  - [Naming](#naming)
   - [Other Considerations](#other-considerations)
 - [Examples](#examples)
   - [Example with Sidecar](#example-with-sidecar)
@@ -103,7 +104,7 @@ depending on its inputs. In addition, LimitRanges don’t distinguish between Te
 
 ### API Changes
 
-Augment the Task and TaskRun APIs with a resources field that allows the user to configure the resource requirements
+Augment the Task and TaskRun APIs with a "computeResources" field that allows the user to configure the resource requirements
 of a Task. An example Task is as follows.
 
 ```
@@ -115,7 +116,7 @@ spec:
   steps:
   - name: step-1
   - name: step-2
-  resources:
+  computeResources:
     requests:
       memory: 1Gi
     limits:
@@ -123,9 +124,6 @@ spec:
 ```
 
 This field should also be added to [PipelineRun.TaskRunSpecs][taskRunSpecs].
-
-**Note**: Currently, `Task.Resources` is used for PipelineResources. Appropriate naming for this field is still
-under discussion.
 
 ### Applying Task Resources to Containers
 
@@ -178,10 +176,10 @@ Because Tekton will handle the logic for the combined resource requests of a Tas
 users should not be able to specify resource requests for both the Task or TaskRun and individual Steps.
 This means:
 - If a Task defines [StepTemplate.Resources][stepTemplate] or [Step.Resources][step]:
-  - If the Task also defines Resources, the Task will be rejected by the admission webhook.
-  - If the corresponding TaskRun defines Resources, the value from the TaskRun will apply
+  - If the Task also defines ComputeResources, the Task will be rejected by the admission webhook.
+  - If the corresponding TaskRun defines ComputeResources, the value from the TaskRun will apply
   and the value from the Task will be ignored.
-- If a Task or TaskRun defines Resources, the admission webhook should reject TaskRuns
+- If a Task or TaskRun defines ComputeResources, the admission webhook should reject TaskRuns
 that also define [StepOverrides.Resources][stepOverride].
 
 Users should not be able to mix and match Step resource requirements and Task resource requirements, even for different
@@ -197,6 +195,21 @@ comply with a minimum request, they should be “subtracted” from the overall 
 if the total resource request would result in a container that has more than the maximum container requests permitted 
 by the limit range, the requests may be spread out between containers.
 If there is no container configuration that satisfies the LimitRange, the TaskRun will be rejected.
+
+### Naming
+
+"Resources" is an extremely overloaded term in Tekton.
+Both `Task.Resources` and `TaskRun.Resources` are currently used to refer to PipelineResources,
+while `Step.Resources`, `StepTemplate.Resources`, and `Sidecar.Resources` are used to refer to
+compute resources as defined by Kubernetes.
+
+Reusing `TaskRun.Resources` will likely cause confusion if PipelineResources haven't yet been
+removed. Therefore, the new field will be called "ComputeResources", both to avoid the naming
+conflict with PipelineResources and to differentiate between other uses of this word in Tekton.
+
+In an ideal world, we would choose a name that provides consistency with compute resources
+specified at the Step level. However, if we choose to pursue the future work of deprecating
+Step-level compute resource requirements, this will no longer be a concern.
 
 ### Other Considerations
 
@@ -226,7 +239,7 @@ spec:
     - name: step-1
     - name: step-2
     - name: step-3
-  resources:
+  computeResources:
     requests:
       cpu: 1.5
 ```
@@ -249,7 +262,7 @@ spec:
     - name: step-1
     - name: step-2
     - name: step-3
-  resources:
+  computeResources:
     limits:
       cpu: 2
 ```
@@ -274,7 +287,7 @@ spec:
     - name: step-1
     - name: step-2
     - name: step-3
-  resources:
+  computeResources:
     requests:
       cpu: 1.5
     limits:
@@ -308,7 +321,7 @@ spec:
           cpu: 750m
         limits:
           cpu: 1
-  resources:
+  computeResources:
     requests:
       cpu: 1.5
 ```
@@ -347,7 +360,7 @@ spec:
     - name: step-1
     - name: step-2
     - name: step-3
-  resources:
+  computeResources:
     requests:
       cpu: 1.5
 ```
@@ -388,7 +401,7 @@ metadata:
 spec:
   taskRef:
     name: my-task
-  resources:
+  computeResources:
     requests:
       cpu: 1.5
 ```
@@ -430,7 +443,7 @@ metadata:
 spec:
   taskRef:
     name: my-task
-  resources:
+  computeResources:
     requests:
       cpu: 2
 ```
@@ -442,7 +455,7 @@ The resulting pod would have the following containers:
 | step-1    | N/A         | N/A       |
 | step-2    | 2           | N/A       |
 
-If the “Resources.Requests” field were present on the Task instead of the TaskRun, the Task would be rejected.
+If the “computeResources.Requests” field were present on the Task instead of the TaskRun, the Task would be rejected.
 
 ### Example with StepOverrides
 
@@ -455,7 +468,7 @@ spec:
   steps:
     - name: step-1
     - name: step-2
-  resources:
+  computeResources:
     requests:
       cpu: 1.5
 ```
@@ -488,7 +501,7 @@ spec:
   steps:
     - name: step-1
     - name: step-2
-  resources:
+  computeResources:
     requests:
       cpu: 1.5
       memory: 500Mi

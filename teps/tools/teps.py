@@ -93,6 +93,7 @@ def write_tep_header(tep, tep_io):
         'last-updated': tep.get('last-updated', tep['creation-date'])
     }
     tep_header['authors'] = [f'@{a}' for a in tep['authors']]
+    tep_header['collaborators'] = [f'@{c}' for c in tep['collaborators']]
     # First write the YAML header
     tep_io.write(YAML_SEPARATOR)
     YAML().dump(tep_header, tep_io)
@@ -294,10 +295,12 @@ def validate(teps_folder):
 @click.option('--title', '-t', required=True,
               help='the title for the TEP in a few words')
 @click.option('--author', '-a', multiple=True,
-              help='the title for the TEP in a few words')
+              help='the Github username of the TEP author')
+@click.option('--collaborator', '-c', multiple=True,
+              help='the Github username of the TEP collaborator')
 @click.option('--update-table/--no-update-table', default=True,
               help='whether to refresh the table of TEPs')
-def new(teps_folder, title, author, update_table):
+def new(teps_folder, title, author, collaborator, update_table):
     """ Create a new TEP with a new valid number from the template """
     if not os.path.isdir(teps_folder):
         logging.error(f'Invalid TEP folder {teps_folder}')
@@ -306,7 +309,7 @@ def new(teps_folder, title, author, update_table):
     title_slug = "".join(x for x in title if x.isalnum() or x == ' ')
     title_slug = title_slug.replace(' ', '-').lower()
     tep_filename = f'{tep_number:04d}-{title_slug}.md'
-    tep = dict(title=title, authors=author,
+    tep = dict(title=title, authors=author, collaborators=collaborator,
                status='proposed',
                number=tep_number)
     tep['creation-date'] = str(date.today())

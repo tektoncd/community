@@ -122,38 +122,54 @@ design and update the missing part in follow-up pull requests which moves the TE
 
 ### Approval requirements
 
-TEP should be approved by ***at least two owners*** from different
-company. This should prevent a company to *force push* a TEP (and
+Reviewers should use [`/approve`](../process.md#prow-commands) to indicate that they approve
+of the PR being merged.
+
+TEP must be approved by ***at least two owners*** from different companies.
+Owners are people who are [maintainers](../process.md#maintainer) for the community repo.
+This should prevent a company from *force pushing* a TEP (and
 thus a feature) in the tektoncd projects.
 
-### TEP Review Process and SLOs
-
-1. After a TEP PR has been created, in
-   [the next API working group meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#api),
-   we will try to find 2 qualified assignees to review (from 2 different companies as described above) and will
-   [assign](https://docs.github.com/en/github/managing-your-work-on-github/assigning-issues-and-pull-requests-to-other-github-users)
-   them to the PR.
-   * If we cannot find 2 reviewers in the meeting, someone in the meeting will be take the action to find reviewers
-     offline (e.g. over [slack](https://github.com/tektoncd/community/blob/main/contact.md#slack) or
-     [tekton-dev](https://github.com/tektoncd/community/blob/main/contact.md#mailing-list)).
-2. Once reviewers have been assigned, they should give initial feedback on the PR by
-   [the next API working group meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#api)
-   at the latest.
-
-Reviewers should use [`/approve`](../process.md#prow-commands) to indicate that they approve of the PR being merged. Once all assigned reviewers
-have approved the PR, the final [`/lgtm`](../process.md#prow-commands) can be added in
-[the next API working group meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#api) or sooner
-by anyone with permission to if needed. If a reviewer has not submitted an `/approve`, this is taken to mean that the
-reviewer either a) hasn't done an initial review yet (see SLO above) or b) wants to see changes in the TEP before
-approving. Whenever possible we will try to get an explicit `/approve` from all assigned reviewers before merging, but
-we can always fall back on [our strict approval requirements](#approval-requirements) if needed.
+Whenever possible, a TEP should be approved by all assignees to the PR.
+We may fall back on the strict requirement of approvals from at least two different companies
+in the case of an unresponsive assignee.
+TEP PRs shouldn't be merged if an assignee has strong objections.
 
 TEP PRs that don't affect the proposed design (such as fixing typos, table of contents,
-adding reference links, or marking the TEP as implemented) do not need to meet the
-[approval requirements](#approval-requirements). A single reviewer can feel free to approve
+adding reference links, or marking the TEP as implemented) do not need to meet these
+approval requirements. A single reviewer can feel free to approve
 and LGTM changes like these at any time. PRs marking a TEP as "implementable" should still meet
 the approval requirements, as this label signifies community agreement that the proposal should be
 implemented.
+
+### TEP Review Process and SLOs
+
+Tekton team members regularly review TEP PRs (those with the "tep" label) during
+the [API working group](https://github.com/tektoncd/community/blob/main/working-groups.md#api).
+  - At this meeting, we try to find assignees to review TEP PRs, discuss any TEP PRs that
+  need discussion, and merge any TEP PRs that have met the
+  [approval requirements](#approval-requirements).
+  - Reviewers assigned during the API working group should aim to give feedback by the
+  next API working group meeting.
+
+The TEP author can find reviewers as soon as the PR is created.
+Some great ways to find reviewers and publicize your proposed changes are:
+- Reaching out to the stakeholders or any community maintainers through the PR comments
+- The "tep" channel on [slack](https://github.com/tektoncd/community/blob/main/contact.md#slack)
+- The [tekton-dev mailing list](https://github.com/tektoncd/community/blob/main/contact.md#mailing-list))
+
+### Merging TEP PRs
+
+Once all assigned reviewers have approved the PR, the PR author can reach out to one of the assigned reviewers
+or another ["reviewer"](../process.md#reviewer) for the community repo to merge the PR.
+The reviewer can merge the PR by adding a [`/lgtm` label](../process.md#prow-commands).
+  - If a contributor adds "lgtm" before all assignees have had the chance to review,
+  add a ["hold"](../process.md#prow-commands) to prevent the PR from being merged until then.
+  - Note: automation prevents the PR author from merging their own PR.
+
+If the TEP has undergone substantial changes since any reviewers have approved it, the author
+should publicly confirm with the relevant reviewers that they are OK with these changes before the
+PR is merged.
 
 _Why don't we use GitHub reviewers instead of assignees? If we want to do that we need to turn off Prow's auto
 assignment of reviewers; there is no guarantee the auto assigned reviewers are the appropriate reviewers.

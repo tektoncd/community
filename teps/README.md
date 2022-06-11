@@ -158,6 +158,8 @@ Some great ways to find reviewers and publicize your proposed changes are:
 - The "tep" channel on [slack](https://github.com/tektoncd/community/blob/main/contact.md#slack)
 - The [tekton-dev mailing list](https://github.com/tektoncd/community/blob/main/contact.md#mailing-list))
 
+TEP collaborators are permitted to be reviewers.
+
 ### Merging TEP PRs
 
 Once all assigned reviewers have approved the PR, the PR author can reach out to one of the assigned reviewers

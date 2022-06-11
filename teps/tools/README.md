@@ -50,7 +50,8 @@ Usage: teps.py new [OPTIONS]
 Options:
   --teps-folder TEXT              the folder that contains the TEP files
   -t, --title TEXT                the title for the TEP in a few words
-  -a, --author TEXT               the title for the TEP in a few words
+  -a, --author TEXT               the Github username of the TEP author
+  -c, --collaborator TEXT         the Github username of the TEP collaborator
   --update-table / --no-update-table
                                   whether to refresh the table of TEPs
   --help                          Show this message and exit.
@@ -59,7 +60,7 @@ Options:
 Example:
 
 ```shell
-$ ./teps.py new --title "My brand new tep" -a "tizio" -a "caio" -a "sempronio"
+$ ./teps.py new --title "My brand new tep" -a "tizio" -a "caio" -c "sempronio"
 
 /go/src/github.com/tektoncd/community/teps/0034-My-brand-new-tep.md
 ```
@@ -72,6 +73,7 @@ title: My brand new tep
 authors:
   - @tizio
   - @caio
+collaborators:
   - @sempronio
 creation-date: 2020-11-12
 last-updated: 2020-11-12

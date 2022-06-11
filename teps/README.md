@@ -148,6 +148,13 @@ reviewer either a) hasn't done an initial review yet (see SLO above) or b) wants
 approving. Whenever possible we will try to get an explicit `/approve` from all assigned reviewers before merging, but
 we can always fall back on [our strict approval requirements](#approval-requirements) if needed.
 
+TEP PRs that don't affect the proposed design (such as fixing typos, table of contents,
+adding reference links, or marking the TEP as implemented) do not need to meet the
+[approval requirements](#approval-requirements). A single reviewer can feel free to approve
+and LGTM changes like these at any time. PRs marking a TEP as "implementable" should still meet
+the approval requirements, as this label signifies community agreement that the proposal should be
+implemented.
+
 _Why don't we use GitHub reviewers instead of assignees? If we want to do that we need to turn off Prow's auto
 assignment of reviewers; there is no guarantee the auto assigned reviewers are the appropriate reviewers.
 See [discussion](https://github.com/tektoncd/community/discussions/362)._

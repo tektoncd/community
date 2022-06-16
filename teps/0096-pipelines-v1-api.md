@@ -235,6 +235,8 @@ This policy should be updated to include Tekton metrics as part of the API. No o
 #### API Changes
 
 - Fix [pain points](https://github.com/tektoncd/pipeline/issues/3792) associated with TaskRun and PipelineRun Status.
+- Rename PipelineRun's `spec.taskRunSpecs.taskServiceAccountName` to `spec.taskRunSpecs.serviceAccountName`.
+- Rename PipelineRun's `spec.taskRunSpecs.taskPodTemplate` to `spec.taskRunSpecs.podTemplate`.
 - Consider replacing any Task or Pipeline fields that should support parameterization with Strings and performing our own validation.
   - See [Handling parameter interpolation in fields not designed for it](https://github.com/tektoncd/pipeline/issues/1530) for more details.
 

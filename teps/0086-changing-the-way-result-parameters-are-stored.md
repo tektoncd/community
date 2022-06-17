@@ -2,12 +2,14 @@
 status: proposed
 title: Changing the way result parameters are stored
 creation-date: '2021-09-27'
-last-updated: '2022-04-07'
+last-updated: '2022-06-09'
 authors:
 - '@tlawrie'
 - '@imjasonh'
 - '@bobcatfish'
 - '@pritidesai'
+- '@tomcli'
+- '@ScrapCodes'
 ---
 
 # TEP-0086: Changing the way result parameters are stored
@@ -249,16 +251,16 @@ storing arbitrarily large data.
 
 In this option we introduce a way to pass one TaskRun’s output results into another TaskRun’s input parameters by reference, instead of
 only by value as they are today.
-The `byRef` could also be configured and handled by the controller and not something that needs to be made explicit at authoring time.
+The result `type` could also be configured as `stringReference` or `arrayReference` explicitly to indicate that the output is storing to a remote stroage.
 **Example:**
 
 ```yaml
 tasks:
 - name: first-task
   taskSpec: foo
-  results:
-  - name: out
-    byRef: true # <-- *new field*
+    results:
+    - name: out
+      type: stringReference # <-- *new type*
 - name: second-task
   taskSpec: bar
   params:
@@ -340,11 +342,20 @@ Questions:
 
 ### Store results on PVCs
 
-  - Use PVCs to store results
+  - Use PVCs to store results. The Tekton controller will auto provision the PVC and mount on the task if necessary.
+    The result location will be a pvc/storage path in the pod spec. Then, configure Tekton entrypoint script to retrieve result
+    file contents in the PVCs and replace the pvc/storage path with the new contents. This can avoid the 1.5 MB CRD size as the result contents are
+    replaced during init-container, so it won't be part of the pod or taskrun spec. In the API Spec, we could let users to choose whether to opt-in this
+    feature for each task to reduce the unnecessary overheads if not needed.
+
+Pros:
+- PVCs can leverage with CSI driver to store files in most storages.
+- Able to avoid the 1.5 MB CRD size since the result contents are populated during the init-container.
+- Users can opt-in only for the large result files to be stored in PVCs and keep the rest to use termination logs or any other solution that we make default in future. The sidecar driven approach can be made default if its implementable.
 
 Cons:
 - Any downsides of PVCs we've encountered in other places (e.g. [TEP-0044 data locality](https://github.com/tektoncd/community/blob/main/teps/0044-data-locality-and-pod-overhead-in-pipelines.md))
-- Any consumer of the results would need to mount the PVC
+- Any consumer of the opted in remote results would need to mount the PVC
 
 ### No change. Use workspaces.
 
@@ -379,6 +390,18 @@ Cons:
     - The total size of the PipelineRun _if_ the TaskRun content is included, however
       [TEP-100 is removing this](https://github.com/tektoncd/community/blob/main/teps/0100-embedded-taskruns-and-runs-status-in-pipelineruns.md)
 
+### Using embedded storage client to store result files in remote storage
+
+  - Use embedded storage client to store results. It needs an extra post-processing step since some storage client may have some dependency on the container
+  settings. The result location will be a storage path in the pod spec. Then, inject a preproceesing step to retrieve result file contents using the storage
+  client code and replace the storage path with the new contents.
+
+Pros:
+- Post-processing step can be pluggable to accommodate for any type of stroage.
+- Able to avoid the 1.5 MB CRD size since the result contents are populated during the init-container.
+
+Cons:
+- Require two extra storage client code steps to store and retrieve result files.
 
 ## Infrastructure Needed (optional)
 
@@ -400,6 +423,9 @@ Backwards compatability with the default option using ConfigMaps (or CRD) and th
 
 Potentially feature flag depending on the object used and security role changes.
 
+Feature flag in the Tekton configmap to enable storing Tekton results in a remote storage. The way to opt-in this
+function could be cluster-wise or on a per task basis.
+
 ## Implementation Pull request(s)
 
 <!--
@@ -408,6 +434,8 @@ Pull-request(s) merged.
 Note: This section is exclusively for merged pull requests, for this TEP.
 It will be a quick reference for those looking for implementation of this TEP.
 -->
+
+- [TEP-0086 remote storage result POC](https://github.com/tektoncd/pipeline/pull/4838)
 
 ## Next steps to unblock
 

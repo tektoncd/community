@@ -2,7 +2,7 @@
 status: implementable
 title: Pipelines V1 API
 creation-date: '2021-11-29'
-last-updated: '2022-03-18'
+last-updated: '2022-06-21'
 authors:
 - '@lbernick'
 - '@jerop'
@@ -276,6 +276,7 @@ No features identified as V1 blockers that are not necessary for stability or pr
   - This would be supported by the [wait CustomTask](https://github.com/tektoncd/experimental/tree/main/wait-task) or another experimental CustomTask.
 - Native notification support, as proposed in [TEP-0032: Notifications](https://github.com/tektoncd/community/blob/main/teps/0032-tekton-notifications.md)
 - Dynamically generated TaskRuns within a PipelineRun, as proposed in [TEP-0090: Matrix](https://github.com/tektoncd/community/blob/main/teps/0090-matrix.md)
+- Defining and executing Pipelines in Pipelines, as proposed in [TEP-0056](/teps/0056-pipelines-in-pipelines.md)
 - Stabilizing the Run CRD (i.e. moving it from "beta" to "stable")
 - Moving OCI bundles to "beta" in v1beta1 or "stable" in v1.
   - This will need to wait until we have more clarity on [Remote Resolution](./0060-remote-resource-resolution.md).

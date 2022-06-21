@@ -238,7 +238,7 @@ This is the complete list of Tekton teps:
 |[TEP-0092](0092-scheduling-timeout.md) | Scheduling Timeout | implementable | 2022-04-11 |
 |[TEP-0094](0094-configuring-resources-at-runtime.md) | Configuring Resources at Runtime | implemented | 2022-03-11 |
 |[TEP-0095](0095-common-repository-configuration.md) | Common Repository Configuration | proposed | 2021-11-29 |
-|[TEP-0096](0096-pipelines-v1-api.md) | Pipelines V1 API | implementable | 2022-03-18 |
+|[TEP-0096](0096-pipelines-v1-api.md) | Pipelines V1 API | implementable | 2022-06-21 |
 |[TEP-0098](0098-workflows.md) | Workflows | proposed | 2021-12-06 |
 |[TEP-0100](0100-embedded-taskruns-and-runs-status-in-pipelineruns.md) | Embedded TaskRuns and Runs Status in PipelineRuns | implemented | 2022-04-18 |
 |[TEP-0101](0101-env-in-pod-template.md) | Env in POD template | proposed | 2022-05-09 |

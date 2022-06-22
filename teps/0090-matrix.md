@@ -2,7 +2,7 @@
 status: implementable
 title: Matrix
 creation-date: '2021-10-13'
-last-updated: '2022-06-09'
+last-updated: '2022-06-22'
 authors:
 - '@jerop'
 - '@pritidesai'
@@ -1348,8 +1348,10 @@ status:
       pipelineTaskName: foo
 ```
 
-The `ChildReferences` will be populated for matrixed `PipelineTasks` regardless of the embedded status flags
-because that is the API behavior we're migrating to.
+For `ChildReferences` to be populated, the `embedded-status` must be set to `"minimal"`. Thus, any `Pipeline` with a
+`PipelineTask` that has a `Matrix` will require that minimal embedded status is enabled during the migration until it
+becomes the only supported status. This requirement also makes the behavior clearer to users - auto-adding the minimal
+status when users have not enabled it makes the user experience opaque and surprising.
 
 ## Design Evaluation
 

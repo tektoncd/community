@@ -426,7 +426,7 @@ use to interact with it.
 Before a PR can be merged, it must have both `/lgtm` AND `/approve`:
 
 - `/lgtm` can be added by
-  ["Reviewers"](https://developer.github.com/v3/repos/Reviewers/), aka anyone in
+  ["Reviewers"](https://github.com/tektoncd/community/blob/main/process.md#reviewer), aka anyone in
   Reviewer team specific to the repo
 - `/approve` can be added only by [OWNERS](#owners)
 
@@ -437,7 +437,7 @@ and all tests pass. If you don't want this to happen you should
 Any changes will cause the `/lgtm` label to be removed and it will need to be
 re-applied.
 
-If you are not a [Reviewer](https://developer.github.com/v3/repos/Reviewers/),
+If you are not a [Reviewer](https://github.com/tektoncd/community/blob/main/process.md#reviewer),
 you will need a Reviewer to add `/ok-to-test` to your PR to allow tests to run.
 
 (But most importantly you can add dog and cat pictures to PRs with `/woof` and

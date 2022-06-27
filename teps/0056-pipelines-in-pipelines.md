@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Pipelines in Pipelines
 creation-date: '2021-03-08'
-last-updated: '2022-06-06'
+last-updated: '2022-06-27'
 authors:
 - '@jerop'
 - '@abayer'
@@ -31,6 +31,17 @@ see-also:
   - [Proposal](#proposal)
     - [Specification](#specification)
   - [Design](#design)
+    - [Parameters](#parameters)
+    - [Results](#results)
+      - [Consuming Results](#consuming-results)
+      - [Producing Results](#producing-results)
+    - [Execution Status](#execution-status)
+    - [Workspaces](#workspaces)
+    - [When Expressions](#when-expressions)
+    - [Retries](#retries)
+    - [Timeouts](#timeouts)
+    - [Matrix](#matrix)
+    - [Service Account](#service-account)
   - [Future Work](#future-work)
     - [Runtime Specification](#runtime-specification)
   - [Alternatives](#alternatives)
@@ -485,7 +496,249 @@ These are alternatives to the solution for status discussed above:
 
 ## Design
 
-TODO
+In this section, we flesh out the details of `Pipelines` in `Pipelines` in relation to:
+- [Parameters](#parameters)
+- [Results](#results)
+  - [Consuming Results](#consuming-results)
+  - [Producing Results](#producing-results)
+- [Execution Status](#execution-status)
+- [Workspaces](#workspaces)
+- [When Expressions](#when-expressions)
+- [Retries](#retries)
+- [Timeouts](#timeouts)
+- [Matrix](#matrix)
+- [Service Account](#service-account)
+
+### Parameters
+
+`Pipelines` in `Pipelines` will consume `Parameters` in the same way as `Tasks` in `Pipelines`.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-scan-notify
+spec:
+  params:
+    - name: repo
+      value: $(params.repo)
+  tasks:
+    - name: git-clone
+      params:
+        - name: repo
+          value: $(params.repo)      
+      taskRef:
+        name: git-clone
+    - name: security-scans
+      params:
+        - name: repo
+          value: $(params.repo)
+      pipelineRef:
+        name: security-scans
+    - name: notification
+      taskRef:
+        name: notification
+```
+
+### Results
+
+#### Consuming Results 
+
+`Pipelines` in `Pipelines` will consume `Results`, in the same way as `Tasks` in `Pipelines`.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-scan-notify
+spec:
+  params:
+    - name: repo
+      value: $(params.repo)
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+    - name: security-scans
+      params:
+        - name: commit
+          value: $(tasks.git-clone.results.commit) # --> result consumed in pipelines in pipelines
+      pipelineRef:
+        name: security-scans
+    - name: notification
+      taskRef:
+        name: notification
+```
+
+#### Producing Results
+
+`Pipelines` in `Pipelines` will produce `Results`, in the same way as `Tasks` in `Pipelines`.
+
+`Results` produced by `TaskRuns` in a child `PipelineRun` that need to be passed to subsequent `PipelineTasks` will need
+to be propagated to the `Results` of the child `PipelineRun`.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-scan-notify
+spec:
+  params:
+    - name: repo
+      value: $(params.repo)
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+    - name: security-scans
+      pipelineRef:
+        name: security-scans
+    - name: notification
+      params:
+        - name: commit
+          value: $(tasks.security-scans.results.scan-outputs) # --> result produced from pipelines in pipelines
+      taskRef:
+        name: notification
+```
+
+### Execution Status
+
+`Pipelines` in `Pipelines` will produce execution status that is consumed in `Finally Tasks`, in the same way as `Tasks`
+in `Pipelines`.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-scan-notify
+spec:
+  params:
+    - name: repo
+      value: $(params.repo)
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+    - name: security-scans
+      pipelineRef:
+        name: security-scans
+  finally:        
+    - name: notification
+      params:
+        - name: commit
+          value: $(tasks.security-scans.status) # --> execution status produced from pipelines in pipelines
+      taskRef:
+        name: notification
+```
+
+### Workspaces 
+
+`PipelineTasks` with `Pipelines` can reference `Workspaces`, in the same way as `PipelineTasks` with `Tasks`. In these
+case, the `Workspaces` from the parent `PipelineRun` will be bound to the child `PipelineRun`. 
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-scan-notify
+spec:
+  workspaces:
+    - name: output
+  tasks:
+    - name: git-clone
+      workspaces:
+        - name: output
+      taskRef:
+        name: git-clone
+    - name: security-scans
+      workspaces:
+        - name: output
+      pipelineRef:
+        name: security-scans
+    - name: notification
+      taskRef:
+        name: notification
+```
+
+### When Expressions
+
+Users can specify criteria to guard the execution of `PipelineTasks` using `when` expressions. When `when` expressions
+in a `PipelineTask` with a `Task` or `Custom Task` evaluate to `false`, the `PipelineTask` will be skipped - `TaskRun`
+or `Run` is not executed. In the same way, `PipelineTasks` with `Pipelines` will be skipped - `PipelineRun` will not be
+executed.
+
+```yaml
+  tasks:
+    - name: security-scans # --> skipped task 
+      when:
+        - input: foo
+          operator: in
+          values:
+            - bar
+      pipelineRef:
+        name: security-scans
+    ...
+```
+
+### Retries
+
+Today, we support retries in `TaskRuns` and `Runs`. Users can specify the number of times a `PipelineTask` should be 
+retried, using `retries` field, when its `TaskRun` or `Run` fails. We do not support retries for `PipelineRuns`. In the
+initial releases of `Pipelines` in `Pipelines`, we will not support `retries` in `PipelineTasks` with `Pipelines`. This
+remains an option we can pursue later after gathering user feedback on initial versions of `Pipelines` in `Pipelines` -
+this may involve a broader discussion about retries in `PipelineRuns`.
+
+```yaml
+  tasks:
+    - name: security-scans
+      retries: 3 # --> not supported in initial releases
+      pipelineRef:
+        name: security-scans
+    ...
+```
+
+### Timeouts
+
+Users can specify the timeout for the `TaskRun` or `Run` that executes a `PipelineTask` using the `timeout` field. 
+In the same way, users can specify the overall timeout for the child `PipelineRun` using the `timeout` field. This will
+map to `timeouts.pipeline` in the child `PipelineRun`.
+
+```yaml
+  tasks:
+    - name: security-scans
+      timeout: "0h1m30s"
+      pipelineRef:
+        name: security-scans
+    ...
+```
+
+If users need finer-grained timeouts for child `PipelineRuns` as those supported in parent `PipelineRuns`, we can 
+explore supporting them in future work - see [possible solution](#runtime-specification---provide-overrides-for-pipelinerun).
+
+### Matrix 
+
+Users can fan out `PipelineTasks` with `Tasks` and `Custom Tasks` into multiple `TaskRuns` and `Runs` using `Matrix`.
+In the same way, users can fan out `PipelineTasks` with `Pipelines` into multiple child `PipelineRuns`. This provides
+fanning out at `Pipeline` level, discussed in [use case](#fanning-out-pipelines).
+
+```yaml
+  tasks:
+    - name: security-scans
+      matrix:
+        - name: repo
+          value: 
+            - https://github.com/tektoncd/pipeline
+            - https://github.com/tektoncd/triggers
+            - https://github.com/tektoncd/results
+      pipelineRef:
+        name: security-scans
+```
+
+### Service Account
+
+Users can specify a `ServiceAccount` with a specific set of credentials used to execute `TaskRuns` and `Runs` created
+from a given `PipelineRun`. When a parent `PipelineRun` has a `ServiceAccount`, the `ServiceAccount` will be passed to 
+the child `PipelineRun` in the same way as is done for `TaskRuns` and `Runs`.
 
 ## Future Work
 

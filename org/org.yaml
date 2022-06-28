@@ -237,6 +237,7 @@ orgs:
         - dibyom
         - jerop
         - lbernick
+        - abayer
         privacy: closed
         repos:
           pipeline: write

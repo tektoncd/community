@@ -2,7 +2,7 @@
 status: proposed
 title: Changing the way result parameters are stored
 creation-date: '2021-09-27'
-last-updated: '2022-06-09'
+last-updated: '2022-08-01'
 authors:
 - '@tlawrie'
 - '@imjasonh'
@@ -10,6 +10,8 @@ authors:
 - '@pritidesai'
 - '@tomcli'
 - '@ScrapCodes'
+- '@chitrangpatel'
+- '@jerop'
 ---
 
 # TEP-0086: Changing the way result parameters are stored
@@ -21,7 +23,7 @@ authors:
   - [Non-Goals](#non-goals)
   - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
-  - [Required](#required)
+  - [Proposal](#proposal)
 - [Alternatives](#alternatives)
   - [Result Sidecar - Upload results from sidecar](#result-sidecar---upload-results-from-sidecar)
     - [Option: Supporting multiple sidecars](#option-supporting-multiple-sidecars)
@@ -44,7 +46,10 @@ authors:
   - [Store results on PVCs](#store-results-on-pvcs)
   - [No change. Use workspaces.](#no-change-use-workspaces)
   - [Repurpose Artifact Storage API](#repurpose-artifact-storage-api)
-  - [Using logs emitted by the Task](#using-logs-emitted-by-the-task)
+  - [Sidecar Logs](#sidecar-logs)
+    - [Feature Gates for Sidecar Logs](#feature-gates-for-sidecar-logs)
+    - [Design Details of Sidecar Logs](#design-details-of-sidecar-logs)
+    - [Caveats of Sidecar Logs](#caveats-of-sidecar-logs)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
 - [Implementation Pull request(s)](#implementation-pull-requests)
@@ -114,6 +119,19 @@ Additionally, this will help projects that wrap/abstract Tekton where users unde
       * This may also prevent encrypting results (unless they are encrypted within the TaskRun itself).
       * Define a clear upper limit on the expected maximum size of a result.
       * Support an environment where executing pods are not permitted to make network connections within the cluster.
+
+## Proposal
+
+There's no solution that will meet all the [requirements](#requirements) described above. There are several efforts to
+build proof of concepts for different solutions described in [alternatives](#alternatives). We propose that we provide
+the multiple solutions, all guarded behind a `larger-results` feature flag, so that we can experiment and figure out a
+way forward. These gated solutions will be alpha, and can be changed or removed at any time.
+
+These are the proof of concepts we'll provide and their feature flags:
+
+| Solution                      | Feature Gate                     | Description                                                            |
+|-------------------------------|----------------------------------|------------------------------------------------------------------------|
+| [Sidecar Logs](#sidecar-logs) | `larger-results`: `sidecar-logs` | Use stdout logs from a dedicated `Sidecar` to return a `Result` object |
 
 ## Alternatives
 
@@ -374,21 +392,47 @@ Cons:
   - [Docs on setting up storage](https://github.com/tektoncd/pipeline/blob/main/docs/install.md#configuring-pipelineresource-storage)
   - [Interface](https://github.com/tektoncd/pipeline/blob/main/pkg/artifacts/artifacts_storage.go#L39-L47)
 
-### Using logs emitted by the Task
+### Sidecar Logs
 
-  - We are also exploring using **stdout logs from a dedicated sidecar to return a json result object** as a simpler way 
-to support larger TaskResults, but we need to explore this in a POC as we suspect we may not be able to rely on logs for this.
-  - The controller would wait for the sidecar to exit and then read the logs based on a particular query and append info to the TaskRun
-  - Potential to use a CloudEvent object to wrap result object
+We propose using **stdout logs from a dedicated `Sidecar` to return a json `Result` object** to support larger
+`Results`. The controller would wait for the `Sidecar` to exit and then read the logs based on a particular query and
+append info to the `TaskRun`.
 
-Cons:
-- No guarantees on when logs will be available (would have to wait for this before considering a TaskRun complete)
-- No guarantee you'll be able to access a log before it disappears (e.g. logs will not be available via the k8s API
-  once a pod is deleted)
-- The storage of the result parameter may still be limited by a number of scenarios, including:
-    - [1.5 MB CRD size](https://github.com/kubernetes/kubernetes/issues/82292)
-    - The total size of the PipelineRun _if_ the TaskRun content is included, however
-      [TEP-100 is removing this](https://github.com/tektoncd/community/blob/main/teps/0100-embedded-taskruns-and-runs-status-in-pipelineruns.md)
+We propose injecting a dedicated `Sidecar` alongside the `Steps` which will watch the `Results` path of the `Steps`.
+This `Sidecar` will output the name of the `Result` and its contents to stdout in a parsable pattern. The `TaskRun`
+controller will access the stdout logs of the `Sidecar`, extract the `Result` and its contents during reconciliation.
+After the `Steps` have terminated, the `TaskRun` controller will attach the `Results` from the logs of the `Sidecar`
+instead of using the termination message (hence bypassing the 4K limit) to update the `Results` fields in the CRD.
+This method keeps the rest of the current functionality identical and does not require any external storage mechanism.
+For further details, see the [demonstration][demo] of the proof of concept.
+
+#### Feature Gates for Sidecar Logs
+
+This solution will be gated using a `larger-results` feature flag which users can set to `"sidecar-logs"` to enable it.
+This provides an opportunity to experiment with this solution to provide `Results` within the CRDs as we figure out 
+the solutions for external storage.
+
+In [TEP-0100][tep-0100] we proposed changes to `PipelineRun` status to reduce the amount of information stored about
+the status of `TaskRuns` and `Runs` to improve performance, reduce memory bloat and improve extensibility. Now that
+those changes have been implemented, the `PipelineRun` status is set up to handle larger `Results` without
+exacerbating the performance and storage issues that were there before. For `ChildReferences` to be populated, the
+`embedded-status` must be set to `"minimal"`. Thus, will require that minimal embedded status is enabled during the
+migration until it becomes the only supported status. This requirement also makes the behavior clearer to users -
+auto-adding the minimal status when users have not enabled it makes the user experience opaque and surprising.
+
+#### Design Details of Sidecar Logs
+
+In order to parse the `Results` volume and output the contents to stdout in the `Container`, the `Sidecar` will run
+a script that:
+- is auto-generated based on the required `Results` - identified from `taskSpec.results` field.
+- periodically checks for files in the directory `/tekton/results`.
+- when a `Result` is found, it prints it to stdout in a parsable pattern.
+- When all the expected `Results` are found, it breaks out of the periodic loop and exits.
+
+#### Caveats of Sidecar Logs
+
+- The storage of the result parameter may still be limited by the maximum allowed [CRD size][crd-size]. Note that the
+  maximum size is shared among all the `Results` of the `TaskRun` and all its other contents (e.g. `Status`).
 
 ### Using embedded storage client to store result files in remote storage
 
@@ -452,3 +496,8 @@ It will be a quick reference for those looking for implementation of this TEP.
 - [HackMD Result Collector Sidecar Design](https://hackmd.io/a6Kl4oS0SaOyBqBPTirzaQ)
 - [TEP-0086 Design Breakout Session Recording](https://drive.google.com/file/d/1lIqyy1RyZMYOrMCC2CLZD8eOf0NrVeDb/view?usp=sharing)
 - [TEP-0086 Design Breakout Session Notes](https://hackmd.io/YU_g27vRS2S5DwfBXDGpYA?view)
+
+[crd-size]: https://github.com/kubernetes/kubernetes/issues/82292
+[tep-0100]: ./0100-embedded-taskruns-and-runs-status-in-pipelineruns.md
+[demo]: https://drive.google.com/file/d/14tDHNgpzOZ--5nMsOsTBhxsDgDDM_7iQ/view?t=1h01m41s
+[tektoncd/pipeline#3497]: https://github.com/tektoncd/pipeline/issues/3497

@@ -238,7 +238,7 @@ This is the complete list of Tekton teps:
 |[TEP-0083](0083-scheduled-and-polling-runs-in-tekton.md) | Scheduled and Polling runs in Tekton | proposed | 2021-09-13 |
 |[TEP-0084](0084-endtoend-provenance-collection.md) | end-to-end provenance collection | proposed | 2022-05-12 |
 |[TEP-0085](0085-per-namespace-controller-configuration.md) | Per-Namespace Controller Configuration | proposed | 2021-10-14 |
-|[TEP-0086](0086-changing-the-way-result-parameters-are-stored.md) | Changing the way result parameters are stored | proposed | 2022-06-09 |
+|[TEP-0086](0086-changing-the-way-result-parameters-are-stored.md) | Changing the way result parameters are stored | proposed | 2022-08-01 |
 |[TEP-0088](0088-result-summaries.md) | Tekton Results - Record Summaries | proposed | 2021-10-01 |
 |[TEP-0089](0089-nonfalsifiable-provenance-support.md) | Non-falsifiable provenance support | implementable | 2022-01-18 |
 |[TEP-0090](0090-matrix.md) | Matrix | implemented | 2022-06-30 |

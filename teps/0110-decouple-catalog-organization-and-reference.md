@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Decouple Catalog Organization and Resource Reference
 creation-date: '2022-03-21'
-last-updated: '2022-06-06'
+last-updated: '2022-06-29'
 authors:
 - '@vdemeester'
 - '@jerop'
@@ -108,7 +108,7 @@ clusters, similarly the current experience using GitHub HTTP endpoint:
 kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/buildpacks/0.4/buildpacks.yaml
 
 # Proposal: using the HTTP Endpoint from Tekton Catalog - should serve same yaml as the one above
-kubectl apply -f https://hub.tekton.dev/tekton//task/buildpacks/0.4/
+kubectl apply -f https://hub.tekton.dev/tekton/task/buildpacks/0.4/raw
 ```
 
 #### Remote Resolution - Hub Resolver
@@ -222,11 +222,16 @@ this ordering of work, the Official Catalog will have the Git-Based organization
 
 ## References
 
-- [TEP-0003: Tekton Catalog Organization][tep-0003]
-- [TEP-0060: Remote Resource Resolution][tep-0060]
-- [TEP-0079: Tekton Catalog Support Tiers][tep-0079]
-- [Tekton Hub][hub]
-- [Tekton Catalog][catalog]
+- Tekton Enhancement Proposals
+  - [TEP-0003: Tekton Catalog Organization][tep-0003]
+  - [TEP-0060: Remote Resource Resolution][tep-0060]
+  - [TEP-0079: Tekton Catalog Support Tiers][tep-0079]
+- Projects
+  - [Tekton Hub][hub]
+  - [Tekton Catalog][catalog]
+- Implementation Pull Requests
+  - [HTTP Endpoint][hub-prs]
+  - [Hub Resolver][resolution-prs]
 
 [issue]: https://github.com/tektoncd/catalog/issues/784
 [tep-0003]: ./0003-tekton-catalog-organization.md
@@ -237,3 +242,5 @@ this ordering of work, the Official Catalog will have the Git-Based organization
 [hub-resolver]: https://github.com/sbwsg/hubresolver/tree/42962892535f19e9f1f9cd3457f567dd121d57ec
 [git-resolver]: https://github.com/tektoncd/resolution/tree/7f92187843085874229aa4c43e5c6d7d392a26fa/gitresolver
 [bundles]: https://github.com/tektoncd/pipeline/blob/b19a9abdb81ac0d7608a0457348ccb24afa65316/docs/pipelines.md#tekton-bundles
+[hub-prs]: https://github.com/tektoncd/hub/pulls?q=is%3Apr+TEP-0110+
+[resolution-prs]: https://github.com/tektoncd/resolution/pulls?q=is%3Apr+TEP-0110+

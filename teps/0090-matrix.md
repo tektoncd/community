@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Matrix
 creation-date: '2021-10-13'
-last-updated: '2022-06-22'
+last-updated: '2022-06-30'
 authors:
 - '@jerop'
 - '@pritidesai'
@@ -1404,21 +1404,12 @@ complexities carefully.
 
 #### Milestone 1: API Change, Validation and Execute TaskRuns
 
-First pull request will:
-* Add the `matrix` field to the API.
-* Guard the `matrix` behind the `alpha` feature gate.
-* Implement validation of the `matrix` field, including:
-  * `Parameter` type must be of type `Array`.
-  * `Parameter` can be in only one of `matrix` or `params`, not both.
-
-Second pull request will:
-* Implement fanning out of `PipelineTasks` into `TaskRuns` based on the `matrix`.
-
-This milestone should be in one release.
+Implement API changes gated behind the `alpha` feature gate. Then implement fanning out
+`PipelineTasks` with `Tasks` into `TaskRuns`.
 
 #### Milestone 2: Execute Runs
 
-Implement fanning out of `PipelineTasks` into `Runs` based on the `matrix`.
+Implement fanning out of `PipelineTasks` with `Custom Tasks` into `Runs`.
 
 #### Milestone 3: Consume Results
 
@@ -1602,6 +1593,7 @@ However, this approach has the following disadvantages:
 
 ## References
 
+- [Implementation Pull Requests][pull-requests]
 - [Task Loops Experimental Project][task-loops]
 - Issues:
   - [#2050: `Task` Looping inside `Pipelines`][issue-2050]
@@ -1664,3 +1656,4 @@ However, this approach has the following disadvantages:
 [when]: https://github.com/tektoncd/pipeline/blob/6cb0f4ccfce095495ca2f0aa20e5db8a791a1afe/docs/pipelines.md#guard-task-execution-using-when-expressions
 [retries]: https://github.com/tektoncd/pipeline/blob/6cb0f4ccfce095495ca2f0aa20e5db8a791a1afe/docs/pipelines.md#using-the-retries-parameter
 [timeouts]: https://github.com/tektoncd/pipeline/blob/6cb0f4ccfce095495ca2f0aa20e5db8a791a1afe/docs/pipelines.md#configuring-the-failure-timeout
+[pull-requests]: https://github.com/tektoncd/pipeline/pulls?q=TEP-0090+

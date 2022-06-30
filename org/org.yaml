@@ -159,6 +159,7 @@ orgs:
     - ziheng
     - austinzhao-go
     - aleromerog
+    - QuanZhang-William
     teams:
       governing-board:
         description: Tekton Governing Board members

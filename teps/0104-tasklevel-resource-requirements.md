@@ -2,7 +2,7 @@
 status: implementable
 title: Task-level Resource Requirements
 creation-date: '2022-04-08'
-last-updated: '2022-06-10'
+last-updated: '2022-07-07'
 authors:
 - '@lbernick'
 - '@vdemeester'
@@ -12,33 +12,40 @@ authors:
 # TEP-0104: Task-level Resource Requirements
 
 <!-- toc -->
-- [Summary](#summary)
-- [Motivation](#motivation)
-- [Background](#background)
-  - [Resource requirements in Kubernetes](#resource-requirements-in-kubernetes)
-  - [Resource requirements in Tekton](#resource-requirements-in-tekton)
-- [Goals](#goals)
-- [Non-Goals](#non-goals)
-- [Existing Strategies for Controlling Resource Consumption](#existing-strategies-for-controlling-resource-consumption)
-- [Proposal](#proposal)
-  - [API Changes](#api-changes)
-  - [Applying Task Resources to Containers](#applying-task-resources-to-containers)
-  - [Sidecars](#sidecars)
-  - [Authoring Time (Task) vs Runtime (TaskRun) configuration](#authoring-time-task-vs-runtime-taskrun-configuration)
-  - [Interaction with Step resource requirements](#interaction-with-step-resource-requirements)
-  - [Interaction with LimitRanges](#interaction-with-limitranges)
-  - [Naming](#naming)
-  - [Other Considerations](#other-considerations)
-- [Examples](#examples)
-  - [Example with Sidecar](#example-with-sidecar)
-  - [Example with LimitRange](#example-with-limitrange)
-  - [Example with StepTemplate](#example-with-steptemplate)
-  - [Example with Step resource requests](#example-with-step-resource-requests)
-  - [Example with StepOverrides](#example-with-stepoverrides)
-  - [Example with both requests and limits](#example-with-both-requests-and-limits)
-  - [Example with both CPU and memory](#example-with-both-cpu-and-memory)
-- [Alternatives](#alternatives)
-- [References](#references)
+- [TEP-0104: Task-level Resource Requirements](#tep-0104-task-level-resource-requirements)
+  - [Summary](#summary)
+  - [Motivation](#motivation)
+  - [Background](#background)
+    - [Resource requirements in Kubernetes](#resource-requirements-in-kubernetes)
+    - [Resource requirements in Tekton](#resource-requirements-in-tekton)
+  - [Goals](#goals)
+  - [Non-Goals](#non-goals)
+  - [Existing Strategies for Controlling Resource Consumption](#existing-strategies-for-controlling-resource-consumption)
+  - [Proposal](#proposal)
+    - [API Changes](#api-changes)
+    - [Applying Task-level Resources to Containers](#applying-task-level-resources-to-containers)
+      - [Requests](#requests)
+      - [Limits](#limits)
+    - [Sidecars](#sidecars)
+    - [Authoring Time (Task) vs Runtime (TaskRun) configuration](#authoring-time-task-vs-runtime-taskrun-configuration)
+    - [Interaction with Step resource requirements](#interaction-with-step-resource-requirements)
+    - [Interaction with LimitRanges](#interaction-with-limitranges)
+    - [Naming](#naming)
+    - [Other Considerations](#other-considerations)
+    - [Future Work](#future-work)
+  - [Examples](#examples)
+    - [Example with requests only](#example-with-requests-only)
+    - [Example with limits only](#example-with-limits-only)
+    - [Example with both requests and limits](#example-with-both-requests-and-limits)
+    - [Example with Sidecar](#example-with-sidecar)
+    - [Example where LimitRange does not apply](#example-where-limitrange-does-not-apply)
+    - [Example where LimitRange does apply](#example-where-limitrange-does-apply)
+    - [Example with StepTemplate](#example-with-steptemplate)
+    - [Example with Step resource requests overridden by TaskRun](#example-with-step-resource-requests-overridden-by-taskrun)
+    - [Example with StepOverrides](#example-with-stepoverrides)
+    - [Example with both CPU and memory](#example-with-both-cpu-and-memory)
+  - [Alternatives](#alternatives)
+  - [References](#references)
 <!-- /toc -->
 
 ## Summary
@@ -129,10 +136,10 @@ This field should also be added to [PipelineRun.TaskRunSpecs][taskRunSpecs].
 As mentioned in [Resource Requirements in Kubernetes](#resource-requirements-in-kubernetes),
 the effective resource requests of a pod are the sum of the resource requests of its containers,
 and this value is used to determine the resources reserved by the kubelet when scheduling a pod.
-Therefore, when a user configures a resource request for a TaskRun, that request should be applied to one container only in the pod.
-(See [Interaction with LimitRanges](#interaction-with-limitranges) for caveats.)
-All other containers will not have resource requests. This will result in a pod with an effective resource request
-that is the same as that of the TaskRun, and will be scheduled correctly. This is similar to
+Therefore, when a user configures a resource request for a TaskRun, any configuration of container
+requests that sum to the desired request is valid.
+To simplify [interaction with LimitRanges](#interaction-with-limitranges), the desired compute requests
+should be split among the pod's containers. This is similar to
 Tekton’s [handling of resource requests pre v0.28.0][pre-v28], where the maximum resource request of all containers
 was applied to only one container, and the rest were left without resource requests.
 
@@ -213,6 +220,12 @@ if the total resource request would result in a container that has more than the
 by the limit range, the requests may be spread out between containers.
 If there is no container configuration that satisfies the LimitRange, the TaskRun will be rejected.
 
+We must ensure that the sum of the requests for each container is still the desired requests for the TaskRun,
+**even after LimitRange defaults have applied**. For example, if a user requests 1 CPU for a Task with 2 steps,
+and a pod is created with one container with 1 CPU and one container without a request, LimitRange default requests
+will apply to the container without a CPU request, causing the pod to have more CPU than desired.
+Splitting Task-level resource requests among the pod's containers will prevent this problem.
+
 ### Naming
 
 "Resources" is an extremely overloaded term in Tekton.
@@ -275,9 +288,9 @@ spec:
 
 | Step name | CPU request | CPU limit |
 | --------- | ----------- | --------- |
-| step-1    | N/A         | N/A       |
-| step-2    | N/A         | N/A       |
-| step-3    | 1.5         | N/A       |
+| step-1    | 0.5         | N/A       |
+| step-2    | 0.5         | N/A       |
+| step-3    | 0.5         | N/A       |
 
 ### Example with limits only
 
@@ -342,13 +355,11 @@ spec:
       cpu: 2
 ```
 
-| Step name | CPU request       | CPU limit |
-| --------- | ----------------- | --------- |
-| step-1    | smallest possible | 2         |
-| step-2    | smallest possible | 2         |
-| step-3    | 1.5               | 2         |
-
-(Here, the smallest possible request is based on both what the kubelet will allow, and the minimum values allowed by any LimitRange.)
+| Step name | CPU request | CPU limit |
+| --------- | ----------- | --------- |
+| step-1    | 0.5         | 2         |
+| step-2    | 0.5         | 2         |
+| step-3    | 0.5         | 2         |
 
 
 ### Example with Sidecar
@@ -366,7 +377,7 @@ spec:
     - name: sidecar-2
       resources:
         requests:
-          cpu: 750m
+          cpu: 800m
         limits:
           cpu: 1
 ```
@@ -388,11 +399,11 @@ The resulting pod would have the following containers:
 
 | Step/Sidecar name | CPU request | CPU limit |
 | ----------------- | ----------- | --------- |
-| step-1            | N/A         | N/A       |
-| step-2            | 1.5         | N/A       |
-| sidecar-1         | 750m        | 1         |
+| step-1            | 750m        | N/A       |
+| step-2            | 750m        | N/A       |
+| sidecar-1         | 800m        | 1         |
 
-### Example with LimitRange
+### Example where LimitRange does not apply
 
 ```
 apiVersion: v1
@@ -437,12 +448,63 @@ The resulting pod would have the following containers:
 
 | Step name | CPU request | CPU limit |
 | --------- | ----------- | --------- |
-| step-1    | 250m        | 750m      |
+| step-1    | 500m        | 750m      |
 | step-2    | 500m        | 750m      |
-| step-3    | 750m        | 750m      |
+| step-3    | 500m        | 750m      |
 
 (Note that there are a number of possible configurations of CPU requests that satisfy
 250m < request < 750m for each container, with a sum of 1.5, and any would be acceptable here.)
+
+### Example where LimitRange does apply
+
+```
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: my-limit-range
+spec:
+  limits:
+    - max:
+        cpu: 750m
+      min:
+        cpu: 600m
+      type: Container
+```
+
+```
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: my-task
+spec:
+  steps:
+    - name: step-1
+    - name: step-2
+    - name: step-3
+```
+
+```
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: my-taskrun
+spec:
+  taskRef:
+    name: my-task
+  computeResources:
+    requests:
+      cpu: 1.5
+```
+
+The resulting pod would have the following containers:
+
+| Step name | CPU request | CPU limit |
+| --------- | ----------- | --------- |
+| step-1    | 600m        | 750m      |
+| step-2    | 600m        | 750m      |
+| step-3    | 600m        | 750m      |
+
+Here, the LimitRange minimum overrides the specified requests.
 
 ### Example with StepTemplate
 
@@ -478,8 +540,8 @@ The resulting pod would have the following containers:
 
 | Step name | CPU request | CPU limit |
 | --------- | ----------- | --------- |
-| step-1    | N/A         | N/A       |
-| step-2    | 1.5         | N/A       |
+| step-1    | 750m        | N/A       |
+| step-2    | 750m        | N/A       |
 
 ### Example with Step resource requests overridden by TaskRun
 
@@ -517,8 +579,8 @@ The resulting pod would have the following containers:
 
 | Step name | CPU request | CPU limit |
 | --------- | ----------- | --------- |
-| step-1    | N/A         | N/A       |
-| step-2    | 2           | N/A       |
+| step-1    | 1           | N/A       |
+| step-2    | 1           | N/A       |
 
 ### Example with StepOverrides
 
@@ -584,10 +646,10 @@ spec:
 
 The resulting pod would have the following containers:
 
-| Step name | CPU request | CPU limit | Memory request    | Memory limit |
-| --------- | ----------- | --------- | ----------------- | ------------ |
-| step-1    | N/A         | N/A       | 500Mi             | 1Gi          |
-| step-2    | 1.5         | N/A       | smallest possible | 1Gi          |
+| Step name | CPU request | CPU limit | Memory request | Memory limit |
+| --------- | ----------- | --------- | -------------- | ------------ |
+| step-1    | 750m        | N/A       | 250Mi          | 1Gi          |
+| step-2    | 750m        | N/A       | 250Mi          | 1Gi          |
 
 ## Alternatives
 

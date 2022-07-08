@@ -34,6 +34,8 @@ _See also [the Tekton review process](https://github.com/tektoncd/community/blob
   * Release notes filled in for user visible changes (bugs + features),
     or removed if not applicable (refactoring, updating tests) (may be enforced
     via the [release-note Prow plugin](https://github.com/tektoncd/plumbing/blob/main/prow/plugins.yaml))
+* Add the related [TEP-XXXX] at the beginning of a PR subject line
+  * Consider adding the links of the related TEP, Feature Request thread, and related other implementation PRs
 
 ## Commits
 
@@ -52,6 +54,7 @@ _See also [the Tekton review process](https://github.com/tektoncd/community/blob
   * Keep the subject to 50 characters or less.
   * Try to keep the message wrapped at 72 characters.
   * Check [these seven best practices](https://chris.beams.io/posts/git-commit/#seven-rules) for more detail.
+* Add the related [TEP-XXXX] at the beginning of a commit subject line
 
 ### Example Commit Message
 
@@ -59,7 +62,7 @@ Here's a commit message example to work from that sticks to the spirit
 of the guidance outlined above:
 
 ```
-Add example commit message to demo our guidance
+[TEP-XXXX] Add example commit message to demo our guidance
 
 Prior to this message being included in our standards there was no
 canonical example of an "ideal" commit message for devs to quickly copy.

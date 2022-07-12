@@ -259,3 +259,4 @@ This is the complete list of Tekton teps:
 |[TEP-0110](0110-decouple-catalog-organization-and-reference.md) | Decouple Catalog Organization and Resource Reference | implemented | 2022-06-29 |
 |[TEP-0111](0111-propagating-workspaces.md) | Propagating Workspaces | implementable | 2022-06-03 |
 |[TEP-0112](0112-replace-volumes-with-workspaces.md) | Replace Volumes with Workspaces | proposed | 2022-06-02 |
+|[TEP-0114](0114-custom-tasks-beta.md) | Custom Tasks Beta | implementable | 2022-07-12 |

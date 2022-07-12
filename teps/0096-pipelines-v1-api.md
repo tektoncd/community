@@ -2,7 +2,7 @@
 status: implementable
 title: Pipelines V1 API
 creation-date: '2021-11-29'
-last-updated: '2022-06-21'
+last-updated: '2022-07-12'
 authors:
 - '@lbernick'
 - '@jerop'
@@ -16,34 +16,35 @@ see-also:
 # TEP-0096: Pipelines V1 API
 
 <!-- toc -->
-- [Summary](#summary)
-- [Motivation](#motivation)
-  - [Goals](#goals)
-  - [Non Goals](#non-goals)
-- [Background](#background)
-- [Proposal](#proposal)
-  - [V1 Stability and Deprecation Policy](#v1-stability-and-deprecation-policy)
-    - [Examples](#examples)
-      - [Removing an API field from a V1 CRD](#removing-an-api-field-from-a-v1-crd)
-      - [Adding an optional API field to a V1 CRD](#adding-an-optional-api-field-to-a-v1-crd)
-      - [Removing a flag-gated field or feature from a V1 CRD](#removing-a-flag-gated-field-or-feature-from-a-v1-crd)
-      - [Promoting a behavior flag](#promoting-a-behavior-flag)
-- [Use Cases](#use-cases)
-  - [Use Cases prioritized for Tekton](#use-cases-prioritized-for-tekton)
-  - [Use Cases not prioritized](#use-cases-not-prioritized)
-- [Scope](#scope)
-- [API Definition](#api-definition)
-- [Features Included](#features-included)
-  - [Documentation](#documentation)
-  - [Production Readiness](#production-readiness)
-  - [Stability](#stability)
-    - [CRD Stability Levels](#crd-stability-levels)
-    - [API Changes](#api-changes)
-    - [Deprecations](#deprecations)
-    - [Behavior flags](#behavior-flags)
-  - [Feature Completeness](#feature-completeness)
-- [Future Work (Out of Scope for V1)](#future-work-out-of-scope-for-v1)
-- [References](#references)
+- [TEP-0096: Pipelines V1 API](#tep-0096-pipelines-v1-api)
+  - [Summary](#summary)
+  - [Motivation](#motivation)
+    - [Goals](#goals)
+    - [Non Goals](#non-goals)
+  - [Background](#background)
+  - [Proposal](#proposal)
+    - [V1 Stability and Deprecation Policy](#v1-stability-and-deprecation-policy)
+      - [Examples](#examples)
+        - [Removing an API field from a V1 CRD](#removing-an-api-field-from-a-v1-crd)
+        - [Adding an optional API field to a V1 CRD](#adding-an-optional-api-field-to-a-v1-crd)
+        - [Removing a flag-gated field or feature from a V1 CRD](#removing-a-flag-gated-field-or-feature-from-a-v1-crd)
+        - [Promoting a behavior flag](#promoting-a-behavior-flag)
+  - [Use Cases](#use-cases)
+    - [Use Cases prioritized for Tekton](#use-cases-prioritized-for-tekton)
+    - [Use Cases not prioritized](#use-cases-not-prioritized)
+  - [Scope](#scope)
+  - [API Definition](#api-definition)
+  - [Features Included](#features-included)
+    - [Documentation](#documentation)
+    - [Production Readiness](#production-readiness)
+    - [Stability](#stability)
+      - [CRD Stability Levels](#crd-stability-levels)
+      - [API Changes](#api-changes)
+      - [Deprecations](#deprecations)
+      - [Behavior flags](#behavior-flags)
+    - [Feature Completeness](#feature-completeness)
+  - [Future Work (Out of Scope for V1)](#future-work-out-of-scope-for-v1)
+  - [References](#references)
 <!-- /toc -->
 
 ## Summary
@@ -250,6 +251,10 @@ This policy should be updated to include Tekton metrics as part of the API. No o
     independently of Pipelines V1. Merging this TEP as implementable, or any features listed in this TEP, aren't V1 blockers.
     While we aim to make the transition to V1 as smooth as possible for PipelineResource users, the focus of V1 is to
     stabilize existing features, and we don't want to block a V1 API on new, experimental features.
+- Deprecate `taskRun.spec.taskRef.bundle` and `pipelineRun.spec.pipelineRef.bundle`, as these features will be replaced by
+  the ["bundle" resolver](https://github.com/tektoncd/resolution/tree/main/bundleresolver).
+  These fields should be marked as deprecated in v1beta1 and not be present in v1, but removing them in v1beta1 is optional.
+  Remote resolution, plus the bundle resolver, should be packaged with Tekton Pipelines before removing these fields.
 
 #### Behavior flags
 
@@ -263,7 +268,7 @@ as its deprecation has already [been announced](https://github.com/tektoncd/pipe
 | disable-creds-init                            | false           | no change                                            |
 | running-in-environment-with-injected-sidecars | true            | no change                                            |
 | require-git-ssh-secret-known-hosts            | false           | no change                                            |
-| enable-tekton-oci-bundles                     | false           | collapsed under enable-api-fields, requires "alpha"  |
+| enable-tekton-oci-bundles                     | false           | mark as deprecated and remove in v1                  |
 | enable-custom-tasks                           | false           | collapsed under enable-api-fields, requires "beta"   |
 | enable-api-fields                             | stable          | default to stable, "beta" option added               |
 

@@ -106,7 +106,7 @@ there is a merge conflict in the TEP table. In case that happens, use
 the `teps.py renumber` command to refresh your PR:
 
 ```
-./teps.py renumber --update-table <path-to-tep-file>
+./teps.py renumber --update-table -f <path-to-tep-file>
 ```
 
 The command will update the TEP in the file name and content with a new

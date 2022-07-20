@@ -259,6 +259,6 @@ This is the complete list of Tekton teps:
 |[TEP-0108](0108-mapping-workspaces.md) | Mapping Workspaces | implemented | 2022-05-26 |
 |[TEP-0110](0110-decouple-catalog-organization-and-reference.md) | Decouple Catalog Organization and Resource Reference | implemented | 2022-06-29 |
 |[TEP-0111](0111-propagating-workspaces.md) | Propagating Workspaces | implementable | 2022-06-03 |
-|[TEP-0112](0112-replace-volumes-with-workspaces.md) | Replace Volumes with Workspaces | proposed | 2022-06-02 |
+|[TEP-0112](0112-replace-volumes-with-workspaces.md) | Replace Volumes with Workspaces | proposed | 2022-07-20 |
 |[TEP-0114](0114-custom-tasks-beta.md) | Custom Tasks Beta | implementable | 2022-07-12 |
 |[TEP-0116](0116-referencing-finally-task-results-in-pipeline-results.md) | Referencing Finally Task Results in Pipeline Results | implementable | 2022-07-15 |

@@ -2,7 +2,7 @@
 status: proposed
 title: Replace Volumes with Workspaces
 creation-date: '2022-06-02'
-last-updated: '2022-06-02'
+last-updated: '2022-07-20'
 authors:
 - '@lbernick'
 ---
@@ -22,8 +22,8 @@ authors:
       - [Docker in Docker (advanced use cases)](#docker-in-docker-advanced-use-cases)
       - [Tasks that require block devices](#tasks-that-require-block-devices)
       - [Dynamically created Volumes](#dynamically-created-volumes)
+      - [Task volumes as "implementation details"](#task-volumes-as-implementation-details)
   - [Design Considerations](#design-considerations)
-    - [Task volumes as "implementation details"](#task-volumes-as-implementation-details)
     - [User experience with Workspaces](#user-experience-with-workspaces)
     - [Volumes in PodTemplate](#volumes-in-podtemplate)
   - [Proposal](#proposal)
@@ -32,11 +32,15 @@ authors:
     - [Create a syntax for workspaces that are "implementation details"](#create-a-syntax-for-workspaces-that-are-implementation-details)
       - [Support for emptyDir volumes in Workspace declarations](#support-for-emptydir-volumes-in-workspace-declarations)
       - [Allow Workspaces to be declared as Task "internal"](#allow-workspaces-to-be-declared-as-task-internal)
+      - [Allow running all Steps in the same container](#allow-running-all-steps-in-the-same-container)
+      - [Allow Tasks to declare "WorkingDirectories"](#allow-tasks-to-declare-workingdirectories)
     - [Support for "dynamic" Workspaces](#support-for-dynamic-workspaces)
+      - [Defer validation](#defer-validation)
+      - [Add option for validation at runtime](#add-option-for-validation-at-runtime)
+      - [Add Workspace bindings to TaskRunSpecs](#add-workspace-bindings-to-taskrunspecs)
     - [Support for more volume types in Workspace bindings](#support-for-more-volume-types-in-workspace-bindings)
       - [Support all types of Volumes in WorkspaceBinding](#support-all-types-of-volumes-in-workspacebinding)
       - [Support hostPath volumes in Workspace Bindings](#support-hostpath-volumes-in-workspace-bindings)
-      - [Support CSI volumes in Workspace Bindings](#support-csi-volumes-in-workspace-bindings)
     - [Use TaskRun.Spec.PodTemplate to support missing Workspace features provided by Volumes](#use-taskrunspecpodtemplate-to-support-missing-workspace-features-provided-by-volumes)
     - [Encourage the use of workspaces, but don't remove volumes](#encourage-the-use-of-workspaces-but-dont-remove-volumes)
   - [Resources](#resources)
@@ -140,15 +144,15 @@ Some use cases require creating Secrets or ConfigMaps during the execution of th
 subsequent `TaskRuns`. This is not currently possible with Workspaces, as Tekton validates that all Secrets and ConfigMaps used in Workspace
 bindings exist at the time when a `PipelineRun` or `TaskRun` is created.
 
-## Design Considerations
-
-### Task volumes as "implementation details"
+#### Task volumes as "implementation details"
 
 Some usages of volumes and volumeMounts in Tasks are "implementation details"; for example,
 Tasks that cache data between Steps by using an emptyDir volume, or a docker build Task
 that shares data between its Steps and Sidecar. When replacing volumes with Workspaces, these Tasks would require
 emptyDir workspaces to be supplied in the TaskRun when they would not have previously, requiring the Task
 user to understand more of the Task implementation.
+
+## Design Considerations
 
 ### User experience with Workspaces
 
@@ -198,14 +202,17 @@ The following alternatives are not mutually exclusive.
 ### Create a syntax for workspaces that are "implementation details"
 
 There are a few ways we could allow Task authors to use workspaces to share data between Steps, without requiring Task users
-to understand what the workspaces are used for:
+to understand what the workspaces are used for (i.e. without requiring a workspace binding to be specified in a TaskRun
+for a workspace that is an implementation detail of the Task):
 
 - [Support emptyDir volumes in Workspace declarations](#support-for-emptydir-volumes-in-workspace-declarations)
 - [Allow Workspaces to be declared as Task "internal"](#allow-workspaces-to-be-declared-as-task-internal)
+- [Allow running all Steps in the same container](#allow-running-all-steps-in-the-same-container)
+- [Allow Tasks to declare "WorkingDirectories"](#allow-tasks-to-declare-workingdirectories)
 
 #### Support for emptyDir volumes in Workspace declarations
 
-We can allow emptyDir volumes to be specified in workspace declarations, for example:
+We can allow emptyDir volumes to be specified in Task workspace declarations, for example:
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -225,6 +232,11 @@ spec:
   - name: daemon
 ```
 
+Allowing volumes to be bound optionally in workspace declarations is also one alternative proposed in
+[TEP-0082: workspace hinting](./0082-workspace-hinting.md#embed-default-workspace-bindings-in-taskspipelines).
+However, that proposal would allow "default" bindings that could use any type of workspace binding supported today.
+This proposal would not allow the binding to be overridden, since it is meant for workspaces used internally in Tasks.
+
 Pros:
 - Supports common use cases of caching and sharing data with sidecars, without requiring `Task` users to understand `Task` implementation
 
@@ -235,6 +247,7 @@ Cons:
 
 In this solution, if a `Task` author declares a Workspace as "internal", Tekton will provide a volume type based on the `Task` implementation.
 For `TaskRuns`, this would likely be an emptyDir volume.
+"Internal" workspaces cannot have workspace bindings specified in TaskRuns or PipelineRuns.
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -256,24 +269,187 @@ spec:
 
 Pros:
 - Flexible, not tied to Kubernetes
+- Workspace "types" could be leveraged in the future to label workspaces as "input" and "output", to address
+  [workspace dependencies](./0063-workspace-dependencies.md). (This is also a potential downside, as it signals
+  that "type" is too generic.)
 
 Cons:
 - `Task` authors may want to use other types of Volumes as part of Task implementation, such as hostPath volumes
 
-### Support for "dynamic" Workspaces
+#### Allow running all Steps in the same container
 
-In order to meet the use case of [dynamically created volumes](#dynamically-created-volumes), we could allow the user to specify
-that they don't want to validate the existence of Secrets or ConfigMaps used in `PipelineRun` Workspace bindings until any `TaskRuns`
-that use these Workspaces are created. For example:
+In this solution, we could allow multiple Steps to run in the same container.
+Instead of sharing data between Steps by mounting volumes/workspaces to each one, data could be shared
+between Steps by running them in the same container. For example:
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
+kind: Task
+spec:
+  steps:
+  - name: step1
+    image: ubuntu
+    script: echo "hello"
+  - name: step2
+    script: echo "goodbye"
+```
+
+In this example, all Steps would run in a container running the "ubuntu" image.
+(Alternatively, `image` could be a field under `task.spec` instead of `task.spec.steps`.)
+
+Pros:
+- Other CI/CD systems have "Step" equivalents that share a filesystem, including
+  [Github Actions](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idsteps) 
+  and [CircleCI](https://circleci.com/docs/jobs-steps#steps-overview). (By itself, this isn't a good enough reason
+  to implement something, but it shows that it is a workable solution for many use cases.)
+
+Cons:
+- This wouldn't address use cases where you want Steps to run in separate containers, such as for [Hermekton](https://github.com/tektoncd/community/blob/main/teps/0025-hermekton.md).
+- This wouldn't help with sharing volumes between Steps and Sidecars, since Sidecars often run different images than Steps, or between Steps that use different images.
+
+#### Allow Tasks to declare "WorkingDirectories"
+
+In this solution, a Task could declare a "working directory" or "tempdir" that is mounted onto all Steps and Sidecars.
+For example:
+
+```yaml
+kind: Task
+spec:
+  workingDirs:
+  - /var/run/docker.sock
+  steps:
+  - name: build
+    script: |
+      docker build ./Dockerfile -t my-image-name
+  - name: push
+    script: |
+    docker push my-image-name
+  sidecars:
+  - name: daemon
+```
+
+Here, an emptyDir volume would be created and mounted into each Step and Sidecar.
+
+Pros:
+- Workspaces are used to separate declarations from bindings, which aren't needed here.
+  This abstraction avoids any confusion that could result from a Workspace declaration that can't have a binding.
+
+Cons:
+- Users might want more control over which volumes are mounted into which Steps and Sidecars.
+- Basically just renames volumes (although it abstracts away volumeMounts and only supports emptyDir).
+- This feature wouldn't be appropriate for use cases such as [hermetic builds](https://github.com/tektoncd/community/blob/main/teps/0025-hermekton.md).
+
+### Support for "dynamic" Workspaces
+
+There are several ways we could meet the use case of [dynamically created volumes](#dynamically-created-volumes):
+
+- [Defer validation](#defer-validation)
+- [Add option for validation at runtime](#add-option-for-validation-at-runtime)
+- [Add workspace bindings to TaskRunSpecs](#add-workspace-bindings-to-taskrunspecs)
+
+#### Defer validation
+
+In this solution, we would validate the existence of volumes in workspace bindings only on TaskRuns, not on PipelineRuns.
+However, some users with long-running PipelineRuns may prefer the "fail fast" current behavior.
+For example, if a Pipeline has one long-running or compute-intensive Task and a subsequent Task
+that uses a configMap or secret, the user might want validation that the configMap or secret exists before running the
+first TaskRun.
+
+This would be a breaking change, so it should likely be behind a feature flag.
+However, the desired validation behavior might depend on the Pipeline,
+meaning it wouldn't make sense to configure at a cluster level.
+
+#### Add option for validation at runtime
+
+In this solution, we would allow the user to specify when they would like workspace validation to occur
+via a new Pipeline Workspace declaration enum `validation`.
+For example:
+
+```yaml
 kind: Pipeline
 spec:
   workspaces:
   - name: super-secret
-    validate: atTaskRun # TODO(Lee): wordsmith this syntax
+    validation: atRuntime
 ```
+
+The options for "validation" will be "onCreation" (the default, and current behavior) and "atRuntime".
+If validation is "onCreation", Tekton will verify at the time a `PipelineRun` is created that the workspace binding exists
+in the cluster. If validation is "atRuntime", Tekton will wait until the `TaskRun` starts to validate that
+the workspace binding exists.
+
+This field wouldn't be permitted for Workspace declarations in Tasks, as it only makes sense in the context of Pipelines.
+
+Pros:
+- Users can configure when they want validation to occur on the level of individual Workspaces.
+- Unlike simply [deferring validation](#defer-validation), this wouldn't be a breaking change.
+
+Cons:
+- This field wouldn't make sense for `volumeClaimTemplate` workspace bindings.
+- The concepts of "runtime" and "authoring time" [already exist in Tekton](https://github.com/tektoncd/community/blob/main/design-principles.md#reusability),
+  where "authoring time" refers to a Task or Pipeline definition and "runtime" refers to a Task or Pipeline instance
+  (i.e. a TaskRun or PipelineRun). This proposal would introduce a new concept that isn't reflected in the API,
+  corresponding to the time when a PipelineRun's child TaskRun executes.
+- If user would like "atRuntime" validation for each Workspace, this solution adds verbosity. We can introduce a feature
+  flag to configure default behavior to mitigate this concern.
+
+Another option for the naming of these enum options is to allow validation to be "strict" or "lenient".
+This gives us more flexibility to decide how to implement validation for workspaces. 
+For example, "strict" and "lenient" validation would both have the same behavior for `volumeClaimTemplate` workspace
+bindings, but this may be less confusing than having validation options "atRuntime" vs "onCreation" for `volumeClaimTemplate`.
+
+#### Add Workspace bindings to TaskRunSpecs
+
+In this solution, a PipelineRun can specify workspace bindings in both the `workspaces` field, and a new field,
+`pipelineRun.spec.taskRunSpecs[].workspaces`. Workspace bindings specified in `taskRunSpecs` would be passed directly
+to the child TaskRuns, which would be responsible for validating that these bindings exist. For example:
+
+```yaml
+kind: Pipeline
+spec:
+  workspaces:
+  - name: workdir
+  tasks:
+  - name: task-1
+    workspaces:
+    - name: workdir
+      workspace: workdir
+    taskSpec:
+      workspaces:
+      - name: workdir
+      - name: ssh-creds
+      script: echo "do some stuff"
+  - name: task-2
+    workspaces:
+    - name: workdir
+      workspace: workdir
+    taskRef:
+    - name: my-task
+```
+
+```yaml
+kind: PipelineRun
+spec:
+  workspaces:
+  - name: workdir
+    volumeClaimTemplate:
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+  taskRunSpecs:
+  - pipelineTaskName: task-1
+    workspaces:
+    - name: ssh-creds
+      secret:
+        secretName: ssh-creds
+```
+
+In this example, the PipelineRun controller would not validate that the secret "ssh-creds" exists, and just pass
+this workspace binding to the TaskRun created to run Pipeline Task "task-1". The TaskRun controller would verify
+that "ssh-creds" exist.
 
 ### Support for more volume types in Workspace bindings
 
@@ -285,11 +461,9 @@ There are several options available:
 One downside is that there's no clear use case for many of these volume types in the Tekton API.
 - Support for [hostPath volumes](#support-hostpath-volumes-in-workspace-bindings).
 This helps with advanced docker-in-docker use cases, but isn't necessary for most docker-in-docker use cases and comes with some security concerns.
-- Support for [CSI volumes](#support-csi-volumes-in-workspace-bindings).
-There's a clear use case for this feature ([#4446](https://github.com/tektoncd/pipeline/issues/4446)).
 
-Because existing Workspace binding options support most CI/CD use cases, adding more types of volumes shouldn't be a blocker for replacing
-volumes with Workspaces.
+Because existing Workspace binding options support most CI/CD use cases, adding more types of volumes shouldn't be a
+blocker for replacing volumes with Workspaces.
 
 #### Support all types of Volumes in WorkspaceBinding
 
@@ -355,21 +529,6 @@ Cons:
 - Task authors may not want their Tasks to be used with hostPath workspace bindings due to the
 [security risks](https://blog.quarkslab.com/kubernetes-and-hostpath-a-love-hate-relationship.html)
 they pose.
-
-#### Support CSI volumes in Workspace Bindings
-
-Kubernetes has implemented support for volumes conforming to the [Container Storage Interface (CSI)]((https://kubernetes.io/blog/2019/01/15/container-storage-interface-ga/),
-allowing vendors to develop their own storage plugins for use with Kubernetes.
-
-[CSI volumes](https://kubernetes.io/docs/concepts/storage/volumes/#csi) can be used in a Pod via a PersistentVolumeClaim or
-a generic or CSI-specific ephemeral volume.
-Workspace Bindings already support PersistentVolumeClaims, meaning that CSI volumes can be used in Workspaces.
-We may want to support [CSI ephemeral volumes](https://kubernetes.io/docs/concepts/storage/ephemeral-volumes/#csi-ephemeral-volumes)
-as workspace backings as well. One use case for CSI ephemeral volumes is to be able to use Hashicorp Vault to mount secrets
-into a Task's pod, as requested in [#4446](https://github.com/tektoncd/pipeline/issues/4446).
-
-In the future, if users request it, we can also consider supporting
-[generic ephemeral volumes](https://kubernetes.io/docs/concepts/storage/ephemeral-volumes/#generic-ephemeral-volumes).
 
 ### Use TaskRun.Spec.PodTemplate to support missing Workspace features provided by Volumes
 

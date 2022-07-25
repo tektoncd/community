@@ -199,9 +199,9 @@ be run in a pod, such as in [TEP-0044](./0044-data-locality-and-pod-overhead-in-
 Because Tekton will handle the logic for the combined resource requests of a TaskRun,
 users should not be able to specify resource requests for both the TaskRun and individual Steps.
 This means:
+
 - If a Task defines [StepTemplate.Resources][stepTemplate] or [Step.Resources][step], and
-the TaskRun defines ComputeResources, the value from the TaskRun will apply and the value
-from the Task will be ignored.
+the TaskRun defines ComputeResources, the TaskRun will be rejected.
 - The admission webhook should reject TaskRuns that specify both ComputeResources and
 [StepOverrides.Resources][stepOverride]. (TaskRuns should be able to define both ComputeResources
 and SidecarOverrides.Resources, however.)
@@ -536,12 +536,7 @@ spec:
       cpu: 1.5
 ```
 
-The resulting pod would have the following containers:
-
-| Step name | CPU request | CPU limit |
-| --------- | ----------- | --------- |
-| step-1    | 750m        | N/A       |
-| step-2    | 750m        | N/A       |
+This TaskRun would be rejected.
 
 ### Example with Step resource requests overridden by TaskRun
 
@@ -575,12 +570,7 @@ spec:
       cpu: 2
 ```
 
-The resulting pod would have the following containers:
-
-| Step name | CPU request | CPU limit |
-| --------- | ----------- | --------- |
-| step-1    | 1           | N/A       |
-| step-2    | 1           | N/A       |
+This TaskRun would be rejected.
 
 ### Example with StepOverrides
 

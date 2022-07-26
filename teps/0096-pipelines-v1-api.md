@@ -2,7 +2,7 @@
 status: implementable
 title: Pipelines V1 API
 creation-date: '2021-11-29'
-last-updated: '2022-07-12'
+last-updated: '2022-07-26'
 authors:
 - '@lbernick'
 - '@jerop'
@@ -217,11 +217,10 @@ This policy should be updated to include Tekton metrics as part of the API. No o
 - The Task, TaskRun, Pipeline, and PipelineRun CRDs should be moved to the "stable" stability level.
 - Because Custom Task is mission critical to our extensibility use case, Run should be upgraded to beta stability.
   - See [Custom Tasks Beta](https://github.com/tektoncd/pipeline/issues/4313) for more information on work required to upgrade Custom Tasks to beta.
-- Keep the ClusterTask CRD at beta stability.
-  - ClusterTask functionality will likely be replaced by [remote resolution](./0060-remote-resource-resolution.md), but there's no plan
-  to replace this functionality at a beta level of stability before releasing a V1 API.
-  - For the V1 API, ClusterTask should continue to be supported but left at beta stability. After implementing and receiving
-  user feedback on remote resolution, we can make a decision about whether to deprecate ClusterTask or bring it to stable.
+- Deprecate the ClusterTask CRD.
+  - ClusterTask functionality will be replaced by [remote resolution](./0060-remote-resource-resolution.md),
+  and ClusterTasks should not be brought into the V1 API.
+  - Remote resolution should be brought to a beta level of stability before removing ClusterTasks from v1beta1.
   See [Where should we take ClusterTasks next?](https://github.com/tektoncd/pipeline/issues/4476) for more info.
 
 | CRD         | Current level | Proposed level |
@@ -230,7 +229,7 @@ This policy should be updated to include Tekton metrics as part of the API. No o
 | TaskRun     | beta          | stable         |
 | Pipeline    | beta          | stable         |
 | PipelineRun | beta          | stable         |
-| ClusterTask | beta          | beta           |
+| ClusterTask | beta          | deprecated     |
 | Run         | alpha         | beta           |
 
 #### API Changes
@@ -255,6 +254,7 @@ This policy should be updated to include Tekton metrics as part of the API. No o
   the ["bundle" resolver](https://github.com/tektoncd/resolution/tree/main/bundleresolver).
   These fields should be marked as deprecated in v1beta1 and not be present in v1, but removing them in v1beta1 is optional.
   Remote resolution, plus the bundle resolver, should be packaged with Tekton Pipelines before removing these fields.
+- Deprecate `ClusterTask`, as discussed in [CRD Stability Levels](#crd-stability-levels).
 
 #### Behavior flags
 

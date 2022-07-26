@@ -1,8 +1,8 @@
 ---
 status: implementable
-title: Pipelines V1 API
+title: Pipelines V1
 creation-date: '2021-11-29'
-last-updated: '2022-07-26'
+last-updated: '2022-10-06'
 authors:
 - '@lbernick'
 - '@jerop'
@@ -13,15 +13,16 @@ see-also:
 - TEP-0033
 ---
 
-# TEP-0096: Pipelines V1 API
+# TEP-0096: Pipelines V1
 
 <!-- toc -->
-- [TEP-0096: Pipelines V1 API](#tep-0096-pipelines-v1-api)
+- [TEP-0096: Pipelines V1](#tep-0096-pipelines-v1)
   - [Summary](#summary)
   - [Motivation](#motivation)
     - [Goals](#goals)
     - [Non Goals](#non-goals)
   - [Background](#background)
+    - [API versioning vs software versioning](#api-versioning-vs-software-versioning)
   - [Proposal](#proposal)
     - [V1 Stability and Deprecation Policy](#v1-stability-and-deprecation-policy)
       - [Examples](#examples)
@@ -43,6 +44,7 @@ see-also:
       - [Deprecations](#deprecations)
       - [Behavior flags](#behavior-flags)
     - [Feature Completeness](#feature-completeness)
+  - [Release plan](#release-plan)
   - [Future Work (Out of Scope for V1)](#future-work-out-of-scope-for-v1)
   - [References](#references)
 <!-- /toc -->
@@ -68,12 +70,11 @@ and existing users will benefit from stability guarantees as well.
 - Define criteria for a feature to be "required" or "optional" for Pipelines V1.
 - Define what updates, if any, are needed to the [Pipelines API definition](https://github.com/tektoncd/pipeline/blob/main/api_compatibility_policy.md#what-is-the-api),
 the feature gates [TEP-0033](./0033-tekton-feature-gates.md), and release tooling before V1 release.
+- Distinguish software versioning goals from API versioning goals.
 
 ### Non Goals
 
 - Define the stability or V1 plans of other Tekton project.
-- Discussion of software versioning. This TEP discusses what is needed to release a v1 (stable) API;
-we expect to release a 1.0 software version shortly after.
 
 ## Background
 
@@ -98,6 +99,28 @@ A deprecated API version must continue to be supported for a length of time base
 Kubernetes also defines the following stability policy for metrics:
 - Alpha metrics must function for 0 releases total and 0 releases after their announced deprecation.
 - Stable metrics must function for 4 releases or 12 months, and 3 releases or 9 months after their announced deprecation.
+
+### A note on "Production Readiness"
+
+Some organizations are already using Tekton in production, and we encourage them to do so as long as they are aware of our stability policies.
+"Production ready" as used in this TEP means that as part of our v1 plan, we will prioritize work that makes the
+experience of running Tekton in production smoother. It doesn't imply that Tekton should not be used in production before a v1 release.
+
+### API versioning vs software versioning
+
+"v1" can refer to several things:
+- v1 for the Tekton project as a whole, including Triggers, Results, CLI, and dashboard.
+This is out of scope for this proposal.
+- v1 for Tekton Pipelines. This is the scope of this TEP. It answers the question, "what does the Tekton Pipelines
+project need in order to be a stable, production-ready platform?"
+- v1 (or "stable" stability level) for individual Pipelines CRDs. This is a sub-component of a Pipelines V1 API.
+
+Each CRD can move through its own API versioning lifecycle independently of each other.
+For example, the most recent version of the Task CRD could be "v1", while the most recent version of the Run CRD
+could be "v1beta1".
+
+The goal of a Pipelines V1 API is to create a stable project with CRDs that make sense together.
+We should do a v1 software release once we've achieved this goal.
 
 ## Proposal
 
@@ -297,6 +320,17 @@ as its deprecation has already [been announced](https://github.com/tektoncd/pipe
 ### Feature Completeness
 
 No features identified as V1 blockers that are not necessary for stability or production readiness.
+
+## Release plan
+
+After completing stability-related changes for each CRD, that CRD's V1 version can be released.
+V1 TaskRuns and Pipelines should use references to v1 Tasks, and v1 PipelineRuns should refer to v1 Pipelines.
+This means the v1 Task CRD should be released first, followed by TaskRun and Pipeline, followed by PipelineRun.
+(Releasing them at the same time is also OK.)
+V1 CRD versions shouldn't depend on goals for metrics or performance.
+Each V1 CRD should be fully documented before being released, but release of a V1 CRD version shouldn't depend on 
+unrelated documentation issues.
+Once we've achieved the goals of this TEP, we can release a v1 software version of Pipelines.
 
 ## Future Work (Out of Scope for V1)
 

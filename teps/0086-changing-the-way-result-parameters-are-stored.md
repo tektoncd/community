@@ -117,6 +117,93 @@ Additionally, this will help projects that wrap/abstract Tekton where users unde
 
 ## Alternatives
 
+### Dedicated Storage API Service
+
+In this approach, a dedicated Result Storage API is used to abstract away large
+result storage and implementation.
+
+```
+┌───────────────────┐
+│                   │     ┌─────────────────────────┐
+│   Control Plane   │     │           Pod           │
+│                   │     │                         │
+│   ┌────────────┐  │     │ ┌──────────┐    ┌────┐  │
+│   │ Controller ├──┼─────┼─►entrypoint├────►step│  │
+│   └────────────┘  │     │ └─────┬────┘    └────┘  │
+│                   │     │       │                 │
+│                   │     │       │                 │
+│   ┌───────────┐   │     │       │                 │
+│   │Storage API◄───┼─────┼───────┘                 │
+│   └─────┬─────┘   │     │                         │
+│         │         │     └─────────────────────────┘
+└─────────┼─────────┘
+          │
+          │
+          │
+  ┌───────▼───────┐
+  │Storage Backend│
+  └───────────────┘
+```
+
+This approach relies on the fact that the entrypoint wraps the running user
+container. Today, Tekton utilizes this today to
+[order user steps by reading/writing post files](https://github.com/tektoncd/pipeline/blob/main/cmd/entrypoint/README.md),
+we could utilize this same process to perform other post-step actions on the
+Pod - i.e. we could use this to perform result uploading with the existing user
+Pod.
+
+The Storage API should be a known address to the entrypoint (either a static
+address or configured by the Tekton Pod controller). User pods should
+authenticate to the Storage API using the OIDC credentials issued by the
+Kubernetes cluster, likely via
+[Service Account Token Projection](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection)
+with a custom Tekton audience claim. If desired, Tekton service providers can
+customize the token behavior by modifying the OIDC configuration options of the
+Kubernetes API server
+(https://kubernetes.io/docs/reference/access-authn-authz/authentication/#configuring-the-api-server).
+For permission decoupling, we recommend that the Storage API is not ran as the
+same identity/Pod as the Pipeline controller. There is no requirement that the
+Storage API must be local to the cluster - it is the responsibility of the
+Tekton service provider to ensure that the Storage API can accept Pod OIDC
+credentials from the entrypoint (i.e. via OIDC federation or some other
+mechanism). Tekton should build a cluster local open source implementation that
+is vendor agnostic. TBD what the default open source storage backend will be
+(e.g. Volumes, ConfigMaps, within the Tekton CRD itself, etc).
+
+The Storage API spec should be agnostic to the underlying storage backend (e.g.
+local storage, GCS, OCI, etc). By swapping out the implementation of the
+Storage API binary, Tekton installations can modify the behavior of where Result
+bytes are ultimately stored. It should be the responsibility of the Storage API
+server to handle any authentication with storage backends - user containers
+should **not** be given direct access to storage backend so that Result contents
+cannot be modified by user code.
+
+#### Risks and Mitigations
+
+- The Storage API must be available for the user Task to successfully complete.
+  Some providers may want to implement high availability and retry strategies
+  within the entrypoint to mitigate this.
+
+#### Design Evaluation
+
+- Reusability
+  - A backend agnostic Storage API means that it can be reused across different
+    implementations. Since storage backend auth and configuration should be
+    handled by the Storage API implementation, there isn't a high risk of
+    storage backend specific fields bleeding into the API.
+- Simplicity
+  - Introduces more complexity to the user Pod lifecycle, but this is being done
+    to enable larger results.
+  - By reusing existing components we don't need to introduce additional compute
+    overhead into user Pods.
+- Flexibility
+  - Tekton service providers can swap out the implementation for whatever they
+    want so long as they can accept the Pod credentials. This lets them
+    customize how and where Result is stored.
+- Conformance
+  - The Storage API should become a part of the conformance spec for
+    implementations.
+
 ### Result Sidecar - Upload results from sidecar
 
 In this solution we include a sidecar in all pods that back TaskRuns which waits for individual steps to write results
@@ -322,14 +409,6 @@ Questions:
       [TEP-100 is removing this](https://github.com/tektoncd/community/blob/main/teps/0100-embedded-taskruns-and-runs-status-in-pipelineruns.md)
 * Eventually this may result in running into a limit with etcd overall, however not a problem for now. Can be solved via cleanups / offloading history.
 * We want to try and minimize reimplementing access control in a webhook (in part because it means the webhook needs to know which task identities can update which task runs, which starts to get annoyingly stateful)
-
-
-
-### Dedicated HTTP Service
-
-  - Potential Auth and HA problems
-  - Could run as part of the controller
-  - Could be a separate HTTP server(s) which write to TaskRuns (or even config maps); task pods connect to this server to submit results, this server records the results (means result size would be limited to what can be stored in the CRD but there probably needs to be an upper bound on result size anyway)
 
 ### Self-update / mutate the TaskRun via admission controller
 

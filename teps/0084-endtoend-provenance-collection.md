@@ -86,7 +86,7 @@ With "chains", we are able to capture the signed provenance for individual `task
 <!--
 Describe constraints on the solution that must be met. Examples might include
 performance characteristics that must be met, specific edge cases that must
-be handled, or user scenarios that will be affected and must be accomodated.
+be handled, or user scenarios that will be affected and must be accommodated.
 -->
 
 * Must be possible to automatically attest `pipelineruns`
@@ -131,11 +131,11 @@ The `in-toto` format created by chains wraps the [SLSA Provenance v0.2](https://
 
 
 ##### 3. Attestation Format
-(As an optimizion option) Instead of creating seperate attestation records for `taskrun`, `pipelinerun`, `event-payload`, create a single attestation record at the "end" of a `pipelinerun` that includes everything.
+(As an optimization option) Instead of creating separate attestation records for `taskrun`, `pipelinerun`, `event-payload`, create a single attestation record at the "end" of a `pipelinerun` that includes everything.
 
 In our running example above, with this changes, for a given `image` we can attest that:
-1.  A pipeline was trigger by event with attested payload
-2. In the pipeline, 3 tasks were execure in this order: "git-clone" --> "security-scan" --> "image-build".
+1. A pipeline was trigger by event with attested payload
+2. In the pipeline, 3 tasks were executed in this order: "git-clone" --> "security-scan" --> "image-build".
 3. The "image" was built from "clone-repo" dirpath, which was populated by "git-clone" task from {repo-url, revision} which match the signed event-payload.
 
 These attestations help audit/validate our pipeline executions for:
@@ -252,7 +252,7 @@ SIG to get the process for these resources started right away.
 ## Upgrade & Migration Strategy (optional)
 
 <!--
-Use this section to detail wether this feature needs an upgrade or
+Use this section to detail whether this feature needs an upgrade or
 migration strategy. This is especially useful when we modify a
 behavior or add a feature that may replace and deprecate a current one.
 -->

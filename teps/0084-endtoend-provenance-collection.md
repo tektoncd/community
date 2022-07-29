@@ -153,6 +153,31 @@ Go in to as much detail as necessary here.
 This might be a good place to talk about core concepts and how they relate.
 -->
 
+<!-- TODO: Revisit this once event-payload is taken into consideration -->
+
+**Multiple Attestations**: With this proposal, an image may have multiple attestations, one for the
+taskrun and one for the pipelinerun. When using the OCI storage, for example, the attestation image
+will contain 2 layers each representing one of the attestations. This is not necessarily a new
+behavior as the existing mechanism to attest taskruns could also produce multiple attestations for
+a single image under certain circumstances. However, this is much more likely to happen with this
+proposal.
+
+**No Signature from PipelineRun**: A pipelinerun that produces the expected type hinting result
+will cause a pipelinerun attestation to be created. However, it will not cause an image signature
+to also be created. The type hinting result on the taskrun remains the mechanism for signing
+images. This proposal relies on using the same signing key for processing both taskruns and
+pipelineruns, thus making multiple signatures redundant. This may have to be revisited in the
+future if taskrun attestations become deprecated/optional, or support for different signing keys
+for different artifact types is introduced.
+
+**Embedded Attestation**: As mentioned earlier in this document, the pipelinerun attestation
+includes information about each taskrun. In other words, the pipelinerun attestation embeds
+information from the taskruns. This may incur an etcd performance hit if the `tekton` storage is
+used for storing pipelinerun attestations. (This is not a concern for other storage backends.) A
+potential solution to this problem may consider aggregating links to taskrun attestations stored in
+Rekor. However, at moment of writing, Rekor integration is an optional configuration in Tekton
+Chains that requires usage of a Rekor instance which adds complexity to the process.
+
 ### Risks and Mitigations
 
 <!--
@@ -167,6 +192,11 @@ How will UX be reviewed and by whom?
 Consider including folks that also work outside the WGs or subproject.
 -->
 
+<!-- TODO: Revisit this once event-payload is taken into consideration -->
+
+The risks associated with this proposal are the same as the risks associated with the existing
+functionality of attesting taskruns.
+
 ### User Experience (optional)
 
 <!--
@@ -177,6 +207,31 @@ via CLI, dashboard or a monitoring system.
 
 Consider including folks that also work on CLI and dashboard.
 -->
+
+<!-- TODO: Revisit this once event-payload is taken into consideration -->
+
+<!-- TODO: Is there a CLI plugin for chains? -->
+
+To fully take advantage of pipelinerun attestations, pipeline authors should include the
+appropriate type hinting result for Tekton Chains, similarly to how task authors do this today.
+See [Chains Type Hinting](https://tekton.dev/docs/chains/config/#chains-type-hinting) for more
+information.
+
+New configuration options will be introduced to control the behavior for producing and storing
+pipelinerun attestations. These should behave as similar as possible to their taskrun counterparts.
+
+| Key | Description | Supported Values | Default |
+| --- | ----------- | ---------------- | ------- |
+| `artifacts.pipelinerun.format`  | The format to store TaskRun payloads in. | tekton, in-toto | tekton |
+| `artifacts.pipelinerun.storage` | The storage backend to store PipelineRun signatures and attestations in. Multiple backends can be specified with comma-separated list (“tekton,oci”). To disable the PipelineRun artifact input an empty string (""). | tekton, oci, gcs, docdb, grafeas | tekton |
+| `artifacts.pipelinerun.signer`  | The signature backend to sign Taskrun payloads with. | x509, kms | x509 |
+
+It is expected that storage has an ever changing set of supported values, just like it is for
+taksruns. There should be parity between the storages supported by both taskrun and pipelinerun
+artifacts.
+
+<!-- TODO: Should we consider disabling pipelinerun attestations by default? At least for the
+initial iteration? -->
 
 ### Performance (optional)
 
@@ -189,6 +244,11 @@ of Tekton controllers as well as task and pipeline runs?
 Consider which use cases are impacted by this change and what are their
 performance requirements.
 -->
+
+When using the `tekton` for the configuration `artifacts.pipelinerun.storage`, the pipelinerun
+attestation is stored as an annotation of the pipelinerun resource. A large pipelinerun could
+produce a large attestation. This could produce a large kubernetes resource that may affect the
+performance of etcd. Consider using a more robust storage option for pipelinerun attestations.
 
 ## Design Details
 

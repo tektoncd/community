@@ -264,6 +264,34 @@ of the file, but general guidance is to include at least TEP number in the
 file name, for example, "/teps/images/NNNN-workflow.jpg".
 -->
 
+<!-- TODO: Revisit this once event-payload is taken into consideration -->
+
+### Pipelinerun Attestation
+
+The process of creating and storing pipelinerun attestations should mimic the process for taskrun
+attestations.
+
+In Tekton Chains, a new controller and a new reconciler are introduced to manage pipelinerun
+resources. Whenever a pipelinerun resource is updated, the reconciler is responsible for
+determining, and performing, any action to create and store a pipelinerun attestation.
+
+To avoid timing issues, it is important for the pipelinerun reconciler to only take action once all
+of the underlying taskrun resources have been reconciled. Otherwise, both the taskrun and
+pipelinerun reconcilers may create their corresponding attestation at the same time causing one of
+them to be lost.
+
+As much as possible, the code base should leverage go interfaces to avoid code duplication. This is
+particularly useful in ensuring parity between the set of storage options for pipelinerun and
+taskrun artifacts.
+
+As mentioned in the Proposal section, a pipelinerun attestation takes into account information from
+the included taskruns. The process of extracting this information from taskrun resources should not
+leverage the taskrun statuses embedded in the pipelinerun resource. This data is already marked as
+deprecated and will be removed in a future release. Instead, the pipelinerun reconciler must use
+the kubernetes API to fetch the corresponding taskrun status. The function
+`GetFullPipelineTaskStatuses` from `github.com/tektoncd/pipeline/pkg/status` is particularly useful
+here.
+
 ## Test Plan
 
 <!--
@@ -281,17 +309,46 @@ All code is expected to have adequate tests (eventually with coverage
 expectations).
 -->
 
+<!-- TODO: Revisit this once event-payload is taken into consideration -->
+
+The following should be added:
+
+* Unit tests covering most of the newly added code.
+* End-to-end tests for the different pipelinerun attestation storage backends.
+* End-to-end tests where both pipelinerun and taskrun attestations are created for the same
+  image(s).
+
 ## Design Evaluation
 <!--
 How does this proposal affect the reusability, simplicity, flexibility
 and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/master/design-principles.md)
 -->
 
+<!-- TODO: Revisit this once event-payload is taken into consideration -->
+
+### Pipelinerun Attestations
+
+* The proposed mechanism for attesting a complete pipeline execution is based on the existing
+  mechanism for attesting taskruns. This familiarity should, hopefully, benefit both maintainers
+  and users.
+* It is possible to disable pipelinerun attestations altogether for those use cases where it is not
+  desired, providing flexibility to users.
+
 ## Drawbacks
 
 <!--
 Why should this TEP _not_ be implemented?
 -->
+
+<!-- TODO: Revisit this once event-payload is taken into consideration -->
+
+### Pipelinerun Attestations
+
+* Even when pipelinerun attestations are disabled, the controller still spends time reconciling
+  pipelinerun resources. Although minimal, this is an additional workload on the cluster.
+* Maintaining both taskrun and pipelinerun attestation formats creates an additional burden to
+  maintainers. In the future, it may be desirable to stop attesting taskruns but that is beyond the
+  scope of this TEP.
 
 ## Alternatives
 
@@ -301,6 +358,21 @@ not need to be as detailed as the proposal, but should include enough
 information to express the idea and why it was not acceptable.
 -->
 
+<!-- TODO: Revisit this once event-payload is taken into consideration -->
+
+### Pipelinerun Attestations
+
+One of the main benefits that pipelinerun attestations provide is a full picture of all the tasks
+involved in building an artifact. [Tekton Results](https://github.com/tektoncd/results) could have
+used as a means to achieve this. However, there are important drawbacks with this approach. First,
+Tekton Results are not necessarily immutable, and are definitely not signed nor integrated with a
+transparency log like Rekor. Second, Tekton Results does not provide a cosign-compatible storage
+backend, i.e. OCI repository. And finally, Tekton Results has a fundamentally different goal than
+what this TEP attempts to achieve. It is meant to provide historic information instead of address
+supply chain security. Both of these goals are important but serve different purposes and can be
+cleanly mapped to different problem domains. Adding this functionality to Tekton Results would be
+detrimental to that project's identity.
+
 ## Infrastructure Needed (optional)
 
 <!--
@@ -309,12 +381,9 @@ new subproject, repos requested, github details.  Listing these here allows a
 SIG to get the process for these resources started right away.
 -->
 
-## Upgrade & Migration Strategy (optional)
-
 <!--
-Use this section to detail whether this feature needs an upgrade or
-migration strategy. This is especially useful when we modify a
-behavior or add a feature that may replace and deprecate a current one.
+TODO: None for pipelinerun attestations but revisit this once event-payload is taken into
+consideration.
 -->
 
 ## Implementation Pull request(s)
@@ -333,3 +402,5 @@ Use this section to add links to GitHub issues, other TEPs, design docs in Tekto
 shared drive, examples, etc. This is useful to refer back to any other related links
 to get more details.
 -->
+
+<!-- TODO: Revisit this once event-payload is taken into consideration -->

@@ -13,56 +13,11 @@ authors:
 <!--
 **Note:** When your TEP is complete, all of these comment blocks should be removed.
 
-To get started with this template:
-
-- [ ] **Fill out this file as best you can.**
-  At minimum, you should fill in the "Summary", and "Motivation" sections.
-  These should be easy if you've preflighted the idea of the TEP with the
-  appropriate Working Group.
-- [ ] **Create a PR for this TEP.**
-  Assign it to people in the SIG that are sponsoring this process.
-- [ ] **Merge early and iterate.**
-  Avoid getting hung up on specific details and instead aim to get the goals of
-  the TEP clarified and merged quickly.  The best way to do this is to just
-  start with the high-level sections and fill out details incrementally in
-  subsequent PRs.
-
-Just because a TEP is merged does not mean it is complete or approved.  Any TEP
-marked as a `proposed` is a working document and subject to change.  You can
-denote sections that are under active debate as follows:
-
 ```
 <<[UNRESOLVED optional short context or usernames ]>>
 Stuff that is being argued.
 <<[/UNRESOLVED]>>
 ```
-
-When editing TEPS, aim for tightly-scoped, single-topic PRs to keep discussions
-focused.  If you disagree with what is already in a document, open a new PR
-with suggested changes.
-
-If there are new details that belong in the TEP, edit the TEP.  Once a
-feature has become "implemented", major changes should get new TEPs.
-
-The canonical place for the latest set of instructions (and the likely source
-of this file) is [here](/teps/NNNN-TEP-template/README.md).
-
--->
-
-<!--
-This is the title of your TEP.  Keep it short, simple, and descriptive.  A good
-title can help communicate what the TEP is and should be considered as part of
-any review.
--->
-
-<!--
-A table of contents is helpful for quickly jumping to sections of a TEP and for
-highlighting any additional information provided beyond the standard TEP
-template.
-
-Ensure the TOC is wrapped with
-  <code>&lt;!-- toc --&rt;&lt;!-- /toc --&rt;</code>
-tags, and then generate with `hack/update-toc.sh`.
 -->
 
 <!-- toc -->
@@ -122,21 +77,7 @@ With "chains", we are able to capture the signed provenance for individual `task
 * All the verifications/enforcements during pipeline execution are currently out-of-scope (possibly should be addressed by separate pipeline admission controller)
 * Attest volumes and workspaces. Given that `taskrun` attestations also do not provide this information, a separate TEP is suggested to both narrow the scope of this TEP and ensure attesting volumes and workspaces is given the required focus.
 
-<!--
-What is out of scope for this TEP?  Listing non-goals helps to focus discussion
-and make progress.
--->
-
 ### Use Cases
-
-<!--
-Describe the concrete improvement specific groups of users will see if the
-Motivations in this doc result in a fix or feature.
-
-Consider both the user's role (are they a Task author? Catalog Task user?
-Cluster Admin? etc...) and experience (what workflows or actions are enhanced
-if this problem is solved?).
--->
 
 1. **Deploy images built from a trusted pipeline.** As the maintainer of a containerized application, I want to verify that all the steps involved in building a container image have been performed by trusted operations. By attesting `pipelineruns`, all the tasks involved in building the container image are visible in a centralized location. It becomes obvious if a non-vetted task, e.g. `inject-miner`, was involved in building the container image.
 

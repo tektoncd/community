@@ -1,13 +1,14 @@
 ---
 status: proposed
-title: 'Manage PipelineRun concurrency with cancel status '
+title: 'Manage PipelineRun concurrency'
 creation-date: '2022-05-26'
 last-updated: '2022-05-26'
 authors:
 - '@williamlfish'
+- '@vdemeester'
 ---
 
-# TEP-0110: Manage PipelineRun concurrency with cancel status 
+# TEP-0110: Manage PipelineRun concurrency
 
 <!--
 **Note:** Please remove comment blocks for sections you've filled in.
@@ -93,23 +94,33 @@ tags, and then generate with `hack/update-toc.sh`.
 <!-- /toc -->
 
 ## Summary
-Enable PipelineRuns, when configured, to cancel PipelineRuns when two match so they do not overlap.  
+Manage pipeline run concurrency via configurable strategies.
 
 ## Motivation
-
 There are situations where pipelines can overlap, and they should not. For instance, a pr is created and that triggers ci to so a PipelineRun is created, a developer notices a small typo, pushed again, and a new PipelineRun is triggered, the first PipelineRun is no longer relevant, but potentially still running.  
-Another example is deployments. Lets imagine two teams have a pr open and approved in the same service, both are looking good, one is merged, the second is synced with the main branch then also merged within minutes of each other. The deployment pipeline needs to install some dependencies, build a new image, etc, so the pipeline takes ~5min to finish. If the first one for whatever reason takes a little while to schedule the pods for building the image or setting the deployment image or whatever, so the second finishes with the updates from both prs, and is deployed, then the first pr finishes and overwrites the second, missing the new feature implemented in the second. 
+Another example is managing available shared resources, lets say tekton triggers an external device and there are a set available amount, or simply resource constrained clusters. 
 
-Depending on the orgs infrastructure and or needs, its within the realm of possibility for other cases like static resources that need to be reset in between runs, or limits, or really for whatever reason. 
 
-Offering the option to cancel a PipelineRun outright or gracefully by letting the `finally` tasks to run allows whatever potential cleanup maybe needed, a better UX, with very little extra work.
+2 proposed cancel strategies. 
+- ZeroOverlap:
+  - Pipelineruns with the same key do not overlap, so if one is running and a new one is scheduled, the former is canceled.
+  - Configure cancel status ( with finally, stop, cancel )
+- Queues:
+  - Queues have a max run ( how many can run at the same time )
+  - fifo
+  - Queue max can be over-ridden, but is always the last pipelinerun created.     
 
+
+Strategies can be mixed together BUT their concurrency keys cannot be the same ( cancel eachother out ).
+
+Mixing strategies would allow for better resource management for teams. For instance, 3 teams are working on a mobile application with only 5 test devices so our max queue size is 5. If team 1 works in really fast bursts, 
+they might clog the queue with small pr changes. Leaving team 2 & 3 only able to get a build in when lucky. With zeroOverlap, and a queue, a single pr with many quick changes will only ever occupy one slot in the queue.    
 
 ### Requirements
-- PipelineRuns are aware of others that cannot overlap.
-- PipelineRuns can cancel their matches with a default "Cancel" status, or customized graceful flag and set "CanceledRunFinally" status
-- Simple interface set at the PipelineRun manifest
-- New PipelineRun should wait for the canceled one to finish
+- PipelineRuns are canceled based on the strategy defined.
+- Simple interface set at the PipelineRun manifest.
+- New PipelineRun should wait for the canceled one to finish when applicable.
+- All PipelineRuns follow fifo patterns. 
 
 ## Proposal
 Adding a key on the PipelineRun manifest seems like the most appropriate, and simple solution.  
@@ -117,8 +128,12 @@ Adding a key on the PipelineRun manifest seems like the most appropriate, and si
 Short example:  
 ```yaml
 concurrency:
-  key: "the-key-to-match"
-  graceful: true #optional
+  zeroOverlap:
+    key: "the-key-to-match"
+    cancelStatus: "Stop"
+  queue:
+    key: "a-diff-key-to-match"
+    maxRun: 5
 ```
 Full example from trigger template:
 ```yaml
@@ -128,8 +143,12 @@ metadata:
   generateName: tekton-pipelines-pr-ci-
 spec:
   concurrency:
-    key: $(tt.params.repo)-$(tt.params.pr-number)
-    graceful: true #optional
+    zeroOverlap:
+      key: $(tt.params.repo)-pr-$(params.pr-number)
+      cancelStatus: "Stop"
+    queue:
+      key: $(tt.params.repo)
+      maxRun: 5
   pipelineRef:
     name: tekton-pipelines-pr-ci
   params:
@@ -143,7 +162,13 @@ spec:
       secret:
         secretName: ssh-things
 ```
-From the trigger templates example, one can imaging how to set this up to be dynamic and flexible enough to handle many scenarios.
+In the above example, max 5 pipeline runs can run at the same time for a repo, and only one from a specific pr can overlap.  
+
+Let's imagine an org enables the ability for a higher max run threshold. Updating the pipelinerun manifest to a higher max should be all that is needed. The newly 
+created max is the now current max for its key, even if its position in the queue does not mean it will be immediately scheduled. So if the max was 2, with 5 pipelineruns created,
+2 are running and 3 are pending, a 6th is created with max of 4, now the 2 most recent created pipelineruns that where pending, begin running and 2 are now pending, and the 
+newest created (with the new max) will still be last in the queue. If the max is dropped again, and more are running then should be, allow the queue to resolve itself by having 
+pipelineruns that are running finish, but never allowing a pipelinerun to enter a running state until there is space in the queue.
 
 ### Notes and Caveats
 

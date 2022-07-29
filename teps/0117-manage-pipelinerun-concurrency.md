@@ -8,7 +8,7 @@ authors:
 - '@vdemeester'
 ---
 
-# TEP-0110: Manage PipelineRun concurrency
+# TEP-0117: Manage PipelineRun concurrency
 
 <!--
 **Note:** Please remove comment blocks for sections you've filled in.

@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Matrix
 creation-date: '2021-10-13'
-last-updated: '2022-02-14'
+last-updated: '2022-06-30'
 authors:
 - '@jerop'
 - '@pritidesai'
@@ -46,7 +46,6 @@ see-also:
   - [Parameters](#parameters)
     - [Substituting String Parameters in the Tasks](#substituting-string-parameters-in-the-tasks)
     - [Substituting Array Parameters in the Tasks](#substituting-array-parameters-in-the-tasks)
-    - [Combinations of Parameters in the Matrix](#combinations-of-parameters-in-the-matrix)
   - [Results](#results)
     - [Specifying Results in the Matrix](#specifying-results-in-the-matrix)
     - [Results from Fanned Out PipelineTasks](#results-from-fanned-out-pipelinetasks)
@@ -61,6 +60,7 @@ see-also:
   - [When Expressions](#when-expressions)
   - [Retries](#retries)
   - [Timeouts](#timeouts)
+  - [Status](#status)
 - [Design Evaluation](#design-evaluation)
   - [API Conventions](#api-conventions)
   - [Reusability](#reusability)
@@ -208,16 +208,13 @@ The following are out of scope for this TEP:
 
 1. Terminating early when one of the `TaskRuns` or `Runs` created in parallel fails. As is currently, running `TaskRuns` 
 and `Runs` have to complete execution before termination.
-2. Controlling the concurrency of `TaskRuns` or `Runs` created in a given `matrix`. This will be addressed more broadly 
-in Tekton Pipelines ([tektoncd/pipeline: issue#2591][issue-2591], [tektoncd/experimental: issue#804][issue-804]).
-3. Configuring the `TaskRuns` or `Runs` created in a given `matrix` to execute sequentially. This remains an option that 
-we can explore later.
-4. Excluding generating a `TaskRun` or `Run` for a specific combination in the `matrix`. This can be handled using 
-guarded execution through `when` expressions. This remains an option we can explore later if needed.
-5. Including generating a `TaskRun` or `Run` for a specific combination in the `matrix`. This can be handled by adding 
-the items that produce that combination into the `matrix`, and using guarded execution through `when` expressions to 
-exclude the combinations that should be skipped. This remains an option we can explore later if needed.
-6. Supporting producing `Results` from fanned out `PipelineTasks`. We plan to address this after [TEP-0075][tep-0075]
+2. Configuring the `TaskRuns` or `Runs` created in a given `matrix` to execute sequentially. This remains an option 
+that we can explore later.
+3. Excluding generating a `TaskRun` or `Run` for a specific combination in the `matrix`. This remains an option we can
+explore later if needed.
+4. Including generating a `TaskRun` or `Run` for a specific combination in the `matrix`. This can be handled by adding 
+the items that produce that combination into the `matrix`. This remains an option we can explore later if needed.
+5. Supporting producing `Results` from fanned out `PipelineTasks`. We plan to address this after [TEP-0075][tep-0075]
 and [TEP-0076][tep-0076] have landed. 
 
 ### Requirements
@@ -1021,34 +1018,6 @@ We plan to provide minimum feature set needed to meet the use cases, as describe
 [simplicity][simplicity] design principle. However, this remains an option we can explore
 later if we have use cases for it and already support `Arrays of Arrays` in Tekton Pipelines.
 
-#### Combinations of Parameters in the Matrix
-
-We need a way to identify a specific combination of `Parameters` in the `Matrix` so that
-we can map it to a given `TaskRun` and its components, such as `Results`. We cannot rely
-on the ordering of the `Parameters` in the `Matrix` to be maintained as specified in the
-`Pipeline`. We propose that we add the generated combinations identifications to the
-`PipelineRunStatusFields` in `PipelineRunStatus`. For example:
-
-```yaml
-  taskRuns:
-    matrixed-pr-foo-0:
-      pipelineTaskName: foo
-      matrixId: 0
-      status:
-        ...
-    matrixed-pr-foo-1:
-      pipelineTaskName: foo
-      matrixId: 1
-      status:
-        ...
-```
-
-The `Parameters` were used for a given `TaskRun` or `Runs` would available in the `TaskRun`
-status itself. The `matrixId` in the `PipelineRunStatus` is useful in identifying that the
-`TaskRun` is part of a `Matrix`, especially if the `TaskRun` name was too long so got hashed.
-This is also in line with providing the minimal information needed in the `PipelineRunStatus`
-as discussed in [TEP-0100: Embedded TaskRuns and Runs Status in PipelineRuns][tep-0100].
-
 ### Results
 
 #### Specifying Results in the Matrix
@@ -1340,6 +1309,50 @@ spec:
         name: build-push
 ```
 
+### Status
+
+The status of `PipelineRuns` with fanned-out `PipelineTasks` will list all the `TaskRuns` and `Runs` created.
+
+In [TEP-0100][tep-0100] we proposed changes to `PipelineRun` status to reduce the amount of information stored about
+the status of `TaskRuns` and `Runs` to improve performance, reduce memory bloat and improve extensibility. Now that
+those changes have been implemented, the `PipelineRun` status is set up to handle `Matrix` without exacerbating the
+performance and storage issues that were there before.
+
+We will populate `ChildReferences` for all fanned out `TaskRuns` and `Runs`, as shown below:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: matrixed-pr
+  ...
+spec:
+  ...
+status:
+  completionTime: "2020-05-04T02:19:14Z"
+  conditions:
+    - lastTransitionTime: "2020-05-04T02:19:14Z"
+      message: "Tasks Completed: 4, Skipped: 0"
+      reason: Succeeded
+      status: "True"
+      type: Succeeded
+  startTime: "2020-05-04T02:00:11Z"
+  childReferences:
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun
+      name: matrixed-pr-foo-0
+      pipelineTaskName: foo
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun
+      name: matrixed-pr-foo-1
+      pipelineTaskName: foo
+```
+
+For `ChildReferences` to be populated, the `embedded-status` must be set to `"minimal"`. Thus, any `Pipeline` with a
+`PipelineTask` that has a `Matrix` will require that minimal embedded status is enabled during the migration until it
+becomes the only supported status. This requirement also makes the behavior clearer to users - auto-adding the minimal
+status when users have not enabled it makes the user experience opaque and surprising.
+
 ## Design Evaluation
 
 ### API Conventions
@@ -1391,21 +1404,12 @@ complexities carefully.
 
 #### Milestone 1: API Change, Validation and Execute TaskRuns
 
-First pull request will:
-* Add the `matrix` field to the API.
-* Guard the `matrix` behind the `alpha` feature gate.
-* Implement validation of the `matrix` field, including:
-  * `Parameter` type must be of type `Array`.
-  * `Parameter` can be in only one of `matrix` or `params`, not both.
-
-Second pull request will:
-* Implement fanning out of `PipelineTasks` into `TaskRuns` based on the `matrix`.
-
-This milestone should be in one release.
+Implement API changes gated behind the `alpha` feature gate. Then implement fanning out
+`PipelineTasks` with `Tasks` into `TaskRuns`.
 
 #### Milestone 2: Execute Runs
 
-Implement fanning out of `PipelineTasks` into `Runs` based on the `matrix`.
+Implement fanning out of `PipelineTasks` with `Custom Tasks` into `Runs`.
 
 #### Milestone 3: Consume Results
 
@@ -1589,6 +1593,7 @@ However, this approach has the following disadvantages:
 
 ## References
 
+- [Implementation Pull Requests][pull-requests]
 - [Task Loops Experimental Project][task-loops]
 - Issues:
   - [#2050: `Task` Looping inside `Pipelines`][issue-2050]
@@ -1651,3 +1656,4 @@ However, this approach has the following disadvantages:
 [when]: https://github.com/tektoncd/pipeline/blob/6cb0f4ccfce095495ca2f0aa20e5db8a791a1afe/docs/pipelines.md#guard-task-execution-using-when-expressions
 [retries]: https://github.com/tektoncd/pipeline/blob/6cb0f4ccfce095495ca2f0aa20e5db8a791a1afe/docs/pipelines.md#using-the-retries-parameter
 [timeouts]: https://github.com/tektoncd/pipeline/blob/6cb0f4ccfce095495ca2f0aa20e5db8a791a1afe/docs/pipelines.md#configuring-the-failure-timeout
+[pull-requests]: https://github.com/tektoncd/pipeline/pulls?q=TEP-0090+

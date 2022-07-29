@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Support Specifying Metadata per Task in Runtime
 creation-date: '2022-04-19'
-last-updated: '2022-05-10'
+last-updated: '2022-05-27'
 authors:
 - '@austinzhao-go'
 ---

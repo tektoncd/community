@@ -3,44 +3,40 @@ title: step-and-sidecar-workspaces
 authors:
   - "@sbwsg"
 creation-date: 2020-10-02
-last-updated: 2020-10-02
-status: implementable
+last-updated: 2022-07-22
+status: implemented
 ---
 
 # TEP-0029: Step and Sidecar Workspaces
 
-<!--
-Ensure the TOC is wrapped with
-  <code>&lt;!-- toc --&rt;&lt;!-- /toc --&rt;</code>
-tags, and then generate with `hack/update-toc.sh`.
--->
-
 <!-- toc -->
-- [Summary](#summary)
-- [Motivation](#motivation)
-  - [Goals](#goals)
-- [Requirements](#requirements)
-- [Proposal](#proposal)
-  - [Add <code>workspaces</code> to <code>Steps</code>](#add--to-)
-  - [Add <code>workspaces</code> to <code>Sidecars</code>](#add--to--1)
-  - [Allow <code>workspaces</code> in <code>Steps</code> and <code>Sidecars</code> to have their own <code>mountPath</code>](#allow--in--and--to-have-their-own-)
-  - [User Stories](#user-stories)
-    - [Story 1](#story-1)
-    - [Story 2](#story-2)
-    - [Story 3](#story-3)
-    - [Story 4](#story-4)
-    - [Story 5](#story-5)
-- [Design Details](#design-details)
-- [Drawbacks](#drawbacks)
-- [Alternatives](#alternatives)
-  - [Use an explicit volumeMount instead](#use-an-explicit-volumemount-instead)
-    - [Advantages](#advantages)
-    - [Drawbacks](#drawbacks-1)
-  - [Specify complete Workspace declarations in Steps](#specify-complete-workspace-declarations-in-steps)
-    - [Advantages](#advantages-1)
-    - [Disadvantages](#disadvantages)
-- [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
-- [References (optional)](#references-optional)
+- [TEP-0029: Step and Sidecar Workspaces](#tep-0029-step-and-sidecar-workspaces)
+  - [Summary](#summary)
+  - [Motivation](#motivation)
+    - [Goals](#goals)
+  - [Requirements](#requirements)
+  - [Proposal](#proposal)
+    - [Add `workspaces` to `Steps`](#add-workspaces-to-steps)
+    - [Add `workspaces` to `Sidecars`](#add-workspaces-to-sidecars)
+    - [Allow `workspaces` in `Steps` and `Sidecars` to have their own `mountPath`](#allow-workspaces-in-steps-and-sidecars-to-have-their-own-mountpath)
+    - [User Stories](#user-stories)
+      - [Story 1](#story-1)
+      - [Story 2](#story-2)
+      - [Story 3](#story-3)
+      - [Story 4](#story-4)
+      - [Story 5](#story-5)
+  - [Design Details](#design-details)
+  - [Drawbacks](#drawbacks)
+  - [Alternatives](#alternatives)
+    - [Use an explicit volumeMount instead](#use-an-explicit-volumemount-instead)
+      - [Advantages](#advantages)
+      - [Drawbacks](#drawbacks-1)
+    - [Specify complete Workspace declarations in Steps](#specify-complete-workspace-declarations-in-steps)
+      - [Advantages](#advantages-1)
+      - [Disadvantages](#disadvantages)
+  - [Upgrade & Migration Strategy (optional)](#upgrade--migration-strategy-optional)
+  - [References (optional)](#references-optional)
+  - [Implementation Pull Requests](#implementation-pull-requests)
 <!-- /toc -->
 
 ## Summary
@@ -429,3 +425,6 @@ it works today - all Steps will receive all workspaces.
 ## References (optional)
 
 - Original design part of the [Credentials UX](https://github.com/tektoncd/pipeline/issues/2343#issuecomment-611155667) issue.
+
+## Implementation Pull Requests
+- [Add Step and Sidecar workspaces feature](https://github.com/tektoncd/pipeline/pull/3700)

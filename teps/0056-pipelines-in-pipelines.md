@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Pipelines in Pipelines
 creation-date: '2021-03-08'
-last-updated: '2022-05-03'
+last-updated: '2022-06-27'
 authors:
 - '@jerop'
 - '@abayer'
@@ -28,6 +28,30 @@ see-also:
     - [Software Supply Chain Security](#software-supply-chain-security)
     - [Fanning Out Pipelines](#fanning-out-pipelines)
   - [Requirements](#requirements)
+  - [Proposal](#proposal)
+    - [Specification](#specification)
+  - [Design](#design)
+    - [Parameters](#parameters)
+    - [Results](#results)
+      - [Consuming Results](#consuming-results)
+      - [Producing Results](#producing-results)
+    - [Execution Status](#execution-status)
+    - [Workspaces](#workspaces)
+    - [When Expressions](#when-expressions)
+    - [Retries](#retries)
+    - [Timeouts](#timeouts)
+    - [Matrix](#matrix)
+    - [Service Account](#service-account)
+  - [Future Work](#future-work)
+    - [Runtime Specification](#runtime-specification)
+  - [Alternatives](#alternatives)
+    - [Specification - Group `PipelineRef` and `PipelineSpec`](#specification---group-pipelineref-and-pipelinespec)
+    - [Specification - Use `PipelineRunSpec` in `PipelineTask`](#specification---use-pipelinerunspec-in-pipelinetask)
+    - [Specification - Reorganize `PipelineTask`](#specification---reorganize-pipelinetask)
+    - [Runtime specification - provide overrides for `PipelineRun`](#runtime-specification---provide-overrides-for-pipelinerun)
+    - [Runtime specification - provide overrides for all runtime types](#runtime-specification---provide-overrides-for-all-runtime-types)
+    - [Status - Require Minimal Status](#status---require-minimal-status)
+    - [Status - Populate Embedded and Minimal Status](#status---populate-embedded-and-minimal-status)
   - [References](#references)
 <!-- /toc -->
 
@@ -352,6 +376,577 @@ main-`PipelineRun` to be able to fetch and access the sub-`PipelineRun`'s full s
 6. Users should be able to propagate actions from the main-`Pipeline` to the sub-`Pipeline`, such as deletion and
 cancellation.
 
+## Proposal
+
+This proposal focuses on enabling specification and execution of a `Pipeline` in a `Pipeline`. This section describes 
+the API change, see the [design](#design) section below for further details.
+
+### Specification
+
+To support defining `Pipelines` in `Pipelines` at authoring time, we propose adding `PipelineRef` and `PipelineSpec` 
+fields to [`PipelineTask`][pipelinetask] alongside `TaskRef` and `TaskSpec`.
+
+For example, the [example](#fanning-out-pipelines) described above can be solved using a `Pipeline` named
+`security-scans` which is run within a `Pipeline` named `clone-scan-notify` where the `PipelineRef` is used.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: security-scans
+spec:
+  tasks:
+    - name: scorecards
+      taskRef:
+        name: scorecards
+    - name: codeql
+      taskRef:
+        name: codeql
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-scan-notify
+spec:
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+    - name: security-scans
+      pipelineRef:
+        name: security-scans
+    - name: notification
+      taskRef:
+        name: notification
+```
+
+The above example can be modified to use `PipelineSpec` instead of `PipelineRef` if the user would prefer to embed the
+`Pipeline` specification:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-scan-notify
+spec:
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+    - name: security-scans
+      pipelineSpec:
+        tasks:
+          - name: scorecards
+            taskRef:
+              name: scorecards
+          - name: codeql
+            taskRef:
+              name: codeql
+    - name: notification
+      taskRef:
+        name: notification
+```
+
+This solution addresses authoring time concerns separately from runtime concerns.
+
+These are alternatives to the solution for specification discussed above:
+- [Group `PipelineRef` and `PipelineSpec`](#specification---group-pipelineref-and-pipelinespec)
+- [Use `PipelineRunSpec` in `PipelineTask`](#specification---use-pipelinerunspec-in-pipelinetask)
+- [Reorganize `PipelineTask`](#specification---reorganize-pipelinetask)
+
+### Status
+
+In [TEP-0100][tep-0100] we proposed changes to `PipelineRun` status to reduce the amount of information stored about
+the status of `TaskRuns` and `Runs` to improve performance, reduce memory bloat and improve extensibility. Now that
+those changes have been implemented, the `PipelineRun` status is set up to handle `Pipelines` in `Pipelines` without
+exacerbating the performance and storage issues that were there before.
+
+We will populate the `ChildReferences` for all child `PipelineRuns`, as shown below:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+...
+spec:
+...
+status:
+  conditions:
+    - lastTransitionTime: "2020-05-04T02:19:14Z"
+      reason: Succeeded
+      status: "True"
+      type: Succeeded
+  childReferences:
+    - apiVersion: v1beta1
+      kind: PipelineRun
+      name: sub-pipeline-run
+      conditions:
+        - lastTransitionTime: "2020-05-04T02:10:49Z"
+          reason: Succeeded
+          status: "True"
+          type: Succeeded
+```
+
+The `ChildReferences` will be populated for `Pipelines` in `Pipelines` regardless of the embedded status flags 
+because that is the API behavior we're migrating towards.
+
+These are alternatives to the solution for status discussed above:
+- [Require Minimal Status](#status---require-minimal-status)
+- [Populate Embedded and Minimal Status](#status---populate-embedded-and-minimal-status)
+
+## Design
+
+In this section, we flesh out the details of `Pipelines` in `Pipelines` in relation to:
+- [Parameters](#parameters)
+- [Results](#results)
+  - [Consuming Results](#consuming-results)
+  - [Producing Results](#producing-results)
+- [Execution Status](#execution-status)
+- [Workspaces](#workspaces)
+- [When Expressions](#when-expressions)
+- [Retries](#retries)
+- [Timeouts](#timeouts)
+- [Matrix](#matrix)
+- [Service Account](#service-account)
+
+### Parameters
+
+`Pipelines` in `Pipelines` will consume `Parameters` in the same way as `Tasks` in `Pipelines`.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-scan-notify
+spec:
+  params:
+    - name: repo
+      value: $(params.repo)
+  tasks:
+    - name: git-clone
+      params:
+        - name: repo
+          value: $(params.repo)      
+      taskRef:
+        name: git-clone
+    - name: security-scans
+      params:
+        - name: repo
+          value: $(params.repo)
+      pipelineRef:
+        name: security-scans
+    - name: notification
+      taskRef:
+        name: notification
+```
+
+### Results
+
+#### Consuming Results 
+
+`Pipelines` in `Pipelines` will consume `Results`, in the same way as `Tasks` in `Pipelines`.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-scan-notify
+spec:
+  params:
+    - name: repo
+      value: $(params.repo)
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+    - name: security-scans
+      params:
+        - name: commit
+          value: $(tasks.git-clone.results.commit) # --> result consumed in pipelines in pipelines
+      pipelineRef:
+        name: security-scans
+    - name: notification
+      taskRef:
+        name: notification
+```
+
+#### Producing Results
+
+`Pipelines` in `Pipelines` will produce `Results`, in the same way as `Tasks` in `Pipelines`.
+
+`Results` produced by `TaskRuns` in a child `PipelineRun` that need to be passed to subsequent `PipelineTasks` will need
+to be propagated to the `Results` of the child `PipelineRun`.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-scan-notify
+spec:
+  params:
+    - name: repo
+      value: $(params.repo)
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+    - name: security-scans
+      pipelineRef:
+        name: security-scans
+    - name: notification
+      params:
+        - name: commit
+          value: $(tasks.security-scans.results.scan-outputs) # --> result produced from pipelines in pipelines
+      taskRef:
+        name: notification
+```
+
+### Execution Status
+
+`Pipelines` in `Pipelines` will produce execution status that is consumed in `Finally Tasks`, in the same way as `Tasks`
+in `Pipelines`.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-scan-notify
+spec:
+  params:
+    - name: repo
+      value: $(params.repo)
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+    - name: security-scans
+      pipelineRef:
+        name: security-scans
+  finally:        
+    - name: notification
+      params:
+        - name: commit
+          value: $(tasks.security-scans.status) # --> execution status produced from pipelines in pipelines
+      taskRef:
+        name: notification
+```
+
+### Workspaces 
+
+`PipelineTasks` with `Pipelines` can reference `Workspaces`, in the same way as `PipelineTasks` with `Tasks`. In these
+case, the `Workspaces` from the parent `PipelineRun` will be bound to the child `PipelineRun`. 
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-scan-notify
+spec:
+  workspaces:
+    - name: output
+  tasks:
+    - name: git-clone
+      workspaces:
+        - name: output
+      taskRef:
+        name: git-clone
+    - name: security-scans
+      workspaces:
+        - name: output
+      pipelineRef:
+        name: security-scans
+    - name: notification
+      taskRef:
+        name: notification
+```
+
+### When Expressions
+
+Users can specify criteria to guard the execution of `PipelineTasks` using `when` expressions. When `when` expressions
+in a `PipelineTask` with a `Task` or `Custom Task` evaluate to `false`, the `PipelineTask` will be skipped - `TaskRun`
+or `Run` is not executed. In the same way, `PipelineTasks` with `Pipelines` will be skipped - `PipelineRun` will not be
+executed.
+
+```yaml
+  tasks:
+    - name: security-scans # --> skipped task 
+      when:
+        - input: foo
+          operator: in
+          values:
+            - bar
+      pipelineRef:
+        name: security-scans
+    ...
+```
+
+### Retries
+
+Today, we support retries in `TaskRuns` and `Runs`. Users can specify the number of times a `PipelineTask` should be 
+retried, using `retries` field, when its `TaskRun` or `Run` fails. We do not support retries for `PipelineRuns`. In the
+initial releases of `Pipelines` in `Pipelines`, we will not support `retries` in `PipelineTasks` with `Pipelines`. This
+remains an option we can pursue later after gathering user feedback on initial versions of `Pipelines` in `Pipelines` -
+this may involve a broader discussion about retries in `PipelineRuns`.
+
+```yaml
+  tasks:
+    - name: security-scans
+      retries: 3 # --> not supported in initial releases
+      pipelineRef:
+        name: security-scans
+    ...
+```
+
+### Timeouts
+
+Users can specify the timeout for the `TaskRun` or `Run` that executes a `PipelineTask` using the `timeout` field. 
+In the same way, users can specify the overall timeout for the child `PipelineRun` using the `timeout` field. This will
+map to `timeouts.pipeline` in the child `PipelineRun`.
+
+```yaml
+  tasks:
+    - name: security-scans
+      timeout: "0h1m30s"
+      pipelineRef:
+        name: security-scans
+    ...
+```
+
+If users need finer-grained timeouts for child `PipelineRuns` as those supported in parent `PipelineRuns`, we can 
+explore supporting them in future work - see [possible solution](#runtime-specification---provide-overrides-for-pipelinerun).
+
+### Matrix 
+
+Users can fan out `PipelineTasks` with `Tasks` and `Custom Tasks` into multiple `TaskRuns` and `Runs` using `Matrix`.
+In the same way, users can fan out `PipelineTasks` with `Pipelines` into multiple child `PipelineRuns`. This provides
+fanning out at `Pipeline` level, discussed in [use case](#fanning-out-pipelines).
+
+```yaml
+  tasks:
+    - name: security-scans
+      matrix:
+        - name: repo
+          value: 
+            - https://github.com/tektoncd/pipeline
+            - https://github.com/tektoncd/triggers
+            - https://github.com/tektoncd/results
+      pipelineRef:
+        name: security-scans
+```
+
+### Service Account
+
+Users can specify a `ServiceAccount` with a specific set of credentials used to execute `TaskRuns` and `Runs` created
+from a given `PipelineRun`. When a parent `PipelineRun` has a `ServiceAccount`, the `ServiceAccount` will be passed to 
+the child `PipelineRun` in the same way as is done for `TaskRuns` and `Runs`.
+
+## Future Work
+
+### Runtime Specification
+
+Explore support for declaring configuration used to create a `PipelineRun` from a `Pipeline` in a `Pipeline` at runtime.
+The runtime configuration is descoped as an item we can look into in future iterations after gathering user feedback.
+This remains an option we can support alongside the current proposal - possible solutions are discussed here:
+- [Provide overrides for `PipelineRun`](#runtime-specification---provide-overrides-for-pipelinerun)
+- [Provide overrides for all runtime types](#runtime-specification---provide-overrides-for-all-runtime-types)
+
+## Alternatives
+
+### Specification - Group `PipelineRef` and `PipelineSpec`
+
+We could add a new type to pass to the `Pipeline` field - say `PipelineTaskPipeline` - which will take `PipelineRef` 
+and `PipelineSpec` only initially and can be expanded to support other fields from [`PipelineRunSpec`][pipelinerunspec].
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-scan-notify
+spec:
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+    - name: security-scans
+      pipeline:
+        pipelineRef:
+          name: security-scans
+    - name: notification
+      taskRef:
+        name: notification
+```
+
+However, this solution involves duplication that will be worsened over time as we support more features and fields
+from [`PipelineRunSpec`][pipelinerunspec]. It is also inconsistent with the specification for `Tasks` in a `Pipeline`.
+
+### Specification - Use `PipelineRunSpec` in `PipelineTask`
+
+We could add a `PipelineRun` field in `PipelineTask` which would take the [`PipelineRunSpec`][pipelinerunspec]. This 
+field could take `PipelineRef` and `PipelineSpec` only  initially. This provides the extensibility to support other 
+fields related to creating a `PipelineRun` from [`PipelineRunSpec`][pipelinerunspec], beyond the `PipelineRef` and 
+`PipelineSpec` fields only.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-scan-notify
+spec:
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+    - name: security-scans
+      pipelineRun:
+        pipelineRef:
+          name: security-scans
+    - name: notification
+      taskRef:
+        name: notification
+```
+
+However, this solution mixes up authoring time and run time concerns which is against the Tekton [design principle][dp]
+of *Reusability* through separating authoring time and run time concerns:
+
+> At authoring time (i.e. when authoring `Pipelines` and `Tasks`), authors should be able to include anything that is
+  required for every execution of the `Task` or `Pipeline`. At run time (i.e. when invoking a `Pipeline` or `Task` via
+  `PipelineRun` or `TaskRun`), users should be able to control execution as needed by their context without having to
+  modify `Tasks` and `Pipeline`.
+
+### Specification - Reorganize `PipelineTask`
+
+We could reorganize the `PipelineTask` to better support scaling as we add more types that can be specified and 
+executed in a `Pipeline`, beyond `Tasks` and `Custom Tasks`. We could support the existing `TaskRef` and `TaskSpec`
+fields for the foreseeable future, but anything specified under the new `Ref` or `Spec` fields would take priority. 
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-scan-notify
+spec:
+  tasks:
+    - name: git-clone
+      ref:
+        task:
+          name: git-clone
+    - name: security-scans
+      ref:
+        pipeline:
+          name: security-scans
+    - name: notification
+      taskRef: # for backwards compatibility as migration happens
+        name: notification
+```
+
+While this API change is better for the implementation, it is not clear that it's better for the user experience 
+given that it's more than the existing API. In addition, we currently don't have another type to add to `PipelineTask`
+other than `Pipeline`. Moreover, this is a big change to the `PipelineTask` API that can be pursued separately from
+supporting `Pipelines` in `Pipelines`, one does not block the other. We propose keeping the scope of this TEP 
+focused on supporting `Pipelines` in `Pipelines` by decoupling the reorganization of `PipelineTask`, which remains 
+an option to pursue later.
+
+### Runtime specification - provide overrides for `PipelineRun`
+
+To support declaring configuration used to create a `PipelineRun` from a `Pipeline` in a `Pipeline` at run time, we
+could support creating a new `PipelineRunSpecs` field and adding it to [`PipelineRunSpec`][pipelinerunspec] field 
+alongside [`TaskRunSpecs`][taskrunspecs]. While `TaskRunSpecs` provides runtime configuration for executing a given
+`Task` in a `Pipeline`, `PipelineRunSpecs` will provide the runtime configuration for executing a given `Pipeline` 
+in a `Pipeline`.
+
+- `TaskRunSpecs` takes a list of [`PipelineTaskRunSpec`][pipelinetaskrunspec] which contains a `PipelineTaskName` and
+a subset of [`TaskRunSpec`][taskrunspec].
+- `PipelineRunSpecs` will take a list of `PipelinePipelineRunSpec` which will contain a `PipelineTaskName` and a subset
+of [`PipelineRunSpec`][pipelinerunspec]. The subset could contain the `ServiceAccountName` and `Timeouts` fields only
+initially - we have the flexibility explore supporting more runtime configurations for `Pipelines` in `Pipelines` later.
+For example, we could add `TaskRunSpecs` later to support configuring execution of `TaskRuns` created from `Pipelines`
+in `Pipelines` - but this is out of scope in this TEP.
+
+The example `Pipeline` above named `clone-scan-notify` can be executed in a `PipelineRun` where the configuration for
+executing the child `PipelineRun` - `security-scans` - is optionally specified at runtime, alongside the configuration
+for executing `TaskRuns` (in this example, `git-clone` is also configured at runtime).
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: clone-scan-notify-pipelinerun
+spec:
+  pipelineRef:
+    name: clone-scan-notify
+  pipelineRunSpecs:
+    - pipelineTaskName: security-scans
+      timeouts:
+        pipeline: "0h0m60s"
+        tasks: "0h0m40s"
+        finally: "0h0m20s"
+  taskRunSpecs:
+    - pipelineTaskName: git-clone
+      taskServiceAccountName: sa-for-git-clone
+```
+
+However, configuring the runtime behavior is out of scope for the initial release of `Pipelines` in `Pipelines`. This
+is an option we will pursue later after gathering feedback from users.
+
+### Runtime specification - provide overrides for all runtime types
+
+To support declaring configuration used to create a `PipelineRun` from a `Pipeline` in a `Pipeline` at run time, we
+propose creating a new `RunTimeOverrides` field and adding it to [`PipelineRunSpec`][pipelinerunspec].
+
+The `RunTimeOverrides` field will contain the runtime configuration for any object created from a `PipelineTask` - 
+`TaskRun`, `Run` or `PipelineRun`. As such, we will deprecate and remove the existing [`TaskRunSpecs`][taskrunspecs],
+which contains runtime configuration for `TaskRuns` specifically.
+
+The example `Pipeline` above named `clone-scan-notify` can be executed in a `PipelineRun` where the configuration for
+executing the child `PipelineRun` - `security-scans` - is optionally specified at runtime, alongside the configuration
+for executing `TaskRuns` (in this example, `git-clone` is also configured at runtime).
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: clone-scan-notify-pipelinerun
+spec:
+  pipelineRef:
+    name: clone-scan-notify
+  runTimeOverrides:
+    - pipelineTaskName: security-scans
+      timeouts:
+        pipeline: "0h0m60s"
+        tasks: "0h0m40s"
+        finally: "0h0m20s"
+    - pipelineTaskName: git-clone
+      serviceAccountName: sa-for-git-clone
+```
+
+The above approach may appear to make it such that users don't need to know if the `PipelineTask` is executed in a 
+`TaskRun`, `Run` or `PipelineRun`. However, users actually need to know because the different runtime-types support 
+different runtime configurations - see [`TaskRun`][taskrunspec], [`Run`][runspec], and [`PipelineRun`][pipelinerunspec].
+In addition, there are other reasons this approach is rejected:
+- Combining the runtime configuration of all runtime types under one field makes the API opaque - users only encounter
+failures during validation in execution of the `Pipeline`.
+- How would we handle providing runtime configuration for a `TaskRun` created in child `PipelineRun` from a `Pipeline`
+in a `Pipeline`? Would `runTimeOverrides` field contain `runTimeOverrides` field? Or would the all `PipelineTask` names 
+in the `Pipelines` embedded in a `Pipeline` have to be different from the `PipelineTask` names in the `Pipeline`? Note
+that this naming requirement is very restrictive. In the [current proposal](#specification), the decoupling of runtime
+configuration for the different runtime types would allow for `PipelineRunSpecs` to contain `TaskRunSpecs` to solve for
+this scenario.
+- We considered naming the new field `runSpecs` - but this could lead a user to think that it's configuration for `Run` 
+types only. It's challenging to find a name to reference all the runtime types - `TaskRuns`, `Runs` and `PipelineRuns`. 
+
+### Status - Require Minimal Status
+
+We could require that users who use `Pipelines` in `Pipelines` must have the embedded status flag for minimal status 
+to be enabled, so that the `ChildReferences` can be populated. However, this requirement may be surprising for new 
+users who are not familiar with the migration to the minimal status. Given that we are already migrating to the 
+minimal status, it is a better user experience to provide the minimal statuses with `Pipelines` in `Pipelines` by 
+default, as proposed [above](#status).
+
+### Status - Populate Embedded and Minimal Status
+
+We could populate both the embedded and minimal statuses, except when the user has explicitly enabled the minimal 
+status only. However, this will exacerbate the performance and memory issues when both statuses are populated.
+
 ## References
 
 - Issues
@@ -387,3 +982,11 @@ cancellation.
 [codeql]: https://github.com/github/codeql
 [matrix-uc]: https://github.com/tektoncd/community/pull/600#pullrequestreview-851817251
 [status-test]: https://github.com/tektoncd/pipeline/issues/2134#issuecomment-631552148
+[pipelinerunspec]: https://github.com/tektoncd/pipeline/blob/302895b5a1ca45c02a85a9822201643c159fe02c/pkg/apis/pipeline/v1beta1/pipelinerun_types.go#L197-L239
+[pipelinetask]: https://github.com/tektoncd/pipeline/blob/302895b5a1ca45c02a85a9822201643c159fe02c/pkg/apis/pipeline/v1beta1/pipeline_types.go#L155-L205
+[taskrunspecs]: https://github.com/tektoncd/pipeline/blob/302895b5a1ca45c02a85a9822201643c159fe02c/pkg/apis/pipeline/v1beta1/pipelinerun_types.go#L236-L238
+[pipelinetaskrunspec]: https://github.com/tektoncd/pipeline/blob/302895b5a1ca45c02a85a9822201643c159fe02c/pkg/apis/pipeline/v1beta1/pipelinerun_types.go#L513-L519
+[taskrunspec]: https://github.com/tektoncd/pipeline/blob/302895b5a1ca45c02a85a9822201643c159fe02c/pkg/apis/pipeline/v1beta1/taskrun_types.go#L36-L76
+[dp]: ../design-principles.md
+[embeddedtask]: https://github.com/tektoncd/pipeline/blob/302895b5a1ca45c02a85a9822201643c159fe02c/pkg/apis/pipeline/v1beta1/pipeline_types.go#L136-L151
+[runspec]: https://github.com/tektoncd/pipeline/blob/302895b5a1ca45c02a85a9822201643c159fe02c/pkg/apis/pipeline/v1alpha1/run_types.go#L48-L82

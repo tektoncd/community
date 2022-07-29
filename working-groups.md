@@ -64,10 +64,10 @@ We altenate between two meeting times, a time that is friendly for Europe + Nort
 
 | &nbsp;                                                     | Facilitators    | Company | Profile                                     |
 | --------------------------------------------------------   | ----------      | ------- | ---------------------------------------     |
-| <img width="30px" src="https://github.com/skaegi.png">     | Simon Kaegi     | IBM     | [skaegi](https://github.com/skaegi)         |
 | <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee | Google  | [dibyom](https://github.com/dibyom)         |
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai     | IBM     | [pritidesai](https://github.com/pritidesai) |
 | <img width="30px" src="https://github.com/imjasonh.png">   | Jason Hall      | Red Hat | [imjasonh](https://github.com/imjasonh)     |
+| <img width="30px" src="https://github.com/jerop.png">      | Jerop Kipruto   | Google  | [jerop](https://github.com/jerop)           |
 
 ### Europe + Asia
 
@@ -218,9 +218,9 @@ Tekton projects.
 | --------------------------------------------------------   | ----------        | ------- | ---------------------------------------     |
 | <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |
 | <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli)   |
-| <img width="30px" src="https://github.com/skaegi.png">     | Simon Kaegi       | IBM     | [skaegi](https://github.com/skaegi)         |
 | <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee   | Google  | [dibyom](https://github.com/dibyom)         |
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai       | IBM     | [pritidesai](https://github.com/pritidesai) |
+| <img width="30px" src="https://github.com/jerop.png">      | Jerop Kipruto     | Google  | [jerop](https://github.com/jerop)             |
 
 ### Australia + North America
 

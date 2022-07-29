@@ -2,7 +2,7 @@
 status: proposed
 title: Data Locality and Pod Overhead in Pipelines
 creation-date: '2021-01-22'
-last-updated: '2022-03-09'
+last-updated: '2022-05-26'
 authors:
 - '@bobcatfish'
 - '@lbernick'
@@ -67,6 +67,10 @@ increasing PipelineRun latency.
 In addition, some systems support only the ReadWriteOnce [access mode](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes)
 for PVCs, which allows the PVC to be mounted on a single node at a time. This means that Pipeline TaskRuns that share data and run in parallel
 must run on the same node.
+
+Lastly, Tekton's current implementation requires users to understand that TaskRuns are run as pods, and therefore, they need to provide
+persistent storage because pods do not share a filesystem. Even if creating pods and PVCs had no overhead, users would still need to understand
+how to provide data storage even for simple examples like a "clone, build, push" Pipeline.
 
 The following issues describe some of these difficulties in more detail:
 - [Issue: Difficult to use parallel Tasks that share files using workspace](https://github.com/tektoncd/pipeline/issues/2586):
@@ -284,6 +288,7 @@ We could work around this limitation via a few options:
 3. Requiring that hermetic Tasks not execute in parallel with other Tasks run in the same pod.
 
 ### Controller role in scheduling TaskRuns
+
 Some solutions to this problem involve allowing a user to configure which TaskRuns they would like to be executed on one pod,
 and some solutions allow the controller to determine which TaskRuns should be executed on one pod.
 
@@ -296,11 +301,22 @@ which TaskRuns should be scheduled together. A first iteration of this proposal 
 TaskRuns to be combined together. After experimentation and user feedback, we can explore providing an option that would rely on the
 controller to make this decision.
 
+### Pipelines that build images
+
+A frequent Tekton use case is a Pipeline that builds an image, and then runs that image in a subsequent Task.
+Running such a Pipeline in a single pod would require Tekton to update the image used in the downstream Tasks
+after a build Task has completed. While container images may be updated after pod creation, we must consider how Tekton
+would know whether to replace an image, and how the new image could be re-wrapped with the Tekton entrypoint before
+the Task begins to execute.
+
 ### Additional Design Considerations
 - Executing an entire Pipeline in a pod, as compared to executing multiple Tasks in a pod, may pave the way for supporting
 [local execution](https://github.com/tektoncd/pipeline/issues/235).
 
 ## Design proposal
+
+- [Design doc](https://docs.google.com/document/d/18WTmtTImOo-4ZxIm8Z627WrXv1mkhGf6v1Ft8XxMvYQ/edit#heading=h.tnd2fu4u7702) (not yet accepted)
+- [Experimental Custom Task](https://github.com/tektoncd/experimental/tree/main/pipeline-in-pod)
 
 ### Summary
 

@@ -106,7 +106,7 @@ there is a merge conflict in the TEP table. In case that happens, use
 the `teps.py renumber` command to refresh your PR:
 
 ```
-./teps.py renumber --update-table <path-to-tep-file>
+./teps.py renumber --update-table -f <path-to-tep-file>
 ```
 
 The command will update the TEP in the file name and content with a new
@@ -148,6 +148,13 @@ reviewer either a) hasn't done an initial review yet (see SLO above) or b) wants
 approving. Whenever possible we will try to get an explicit `/approve` from all assigned reviewers before merging, but
 we can always fall back on [our strict approval requirements](#approval-requirements) if needed.
 
+TEP PRs that don't affect the proposed design (such as fixing typos, table of contents,
+adding reference links, or marking the TEP as implemented) do not need to meet the
+[approval requirements](#approval-requirements). A single reviewer can feel free to approve
+and LGTM changes like these at any time. PRs marking a TEP as "implementable" should still meet
+the approval requirements, as this label signifies community agreement that the proposal should be
+implemented.
+
 _Why don't we use GitHub reviewers instead of assignees? If we want to do that we need to turn off Prow's auto
 assignment of reviewers; there is no guarantee the auto assigned reviewers are the appropriate reviewers.
 See [discussion](https://github.com/tektoncd/community/discussions/362)._
@@ -183,7 +190,7 @@ This is the complete list of Tekton teps:
 |[TEP-0026](0026-interceptor-plugins.md) | interceptor-plugins | implementable | 2020-10-08 |
 |[TEP-0027](0027-https-connection-to-triggers-eventlistener.md) | HTTPS Connection to Triggers EventListener | implementable | 2020-11-01 |
 |[TEP-0028](0028-task-execution-status-at-runtime.md) | task-exec-status-at-runtime | implemented | 2021-06-03 |
-|[TEP-0029](0029-step-workspaces.md) | step-and-sidecar-workspaces | implementable | 2020-10-02 |
+|[TEP-0029](0029-step-workspaces.md) | step-and-sidecar-workspaces | implemented | 2022-07-22 |
 |[TEP-0030](0030-workspace-paths.md) | workspace-paths | proposed | 2020-10-18 |
 |[TEP-0031](0031-tekton-bundles-cli.md) | tekton-bundles-cli | implemented | 2021-03-26 |
 |[TEP-0032](0032-tekton-notifications.md) | Tekton Notifications | proposed | 2020-11-18 |
@@ -196,7 +203,7 @@ This is the complete list of Tekton teps:
 |[TEP-0040](0040-ignore-step-errors.md) | Ignore Step Errors | implemented | 2021-08-11 |
 |[TEP-0041](0041-tekton-component-versioning.md) | Tekton Component Versioning | implementable | 2021-04-26 |
 |[TEP-0042](0042-taskrun-breakpoint-on-failure.md) | taskrun-breakpoint-on-failure | implemented | 2021-12-10 |
-|[TEP-0044](0044-data-locality-and-pod-overhead-in-pipelines.md) | Data Locality and Pod Overhead in Pipelines | proposed | 2022-03-09 |
+|[TEP-0044](0044-data-locality-and-pod-overhead-in-pipelines.md) | Data Locality and Pod Overhead in Pipelines | proposed | 2022-05-26 |
 |[TEP-0045](0045-whenexpressions-in-finally-tasks.md) | WhenExpressions in Finally Tasks | implemented | 2021-06-03 |
 |[TEP-0046](0046-finallytask-execution-post-timeout.md) | Finally tasks execution post pipelinerun timeout | implemented | 2021-12-14 |
 |[TEP-0047](0047-pipeline-task-display-name.md) | Pipeline Task Display Name | proposed | 2021-02-10 |
@@ -206,7 +213,7 @@ This is the complete list of Tekton teps:
 |[TEP-0051](0051-ppc64le-architecture-support.md) | ppc64le Support | proposed | 2021-01-28 |
 |[TEP-0052](0052-tekton-results-automated-run-resource-cleanup.md) | Tekton Results: Automated Run Resource Cleanup | implementable | 2021-03-22 |
 |[TEP-0053](0053-nested-triggers.md) | Nested Triggers | implementable | 2021-04-15 |
-|[TEP-0056](0056-pipelines-in-pipelines.md) | Pipelines in Pipelines | proposed | 2022-05-03 |
+|[TEP-0056](0056-pipelines-in-pipelines.md) | Pipelines in Pipelines | implementable | 2022-06-27 |
 |[TEP-0057](0057-windows-support.md) | Windows support | proposed | 2021-03-18 |
 |[TEP-0058](0058-graceful-pipeline-run-termination.md) | Graceful Pipeline Run Termination | implemented | 2021-12-15 |
 |[TEP-0059](0059-skipping-strategies.md) | Skipping Strategies | implemented | 2021-08-23 |
@@ -229,24 +236,31 @@ This is the complete list of Tekton teps:
 |[TEP-0081](0081-add-chains-subcommand-to-the-cli.md) | Add Chains sub-command to the CLI | implemented | 2022-04-27 |
 |[TEP-0082](0082-workspace-hinting.md) | Workspace Hinting | proposed | 2021-10-26 |
 |[TEP-0083](0083-scheduled-and-polling-runs-in-tekton.md) | Scheduled and Polling runs in Tekton | proposed | 2021-09-13 |
-|[TEP-0084](0084-endtoend-provenance-collection.md) | end-to-end provenance collection | proposed | 2021-09-16 |
+|[TEP-0084](0084-endtoend-provenance-collection.md) | end-to-end provenance collection | proposed | 2022-05-12 |
 |[TEP-0085](0085-per-namespace-controller-configuration.md) | Per-Namespace Controller Configuration | proposed | 2021-10-14 |
-|[TEP-0086](0086-changing-the-way-result-parameters-are-stored.md) | Changing the way result parameters are stored | proposed | 2022-04-07 |
+|[TEP-0086](0086-changing-the-way-result-parameters-are-stored.md) | Changing the way result parameters are stored | proposed | 2022-06-09 |
 |[TEP-0088](0088-result-summaries.md) | Tekton Results - Record Summaries | proposed | 2021-10-01 |
 |[TEP-0089](0089-nonfalsifiable-provenance-support.md) | Non-falsifiable provenance support | implementable | 2022-01-18 |
-|[TEP-0090](0090-matrix.md) | Matrix | implementable | 2022-02-14 |
+|[TEP-0090](0090-matrix.md) | Matrix | implemented | 2022-06-30 |
 |[TEP-0092](0092-scheduling-timeout.md) | Scheduling Timeout | implementable | 2022-04-11 |
 |[TEP-0094](0094-configuring-resources-at-runtime.md) | Configuring Resources at Runtime | implemented | 2022-03-11 |
 |[TEP-0095](0095-common-repository-configuration.md) | Common Repository Configuration | proposed | 2021-11-29 |
-|[TEP-0096](0096-pipelines-v1-api.md) | Pipelines V1 API | implementable | 2022-03-18 |
+|[TEP-0096](0096-pipelines-v1-api.md) | Pipelines V1 API | implementable | 2022-07-12 |
+|[TEP-0097](0097-breakpoints-for-taskruns-and-pipelineruns.md) | breakpoints-for-taskruns-and-pipelineruns | implementable | 2022-07-12 |
 |[TEP-0098](0098-workflows.md) | Workflows | proposed | 2021-12-06 |
 |[TEP-0100](0100-embedded-taskruns-and-runs-status-in-pipelineruns.md) | Embedded TaskRuns and Runs Status in PipelineRuns | implemented | 2022-04-18 |
-|[TEP-0101](0101-env-in-pod-template.md) | Env in POD template | proposed | 2022-05-09 |
+|[TEP-0101](0101-env-in-pod-template.md) | Env in POD template | proposed | 2022-05-16 |
 |[TEP-0102](0102-https-connection-to-triggers-interceptor.md) | HTTPS Connection to Triggers ClusterInterceptor | implementable | 2022-04-20 |
 |[TEP-0103](0103-skipping-reason.md) | Skipping Reason | implemented | 2022-05-05 |
-|[TEP-0104](0104-tasklevel-resource-requests.md) | Task-level Resource Requests | implementable | 2022-04-08 |
-|[TEP-0105](0105-remove-pipeline-v1alpha1-api.md) | Remove Pipeline v1alpha1 API | proposed | 2022-04-11 |
-|[TEP-0106](0106-support-specifying-metadata-per-task-in-runtime.md) | Support Specifying Metadata per Task in Runtime | implementable | 2022-05-10 |
+|[TEP-0104](0104-tasklevel-resource-requirements.md) | Task-level Resource Requirements | implementable | 2022-07-07 |
+|[TEP-0105](0105-remove-pipeline-v1alpha1-api.md) | Remove Pipeline v1alpha1 API | implementable | 2022-05-17 |
+|[TEP-0106](0106-support-specifying-metadata-per-task-in-runtime.md) | Support Specifying Metadata per Task in Runtime | implemented | 2022-05-27 |
 |[TEP-0107](0107-propagating-parameters.md) | Propagating Parameters | implemented | 2022-05-26 |
 |[TEP-0108](0108-mapping-workspaces.md) | Mapping Workspaces | implemented | 2022-05-26 |
-|[TEP-0117](0117-manage-pipelinerun-concurrency.md) | Manage PipelineRun concurrency with cancel status  | proposed | 2022-05-26 |
+|[TEP-0110](0110-decouple-catalog-organization-and-reference.md) | Decouple Catalog Organization and Resource Reference | implemented | 2022-06-29 |
+|[TEP-0111](0111-propagating-workspaces.md) | Propagating Workspaces | implementable | 2022-06-03 |
+|[TEP-0112](0112-replace-volumes-with-workspaces.md) | Replace Volumes with Workspaces | proposed | 2022-06-02 |
+|[TEP-0114](0114-custom-tasks-beta.md) | Custom Tasks Beta | implementable | 2022-07-12 |
+|[TEP-0116](0116-referencing-finally-task-results-in-pipeline-results.md) | Referencing Finally Task Results in Pipeline Results | implementable | 2022-07-15 |
+|[TEP-0117](0117-manage-pipelinerun-concurrency.md) | Manage PipelineRun concurrency | proposed | 2022-05-26 |
+

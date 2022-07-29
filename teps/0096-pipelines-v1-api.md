@@ -2,7 +2,7 @@
 status: implementable
 title: Pipelines V1 API
 creation-date: '2021-11-29'
-last-updated: '2022-03-18'
+last-updated: '2022-07-12'
 authors:
 - '@lbernick'
 - '@jerop'
@@ -16,34 +16,35 @@ see-also:
 # TEP-0096: Pipelines V1 API
 
 <!-- toc -->
-- [Summary](#summary)
-- [Motivation](#motivation)
-  - [Goals](#goals)
-  - [Non Goals](#non-goals)
-- [Background](#background)
-- [Proposal](#proposal)
-  - [V1 Stability and Deprecation Policy](#v1-stability-and-deprecation-policy)
-    - [Examples](#examples)
-      - [Removing an API field from a V1 CRD](#removing-an-api-field-from-a-v1-crd)
-      - [Adding an optional API field to a V1 CRD](#adding-an-optional-api-field-to-a-v1-crd)
-      - [Removing a flag-gated field or feature from a V1 CRD](#removing-a-flag-gated-field-or-feature-from-a-v1-crd)
-      - [Promoting a behavior flag](#promoting-a-behavior-flag)
-- [Use Cases](#use-cases)
-  - [Use Cases prioritized for Tekton](#use-cases-prioritized-for-tekton)
-  - [Use Cases not prioritized](#use-cases-not-prioritized)
-- [Scope](#scope)
-- [API Definition](#api-definition)
-- [Features Included](#features-included)
-  - [Documentation](#documentation)
-  - [Production Readiness](#production-readiness)
-  - [Stability](#stability)
-    - [CRD Stability Levels](#crd-stability-levels)
-    - [API Changes](#api-changes)
-    - [Deprecations](#deprecations)
-    - [Behavior flags](#behavior-flags)
-  - [Feature Completeness](#feature-completeness)
-- [Future Work (Out of Scope for V1)](#future-work-out-of-scope-for-v1)
-- [References](#references)
+- [TEP-0096: Pipelines V1 API](#tep-0096-pipelines-v1-api)
+  - [Summary](#summary)
+  - [Motivation](#motivation)
+    - [Goals](#goals)
+    - [Non Goals](#non-goals)
+  - [Background](#background)
+  - [Proposal](#proposal)
+    - [V1 Stability and Deprecation Policy](#v1-stability-and-deprecation-policy)
+      - [Examples](#examples)
+        - [Removing an API field from a V1 CRD](#removing-an-api-field-from-a-v1-crd)
+        - [Adding an optional API field to a V1 CRD](#adding-an-optional-api-field-to-a-v1-crd)
+        - [Removing a flag-gated field or feature from a V1 CRD](#removing-a-flag-gated-field-or-feature-from-a-v1-crd)
+        - [Promoting a behavior flag](#promoting-a-behavior-flag)
+  - [Use Cases](#use-cases)
+    - [Use Cases prioritized for Tekton](#use-cases-prioritized-for-tekton)
+    - [Use Cases not prioritized](#use-cases-not-prioritized)
+  - [Scope](#scope)
+  - [API Definition](#api-definition)
+  - [Features Included](#features-included)
+    - [Documentation](#documentation)
+    - [Production Readiness](#production-readiness)
+    - [Stability](#stability)
+      - [CRD Stability Levels](#crd-stability-levels)
+      - [API Changes](#api-changes)
+      - [Deprecations](#deprecations)
+      - [Behavior flags](#behavior-flags)
+    - [Feature Completeness](#feature-completeness)
+  - [Future Work (Out of Scope for V1)](#future-work-out-of-scope-for-v1)
+  - [References](#references)
 <!-- /toc -->
 
 ## Summary
@@ -235,6 +236,8 @@ This policy should be updated to include Tekton metrics as part of the API. No o
 #### API Changes
 
 - Fix [pain points](https://github.com/tektoncd/pipeline/issues/3792) associated with TaskRun and PipelineRun Status.
+- Rename PipelineRun's `spec.taskRunSpecs.taskServiceAccountName` to `spec.taskRunSpecs.serviceAccountName`.
+- Rename PipelineRun's `spec.taskRunSpecs.taskPodTemplate` to `spec.taskRunSpecs.podTemplate`.
 - Consider replacing any Task or Pipeline fields that should support parameterization with Strings and performing our own validation.
   - See [Handling parameter interpolation in fields not designed for it](https://github.com/tektoncd/pipeline/issues/1530) for more details.
 
@@ -248,6 +251,10 @@ This policy should be updated to include Tekton metrics as part of the API. No o
     independently of Pipelines V1. Merging this TEP as implementable, or any features listed in this TEP, aren't V1 blockers.
     While we aim to make the transition to V1 as smooth as possible for PipelineResource users, the focus of V1 is to
     stabilize existing features, and we don't want to block a V1 API on new, experimental features.
+- Deprecate `taskRun.spec.taskRef.bundle` and `pipelineRun.spec.pipelineRef.bundle`, as these features will be replaced by
+  the ["bundle" resolver](https://github.com/tektoncd/resolution/tree/main/bundleresolver).
+  These fields should be marked as deprecated in v1beta1 and not be present in v1, but removing them in v1beta1 is optional.
+  Remote resolution, plus the bundle resolver, should be packaged with Tekton Pipelines before removing these fields.
 
 #### Behavior flags
 
@@ -261,7 +268,7 @@ as its deprecation has already [been announced](https://github.com/tektoncd/pipe
 | disable-creds-init                            | false           | no change                                            |
 | running-in-environment-with-injected-sidecars | true            | no change                                            |
 | require-git-ssh-secret-known-hosts            | false           | no change                                            |
-| enable-tekton-oci-bundles                     | false           | collapsed under enable-api-fields, requires "alpha"  |
+| enable-tekton-oci-bundles                     | false           | mark as deprecated and remove in v1                  |
 | enable-custom-tasks                           | false           | collapsed under enable-api-fields, requires "beta"   |
 | enable-api-fields                             | stable          | default to stable, "beta" option added               |
 
@@ -276,6 +283,7 @@ No features identified as V1 blockers that are not necessary for stability or pr
   - This would be supported by the [wait CustomTask](https://github.com/tektoncd/experimental/tree/main/wait-task) or another experimental CustomTask.
 - Native notification support, as proposed in [TEP-0032: Notifications](https://github.com/tektoncd/community/blob/main/teps/0032-tekton-notifications.md)
 - Dynamically generated TaskRuns within a PipelineRun, as proposed in [TEP-0090: Matrix](https://github.com/tektoncd/community/blob/main/teps/0090-matrix.md)
+- Defining and executing Pipelines in Pipelines, as proposed in [TEP-0056](/teps/0056-pipelines-in-pipelines.md)
 - Stabilizing the Run CRD (i.e. moving it from "beta" to "stable")
 - Moving OCI bundles to "beta" in v1beta1 or "stable" in v1.
   - This will need to wait until we have more clarity on [Remote Resolution](./0060-remote-resource-resolution.md).

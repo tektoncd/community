@@ -27,6 +27,7 @@ orgs:
     - GijsvanDulmen
     - GregDritschler
     - ImJasonH
+    - JeromeJu
     - LyndseyBu
     - Megan-Wright
     - NavidZ
@@ -75,6 +76,7 @@ orgs:
     - hrishin
     - iancoffey
     - ispasov
+    - jagathprakash
     - jessm12
     - jinchihe
     - jjasghar
@@ -89,6 +91,7 @@ orgs:
     - khrm
     - kimholmes
     - kimsterv
+    - lcarva
     - lbernick
     - loosebazooka
     - lukehinds
@@ -135,6 +138,8 @@ orgs:
     - skim1420
     - sm43
     - spikeburton
+    - startxfr
+    - startx-lab
     - steveodonovan
     - sthaha
     - theofpa
@@ -155,6 +160,7 @@ orgs:
     - ziheng
     - austinzhao-go
     - aleromerog
+    - QuanZhang-William
     teams:
       governing-board:
         description: Tekton Governing Board members
@@ -196,6 +202,7 @@ orgs:
         - vdemeester
         - dlorenc
         - priyawadhwa
+        - wlynch
         members:
         - mpeters
         - skelterjohn
@@ -233,6 +240,7 @@ orgs:
         - dibyom
         - jerop
         - lbernick
+        - abayer
         privacy: closed
         repos:
           pipeline: write
@@ -296,6 +304,7 @@ orgs:
         - vincent-pli
         - savitaashture
         - sm43
+        - concaf
         privacy: closed
         repos:
           operator: write
@@ -422,6 +431,7 @@ orgs:
         - afrittoli
         - pierretasci
         - lbernick
+        - ywluogg
         privacy: closed
         repos:
           pipeline: read
@@ -744,12 +754,13 @@ orgs:
         - bobcatfish
         - ImJasonH
         - vdemeester
+        - wlynch
         members:
         - pritidesai
         - dlorenc
+        - lcarva
         - loosebazooka
         - mattmoor
-        - wlynch
         privacy: closed
         repos:
           chains: read

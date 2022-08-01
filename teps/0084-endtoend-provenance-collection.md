@@ -129,6 +129,247 @@ The `in-toto` format created by chains wraps the [SLSA Provenance v0.2](https://
   * **results**: An array of objects representing the results of a `taskrun`. Each object contains the attribute `name` and `value`. Their values are of type string. `taskrun` results are important in the context of a `pipelinerun` because `taskrun` results may be used by other tasks, thus impacting the output of the `pipelinerun`.
 * **predicate.materials**: For `taskruns`, Chains populates this object based on specially named task parameters or results, i.e. `CHAINS-GIT_COMMIT` and `CHAINS-GIT_URL`. Similarly, Chains must populate this object with the corresponding pipeline parameters or results.
 
+<details>
+    <summary>Click to view an example pipelinerun attestation</summary>
+
+```json
+{
+  "_type": "https://in-toto.io/Statement/v0.1",
+  "predicateType": "https://slsa.dev/provenance/v0.2",
+  "subject": [
+    {
+      "name": "registry.example.com/minimal-container/min",
+      "digest": {
+        "sha256": "52af519cd2cb835e77f971ab303a8ae1c3b9b04fe2aa604d1c50d8d73f110304"
+      }
+    }
+  ],
+  "predicate": {
+    "builder": {
+      "id": "https://tekton.dev/chains/v2"
+    },
+    "buildType": "https://tekton.dev/attestations/chains/pipelinerun@v2",
+    "invocation": {
+      "configSource": {},
+      "parameters": {
+        "git-repo": "\"https://github.com/lcarva/minimal-container\"",
+        "git-revision": "\"main\"",
+        "output-image": "\"registry.example.com/minimal-container/min:latest\""
+      }
+    },
+    "buildConfig": {
+      "tasks": [
+        {
+          "name": "git-clone",
+          "ref": {
+            "name": "git-clone",
+            "kind": "Task"
+          },
+          "startedOn": "2022-07-06T17:17:13Z",
+          "finishedOn": "2022-07-06T17:17:21Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "#!/usr/bin/env sh\nset -eu\n\nif [ \"${PARAM_VERBOSE}\" = \"true\" ] ; then\n  set -x\nfi\n\n\nif [ \"${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}\" = \"true\" ] ; then\n  cp \"${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials\" \"${PARAM_USER_HOME}/.git-credentials\"\n  cp \"${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig\" \"${PARAM_USER_HOME}/.gitconfig\"\n  chmod 400 \"${PARAM_USER_HOME}/.git-credentials\"\n  chmod 400 \"${PARAM_USER_HOME}/.gitconfig\"\nfi\n\nif [ \"${WORKSPACE_SSH_DIRECTORY_BOUND}\" = \"true\" ] ; then\n  cp -R \"${WORKSPACE_SSH_DIRECTORY_PATH}\" \"${PARAM_USER_HOME}\"/.ssh\n  chmod 700 \"${PARAM_USER_HOME}\"/.ssh\n  chmod -R 400 \"${PARAM_USER_HOME}\"/.ssh/*\nfi\n\nif [ \"${WORKSPACE_SSL_CA_DIRECTORY_BOUND}\" = \"true\" ] ; then\n   export GIT_SSL_CAPATH=\"${WORKSPACE_SSL_CA_DIRECTORY_PATH}\"\nfi\nCHECKOUT_DIR=\"${WORKSPACE_OUTPUT_PATH}/${PARAM_SUBDIRECTORY}\"\n\ncleandir() {\n  # Delete any existing contents of the repo directory if it exists.\n  #\n  # We don't just \"rm -rf ${CHECKOUT_DIR}\" because ${CHECKOUT_DIR} might be \"/\"\n  # or the root of a mounted volume.\n  if [ -d \"${CHECKOUT_DIR}\" ] ; then\n    # Delete non-hidden files and directories\n    rm -rf \"${CHECKOUT_DIR:?}\"/*\n    # Delete files and directories starting with . but excluding ..\n    rm -rf \"${CHECKOUT_DIR}\"/.[!.]*\n    # Delete files and directories starting with .. plus any other character\n    rm -rf \"${CHECKOUT_DIR}\"/..?*\n  fi\n}\n\nif [ \"${PARAM_DELETE_EXISTING}\" = \"true\" ] ; then\n  cleandir\nfi\n\ntest -z \"${PARAM_HTTP_PROXY}\" || export HTTP_PROXY=\"${PARAM_HTTP_PROXY}\"\ntest -z \"${PARAM_HTTPS_PROXY}\" || export HTTPS_PROXY=\"${PARAM_HTTPS_PROXY}\"\ntest -z \"${PARAM_NO_PROXY}\" || export NO_PROXY=\"${PARAM_NO_PROXY}\"\n\n/ko-app/git-init \\\n  -url=\"${PARAM_URL}\" \\\n  -revision=\"${PARAM_REVISION}\" \\\n  -refspec=\"${PARAM_REFSPEC}\" \\\n  -path=\"${CHECKOUT_DIR}\" \\\n  -sslVerify=\"${PARAM_SSL_VERIFY}\" \\\n  -submodules=\"${PARAM_SUBMODULES}\" \\\n  -depth=\"${PARAM_DEPTH}\" \\\n  -sparseCheckoutDirectories=\"${PARAM_SPARSE_CHECKOUT_DIRECTORIES}\"\ncd \"${CHECKOUT_DIR}\"\nRESULT_SHA=\"$(git rev-parse HEAD)\"\nEXIT_CODE=\"$?\"\nif [ \"${EXIT_CODE}\" != 0 ] ; then\n  exit \"${EXIT_CODE}\"\nfi\nprintf \"%s\" \"${RESULT_SHA}\" > \"$(results.commit.path)\"\nprintf \"%s\" \"${PARAM_URL}\" > \"$(results.url.path)\"\n",
+              "arguments": null,
+              "environment": {
+                "container": "clone",
+                "image": "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init@sha256:45dca0972541546d3625d99ee8a8fbcc768b01fc9c199d1251ebd7dfd1b8874c"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "deleteExisting": "\"true\"",
+              "depth": "\"1\"",
+              "gitInitImage": "\"gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.29.0\"",
+              "httpProxy": "\"\"",
+              "httpsProxy": "\"\"",
+              "noProxy": "\"\"",
+              "refspec": "\"\"",
+              "revision": "\"$(params.git-revision)\"",
+              "sparseCheckoutDirectories": "\"\"",
+              "sslVerify": "\"true\"",
+              "subdirectory": "\"\"",
+              "submodules": "\"true\"",
+              "url": "\"$(params.git-repo)\"",
+              "userHome": "\"/tekton/home\"",
+              "verbose": "\"true\""
+            }
+          },
+          "results": [
+            {
+              "name": "commit",
+              "value": "a5bdfa264ac87bb2bec104ef9ddf2207b5b210c9"
+            },
+            {
+              "name": "url",
+              "value": "https://github.com/lcarva/minimal-container"
+            }
+          ]
+        },
+        {
+          "name": "source-security-scan",
+          "after": [
+            "git-clone"
+          ],
+          "ref": {
+            "name": "trivy-scanner",
+            "kind": "Task",
+            "bundle": "gcr.io/tekton-releases/catalog/upstream/trivy-scanner:0.1"
+          },
+          "startedOn": "2022-07-06T17:17:22Z",
+          "finishedOn": "2022-07-06T17:17:32Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "#!/usr/bin/env sh\n  cmd=\"trivy $* $(params.IMAGE_PATH)\"\n  echo \"Running trivy task with command below\"\n  echo \"$cmd\"\n  eval \"$cmd\"\n",
+              "arguments": [
+                "$(params.ARGS)"
+              ],
+              "environment": {
+                "container": "trivy-scan",
+                "image": "docker.io/aquasec/trivy@sha256:dea76d4b50c75125cada676a87ac23de2b7ba4374752c6f908253c3b839201d9"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "ARGS": "[\"filesystem\"]",
+              "IMAGE_PATH": "\".\"",
+              "TRIVY_IMAGE": "\"docker.io/aquasec/trivy@sha256:dea76d4b50c75125cada676a87ac23de2b7ba4374752c6f908253c3b839201d9\""
+            }
+          }
+        },
+        {
+          "name": "image-build",
+          "after": [
+            "source-security-scan"
+          ],
+          "ref": {
+            "name": "buildah",
+            "kind": "ClusterTask"
+          },
+          "startedOn": "2022-07-06T17:17:32Z",
+          "finishedOn": "2022-07-06T17:17:43Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "[[ \"$(workspaces.sslcertdir.bound)\" == \"true\" ]] && CERT_DIR_FLAG=\"--cert-dir $(workspaces.sslcertdir.path)\"\nbuildah ${CERT_DIR_FLAG} --storage-driver=$(params.STORAGE_DRIVER) bud \\\n  $(params.BUILD_EXTRA_ARGS) --format=$(params.FORMAT) \\\n  --tls-verify=$(params.TLSVERIFY) --no-cache \\\n  -f $(params.DOCKERFILE) -t $(params.IMAGE) $(params.CONTEXT)\n",
+              "arguments": null,
+              "environment": {
+                "container": "build",
+                "image": "quay.io/buildah/stable@sha256:0ceadda5ead6601f347a801c935e668888a72ff858ef0c7b826aca10273f9a77"
+              },
+              "annotations": null
+            },
+            {
+              "entryPoint": "[[ \"$(params.SKIP_PUSH)\" == \"true\" ]] && echo \"Push skipped\" && exit 0\n[[ \"$(workspaces.sslcertdir.bound)\" == \"true\" ]] && CERT_DIR_FLAG=\"--cert-dir $(workspaces.sslcertdir.path)\"\nbuildah ${CERT_DIR_FLAG} --storage-driver=$(params.STORAGE_DRIVER) push \\\n  $(params.PUSH_EXTRA_ARGS) --tls-verify=$(params.TLSVERIFY) \\\n  --digestfile $(workspaces.source.path)/image-digest $(params.IMAGE) \\\n  docker://$(params.IMAGE)\n",
+              "arguments": null,
+              "environment": {
+                "container": "push",
+                "image": "quay.io/buildah/stable@sha256:0ceadda5ead6601f347a801c935e668888a72ff858ef0c7b826aca10273f9a77"
+              },
+              "annotations": null
+            },
+            {
+              "entryPoint": "cat \"$(workspaces.source.path)\"/image-digest | tee $(results.IMAGE_DIGEST.path)\necho \"$(params.IMAGE)\" | tee $(results.IMAGE_URL.path)\n",
+              "arguments": null,
+              "environment": {
+                "container": "digest-to-results",
+                "image": "quay.io/buildah/stable@sha256:0ceadda5ead6601f347a801c935e668888a72ff858ef0c7b826aca10273f9a77"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "BUILDER_IMAGE": "\"quay.io/buildah/stable:v1.18.0\"",
+              "BUILD_EXTRA_ARGS": "\"\"",
+              "CONTEXT": "\".\"",
+              "DOCKERFILE": "\"./Dockerfile\"",
+              "FORMAT": "\"oci\"",
+              "IMAGE": "\"$(params.output-image)\"",
+              "PUSH_EXTRA_ARGS": "\"\"",
+              "SKIP_PUSH": "\"false\"",
+              "STORAGE_DRIVER": "\"vfs\"",
+              "TLSVERIFY": "\"true\""
+            }
+          },
+          "results": [
+            {
+              "name": "IMAGE_DIGEST",
+              "value": "sha256:52af519cd2cb835e77f971ab303a8ae1c3b9b04fe2aa604d1c50d8d73f110304"
+            },
+            {
+              "name": "IMAGE_URL",
+              "value": "registry.example.com/minimal-container/min:latest\n"
+            }
+          ]
+        },
+        {
+          "name": "image-security-scan",
+          "ref": {
+            "name": "trivy-scanner",
+            "kind": "Task",
+            "bundle": "gcr.io/tekton-releases/catalog/upstream/trivy-scanner@sha256:e4c2916f25ce2d42ec7016c3dc3392e527442c307f43aae3ea63f4622ee5cfe4"
+          },
+          "startedOn": "2022-07-06T17:17:43Z",
+          "finishedOn": "2022-07-06T17:17:55Z",
+          "status": "Succeeded",
+          "steps": [
+            {
+              "entryPoint": "#!/usr/bin/env sh\n  cmd=\"trivy $* $(params.IMAGE_PATH)\"\n  echo \"Running trivy task with command below\"\n  echo \"$cmd\"\n  eval \"$cmd\"\n",
+              "arguments": [
+                "$(params.ARGS)"
+              ],
+              "environment": {
+                "container": "trivy-scan",
+                "image": "docker.io/aquasec/trivy@sha256:dea76d4b50c75125cada676a87ac23de2b7ba4374752c6f908253c3b839201d9"
+              },
+              "annotations": null
+            }
+          ],
+          "invocation": {
+            "configSource": {},
+            "parameters": {
+              "ARGS": "[\"image\"]",
+              "IMAGE_PATH": "\"$(tasks.image-build.results.IMAGE_URL)\"",
+              "TRIVY_IMAGE": "\"docker.io/aquasec/trivy@sha256:dea76d4b50c75125cada676a87ac23de2b7ba4374752c6f908253c3b839201d9\""
+            }
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "buildStartedOn": "2022-07-06T17:17:12Z",
+      "buildFinishedOn": "2022-07-06T17:17:55Z",
+      "completeness": {
+        "parameters": false,
+        "environment": false,
+        "materials": false
+      },
+      "reproducible": false
+    },
+    "materials": [
+      {
+        "uri": "git+https://github.com/lcarva/minimal-container.git",
+        "digest": {
+          "sha1": "a5bdfa264ac87bb2bec104ef9ddf2207b5b210c9"
+        }
+      }
+    ]
+  }
+}
+```
+
+</details>
+
 
 ##### 3. Attestation Format
 (As an optimization option) Instead of creating separate attestation records for `taskrun`, `pipelinerun`, `event-payload`, create a single attestation record at the "end" of a `pipelinerun` that includes everything.

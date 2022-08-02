@@ -5,8 +5,8 @@ authors:
   - "@jerop"
   - "@vinamra28"
 creation-date: 2020-10-20
-last-updated: 2022-02-17
-status: proposed
+last-updated: 2022-08-09
+status: implementable
 ---
 
 # TEP-0048: Task Results without Results
@@ -17,10 +17,18 @@ status: proposed
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
 - [Requirements](#requirements)
-  - [Use Cases](#use-cases)
-      - [Consuming task results from the conditional tasks](#consuming-task-results-from-the-conditional-tasks)
-      - [<code>Pipeline Results</code> from the conditional tasks](#-from-the-conditional-tasks)
-      - [Task claiming to produce Results fails if it doesn't produces](#task-claiming-to-produce-results-fails-if-it-doesnt-produces)
+- [Use Cases](#use-cases)
+  - [Consuming task results from the conditional tasks](#consuming-task-results-from-the-conditional-tasks)
+  - [<code>Pipeline Results</code> from the conditional tasks](#-from-the-conditional-tasks)
+  - [Task claiming to produce Results fails if it doesn't produces](#task-claiming-to-produce-results-fails-if-it-doesnt-produces)
+- [Proposal](#proposal)
+  - [Consuming task result from the conditional tasks](#consuming-task-result-from-the-conditional-tasks)
+  - [<code>Pipeline Results</code> from the conditional tasks](#-from-the-conditional-tasks)
+  - [Task claiming to produce Result fails if it doesn't produces](#task-claiming-to-produce-result-fails-if-it-doesnt-produces)
+- [Test Plan](#test-plan)
+- [Alternatives](#alternatives)
+  - [Declaring Results as Optional](#declaring-results-as-optional)
+- [Future Work](#future-work)
 - [References](#references)
 <!-- /toc -->
 
@@ -173,9 +181,9 @@ Producing the task result in case of a failed task is out of the scope of this T
 
 ## Requirements
 
-### Use Cases
+## Use Cases
 
-#### Consuming task results from the conditional tasks
+### Consuming task results from the conditional tasks
 
 `deploy-image` requires a default image name to deploy on a cluster when `build-image` is skipped because the
 PR had no changes to a docker file.
@@ -194,8 +202,6 @@ spec:
       runAfter: [ "git-clone" ]
       taskRef:
         name: check-pr-content
-      results:
-        - name: image-change
     # build an image if the platform developer is committing changes to a dockerfile or any other file which is part of 
     # the image
     - name: build-image
@@ -206,8 +212,6 @@ spec:
           values: ["yes"]
       taskRef:
         name: build-image
-      results:
-        - name: image-name
     # deploy a newly built image if build-image was successful and produced an image name
     # deploy a latest platform by default if there are no changes in this PR
     - name: deploy-image
@@ -231,7 +235,7 @@ spec:
         name: update-list-of-builds
 ```
 
-#### `Pipeline Results` from the conditional tasks
+### `Pipeline Results` from the conditional tasks
 
 Produce the name of the image as the pipeline result depending on how the image was built.
 
@@ -252,8 +256,6 @@ spec:
           values: ["true"]
       taskRef:
         name: build-trusted
-      results:
-        - name: image
     # TRUST_BUILDER is set to false at the pipelineRun level if the builder image is not trusted
     # and needs to run in isolation
     # if the builder image is not trusted, executed build-un trusted and produce an image name as a result
@@ -265,8 +267,6 @@ spec:
           values: ["false"]
       taskRef:
         name: build-untrusted
-      results:
-        - name: image
     # read result of both build-trusted and build-untrusted and propagate the one which is initialized as a pipeline result
     - name: propagate-image-name
       runAfter: [ "build-image" ]
@@ -277,15 +277,13 @@ spec:
           value: "$(tasks.build-untrusted.results.image)"
       taskRef:
         name: propagate-image-name
-      results:
-        - name: image
   # pipeline result
   results:
     - name: APP_IMAGE
       value: $(tasks.propagate-image-name.results.image)
 ```
 
-#### Task claiming to produce `Results` fails if it doesn't produces
+### Task claiming to produce `Results` fails if it doesn't produces
 
 Today, a `Task` can declare a `Result` but not produce it and it's
 execution will still be successful whereas if a subsequent `Task` in
@@ -425,6 +423,294 @@ done in `check-name-matches` `Task`. The above `Pipeline` should run
 with the git events such as `when a pull request is created`, etc but it
 doesn't runs. Having default results defined in `check-name-matches` Task
 will fix the `Pipeline`.
+
+## Proposal
+
+We propose adding an optional field - `default` - to the `Result` specification in `Task`.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: task
+spec:
+  results:
+  - name: merge_status
+    description: whether to rebase or squash
+    type: string
+    default: rebase
+  - name: branches
+    description: branches in the repository
+    type: array
+    default:
+    - main
+    - v1alpha1
+    - v1beta1
+    - v1
+  - name: images
+    type: object
+    properties:
+      node:
+       type: string
+       default: "node:latest" 
+      gcloud:
+       type: string
+       default: "gcloud:latest"
+  steps:
+  ...
+```
+
+
+Adding a default value to `Results` is optional; validation of a `Task` doesn't
+fail if the default value isn't provided.
+
+Adding a default value to a `Result` will guarantee that it will hold a value even
+if the `Task` fails to produce it. If a `Task` does not produce a `Result` that does not
+have a default value, then the `Task` should fail - see [tektoncd/pipeline#3497](https://github.com/tektoncd/pipeline/issues/3497) for further details.
+
+The proposed solution can be used to solve the above use cases as follows:
+
+### Consuming `Task` `Result` from the conditional tasks
+
+```yaml
+spec:
+  tasks:
+    # Clone runtime repo
+    - name: git-clone
+      taskRef:
+        name: git-clone
+    # check the content of the PR i.e. the changes proposed
+    # does any of those changes contain changing a dockerfile
+    # if so, build a new image, otherwise, skip building an image
+    - name: check-pr-content
+      runAfter: [ "git-clone" ]
+      taskRef:
+        name: check-pr-content
+    # build an image if the platform developer is committing changes to a dockerfile or any other file which is part of 
+    # the image
+    - name: build-image
+      runAfter: [ "check-pr-content" ]
+      when:
+        - input: "$(tasks.check-pr-content.results.image-change)"
+          operator: in
+          values: ["yes"]
+      taskRef:
+        name: build-image
+    # deploy a newly built image if build-image was successful and produced an image name
+    # deploy a latest platform by default if there are no changes in this PR
+    - name: deploy-image
+      runAfter: [ "build-image" ]
+      params:
+        - name: image-name
+          value: "$(tasks.build-image.results.image-name.path)"
+      taskRef:
+        name: deploy-image
+    # update the page where a list of builds is maintained with this new image
+    - name: update-list-of-builds
+      runAfter: [ "build-image" ]
+      params:
+        - name: image-name
+          value: "$(tasks.build-image.results.image-name.path)"
+      when:
+        - input: "$(tasks.build-image.status)"
+          operator: in
+          values: ["succeeded"]
+      taskRef:
+        name: update-list-of-builds
+```
+
+### `Pipeline Results` from the conditional tasks
+
+```yaml
+spec:
+  tasks:
+    # Clone application repo
+    - name: git-clone
+      taskRef:
+        name: git-clone
+    # TRUST_BUILDER is set to true at the pipelineRun level if the builder image is trusted
+    # if the builder image is trusted, executed build-trusted and produce an image name as a result
+    - name: build-trusted
+      runAfter: [ "git-clone" ]
+      when:
+        - input: "$(params.TRUST_BUILDER)"
+          operator: in
+          values: ["true"]
+      taskRef:
+        name: build-trusted
+    # TRUST_BUILDER is set to false at the pipelineRun level if the builder image is not trusted
+    # and needs to run in isolation
+    # if the builder image is not trusted, executed build-un trusted and produce an image name as a result
+    - name: build-untrusted
+      runAfter: [ "git-clone" ]
+      when:
+        - input: "$(params.trusted)"
+          operator: in
+          values: ["false"]
+      taskRef:
+        name: build-untrusted
+    # read result of both build-trusted and build-untrusted and propagate the one which is initialized as a pipeline result
+    - name: propagate-image-name
+      runAfter: [ "build-image" ]
+      params:
+        - name: trusted-image-name
+          value: "$(tasks.build-trusted.results.image)"
+        - name: untrusted-image-name
+          value: "$(tasks.build-untrusted.results.image)"
+      taskRef:
+        name: propagate-image-name
+  # pipeline result
+  results:
+    - name: APP_IMAGE
+      value: $(tasks.propagate-image-name.results.image)
+```
+
+### `Task` claiming to produce `Result` fails if it doesn't produces
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: check-name-matches
+  annotations:
+    description: |
+      Returns "passed" in the "check" result if the name of the CI Job
+      (GitHub Check) matches the regular expression specified. This is used
+      for the "/test" command in GitHub. The regular expression cannot contain spaces.
+spec:
+  params:
+    - name: gitHubCommand
+      description: The whole comment left on GitHub
+    - name: checkName
+      description: The name of the check
+  results:
+    - name: check
+      description: The result of the check, "passed" or "failed"
+      default: "passed"
+  steps:
+    - name: check-name
+      image: alpine
+      script: |
+        #!/bin/sh
+        set -ex
+        set -o pipefail
+
+        # If no command was specified, the check is successful
+        [[ "$(params.gitHubCommand)" == "" ]] && exit 0
+
+        # If a command was specified, the regex should match the checkName
+        REGEX="$(echo $(params.gitHubCommand) | awk '{ print $2}')"
+        [[ "$REGEX" == "" ]] && REGEX='.*'
+        (echo "$(params.checkName)" | grep -E "$REGEX") \
+            && printf "passed" > $(results.check.path) \
+            || printf "failed" > $(results.check.path)
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: catlin-linter
+spec:
+  workspaces:
+    - name: source
+      description: Workspace where the git repo is prepared for linting.
+  params:
+    - name: gitCloneDepth
+      description: Number of commits in the change + 1
+    - name: gitHubCommand
+      description: The command that was used to trigger testing
+    - name: checkName
+      description: The name of the GitHub check that this pipeline is used for
+      default: ""
+    - name: pullRequestUrl
+      description: The HTML URL for the pull request
+    - name: gitRepository
+      description: The git repository that hosts context and Dockerfile
+    - name: pullRequestBaseRef
+      description: The pull request base branch
+    - name: pullRequestNumber
+      description: The pullRequestNumber
+  tasks:
+    - name: check-name-match
+      taskRef:
+        name: check-name-matches
+      params:
+        - name: gitHubCommand
+          value: $(params.gitHubCommand)
+        - name: checkName
+          value: $(params.checkName)
+    - name: clone-repo
+      when:
+        - input: $(tasks.check-name-match.results.check)
+          operator: in
+          values: ["passed"]
+      taskRef:
+        name: git-batch-merge
+        bundle: gcr.io/tekton-releases/catalog/upstream/git-batch-merge:0.2
+      workspaces:
+        - name: output
+          workspace: source
+      ...
+    ...
+  finally:
+    ...
+```
+
+In the above example, even if the value of parameter `checkName` is not passed,
+default value of `Result` will be produced `passed` and Pipeline's execution will
+be continued. The only case when the execution of `Pipeline` is stopped when
+the wrong value of parameter `checkName` is passed.
+
+Having default results defined in check-name-matches Task will fix the Pipeline.
+
+## Test Plan
+
+1. Unit tests for the behaviour of `Results` when default value is present and none of the steps produce any result
+1. Unit tests for the behaviour of `Results` when no default value is present and none of the steps produce any result
+1. E2E tests can take the form of YAML examples that demonstrate the syntax for declaring a result with default value and results without defaults
+
+## Alternatives
+
+### Declaring Results as Optional
+
+Allow `Results` to declare an optional field as `optional`. When a `Task` fails to
+produce a `Result` that's optional, then the `Task` does not fail. When a `Task` fails
+to produce a `Result` that's not optional, then then the `Task` will fail.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: task
+spec:
+  results:
+  - name: merge_status
+    description: whether to rebase or squash
+    type: string
+    optional: true
+  - name: branches
+    description: branches in the repository
+    type: array
+    optional: true
+  - name: images
+    type: object
+    properties:
+      node:
+       type: string
+       optional: true 
+      gcloud:
+       type: string
+  steps:
+  ...
+```
+
+However, this solution only solves the issue of `Tasks` not failing when they don't
+produce `Results` as discussed in [tektoncd/pipeline#3497](https://github.com/tektoncd/pipeline/issues/3497).
+It does not address the use cases for providing default `Results` that can be consumed in subsequent `Tasks`.
+
+
+## Future Work 
+
+Determine if we need default `Results` declared at runtime in the future, and how we can support that.
 
 ## References
 

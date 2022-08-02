@@ -211,6 +211,8 @@ This policy should be updated to include Tekton metrics as part of the API. No o
 
 - Track bug fixes and small backwards incompatible changes outside of this TEP (e.g. in a Github project or milestones).
 - Implement conversion webhook for v1beta1 objects.
+- Add or improve upgrade tests to ensure users don't experience breakages when upgrading Tekton versions, as tracked in
+[#5193](https://github.com/tektoncd/pipeline/issues/5193).
 
 #### CRD Stability Levels
 

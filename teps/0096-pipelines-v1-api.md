@@ -245,6 +245,9 @@ Therefore, step-level compute resource related fields should remain at their cur
 until we are confident we have a consistent API for compute resources.
 `task.spec.steps[].resources` and `taskRun.spec.taskSpec.steps[].resources` should remain in beta,
 meaning that to enable these fields on v1 CRDs, the "enable-api-fields" flag should be set to "beta". 
+- Rename TaskRun's `status.taskResults` to `status.results` and PipelineRun's `status.pipelineResults` to `status.results`
+to reduce redundancy. (v1beta1 TaskRun also has `status.resourceResults`, but this will not be present in v1 due to the
+deprecation of PipelineResources.)
 
 #### Deprecations
 

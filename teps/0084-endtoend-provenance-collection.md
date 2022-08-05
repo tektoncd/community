@@ -496,7 +496,8 @@ taskrun and one for the pipelinerun. When using the OCI storage, for example, th
 will contain 2 layers each representing one of the attestations. This is not necessarily a new
 behavior as the existing mechanism to attest taskruns could also produce multiple attestations for
 a single image under certain circumstances. However, this is much more likely to happen with this
-proposal.
+proposal. An example circumstance is if both the Task and the Pipeline provide the `IMAGE_URL` and
+`IMAGE_DIGEST` results.
 
 **No Signature from PipelineRun**: A pipelinerun that produces the expected type hinting result
 will cause a pipelinerun attestation to be created. However, it will not cause an image signature

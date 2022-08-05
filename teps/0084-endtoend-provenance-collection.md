@@ -370,6 +370,101 @@ The `in-toto` format created by chains wraps the [SLSA Provenance v0.2](https://
 
 </details>
 
+<details>
+    <summary>Click to view the pipeline definition for the example above</summary>
+
+```json
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  annotations:
+  name: simple-build
+spec:
+  params:
+  - description: Repository URL to clone from.
+    name: git-repo
+    type: string
+  - default: main
+    description: Revision to checkout. (branch, tag, sha, ref, etc...)
+    name: git-revision
+    type: string
+  - description: Reference of the image the pipeline will produce.
+    name: output-image
+    type: string
+  results:
+  - description: Reference of the image the pipeline will produce.
+    name: IMAGE_URL
+    value: $(tasks.image-build.results.IMAGE_URL)
+  - description: Digest of the image the pipeline will produce.
+    name: IMAGE_DIGEST
+    value: $(tasks.image-build.results.IMAGE_DIGEST)
+  - description: Repository URL used for buiding the image.
+    name: CHAINS-GIT_URL
+    value: $(tasks.git-clone.results.url)
+  - description: Repository commit used for building the image.
+    name: CHAINS-GIT_COMMIT
+    value: $(tasks.git-clone.results.commit)
+  tasks:
+  - name: git-clone
+    taskRef:
+      kind: Task
+      name: git-clone
+    params:
+    - name: url
+      value: $(params.git-repo)
+    - name: revision
+      value: $(params.git-revision)
+    workspaces:
+    - name: output
+      workspace: shared
+  - name: source-security-scan
+    runAfter:
+    - git-clone
+    taskRef:
+      name: trivy-scanner
+      bundle: gcr.io/tekton-releases/catalog/upstream/trivy-scanner:0.1
+    params:
+    - name: ARGS
+      value:
+      - filesystem
+    - name: IMAGE_PATH
+      value: "."
+    workspaces:
+    - name: manifest-dir
+      workspace: shared
+  - name: image-build
+    runAfter:
+    - source-security-scan
+    taskRef:
+      kind: ClusterTask
+      name: buildah
+    params:
+    - name: IMAGE
+      value: $(params.output-image)
+    - name: STORAGE_DRIVER
+      value: vfs
+    workspaces:
+    - name: source
+      workspace: shared
+  - name: image-security-scan
+    taskRef:
+      name: trivy-scanner
+      bundle: gcr.io/tekton-releases/catalog/upstream/trivy-scanner@sha256:e4c2916f25ce2d42ec7016c3dc3392e527442c307f43aae3ea63f4622ee5cfe4
+    params:
+    - name: ARGS
+      value:
+      - image
+    - name: IMAGE_PATH
+      value: $(tasks.image-build.results.IMAGE_URL)
+    workspaces:
+    - name: manifest-dir
+      workspace: shared
+  workspaces:
+  - name: shared
+```
+
+</details>
 
 ##### 3. Attestation Format
 (As an optimization option) Instead of creating separate attestation records for `taskrun`, `pipelinerun`, `event-payload`, create a single attestation record at the "end" of a `pipelinerun` that includes everything.

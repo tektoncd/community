@@ -2,7 +2,7 @@
 status: implementable
 title: Task-level Resource Requirements
 creation-date: '2022-04-08'
-last-updated: '2022-07-07'
+last-updated: '2022-08-08'
 authors:
 - '@lbernick'
 - '@vdemeester'
@@ -161,9 +161,13 @@ Instead, container limits are enforced by the container runtime.
 This means that applying the task resource limits to each container in the pod will result in a pod with higher effective limits than
 desired, but which prevents any individual Step from exceeding configured limits, as is likely desired.
 
-If Task-level limits are set, Tekton should apply the smallest possible resource request to each container.
-This is because containers with limits but not requests automatically have their requests set to their limits,
-which would result in a pod with much higher effective requests than desired.
+Containers with limits but not requests automatically have their requests set to their limits.
+This means that if user specifies Task-level limits but not Task-level requests, failing to set the requests would result
+in a pod with each container's requests set to its limits, resulting in much higher requests than desired.
+Instead, we will apply behavior similar to Kubernetes' behavior in this case: If a user specifies Task-level limits but not Task-level requests,
+we will set the Task-level requests to the Task-level limits.
+(This TEP originally proposed applying the smallest possible resource requests to the container in this case;
+however, this could make pods more likely to be evicted, since they will very likely exceed the requests reserved for them during scheduling.)
 
 ### Sidecars
 
@@ -315,16 +319,14 @@ spec:
     name: my-task
   computeResources:
     limits:
-      cpu: 2
+      cpu: 3
 ```
 
-| Step name | CPU request       | CPU limit |
-| --------- | ----------------- | --------- |
-| step-1    | smallest possible | 2         |
-| step-2    | smallest possible | 2         |
-| step-3    | smallest possible | 2         |
-
-(Here, the smallest possible request is based on both what the kubelet will allow, and the minimum values allowed by any LimitRange.)
+| Step name | CPU request | CPU limit |
+| --------- | ----------- | --------- |
+| step-1    | 1           | 3         |
+| step-2    | 1           | 3         |
+| step-3    | 1           | 3         |
 
 ### Example with both requests and limits
 

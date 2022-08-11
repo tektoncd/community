@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Referencing Finally Task Results in Pipeline Results
 creation-date: '2022-06-24'
-last-updated: '2022-07-15'
+last-updated: '2022-08-11'
 authors:
 - '@vsinghai'
 ---

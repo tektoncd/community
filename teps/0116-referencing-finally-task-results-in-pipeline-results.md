@@ -85,3 +85,7 @@ The implementation will follow the previous implementation of passing [`Task` `R
   
 - Issues
   - [tektoncd/pipeline#4923: Wrong variable propagating Finally Task Results to Pipeline Results](https://github.com/tektoncd/pipeline/issues/4923)
+  - [Design and implement Pipeline Results for pipeline with finally tasks](https://github.com/tektoncd/pipeline/issues/2710)
+
+- Implementation Pull Request
+  - [Referencing Finally Task Results in Pipeline Results](https://github.com/tektoncd/pipeline/pull/5170)

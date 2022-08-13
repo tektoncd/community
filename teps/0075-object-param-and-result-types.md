@@ -972,7 +972,7 @@ params:
     schemaRef: GitRepo
 ```
 
-We could also pursue supporting [JSON Schema refs](http://json-schema.org/draft/2020-12/json-schema-core.html#ref).
+We could also pursue supporting [JSON Schema refs](https://json-schema.org/draft/2020-12/json-schema-core.html#ref).
 
 _(Thanks to @wlynch for the suggestion and above example!)_
 

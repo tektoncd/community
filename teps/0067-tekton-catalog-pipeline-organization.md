@@ -289,7 +289,7 @@ spec:
         version: '0.1'
         catalog:
           - name: tektoncd
-        url: http://raw.githubusercontent.com/tektoncd/catalog/task/foo/1.0/foo.yaml
+        url: https://raw.githubusercontent.com/tektoncd/catalog/task/foo/1.0/foo.yaml
 ```
 
 Pros:

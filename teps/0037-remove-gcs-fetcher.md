@@ -63,7 +63,7 @@ Assuming no negative response, after the v1.21 release branch is cut, remove sup
 
 It's possible that someone still depends on this behavior, and that our various modes of communication will not reach them. A user or operator who depends on `build-gcs` may be surprised (in the bad way) when we remove support.
 
-As a mitigation, we can help those users/operators migrate to a more well-supported mechanism, such as authoring and using a Task that fetches source using `gcs-fetcher` (a public image supported and regularly released by the Google Cloud Build team exists at [`gcs.io/cloud-builders/gcs-fetcher`](http://gcr.io/cloud-builders/gcs-fetcher)).
+As a mitigation, we can help those users/operators migrate to a more well-supported mechanism, such as authoring and using a Task that fetches source using `gcs-fetcher` (a public image supported and regularly released by the Google Cloud Build team exists at [`gcs.io/cloud-builders/gcs-fetcher`](https://gcr.io/cloud-builders/gcs-fetcher)).
 
 
 ## Test Plan

@@ -142,7 +142,7 @@ Any nominee who accepts the nomination will be on the ballot.
 
 Elections will be held using time-limited
 [Condorcet](https://en.wikipedia.org/wiki/Condorcet_method) ranking on
-[CIVS](http://civs.cs.cornell.edu/) using the
+[CIVS](https://civs.cs.cornell.edu/) using the
 [Schulze method](https://en.wikipedia.org/wiki/Schulze_method). The top vote
 getters will be elected to the open seats. This is the same process used by the
 Kubernetes project.
@@ -228,7 +228,7 @@ This is the election timeline:
 
     < TBD fill in timeline, below is example from 2021 >
     Feb 24 at midnight PST the nominations will close
-    Feb 25 we will start the voting process via http://civs.cs.cornell.edu/
+    Feb 25 we will start the voting process via https://civs.cs.cornell.edu/
     Mar 3 we close the election
 
 Please feel free to reach out to anyone on the governing board and/or reply to this email with any questions!
@@ -313,10 +313,10 @@ When someone leaves the governing board:
 
 Members of the governing board will be given access to these resources:
 
-- [The GCP project `tekton-releases`](http://console.cloud.google.com/home/dashboard?project=tekton-releases)
+- [The GCP project `tekton-releases`](https://console.cloud.google.com/home/dashboard?project=tekton-releases)
   which is used for
   [test and release infrastructure](https://github.com/tektoncd/plumbing)
-- [The GCP project `tekton-nightly`](http://console.cloud.google.com/home/dashboard?project=tekton-nightly)
+- [The GCP project `tekton-nightly`](https://console.cloud.google.com/home/dashboard?project=tekton-nightly)
   which is used for publishing nightly releases for Tekton projects
 - [The GCP projects used by boskos](https://github.com/tektoncd/plumbing/blob/main/boskos/boskos-config.yaml)
   which are used to test against

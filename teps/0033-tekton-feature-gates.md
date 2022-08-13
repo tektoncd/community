@@ -197,7 +197,7 @@ In both cases we want to control access with
   each feature will be gated by its own unique feature flag.
   ([Design details: changes in behavior](#changes-in-behavior).)
 
-This proposal would impact all projects in [the tektoncd org](http://github.com/tektoncd) that are CRD based - if they
+This proposal would impact all projects in [the tektoncd org](https://github.com/tektoncd) that are CRD based - if they
 find themselves in the position of wanting to add fields to existing CRDs at a lower stability level than the CRD
 itself. Today this would include:
 

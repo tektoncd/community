@@ -1,11 +1,12 @@
 ---
-status: proposed
+status: implementable
 title: 'Ignore Task Failures'
 creation-date: '2021-02-05'
-last-updated: '2021-02-19'
+last-updated: '2022-09-16'
 authors:
 - '@pritidesai'
 - '@skaegi'
+- '@QuanZhang-William'
 ---
 
 # TEP-0050: Ignore Task Failures
@@ -17,6 +18,15 @@ authors:
   - [Non-Goals](#non-goals)
 - [Requirements](#requirements)
   - [Use Cases](#use-cases)
+- [Proposal](#proposal)
+  - [Ignored Failed Tasks with Retry](#ignored-failed-tasks-with-retry)
+  - [Emit Results from Ignored Failed Tasks](#emit-results-from-ignored-failed-tasks)
+  - [Tasks with Missing Resource Dependency](#tasks-with-missing-resource-dependency)
+- [Alternatives](#alternatives)
+  - [A bool flag](#a-bool-flag)
+  - [A list of ignorable fail tasks in PipelineSpec](#a-list-of-ignorable-fail-tasks-in-pipelinespec)
+- [Future Work](#future-work)
+  - [Support parameterization for task.OnError](#support-parameterization-for-taskonerror)
 - [References](#references)
 <!-- /toc -->
 
@@ -186,6 +196,325 @@ control over the task definitions but may desire to ignore a failure and continu
   ```
 
   ![Jenkins Dashboard](images/0050-jenkins-dashboard-with-failure-stage.png)
+
+## Proposal
+We propose a new field ```OnError``` to the [PipelineTask](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#adding-tasks-to-the-pipeline) definition.
+
+```go
+type PipelineTask struct {
+	Name string `json:"name,omitempty"`
+
+	//...
+
+	// OnError defines the termination behavior of a pipeline when the task is failed
+	// can be set to [ continueAndFail | stopAndFail ]
+	OnError OnErrorType `json:onError, "omitempty"`
+}
+```
+
+```go
+type OnErrorType string
+
+const (
+	// StopAndFail indicates to stop the pipeline if the task is failed
+	StopAndFail OnErrorType = "stopAndFail"
+	// ContinueAndFail indicates to fail the task run but continue executing the rest of the pipeline
+	ContinueAndFail    OnErrorType = "continueAndFail"
+)
+```
+
+Pipeline author can set the ```OnErrorType``` field to configure the task failure strategy. If set to ```StopAndFail```, the pipeline is stopped and failed when the task is failed. If set to ```ContinueAndFail```, the failure of task is ignored and the pipeline continues to execute the rest of the DAG.
+
+```yaml
+- name: task1
+  onError: continueAndFail
+  taskSpec:
+    steps:
+      - image: alpine
+        name: exit-with-1
+        script: |
+          exit 1
+
+```
+This new field ```OnError``` will be implemented as an ```alpha``` feature and can be enabled by setting ```enable-api-fields``` to ```alpha```.
+
+Setting ```OnError``` is optional, the default pipeline behavior is ```StopAndFail```
+
+The task run information is available under the ```pipelineRun.status.childReferences```. Note that the original task run status remains as it is irrelevant of the value of ```OnError``` (i.e. a failed task with ```OnError: continueAndFail``` is still marked as failed). We introduce a new [TaskRunReason](https://github.com/tektoncd/pipeline/blob/main/docs/pipeline-api.md#taskrunreasonstring-alias) ```FailureIgnored``` indicating the taskrun is failed but the failure is ignored. The detailed failure information can be found in the ```message``` field of the task run.
+
+```go
+// TaskRunReasonFailureIgnored is the reason set when the Taskrun has failed and the failure is ignored
+TaskRunReasonFailureIgnored TaskRunReason = "FailureIgnored"
+```
+
+ The task would be considered "successful" ONLY for the purposes of determining the status of the pipeline run, which is represented in ```pipelineRun.status.conditions``` (if using ```full``` embedded status) or ```pipelineRun.status.childReferences``` (if using ```minimum``` embedded status). Details can be found in [TEP-0100](https://github.com/tektoncd/community/blob/main/teps/0100-embedded-taskruns-and-runs-status-in-pipelineruns.md).
+
+
+To distinguish pipeline run messages with and without ignored task failures, we explicitly add the ignored task failure count to ```pipelineRun.status.conditions.message``` in the following way if ignored task failure > 0: 
+
+```
+"Tasks Completed: A (Failed: B (Ignored: C), Cancelled D), Skipped: E"
+```
+
+Example Input:
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata: 
+  name: demo-pipeline-run
+spec:
+  pipelineSpec:
+    tasks:
+    - name: task1
+      onError: continueAndFail
+      taskSpec:
+        steps:
+          - image: alpine
+            name: exit-with-1
+            script: |
+              exit 1
+    - name: task2
+      taskSpec:
+        steps:
+          - image: alpine
+            name: exit-with-0
+            script: |
+              exit 0
+```
+
+Example Output:
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+...
+status:
+  completionTime: "2022-08-15T17:26:15Z"
+  conditions:
+    - lastTransitionTime: "2022-08-15T17:26:15Z"
+      message: "Tasks Completed: 2 (Failed: 1 (Ignored: 1), Cancelled 0), Skipped: 0"  
+      reason: Succeeded
+      status: "True"  # The failed task is considered "successful" when determining the state of pipelineRun
+      type: Succeeded
+  pipelineSpec:
+    ...
+  taskRuns:
+    demo-pipeline-run-task1:
+      pipelineTaskName: task1
+      status:
+        completionTime: "2022-08-15T17:26:13Z"
+        conditions:
+          - lastTransitionTime: "2022-08-15T17:26:13Z"
+            message: ...
+            reason: FailureIgnored
+            status: "False" # The task is failed when OnError is set to continueAndFail
+            type: Succeeded
+          ...
+    demo-pipeline-run-task2:
+      pipelineTaskName: task2
+      status:
+        completionTime: "2022-08-15T17:26:15Z"
+        conditions:
+          - lastTransitionTime: "2022-08-15T17:26:15Z"
+            message: All Steps have completed executing
+            reason: Succeeded
+            status: "True"
+            type: Succeeded
+          ...
+
+```
+
+### Ignored Failed Tasks with Retry
+Setting ```Retry``` and ```OnError``` to ```continueAndFail``` at the same time is not allowed in this iteration of the TEP, as there is no point to retry a task that allows to fail. Pipeline validation will be added accordingly. We can support retries with ignored failed task in the future if needed.
+
+### Emit Results from Ignored Failed Tasks
+The task results that are initialized before the task fails will be emitted to ```pipelineResults``` and be available to the rest of the DAG if the task is set to ```onError:continueAndFail```.
+
+In the following example, the ```pipelineRun``` has 2 tasks. The first task attempts to create 3 results. ```task1.result1``` and ```task1.result3``` are initialized before ```task1``` fails (```task1.step1``` already terminated before initializing ```task1.result2```). ```task1.result1``` and ```task1.result3``` are emitted to the pipeline result and are available to the resource-dependent ```task2```. ```task2``` (and the overall ```pipelineRun```) are therefore executed successfully.
+
+Input
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: demo
+spec:
+  pipelineSpec:
+    tasks:
+      - name: task1
+        onError: continueAndFail
+        taskSpec:
+          results:
+            - name: result1
+            - name: result2
+            - name: result3
+          steps:
+            - name: step1
+              image: alpine
+              onError: continue
+              script: |
+                echo -n "result val 1" > $(results.result1.path)
+                exit 1
+                echo -n "result val 2" > $(results.result2.path)
+            - name: step2
+              image: alpine
+              onError: stopAndFail
+              script: |
+                echo -n "result val 3" > $(results.result3.path)
+                exit 1
+      - name: task2         
+        taskSpec:
+          params:
+            - name: arg1
+          steps:
+            - name: step1
+              image: alpine
+              script: |
+                echo "$(params.arg1)"
+        params:
+          - name: arg1
+            value: "$(tasks.task1.results.result1)"
+    results:
+      - name: pipeline-result1
+        value: $(tasks.task1.results.result1)
+      - name: pipeline-result2
+        value: $(tasks.task1.results.result2)        
+      - name: pipeline-result3
+        value: $(tasks.task1.results.result3)  
+```
+
+Output
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+...
+status:
+  completionTime: "2022-09-16T18:59:19Z"
+  conditions:
+    - lastTransitionTime: "2022-09-16T18:59:19Z"
+      message:
+        "Tasks Completed: 2 (Failed: 1 (Ignored: 1), Cancelled: 0), Skipped:
+        0"
+      reason: Succeeded
+      status: "True"
+      type: Succeeded
+  pipelineResults:
+    - name: pipeline-result1
+      value: result val 1
+    - name: pipeline-result3
+      value: result val 3
+  ...
+  taskRuns:
+    demo5c4gd-task1:
+      pipelineTaskName: task1
+      status:
+        completionTime: "2022-09-16T18:59:12Z"
+        conditions:
+          - lastTransitionTime: "2022-09-16T18:59:12Z"
+            message: ...
+            reason: FailureIgnored
+            status: "False"
+            type: Succeeded
+        taskResults:
+          - name: result1
+            type: string
+            value: result val 1
+          - name: result3
+            type: string
+            value: result val 3
+        ...
+    demo5c4gd-task2:
+      pipelineTaskName: task2
+      status:
+        completionTime: "2022-09-16T18:59:19Z"
+        conditions:
+          - lastTransitionTime: "2022-09-16T18:59:19Z"
+            message: All Steps have completed executing
+            reason: Succeeded
+            status: "True"
+            type: Succeeded
+        ...
+```
+
+### Tasks with Missing Resource Dependency
+The resource-dependent tasks will be skipped with reason ```Results were missing``` if the expected result is **NOT** emitted from a parent task with ```onError: continueAndFail```. Following the above example, if ```task2``` consumes a result that is **NOT** initialized (```task1.result2```), ```task2``` will be skipped with reason ```Results were missing``` .
+
+Input 
+```yaml
+# rest of the yaml file is the same as above example
+...
+- name: task2         
+       taskSpec:
+         params:
+           - name: arg1
+         steps:
+           - name: step1
+             image: alpine
+             script: |
+               echo "$(params.arg1)"
+       params:
+         - name: arg1
+           value: "$(tasks.task1.results.result2)"
+...
+```
+
+Output 
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+...
+status:
+  conditions:
+    - message:
+        "Tasks Completed: 1 (Failed: 1 (Ignored: 1), Cancelled 0), Skipped:
+        1"
+      reason: Completed
+      status: "True"
+      type: Succeeded
+  skippedTasks:
+    - name: task2
+      reason: Results were missing
+  taskRuns:
+    demonzrlk-task1:
+      pipelineTaskName: task1
+      status:
+        completionTime: "2022-08-18T15:08:25Z"
+        conditions:
+          - lastTransitionTime: "2022-08-18T15:08:25Z"
+            message: ...
+            reason: FailureIgnored
+            status: "False"
+            type: Succeeded
+        ...
+    ...
+```
+
+This behavior is consistent with [Guarding a Task only](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#guarding-a-task-only). When we add support for [default Results](https://github.com/tektoncd/community/blob/main/teps/0048-task-results-without-results.md), then the resource-dependent Tasks may be executed if the default Results from the skipped parent Task are specified. 
+
+## Alternatives
+### A bool flag
+Use a boolean flag indicating to ignore a task failure or not.
+
+### A list of ignorable fail tasks in PipelineSpec
+Add a new field ```IgnoreFailureTasks``` in ```PipelineSpec``` indicating the list of tasks that should not block the execution of the Pipeline when failed
+
+```go
+type PipelineSpec struct {
+   Description string `json:"description,omitempty"`
+   Resources []PipelineDeclaredResource `json:"resources,omitempty"`
+   Tasks []PipelineTask `json:"tasks,omitempty"`
+   Params []ParamSpec `json:"params,omitempty"`
+   Workspaces []PipelineWorkspaceDeclaration `json:"workspaces,omitempty"`
+   Results []PipelineResult `json:"results,omitempty"`
+   Finally []PipelineTask `json:"finally,omitempty"`
+
+   IgnoreFailureTasks []string `json:"ignoreFailureTasks,omitempty"`
+}
+
+```
+
+## Future Work
+### Support parameterization for task.OnError
+The failure strategy proposed in this TEP supports only static constant values (```continueAndFail``` and ```stopAndFail```) for ```onError```. We could further extend the support to let users specify values as task parameters (for example ```onError: $(params.CONTINUE)```)
 
 ## References
 

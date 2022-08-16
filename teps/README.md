@@ -263,3 +263,4 @@ This is the complete list of Tekton teps:
 |[TEP-0114](0114-custom-tasks-beta.md) | Custom Tasks Beta | implementable | 2022-07-12 |
 |[TEP-0116](0116-referencing-finally-task-results-in-pipeline-results.md) | Referencing Finally Task Results in Pipeline Results | implemented | 2022-08-11 |
 |[TEP-0118](0118-matrix-with-explicit-combinations-of-parameters.md) | Matrix with Explicit Combinations of Parameters | implementable | 2022-08-08 |
+|[TEP-0119](0119-simplifying-tektons-compute-resources-api.md) | Simplifying Tekton's Compute Resources API | implementable | 2022-08-16 |

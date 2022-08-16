@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Task-level Resource Requirements
 creation-date: '2022-04-08'
-last-updated: '2022-08-08'
+last-updated: '2022-08-16'
 authors:
 - '@lbernick'
 - '@vdemeester'
@@ -674,6 +674,11 @@ over the scheduling of Tekton pods.
 - Apply only the maximum Step resource request and ignore all others,
 reverting to pre-0.28.0 behavior.
   - This would create confusion and break existing Pipelines.
+
+## Implementation Pull Requests
+- [[TEP-0104] Support Task-level Resource Requirements for TaskRun: Part #1 Fields Addition & Validation w/ Docs Updates](https://github.com/tektoncd/pipeline/pull/4877)
+- [[TEP-0104] Populate Task-level Resource Requirements from PipelineRun to TaskRun](https://github.com/tektoncd/pipeline/pull/5212)
+- [[TEP-0104] Update Pod with Task-level Resource Requirements](https://github.com/tektoncd/pipeline/pull/5082)
 
 ## References
 

@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Trusted Resources
 creation-date: '2022-06-22'
-last-updated: '2022-06-24'
+last-updated: '2022-08-16'
 authors:
 - '@squee1945'
 - '@wlynch'
@@ -20,7 +20,7 @@ authors:
 - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [Risks and Mitigations](#risks-and-mitigations)
-  - [User Experience (optional)](#user-experience-optional)
+  - [User Experience](#user-experience)
   - [Performance (optional)](#performance-optional)
 - [Design Details](#design-details)
 - [Test Plan](#test-plan)
@@ -38,13 +38,13 @@ authors:
 
 The proposed features advance Secure Software Supply Chain goals and allow
 users of Tekton and Tekton Chains to implement more secure builds.
+They would also help to guarantee [non-falsifiable provenance](https://slsa.dev/requirements#non-falsifiable), which is a requirement for [SLSA Level 3](https://slsa.dev/levels). That is, every field in the provenance MUST be generated or verified by the build service in a trusted control plane. The user-controlled build steps MUST NOT be able to inject or alter the contents.
+With this integration, Tekton will be one step closer to SLSA Level 3 compliance. This integration will:
 
 - Provide an optional mechanism for Resources (local and remote tekton tasks/ pipelines) to be signed and verified.
-- Provide an optional mechanism to fail Runs if the Resource cannot be verified.
-- Adjust Chains to ignore outputs from Task Runs that explicitly fail
-  verification.
-- Adjust Chains to optionally ignore outputs from Runs with no verification
-  requirement.
+- Provide an optional mechanism to fail Runs(taskrun/pipelinerun) if the referred Resource cannot be verified.
+- Provide a mechanism to reject TaskRuns/PipelineRuns that fail verification.
+
 ## Motivation
 
 Tekton Chains is built to make attestations based on Taskrun parameters and
@@ -56,26 +56,24 @@ Resource verification allows us to place some level of trust in the outputs
 from a Taskrun so that we can be confident in the build results and the
 attestation claims that are made.
 
-
 ### Goals
 
 - Provide solid building blocks to begin to establish formal chains of trust
   within the build pipeline itself.
 - Leveraging the above, provide mechanisms to establish a verifiable corpus
-  of community-provided Tasks/Pipelines, Task/Pipelines Bundles and other Tekton types as well in the future.
+  of community-provided Tasks/Pipelines, Task/Pipelines Bundles and other Tekton types as well in the future. They are considered as Tekton resources we need to verify within the context of this TEP.
 - Create an optional Tekton configuration for Resource verification based
-  on Sigstore Cosign (https://github.com/sigstore/cosign) and KMS from cloud.
-- Create an optional Tekton Chains configuration to skip attestation creation
-  based on information from Resources that could not be verified.
+  on [Sigstore Cosign](https://github.com/sigstore/cosign) and Key Management System(KMS) from cloud service providers. Resources that fail to be verified should be rejected.
 
 ### Non-Goals
 
-- Specification of a verification mechanism for Taskrun, Pipelinerun and Run.
+- Specification of a verification mechanism for Taskrun, Pipelinerun and Run. This should be covered at [TEP-0089](https://github.com/tektoncd/community/blob/main/teps/0089-nonfalsifiable-provenance-support.md).
 - Specification of a verification mechanism for custom Tasks.
 - Specification of a verification mechanism for the images within a Task
-  Bundle.
+  Bundle, this could be a future work once this TEP is completed.
+- Specification of a secure mechanism for passing public keys between users.
 
-### Use Cases (optional)
+### Use Cases
 
 **Kaniko builds.** A Kaniko task exists in the Tekton Catalog
 (https://github.com/tektoncd/catalog/blob/main/task/kaniko/0.5/kaniko.yaml).
@@ -93,7 +91,7 @@ Catalog with output that indicates the image that was built
 The motivation is
 the same here: how can we trust the Task without some sort of verification?
 
-**Really, any third-party task.** If we're going to build an ecosystem of tasks
+**Third-party task.** If we're going to build an ecosystem of tasks
 in the Tekton Catalog, we need to think about how to ensure these tasks are
 safe. Task verification can provide building blocks.
 
@@ -112,26 +110,21 @@ be handled, or user scenarios that will be affected and must be accomodated.
 - There is a process by which a Tekton Resource can be marked as trusted meaning the Resource has been explicitly signed off by an authenticated third party.
 - Verification can ensure the contents of the Resource has not been modified since
   being marked as trusted.
-- It is not possible to modify the marked Resource in such a way that it will still
+- Trusted resources must be immutable: it is not possible to modify the marked Resource in such a way that it will still
   pass verification.
-- Verification can be performed by Tekton Pipelines; Tekton Chains can see
-  whether or not the verification occurred and if it was successful.
-- A Pipeline Author can indicate that a Task must be verified in order
-  for Chains to create a provenance attestation.
-- A Pipeline Author can configure a run to fail if a Resource cannot be verified.
-- Ideally, the solution should make it clear how to obtain the public key for community-provided, trusted resources.
+- A Pipeline Author can configure taskruns/pipelineruns to fail if a Resource cannot be verified. Or not fail but return warning.
+- Ideally, the remote registry where users store the resources should make it clear how to obtain the public key for community-provided resources
 
 ## Proposal
 
 Sigstore Cosign (https://github.com/sigstore/cosign) has mechanisms to securely
 sign a given OCI image or other artifacts including binaries, scripts etc. This provides a solid footing to leverage Cosign to verify Tekton Resources.
 
-This proposal will introduce new verification into Tekton Pipelines' webhook to verify a
-Tekton Resource is mutated or not, and can indicate that the verification must occur.
+This proposal will introduce signing to allow users to sign their resources YAML files and new verification into Tekton Pipelines' reconciler to detect tampering of the resources, and can indicate that the verification must occur. The public keys are configured at ConfigMap or CRD (`VerificationPolicy`) and can be used to verify the resources.
 
-If a Resource fails verification, the corresponding TaskRun will be
-annotated as such. The Pipeline Author will have optional configuration to stop
-and fail the run on verification failure.
+**Note:** API Resources (Task, Pipeline) will be verified both when applied to the cluster and when referenced in taskRun/pipelineRun. When the Run is created, referenced resources will be resolved and verified again to confirm continued verification. This will prevent the Run of a resource that was verifiable when created but is no longer verifiable, perhaps due to key revocation, a security breach, or discovery of a new vulnerability since the time of the initial verification.
+
+Optional configuration allows the Pipeline Author to stop and fail the run on verification failure.
 
 **IMPORTANT:** A Task refers to other images. For the initial delivery of this
 TEP, all static image references within a Task fetched as a Remote Resource
@@ -141,25 +134,17 @@ In later iterations, this can be extended such that tag-referenced images can
 _themselves_ be verified for the overall Task to pass verification. However,
 this will be left out of the scope of this TEP.
 
-The Pipeline Author will be able to provide optional configuration to Tekton
-Chains such that Chains will *only* consider results from Tasks that were
-verifiable (and, following the previous rule, were successfully verified).
-
 
 ### Risks and Mitigations
 
-* Mutating webhook is a risk of the proposal. The proposed verification will happen after the mutating webhook, so the content of a Resource may be mutated and fail the verification. This would be an issue for local cluster resources.
+* Mutating webhooks are a risk to the proposal. The proposed verification will happen after the mutating webhooks, so the content of a Resource may be mutated and fail the verification. This would be an issue for local cluster resources. And it also means that if we don't address this issue, all signed resources need to be signed again every time we change the mutating webhook.
 
-  Some possible mitigations include the following:
+  This TEP proposes to skip the mutating webhooks when the trusted resource feature is enabled.
 
-  1. Verify the Tasks/Pipelines when applying them in the cluster, and update the Resources to add the missing mutating values (e.g. Use `SetDefaults`) everytime we bump the version of Tekton Pipeline.
-  2. Avoid mutating Tekton Resources or move the mutating after verification.
-  3. Store the encoded resource in annotation before mutating and verify the stored resource at validating webhook.
-  4. Do verification in mutating webhook, if failed verification then mark the run as failed and later check and reject the resource in validationg webhook.
+  Possible solutions and the pros&cons will be discussed in [alternatives](#alternatives).
 
 * When verifying a Remote Resource that identifies a Task, the Task still has
-references to external, unverified resources - namely,
-the step images. These step images may have been compromised and the
+references to external, unverified step images. These step images may have been compromised and the
 Task would still be considered verified.
 
   Some possible mitigations include the following:
@@ -176,28 +161,27 @@ Task would still be considered verified.
     verification and image verification - for example, do I allow verified
     Task Bundles if the Task within the Bundle does not have verified images?
 
-### User Experience (optional)
+### User Experience
 
 **Author publishing a Resource.**
 A Resource Author may want their Resource and its
 outputs to be trusted so that provenance attestations can be confidently made. The author will use their own private key to sign the Resource and signatures are stored in `Annotations` map of the Resource.
-The private keys are generated, used and stored by the author. Public keys then are stored as secrets or via URI stored in the configmap. Similar mechanism is used in [Chains](https://github.com/tektoncd/chains).
+The private keys are generated, used and stored by the author. Public keys then are stored in a CRD (Custom Resource Definition), the specifications of this new CRD `VerificationPolicy` are in the [next section](#verify-the-resources).
 
-**Verify the Resource via validating webhook.**
-The verification will be done in pipeline's admission webhook, by default the webhook will skip a Resource's verification. This can be configured from configmap.
+Situation A: Users want to use their own resources and make sure they are not tampered before using them in Tekton. The user will need to choose a certain key tool (In the scope of this TEP we will leverage [sigstore](https://github.com/sigstore) to support different keys like cosign or KMS keys) and generate private&public key pairs. The user will use the signing cli we provided to sign the yaml files and signature is stored in the `Annotations`. Public keys are configured at the cluster for verification.
 
-**Configure the Chains to skip the run if failed verificaiton.**
-Chains can be configured to not create a provenance attestation if the verification fails.
+Situation B: There is a central place (e.g. Tekton Catalog) to host community's resources and can be shared by other users. So one user can submit his signed resources and public keys, or rely on the central place's keys to sign the resources.
 
+Situation C: User A signs and publishes the resources (e.g. push to github repo) and user B wants to use the resources from user A. How does user A pass the public keys to user B is out of the scope of this TEP. We will provide some directions and future work in [alternatives](#alternatives).
 
-### Performance (optional)
+**Verify the Resource in reconciler.**
+The verification will be done in the pipeline's reconciler. By default we will skip a Resource's signature verification. This can be configured in a ConfigMap by the Tekton cluster operator to decide whether to skip the verification or not.
 
-For remote Resources such as OCI bundle, it will take time to fetch the resources. Resources that are not
-configured to be verified will have no change in performance.
+During verification, the signature will be extracted from the resource (or fetched from a remote source can be supported later), and the public keys are fetched from cluster deployed ConfigMap and CRD. Public keys and signature are used to verify the resources.
 
-Tekton Chains will only need to make simple decisions over only locally
-available data so there will be no change to performance.
+### Performance
 
+The verification should not introduce too much latency into the reconciler. We propose to do the verification after resolution in the reconciler. So no duplicate resolution is needed compared to doing verification at webhook.
 
 ## Design Details
 
@@ -207,11 +191,12 @@ To sign the Resource, we should provide command line tools to help users for sig
 1. Read the Resource file, unmarshall it as a go object and calculate the sha of the
 json marshalled bytes.
 2. Use signing tools to sign the bytes and get the signature.
-3. Store the string encoded signature to Resource
+3. Store the encoded signature string to Resource
 
-This can be integrated into Tekton's cli tool tkn.
+This can be integrated into Tekton's cli tool [tkn](https://github.com/tektoncd/cli).
 
-The sample signed file looks like this:
+Signed Task
+The sample signed task file looks like this:
 ```yaml
 apiVersion: tekton.dev/v1beta1
 kind: Task
@@ -230,71 +215,191 @@ spec:
     resources: {}
 ```
 
-`tekton.dev/signature` is used to store the signature.
+Signed Pipeline
+The sample signed pipeline file looks like this:
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  annotations:
+    tekton.dev/signature: MEQCIHhFC480mv7mh/6dxAlp/mvuvGXanuSghMsT+iBhWxt5AiBDvHv8sfKjJ3Ozrzvp+cjr30AOx1SPQDCcaJjlpAoVrA==
+  name: example-Pipeline
+spec:
+  tasks:
+    - name: example-task
+      taskRef:
+        name: example-task
+```
 
-The signed Resource can be installed directly on the kubernetes cluster or built as OCI bundle to be stored in the registry.
+`tekton.dev/signature` is used to store the signature. The future work could be to store the signature in a separate file along with the resource. Remote resolution should be updated to resolve both the resource and the signature.
+
+The signed Resource can be installed directly on the Kubernetes cluster or published to remote source (e.g. OCI bundles in the registry).
 
 ### Verify the Resources
 
-The verification should be done in the Tekton Pipeline's admission webhook. A new configmap should be added to gate the verification
-code.
+The verification should be done in the Tekton Pipeline's reconciler after remote resolution. A new feature-flag should be added to gate the verification code.
 
-### Webhook and Configuration
+Before the verification, the signature is extracted from the resource. For the public key there are several options we can choose by configuration.
 
-Validating webhook can use configmap to allow users to config when the Resource fails the verification
-1) Directly fail the run;
-2) Not fail the run, and when Tekton Pipeline's dependent knative version support admission webhook warnings, return warning in `apis.FieldError`.
-3) Skip the validation;
+In this TEP we propose to store the public keys on the Kubernetes installation. For the first step the keys can be stored in a ConfigMap. For advanced feature support, the keys can be configured in a new CRD and deployed to the cluster. This can help to support multiple keys, validate the spec, and have dedicated RBAC policies, so no other components in the cluster can modify the keys.
+
+* To use ConfigMap for verification, we need to fetch the configmap and loop all the public keys to verify the resources.
+
+Example of the Key ConfigMap:
+```yaml
+apiVersion: tekton.dev/v1alpha1
+Kind: ConfigMap
+metadata:
+ name: verification-public-keys
+ namespace: tekton-pipelines
+data:
+  cosignpublickey: "/etc/signing-secrets/cosign.pub" # key file in secret
+  cosignpublickey1: "/etc/signing-secrets/cosign1.pub" # key file in secret
+  kmspublickey: gcpkms://projects/<project>/locations/<location>/keyRings/<keyring>/cryptoKeys/<key> # kms key reference
+  kmspublickey2: gcpkms://projects/<project>/locations/<location>/keyRings/<keyring>/cryptoKeys/<key> # kms key reference
+```
+
+* To use the CRD for verification, we need to fetch all VerificationPolicy in the cluster. For each policy, use the `resources` regex to filter out the resources need to be verified. Then loop all `authorities` to get the `verifiers` for verification. If the resources can pass any of these `verifiers` then the resource is verified.
+
+Example of the Key CRD:
+```yaml
+apiVersion: tekton.dev/v1alpha1
+Kind: VerificationPolicy
+metadata:
+ name: verification-policy
+ namespace: tekton-pipelines
+spec:
+   resources:
+    - https://github.com/tektoncd/catalog.git
+    - gcr.io/tekton-releases/catalog/upstream/*
+   authorities:
+    - name: cosign
+      key: /etc/signing-secrets/cosign.pub
+    - name: kms
+      key: gcpkms://projects/<project>/locations/<location>/keyRings/<keyring>/cryptoKeys/<key>
+    - name: keyless
+      keyless:
+        url: "https://fulcio.sigstore.dev"
+```
+
+API (Reference from [policy-controller](https://github.com/sigstore/policy-controller)):
+```go
+type VerificationPolicy struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata"`
+	// Spec holds the desired state of the VerificationPolicy.
+	Spec VerificationPolicySpec `json:"spec"`
+}
+
+type VerificationPolicySpec struct {
+	// Resources defines the patterns of Resources names that should be subject to this policy. For example, we may want to apply this Policy only from a certain github repo. Then the ResourcesPattern should include the path. If using gitresolver, and we want to config keys from a certain git repo. `ResourcesPattern` can be `https://github.com/tektoncd/catalog.git`, we will use regex to filter out those resources.
+	Resources []ResourcePattern `json:"resources"`
+	// Authorities defines the rules for validating signatures.
+	Authorities []Authority `json:"authorities"`
+}
+
+type ResourcesPattern struct {
+	// Pattern defines a resource pattern. Regex is created to filter resources based on `Pattern`
+	Pattern string `json:"pattern"`
+}
+
+// The authorities block defines the rules for discovering and
+// validating signatures.
+type Authority struct {
+	// Name is the name for this authority.
+	Name string `json:"name"`
+	// Key defines the type of key to validate the resource.
+	// +optional
+	Key *KeyRef `json:"key,omitempty"`
+	// Keyless sets the configuration to verify the authority against a Fulcio instance.
+	// +optional
+	Keyless *KeylessRef `json:"keyless,omitempty"`
+	// Sources sets the configuration to specify the sources from where to consume the signatures if the signature is not stored in the resource.
+	// +optional
+	Sources []Source `json:"source,omitempty"`
+}
+
+type KeyRef struct {
+	// SecretRef sets a reference to a secret with the key.
+	// +optional
+	SecretRef *v1.SecretReference `json:"secretRef,omitempty"`
+	// Data contains the inline public key.
+	// +optional
+	Data string `json:"data,omitempty"`
+	// KMS contains the KMS url of the public key
+	// Supported formats differ based on the KMS system used.
+	// +optional
+	KMS string `json:"kms,omitempty"`
+}
+
+type KeylessRef struct {
+	// URL defines a url to the keyless instance.
+	// +optional
+	URL *apis.URL `json:"url,omitempty"`
+	// Identities sets a list of identities.
+	// +optional
+	Identities []Identity `json:"identities,omitempty"`
+	// CACert sets a reference to CA certificate
+	// +optional
+	CACert *KeyRef `json:"ca-cert,omitempty"`
+}
+```
+
+
+### Configuration
+
+Reconciler will respond to verification failure based on ConfigMap settings to:
+1) Return error in reconciler, mark the status as error with `FailedVerification` reason;
+2) Not return error, but mark the TaskRun/PipelineRun as `FailedVerification`;
+3) Skip the verification;
 
 Configuration sample:
 ```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: config-trusted-resources
+  name: feature-flag
   namespace: tekton-pipelines
 data:
-  onError: "stopAndFail"
-  cosign-pubkey-path: "/etc/signing-secrets/cosign.pub"
-  kms-pubkey-path: "gcpkms://projects/<project>/locations/<location>/keyRings/<keyring>/cryptoKeys/<key>"
+  verification-policy: enforce
 ```
-`onError: [ stopAndFail | continue ]`. (Optional, default `continue`)
-`stopAndFail` will cause the build to fail if image verification fails,  `continue` will allow the build to continue even
-if verification fails.
 
-`skip-verification`. (Optional, default `true`), if true then directly return nil, if false then do the verfication
-
-`cosign-pubkey-path`. (Optional, default `/etc/signing-secrets/cosign.pub`), it specifies the secret path to store the cosign pubkey
-
-`kms-pubkey-path`.  (Optional, default empty), it specifies the KMS reference
-
-This will allow the configuration for one key per key type. But we cannot config multiple cosign keys or kms keys.
-To address this
-
+`verification-policy`. (Optional, `enforce`, `warn` or `skip`, default `skip`):
+ * `enforce`: Failing verification will mark the taskruns/pipelineruns as failed.
+ * `warn`: Log warning but don't fail the taskruns/pipelineruns.
+ * `skip`: Directly skip the verification.
 
 ### Integrate with Remote Resource Resolution
 
 TEP-0060 introduces a new ResourceRequest reconciler that will actually pull
 the remote image and expand it to a Task.
 
-There are several ways to integrate the Trusted Tesource with Remote Resource Resolution
+This TEP proposes to do the verification after remote resolution and before calling `SetDefaults` in the reconciler. Alternatives will be discussed at [alternatives](#alternatives).
 
 
-| Method | Pros | Cons |
-| -------- | ----------- | ----------- |
-| Fetch remote resources in validating Webhook | Verification fail fast in webhook | Duplicate work for Resolution
-| Verify in Controller | No duplicate work for Resolution | The verification cannot fail fast in webhook. The resources may have been stored in etcd and used by other components
-| Verify in Remote Resolution | No duplicate work for Resolution | Verification coupled with Resolution
+## Threat Models
 
+- The source of remote resources are compromised.
+
+  How the TEP secures this threat: The resources are signed and keys/key references are stored in the cluster, so the resources and keys cannot be modified at the same time. The remote resources will be verified at reconciler with in cluster keys and signatures from the resources.
+
+- Attackers have general access to the cluster to update the resources, but they don't have the admin access to remove or add new components.
+
+  How the TEP secures this threat: In-cluster resources will be verified when they are applied and referred. The verification is the same as remote resources.
+
+Examples of attacks:
+
+https://about.codecov.io/security-update/
+
+https://www.webmin.com/exploit.html
 
 ## Test Plan
 
 Tests for TaskRuns/PipelineRuns:
 1. Unsigned Task/Pipeline fails the verification
 2. Wrong signature fails the verification
-3. Correct signature passes the verification
-4. Tests should include API Task/Pipeline and OCI bundle Task/Pipeline
-
+3. Task&Pipeline with correct signature pass the verification
+4. Tests should include API Task/Pipeline and OCI bundle Task/Pipeline at first, then should be able to include all the remote resources supported in Remote Resolution
 
 ## Design Evaluation
 <!--
@@ -313,11 +418,118 @@ What other approaches did you consider and why did you rule them out?  These do
 not need to be as detailed as the proposal, but should include enough
 information to express the idea and why it was not acceptable.
 -->
+### Options to mitigate the possible impact from mutating webhook
+Some possible mitigations/solutions include the following:
 
-Used kyverno for verifying signed task/pipeline bundles:
-Reference: https://github.com/nadgowdas/protect-the-pipe-demo
+1. Verify the Tasks/Pipelines when applying them in the cluster, and update the Resources to add the missing mutating values (e.g. Use `SetDefaults`) every time we bump the version of Tekton Pipeline.
+2. Avoid mutating Tekton Resources or move the mutating after verification.
+3. Store the encoded resource in annotation before mutating and verify the stored resource at validating webhook.
+4. Do verification in mutating webhook, if failed verification then mark the run as failed and later check and reject the resource in validating webhook.
+
+**Pros vs Cons:**
+| Option | Pros | Cons |
+| -------- | ----------- | ----------- |
+| Call SetDefaults() when signing | Help users add missing values |  Need to update signature when there is update in mutating
+| Skip mutating webhook | Address the mutating issue, can also help to detect malicious mutating webhook| Extra cost for Tekton Pipeline developers
+| Store the object at mutating webhook before mutating| Fix the issue without skipping the mutating webhook |  May not work if the attack happens in mutating webhook and only modify the spec
+| Verify at mutating webhook | No need to skip the mutating or store in annotation | Doesn't work if there is a malicious mutating webhook after the normal mutating webhook
+| Add ignoring fields | No need to skip the mutating or store in annotation | Increase the cost to write the YAML file
+
+In this TEP we propose to proceed with option 2 as described above.
+
+A temporary solution for 2 is that we can have a specific feature flag for trusted resources and use it to skip the mutating for tasks and pipelines.
+Options 2,3 and 4 are functionally equivalent,  i.e. make sure that when doing verification the resource is not mutated by mutating webhook.
+
+In the current code base the mutating functions are called after we resolve the local/remote resources. Another benefit of option 2 is that we can prevent attacks from malicious mutating webhooks. If there are  malicious mutating webhooks deployed in the cluster then the tampered resources will fail verification and be rejected at validating webhook.
+
+For option 3, it may be possible that a malicious mutating webhook is invoked after the tekton's mutating webhook and it can change the resource spec without touching the annotation. So to make it work we also need to compare the stored resource and current resource and make sure there is no malicious mutating that happened before.
+
+Option 4 is less preferred than 3 because the mutating webhook would need to contain verification logic, and this is not well aligned with the intention of mutating webhooks.
+
+### Options for storing the signature
+
+In this TEP we propose to store the signature in the `annotation` of the resource because of the easy implementation. Alternatives also include storing the signature separately alongside with the resource or in other remote sources. This could be future work after this TEP.
+
+### Options for storing the public keys
+
+Option 1: Configure the keys in a dedicated CRD. This can help to support multiple keys in a central place. This is the proposed option in this TEP.
+
+Option 2: Add a new field `keyref` to refer to the key path
+```yaml
+kind: TaskRun
+apiVersion: tekton.dev/v1beta1
+metadata:
+ name: example-tr
+spec:
+ taskRef:
+   name: example-task
+   keyref: keypath # this defines the public key of this taskref
+```
+
+```yaml
+kind: PipelineRun
+apiVersion: tekton.dev/v1beta1
+metadata:
+ name: example-pr
+spec:
+ pipelineRef:
+   name: example-pipeline
+   keyref: keypath # this defines the public key of this pipelineref
+```
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+ annotations:
+   tekton.dev/signature: MEQCIHhFC480mv7mh/6dxAlp/mvuvGXanuSghMsT+iBhWxt5AiBDvHv8sfKjJ3Ozrzvp+cjr30AOx1SPQDCcaJjlpAoVrA==
+ name: example-Pipeline
+spec:
+ tasks:
+   - name: example-task
+     taskRef:
+       name: example-task1
+       keyref: keypath1  # this defines the public key of this taskref
+   - name: example-task2
+     taskRef:
+       name: example-task2
+       keyref: keypath2  # this defines the public key of this taskref
+```
+`keyref` defines the path of the public key of this taskRef. All the tasks within a pipeline need to be signed off, and they may come from different sources with different public keys.
+So a `keyref` is needed when signing the pipeline. The signing cli doesn't need to verify the referred keys when signing the pipeline.
+
+**Pros vs Cons:**
+| Option | Pros | Cons |
+| -------- | ----------- | ----------- |
+| Config at install level (e.g. at CRD) | Easy to config at a central place | Need to loop all the keys for each verification
+| Add keyref in taskRef&pipelineRef | Each resource can specify the corresponding key, no need to loop all available keys for one resource's verification| Introduce cost for users to write and maintain YAML files
+
+### Options for integrating with remote resolution
+
+| Method | Pros | Cons |
+| -------- | ----------- | ----------- |
+| Fetch remote resources in validating Webhook | Verification fail fast in webhook | Duplicate work for Resolution, may introduce latency, and one extreme case is that the resource verified may not the the same in reconciler's resolved resource
+| Verify in Controller after resolving resources| No duplicate work for Resolution | The verification cannot fail fast in webhook. The resources may have been stored in etcd and used by other components
+| Verify in Remote Resolution | No duplicate work for Resolution | Verification coupled with Resolution
+
+In this TEP we propose to proceed with option 2 to do verification in reconciler after remote resolution is done considering the latency of doing remote resolution at admission webhook.
+
+### Options for exposing the public keys
+
+[Public keys discovery](https://transparency.dev/application/strengthen-discovery-of-encryption-keys/) is out of scope of the first phase of this TEP and considered as part of the future work. One possible mitigation is to leverage [Fulcio](https://github.com/sigstore/fulcio) to verify the identity of signing account and issue a signed certificate. The certificate is attached to the resource and can be verified later.
+
+### Alternatives for trusted resources
+
+Use Kyverno for verifying signed task/pipeline bundles:
 
 This is one alternative proposed to address the same problem but the disadvantage is that it only addresses the Bundle resources and may not be suitable to work with Remote Resolution.
+
+Reference:
+
+https://github.com/nadgowdas/protect-the-pipe-demo
+
+Use Kyverno for verifying YAML files: This can be used to verify local resources, but remote resources need to be verified at the reconciler. We may consider to leverage sign and verify from https://github.com/sigstore/k8s-manifest-sigstore
+
 
 ## Implementation Pull request(s)
 
@@ -335,3 +547,7 @@ Use this section to add links to GitHub issues, other TEPs, design docs in Tekto
 shared drive, examples, etc. This is useful to refer back to any other related links
 to get more details.
 -->
+
+Kyverno for verifying YAML files: https://github.com/kyverno/KDP/blob/main/proposals/yaml_signing_and_verification.md#implementation
+
+Policy Controller to verify images: https://github.com/sigstore/policy-controller

@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implemented
 title: Platform support in Tekton catalog
 creation-date: '2021-06-02'
-last-updated: '2021-06-02'
+last-updated: '2022-08-16'
 authors:
 - '@barthy1'
 ---
@@ -135,3 +135,6 @@ buildah (0.2)   Task   Tekton    Buildah task builds source into a con...     im
 
 ## References (optional)
 - [Multi architecture support for catalog resources (#661)](https://github.com/tektoncd/catalog/issues/661)
+- [documentation about platform information (#772)](https://github.com/tektoncd/catalog/pull/772)
+- [platform support for resources (#282)](https://github.com/tektoncd/hub/pull/282)
+

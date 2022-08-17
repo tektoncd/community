@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: implementable
 title: end-to-end provenance collection
 creation-date: '2021-09-16'
 last-updated: '2022-05-12'

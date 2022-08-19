@@ -163,7 +163,7 @@ Connecting to the Meeting VC requires a Zoom account.
 
 | Artifact        | Link                                                                                          |
 |-----------------|-----------------------------------------------------------------------------------------------|
-| Forum           | [tekton-dev@](https://groups.google.com/forum/#!forum/                                        |
+| Forum           | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                             |
 | Meeting Notes   | [Notes](https://docs.google.com/document/d/1ZYqS2dDX8ary4dz_bImItbj8u4zwYtxII15kvylHYzs/edit) |
 | Document Folder | [Folder](https://drive.google.com/drive/folders/1QEj2TuIvxL6MvSSLwKucVOjpuVlydslP)            |
 | Slack Channel   | [#plumbing](https://tektoncd.slack.com/messages/plumbing)                                     |

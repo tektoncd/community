@@ -266,3 +266,4 @@ This is the complete list of Tekton teps:
 |[TEP-0116](0116-referencing-finally-task-results-in-pipeline-results.md) | Referencing Finally Task Results in Pipeline Results | implemented | 2022-08-11 |
 |[TEP-0117](0117-tekton-results-logs.md) | Tekton Results Logs | proposed | 2022-08-17 |
 |[TEP-0118](0118-matrix-with-explicit-combinations-of-parameters.md) | Matrix with Explicit Combinations of Parameters | implementable | 2022-08-08 |
+|[TEP-0120](0120-canceling-concurrent-pipelineruns.md) | Canceling Concurrent PipelineRuns | proposed | 2022-08-19 |

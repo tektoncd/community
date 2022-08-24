@@ -239,7 +239,7 @@ this ordering of work, the Official Catalog will have the Git-Based organization
 [tep-0079]: ./0079-tekton-catalog-support-tiers.md
 [hub]: https://hub.tekton.dev
 [catalog]: https://github.com/tektoncd/catalog
-[hub-resolver]: https://github.com/sbwsg/hubresolver/tree/42962892535f19e9f1f9cd3457f567dd121d57ec
+[hub-resolver]:
 [git-resolver]: https://github.com/tektoncd/resolution/tree/7f92187843085874229aa4c43e5c6d7d392a26fa/gitresolver
 [bundles]: https://github.com/tektoncd/pipeline/blob/b19a9abdb81ac0d7608a0457348ccb24afa65316/docs/pipelines.md#tekton-bundles
 [hub-prs]: https://github.com/tektoncd/hub/pulls?q=is%3Apr+TEP-0110+

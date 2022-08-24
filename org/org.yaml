@@ -128,7 +128,6 @@ orgs:
     - rupalibehera
     - savitaashture
     - sbose78
-    - sbwsg
     - sclevine
     - scrapcodes
     - shaowenchen
@@ -162,6 +161,8 @@ orgs:
     - austinzhao-go
     - aleromerog
     - QuanZhang-William
+    # alumni:
+    # sbwsg
     teams:
       governing-board:
         description: Tekton Governing Board members
@@ -352,7 +353,8 @@ orgs:
         - wlynch
         - ImJasonH
         - XinruZhang
-        - sbwsg
+        # alumni:
+        # sbwsg
         privacy: closed
         repos:
           results: read
@@ -395,7 +397,6 @@ orgs:
         maintainers:
         - bobcatfish
         members:
-        - sbwsg
         - savitaashture
         - barthy1
         - FogDong
@@ -433,6 +434,8 @@ orgs:
         - pierretasci
         - lbernick
         - ywluogg
+        # alumni:
+        # sbwsg
         privacy: closed
         repos:
           pipeline: read
@@ -457,7 +460,6 @@ orgs:
         maintainers:
         - bobcatfish
         members:
-        - sbwsg
         - savitaashture
         - abayer
         - sthaha
@@ -501,6 +503,8 @@ orgs:
         - pierretasci
         - priyawadhwa
         - lbernick
+        # alumni:
+        # sbwsg
         privacy: closed
         repos:
           community: read
@@ -564,10 +568,11 @@ orgs:
         - pritidesai
         - jerop
         - bigkevmcd
-        - sbwsg
         - waveywaves
         - khrm
         - savitaashture
+        # alumni:
+        # sbwsg
         privacy: closed
         repos:
           experimental: read
@@ -588,8 +593,9 @@ orgs:
         - SM43
         - bobcatfish
         - afrittoli
-        - sbwsg
         - lbernick
+        # alumni:
+        # sbwsg
         privacy: closed
         repos:
           plumbing: read
@@ -621,7 +627,6 @@ orgs:
         - abayer
         - afrittoli
         members:
-        - sbwsg
         - jjasghar
         - iancoffey
         - yuege01
@@ -643,6 +648,8 @@ orgs:
         - vincent-pli
         - bobcatfish
         - spikeburton
+        # alumni:
+        # sbwsg
         privacy: closed
         repos:
           catalog: read
@@ -784,8 +791,9 @@ orgs:
         - dibyom
         - vdemeester
         members:
-        - sbwsg
         - chitrangpatel
+        # alumni:
+        # sbwsg
         privacy: closed
         repos:
           resolution: write

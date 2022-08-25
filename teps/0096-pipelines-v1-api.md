@@ -239,12 +239,22 @@ This policy should be updated to include Tekton metrics as part of the API. No o
 - Fix [pain points](https://github.com/tektoncd/pipeline/issues/3792) associated with TaskRun and PipelineRun Status.
 - Rename PipelineRun's `spec.taskRunSpecs.taskServiceAccountName` to `spec.taskRunSpecs.serviceAccountName`.
 - Rename PipelineRun's `spec.taskRunSpecs.taskPodTemplate` to `spec.taskRunSpecs.podTemplate`.
+- Rename `taskRun.spec.stepOverrides` to `taskRun.spec.stepSpecs` and `taskRun.spec.sidecarOverrides` to `taskRun.spec.sidecarSpecs`,
+  as it is more consistent with `pipelineRun.spec.taskRunSpecs`.
 - There have been several changes to API fields related to compute resources (see
 [TEP-0094](./0094-configuring-resources-at-runtime.md) and [TEP-0104](./0104-tasklevel-resource-requirements.md)).
-Therefore, step-level compute resource related fields should remain at their current stability levels
-until we are confident we have a consistent API for compute resources.
-`task.spec.steps[].resources` and `taskRun.spec.taskSpec.steps[].resources` should remain in beta,
-meaning that to enable these fields on v1 CRDs, the "enable-api-fields" flag should be set to "beta". 
+  - Step-level compute resource related fields should remain at their current stability levels
+  until we are confident we have a consistent API for compute resources.
+  `task.spec.steps[].resources` and `taskRun.spec.taskSpec.steps[].resources` should remain in beta,
+  meaning that to enable these fields on v1 CRDs, the "enable-api-fields" flag should be set to "beta".
+  - For consistency between compute resource related fields, we should standardize on "computeResources" rather than "resources",
+  since "resources" is an overloaded term. This applies to:
+    - `task.spec.steps[].resources`
+    - `task.spec.stepTemplate.resources`
+    - `task.spec.sidecars[].resources`
+    - `taskRun.spec.stepOverrides[].resources`
+    - `taskRun.spec.sidecarOverrides[].resources`
+  (We already have `taskRun.spec.computeResources`.)
 - Rename TaskRun's `status.taskResults` to `status.results` and PipelineRun's `status.pipelineResults` to `status.results`
 to reduce redundancy. (v1beta1 TaskRun also has `status.resourceResults`, but this will not be present in v1 due to the
 deprecation of PipelineResources.)

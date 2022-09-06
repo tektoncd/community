@@ -24,6 +24,7 @@ see-also:
     - [API Changes](#api-changes)
       - [v1alpha1 to v1beta1 + Run to CustomRun](#v1alpha1-to-v1beta1--run-to-customrun)
       - [References and Specifications](#references-and-specifications)
+      - [Remove Pod Template](#remove-pod-template)
       - [Feature Gates](#feature-gates)
     - [Documentation](#documentation)
     - [Testing](#testing)
@@ -190,6 +191,14 @@ spec:
 
 Simplifying all the references to use `ref` and embedded specifications to use `spec` is out of scope for this TEP. That
 work is tracked in [tektoncd/pipeline#5138][5138].
+
+##### Remove Pod Template
+
+Remove `podTemplate` field that assumes and implies that all `Custom Tasks` create `Pods`. 
+
+Note that the goal of `Custom Tasks`, as defined in [TEP-0002][tep-0002], is to support non-Pod `Task` implementations.
+If a specific `Custom Task` implementation creates `Pods`, that `Custom Task` can have a `Pod` template field in its
+own specification.
 
 ##### Feature Gates
 

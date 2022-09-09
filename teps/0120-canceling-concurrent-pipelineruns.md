@@ -2,7 +2,7 @@
 status: proposed
 title: Canceling Concurrent PipelineRuns
 creation-date: '2022-08-19'
-last-updated: '2022-08-19'
+last-updated: '2022-09-23'
 authors:
 - '@vdemeester'
 - '@williamlfish'
@@ -102,7 +102,307 @@ queueing, or more advanced concurrency strategies.
 
 ## Proposal
 
-TODO
+Create an experimental project (either a new Github repo or a new subfolder of the experimental repo) with its own reconciler for canceling concurrent PipelineRuns.
+The strategy used in this experimental project will be most similar to the ["Separate concurrency CRD and reconciler" strategy](#separate-concurrency-crd-and-reconciler) below.
+Use this project on our dogfooding cluster for CI PipelineRuns, and allow this experience to inform how we want to make this part of our API.
+
+[TEP-0098: Workflows](./0098-workflows.md) proposes creating a Workflows API for an easier end-to-end, getting started experience with Tekton.
+We will likely want to allow users to configure concurrency controls on Workflows.
+This work should wait until the Workflows API has been implemented and until we have a better sense of experimental results for the initial project on our dogfooding cluster.
+
+Before marking this TEP as implementable, we should answer the following questions:
+- Do we want to allow a PipelineRun to be part of multiple concurrency groups?
+  - For example, when we later support queueing, we might want to allow users to configure a rule like "Cancel all but the last PR per pull request, and only allow 5 CI runs per repo at a time."
+- What concurrency strategies should we support?
+  - For the initial version of this proposal, we will only support cancelation. However, should we support all possible strategies for canceling PipelineRuns,
+    including cancelation, graceful cancelation, and graceful stopping?
+- Should we attempt to prevent users from interfering with concurrency controls?
+  - Many of the proposed solutions rely on labels, and a user editing labels could change PipelineRun behavior. Is this desired?
+
+## Alternatives
+
+### Separate concurrency CRD and reconciler
+
+In this solution, concurrency controls are defined in their own CRDs and implemented in a separate reconciler.
+A proof of concept for this solution can be found at https://github.com/tektoncd/experimental/pull/895.
+
+An example ConcurrencyControl is as follows:
+
+```yaml
+kind: ConcurrencyControl
+  name: pull-requests
+spec:
+  strategy: cancelRunFinally
+  selector:
+    matchLabels:
+      foo: bar
+```
+
+A ConcurrencyControl would apply to any PipelineRuns in that namespace with labels matching its selectors.
+Here, a mutating admission webhook would create all PipelineRuns as "pending".
+The concurrency control reconciler would then determine which ConcurrencyControls match a PipelineRun being reconciled,
+and apply one label per ConcurrencyControl, where the label value is the concurrency key after parameter substitution.
+For example, if the PipelineRun's pull-request-id parameter has a value of "1234", the controller would apply the label
+`tekton.dev/concurrency-pull-requests: 1234`.
+
+The reconciler would cancel all PipelineRuns in the same concurrency group in the same namespace, and patch the PipelineRun being reconciled to start it.
+
+There are two approaches we could choose to take when a ConcurrencyControl is added or updated.
+The first approach, which is simpler, is to decide that new/updated ConcurrencyControls do not apply to currently running PipelineRuns.
+If we choose this approach, we could also consider using a ConfigMap instead of a separate CRD.
+
+The other possible approach is to update PipelineRun concurrency keys whenever there’s an event related to a ConcurrencyControl.
+In this approach, we’d add a custom handler to enqueue all running PipelineRuns when a ConcurrencyControl is updated, since the ConcurrencyControl doesn't "know"
+what PipelineRuns it's responsible for. This approach means we’d have to recalculate a PipelineRun’s concurrency keys and cancel matching PipelineRuns
+on each reconcile loop. In this scenario, it’s also not guaranteed that PipelineRuns get requeued in any particular order, so we would need to make sure that any PipelineRuns being canceled started before the one being reconciled. 
+
+The benefit of this solution is that any higher-level controller (e.g. Triggers, Workflows, Pipelines as Code) could get concurrency controls
+for "free" by creating a ConcurrencyControl, and handing the logic off to a separate controller.
+We will need to experiment to see if we can do this in a way that achieves good separation of concerns between reconcilers.
+
+Pros:
+- Usable in projects that use Pipelines but not Triggers. Can be extended later for use in Workflows.
+- No changes to Pipelines API and doesn't need to be implemented in Pipelines.
+
+Cons:
+- Reconciler must edit the spec of the PipelineRun it is reconciling.
+- No good way to distinguish between PipelineRuns that a user intended to create as Pending, and PipelineRuns that are pending due to the admission webhook. Reconciler starts all of them.
+
+### Concurrency logic in Pipelines controller, with configuration in new CRD
+
+In this solution, PipelineRuns are created with labels referencing concurrency controls, and concurrency is handled by the PipelineRun reconciler.
+A proof of concept for this solution can be found at https://github.com/tektoncd/pipeline/pull/5501.
+
+Example concurrency control:
+
+```yaml
+apiVersion: tekton.dev/v1alpha1
+kind: ConcurrencyControl
+metadata:
+  name: my-concurrency-control
+spec:
+  params:
+  - name: param-1
+  - name: param-2
+  key: $(params.param-1)-$(params.param-2)
+  strategy: Cancel
+```
+
+Here, the parameters are substituted with their values from the PipelineRun.
+
+PipelineRuns should be created with the label `tekton.dev/concurrency: <name of concurrencycontrol>`.
+The PipelineRun controller will add another label, `tekton.dev/concurrency-key: <value of key after param substitution>`,
+and cancel all PipelineRuns with the same key before executing the current one.
+
+### Add concurrency controls to Triggers
+
+In this solution, we'd add concurrency specification to Triggers, and could optionally add it later to Workflows as well.
+A proof of concept for this solution is https://github.com/tektoncd/triggers/pull/1446.
+
+For example:
+
+```yaml
+apiVersion: triggers.tekton.dev/v1beta1
+kind: Trigger
+spec:
+  bindings:
+  - name: reponame
+    value: $(body.repository.full-name)
+  template:
+    ref: ci-pipeline-template
+  concurrency:
+    key: $(bindings.reponame)
+    strategy: cancel
+```
+
+Any PipelineRuns created by this Trigger with the same concurrency key will be subject to the specified concurrency strategy,
+regardless of what namespace the PipelineRuns were created in.
+Here's an example EventListener that creates CI PipelineRuns, and will cancel a running PipelineRun when a new one is triggered
+for the same pull request.
+
+```yaml
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: github-ci-eventlistener
+spec:
+  triggers:
+  - name: github-checks-trigger
+    bindings:
+    - name: pull-request-id
+      value: $(body.check_suite.pull_requests[0].id)
+    - name: head-sha
+      value: $(body.check_suite.head_sha)
+    concurrency:
+      key: $(bindings.pull-request-id)
+      strategy: cancel
+    interceptors:
+      ref:
+        kind: ClusterInterceptor
+        name: github
+    template:
+      spec:
+        params:
+        - name: head-sha
+        resourcetemplates:
+        - apiVersion: tekton.dev/v1beta1
+          kind: PipelineRun
+          spec:
+            pipelineRef:
+              name: ci-pipeline
+            params:
+            - name: head-sha
+              value: $(tt.params.head-sha)
+```
+
+Here, the key is a string used to match PipelineRuns to each other. PipelineRuns created by the same Trigger with the same concurrency key are considered part of the same
+concurrency "group". We should support parameter substitution, and may choose to support substitution of context-related variables
+like [those supported in Pipelines](https://tekton.dev/docs/pipelines/variables/) (for example, `context.pipelineRun.namespace`).
+Parameters in keys should be substituted with their values in the TriggerBindings.
+
+When a Trigger with a concurrency spec creates a new PipelineRun, it will substitute the parameters in the concurrency key and apply the concurrency key as a label
+with key "triggers.tekton.dev/concurrency". It will use an informer to find all PipelineRuns with the same concurrency key from the same Trigger, using label selectors.
+The reconciler will patch any matching PipelineRuns as canceled before creating the new PipelineRun, but will not wait for cancelation to complete.
+
+Pros:
+- Can specify concurrency controls alongside functionality being controlled (Pipeline) and context where it’s relevant (the event triggering it).
+- Keeps Pipelines reusable.
+- No need to use a mutating admission webhook to start PipelineRuns as pending).
+- Unlike Workflows, TriggerTemplates already exist in the API. This could be a good place to start with concurrency controls, and we can always incorporate concurrency controls into Workflows later as well.
+- Supports TaskRun concurrency for (almost) free (need a way to start TaskRuns as pending).
+
+Cons:
+- Not usable by upstream projects that use Pipelines but not Triggers.
+- Unclear how this would work with Workflows.
+
+### Configuration on TriggerTemplate
+
+Instead of configuring concurrency on a Trigger, we could allow it to be configured on a TriggerTemplate and make use of the TriggerTemplate params, for example:
+
+```yaml
+kind: TriggerTemplate
+spec:
+  params:
+  - name: pull-request-id
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: ci-pipeline-run-
+    spec:
+      pipelineRef:
+        name: ci-pipeline
+  concurrency:
+    key: $(tt.params.pull-request-id)
+    strategy: cancelRunFinally
+```
+
+However, TriggerTemplates can be used in multiple Triggers, which may have different concurrency needs.
+
+### Configuration on Pipeline spec
+
+We could add concurrency controls to `pipeline.spec`, and any PipelineRuns of the same Pipeline with the same key would be considered part of the same concurrency group.
+For example:
+
+```yaml
+kind: Pipeline
+metadata:
+  name: ci-pipeline
+spec:
+  concurrency:
+    key: $(params.pull-request-id)
+    strategy: cancelRunFinally
+```
+
+However, different users might want to define different concurrency strategies for the same Pipeline.
+For example, one user of the [build-push-gke-deploy Catalog Pipeline](https://github.com/tektoncd/catalog/tree/main/pipeline/build-push-gke-deploy)
+might want to cancel concurrent runs for the same image, and another might want to cancel concurrent runs for the same image + cluster combination.
+
+### Configuration on PipelineRun spec
+
+We could add concurrency controls to `pipelineRun.spec`, as originally proposed in
+[TEP ~ Automatically manage concurrent PipelineRuns](https://github.com/tektoncd/community/pull/716).
+For example:
+
+```yaml
+kind: PipelineRun
+spec:
+  concurrency:
+    key: 1234 # Pull request ID
+    strategy: cancelRunFinally
+```
+
+or within a TriggerTemplate:
+
+```yaml
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+spec:
+  params:
+  - name: repo
+  - name: pull-request-id
+  resourceTemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: ci-pipeline-run-
+    spec:
+      pipelineRef:
+        name: ci-pipeline
+      concurrency:
+        key: $(tt.params.repo)-pr-$(params.pr-number)
+        strategy: cancel
+```
+
+Any PipelineRuns with the same concurrency key, regardless of which Pipeline they reference, will be considered part of the same concurrency group.
+We could choose to scope concurrency groups to namespaces or to the cluster.
+
+If two PipelineRuns have the same key but different concurrency strategies, reconciliation will fail.
+This solution assumes that PipelineRuns using concurrency will typically be created by tooling such as Pipelines as Code, a Workflow, or similar,
+and would likely not have different concurrency strategies.
+
+This solution is not proposed because concurrency controls are used to manage multiple PipelineRuns, not to specify how a single PipelineRun should execute.
+Although we don't have a concept of a "group" of PipelineRuns in the Tekton API, this configuration makes the most sense on an object responsible for creating
+or managing multiple PipelineRuns.
+
+### Cluster-level concurrency ConfigMap
+
+We could specify controls in a cluster-level ConfigMap read by the PipelineRun controller, as originally proposed in
+[Run concurrency keys/mutexes](https://hackmd.io/GK_1_6DWTvSiVHBL6umqDA). For example:
+
+```yaml
+kind: ConfigMap
+metadata:
+  name: tekton-concurrency-control
+  namespace: tekton-pipelines
+data:
+  rules:
+  - name: pipelinerun-pull-requests
+    kind: PipelineRun
+    selector:
+      matchLabels:
+        tekton.dev/pipeline: “ci-pipeline”
+    key: $(metadata.namespace)-$(spec.params.pull-request-id)
+    strategy: cancelRunFinally
+```
+
+When reconciling a PipelineRun, the PipelineRun controller would need to check each of the concurrency rules and determine which of the rules it matches,
+based on label selectors. For each matching rule, it would compute the concurrency key and add it as a label to the PipelineRun.
+If we want to prevent users from interfering with concurrency controls by setting their own labels, we will need to compute the PipelineRun's concurrency keys
+from this ConfigMap on each reconcile loop.
+
+This solution implies that PipelineRuns may belong to multiple concurrency groups. If a PipelineRun has multiple concurrency keys,
+any running PipelineRuns that have a matching concurrency key will be canceled.
+
+If this ConfigMap is edited, the changes will apply only to PipelineRuns created after the edit.
+
+This solution isn't proposed because concurrency strategies aren't defined alongside the functionality that needs to have its concurrency controlled.
+This may be a conceptually confusing way to match strategy (e.g. cancel and replace) with functionality (e.g. run CI for a pull request).
+In addition, it leaves cluster authors, rather than PipelineRun users, in charge of concurrency.
+
+Related solutions we could explore:
+- Defining concurrency rules in a ConfigMap, but restricting configuration to one rule per Pipeline.
+- Using [TEP-0085: Per-Namespace Controller Configuration](./0085-per-namespace-controller-configuration.md), we could create namespaced versions of these ConfigMaps.
 
 ## References
 
@@ -128,3 +428,8 @@ Similar features in other CI/CD systems
   -[Global concurrency](https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-global-section)
   -[Request concurrency](https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-runners-section)
 - [Jenkins concurrent step](https://www.jenkins.io/doc/pipeline/steps/concurrent-step/)
+
+Proof of concepts
+- [Concurrency controls in Triggers](https://github.com/tektoncd/triggers/pull/1446)
+- [Concurrency controls implemented by PipelineRun reconciler](https://github.com/tektoncd/pipeline/pull/5501)
+- [Concurrency controls implemented in separate reconciler](https://github.com/tektoncd/experimental/pull/895)

@@ -447,26 +447,78 @@ Declaring defaults for parameters that are of type object would follow the patte
 [array param defaults](https://github.com/tektoncd/pipeline/blob/main/docs/tasks.md#specifying-parameters) which is
 to declare the value in the expected format in yaml (which is treated as json by the k8s APIs).
 
-If a value is provided for the param, the default will not be used (i.e. there will be no behavior to merge the
-default with the provided value, if for example the provided value specified some fields but not others).
+When declaring default for object parameters, one can provide a value for all keys (example 1). It should be also allowed to only provide a value for a subset of keys in `default` as long as the rest of keys are provided with a value at run level (example 2). In example 2, the resolved `gitrepo` param will be `{"url": "abc.com", "path": "./mydir/", "commit": "sha123"}`. Since the run level provides a value for the key `url` that is also provided in `default`, the value from the run level takes precedence. Therefore, the value used for th key `url` at runtime will be "abc.com" instead of "default.com". However, there must be a value provided for all keys either from default or run level value because all keys declared in `properties` will be required keys. As such, the example 3 will be an invalid case because the key `path` is missed.
 
-Params example with default value:
+Example 1 (valid): all keys have a default value:
 
 ```yaml
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  generateName: object-param-test-
+spec:
+  taskSpec:
+    params:
+      - name: pull_remote
+        description: JSON Schema has no "description" fields, so we'd have to include documentation about the structure in this field
+        type: object
+        properties:
+          url: {
+            type: string
+          }
+          path: {
+            type: string
+          }
+        default:
+          url: https://github.com/somerepo
+          path: ./my/directory/
+```
+
+Example 2 (valid): all the keys not provided by the default are provided by the taskrun
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  generateName: object-param-test-
+spec:
   params:
-    - name: pull_remote
-      description: JSON Schema has no "description" fields, so we'd have to include documentation about the structure in this field
-      type: object
-      properties:
-        url: {
-          type: string
-        }
-        path: {
-          type: string
-        }
-      default:
-        url: https://github.com/somerepo
-        path: ./my/directory/
+    - name: gitrepo
+      value:
+        url: "abc.com"
+        commit: "sha123"
+  taskSpec:
+    params:
+      - name: gitrepo
+        properties:
+          url: {type: string}
+          commit: {type: string}
+          path: {type: string}
+        default:
+          url: "default.com"
+          path: "./mydir/"
+```
+
+
+Example 3 (invalid): some keys (`path` in this example) are not provided with a value in both default and taskrun
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  generateName: object-param-test-
+spec:
+  params:
+    - name: gitrepo
+      value:
+        commit: "sha123"
+  taskSpec:
+    params:
+      - name: gitrepo
+        properties:
+          url: {type: string}
+          commit: {type: string}
+          path: {type: string}
+        default:
+          url: "default.com"
 ```
 
 Results example:

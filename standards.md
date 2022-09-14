@@ -13,6 +13,7 @@ API changes should be evaluated according to
 Each Pull Request is expected to meet the following expectations around:
 
 * [Pull Request Description](#pull-request-description)
+* [Release Notes](#release-notes)
 * [Commits](#commits)
   * [Example Commit Message](#example-commit-message)
 * [Docs](#docs)
@@ -32,10 +33,83 @@ _See also [the Tekton review process](https://github.com/tektoncd/community/blob
     * Bugs should be reported in detail
   * If the template contains a checklist, it should be checked off
   * Release notes filled in for user visible changes (bugs + features),
-    or removed if not applicable (refactoring, updating tests) (may be enforced
-    via the [release-note Prow plugin](https://github.com/tektoncd/plumbing/blob/main/prow/plugins.yaml))
+    or removed if not applicable (refactoring, updating tests) (maybe enforced
+    via the [release-note Prow plugin](https://github.com/tektoncd/plumbing/blob/main/prow/plugins.yaml)).
+    * Please refer the [release-note](#release-notes) section for more details.
 * Add the related [TEP-XXXX] at the beginning of a PR subject line
   * Consider adding the links of the related TEP, Feature Request thread, and related other implementation PRs
+
+## Release Notes
+
+Release notes section of a PR must summarize the changes being proposed in that PR.
+Release notes section is a very important part of the GitHub release page. The users,
+operators, and contributors rely on a GitHub release page to get the list of PRs which were
+part of a particular release.
+
+Refer to the following set of questions to help fill the release-note section.
+
+* Does this PR introduce a user-facing change (bugs, features, deprecations, or documentation)?
+  * If no, just write "NONE" in the release-note block.
+  * If yes, a release note is required:
+    * Enter detailed release note in the release-note block. If the PR requires additional action from users switching to the new release, include the string "ACTION REQUIRED".
+  * If unsure, include release note.
+    * It's recommended to include release note explaining the changes in the PR.
+
+
+### None Release Note
+
+A very few PRs in a project generally qualifies for "NONE" release-note section. "NONE" release-note can be
+included in a PR proposing a minor refactoring of the existing code or adding changes to
+increase the test coverage.
+
+````
+```release-note
+NONE
+```
+````
+
+### Example Release Note
+
+#### Poor Release Note
+
+* NONE release-note is not acceptable for the PRs introducing a new feature:
+
+````
+```release-note
+NONE
+```
+````
+
+* The following release-note is not sufficient for a PR introducing a new feature.
+A new feature generally has a TEP associated with it. The release note does not include a
+TEP number or a reference to TEP. If a new feature PR is introducing new CRD or config specification
+or a change in existing specifications, include a code block or summary of specifications change.
+
+````
+```release-note
+Workspaces are propagated in embedded specifications without mutations.
+```
+````
+
+A few examples of good release-notes:
+
+
+* Reasonable release note for introducing a new feature:
+
+````
+```release-note
+A taskRun/Run in a pipeline will have a new label `tekton.dev/memberOf=tasks` for the task defined under "tasks" section and `tekton.dev/memberOf=finally` for the task defined under "finally" section.
+```
+````
+
+* Detailed release note for introducing a new feature:
+
+````
+```release-note
+A taskRun/Run in a pipeline will have a new label `tekton.dev/memberOf=tasks` for the task defined under "tasks" section and `tekton.dev/memberOf=finally` for the task defined under "finally" section.
+Refer to the TEP-00XX for more details.
+```
+````
 
 ## Commits
 
@@ -91,8 +165,8 @@ what we want.
   put us into an unreleasable state
     * When incrementally adding new features, this may mean that a release could contain
       a partial feature, i.e. the type specification only but no functionality
-    * When introducting a partial feature, the documentation should include updates that
-      indicates clearly that this functionality is not expected to work and point the reader
+    * When introducing a partial feature, the documentation should include updates that
+      indicate clearly that this functionality is not expected to work and point the reader
       toward how to follow progress (e.g. via an issue)
 
 ## Content

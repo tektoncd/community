@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Complete Build Instructions and Parameters
 creation-date: '2022-09-14'
-last-updated: '2022-11-29'
+last-updated: '2022-12-14'
 authors:
 - '@chitrangpatel'
 see-also:
@@ -161,27 +161,27 @@ TaskRef is useful for references to existing tasks on the cluster or remote task
 
 ### TaskRun Specification
 
-The table below provides the name and description of the API fields that the TaskRun requires. In addition, it also lists if that information is required, not required, or provided by the provenance. If it is required, it also shows where the information should be provided. Note that since task run provides information during runtime, most of the information is contained in the **invocation.Parameters** section of the provenance.
+The table below provides the name and description of the API fields that the TaskRun requires. In addition, it also lists if that information is required, not required, or provided by the provenance. If it is required, it also shows where the information should be provided. Note that since task run provides information during runtime, most of the information is contained in the **invocation.Parameters** section of the [provenance](#provenance-for-executed-taskrun).
 
 
 | | **Metadata**      | | |
 | ------ | ------------- | ----- | ----- |
 | **Field Name**    | **Description** | **Not Required / Required / Provided by provenance** | **Insert in provenance** |
-| name| Name of the task run| Required (provide an audit trail)|  |
+| name| Name of the task run| Not required for completeness |  |
 | | **Spec** | | |
-| resources | resources used by task | Provided (can be extracted from steps/entrypoint) |  |
-| service account name | name of the service account | Required | buildConfig |
-| params | parameter values provided by taskrun | Provided |  |
-| workspaces | workspaces used by the task | Required | buildConfig |
-| pod template | | Required | buildConfig |
-| Timeout | time in which a task should complete | Not Required (can probably use default?) |  |
-| StepOverrides | Override Step configuration specified in a Task. Currently we can override compute resources. | Not Required |  |
-| SidecarOverrides | Override Sidecar configuration specified in a Task. Currently we can override compute resources. | Not Required |  |
-| ComputeResources | Configure compute resources required by the steps in the task. | Required (because this could also indicate a minimum amount of resources required for the task run.) | buildConfig |
+| resources | resources used by task | Deprecated but required if using older tekton version | invocation.Parameters |
+| service account name | name of the service account | Required | invocation.Parameters |
+| params | parameter values provided by taskrun | Provided | invocation.Parameters |
+| workspaces | workspaces used by the task | Required | invocation.Parameters |
+| pod template | | Required | invocation.Parameters |
+| Timeout | time in which a task should complete | Required for completeness | invocation.Parameters |
+| StepOverrides | Override Step configuration specified in a Task. Currently we can override compute resources. | Required for completeness | invocation.Parameters |
+| SidecarOverrides | Override Sidecar configuration specified in a Task. Currently we can override compute resources. | Required for completeness | invocation.Parameters |
+| ComputeResources | Configure compute resources required by the steps in the task. | Required (because this could also indicate a minimum amount of resources required for the task run.) | invocation.Parameters |
 | [TaskSpec](#task-specification) | Specification of the resolved task | See [spec](#task-specification) | buildConfig |
 | [TaskRef](#taskref)  | Details of the referenced task | Not Required (Since we save the complete TaskSpec even that of a remote task) |  |
 | | **Status** | | |
-| Task Results | Results produced by the task run | Not Required | buildConfig |
+| Task Results | Results produced by the task run | Not Required since this is an output | |
 
 
 ### Configuration Feature Flags
@@ -189,11 +189,11 @@ The table below provides the name and description of the API fields that the Tas
 The feature flags that a user/operator specified during installation of Tekton pipelines that lead to the build are also required. These can be added to the **invocation.Environment** section of the [provenance](#provenance-for-executed-taskrun). The feature flags should be fetched by the task run reconciler and embedded in the **task run status** so that chains can access it easily.
 
 ### Materials
-To capture [predicate.materials](https://slsa.dev/provenance/v0.2#materials) that were used during the build, we can set the source information in the resolution request CRD (see issue [#5522](https://github.com/tektoncd/pipeline/issues/5522)). If no materials can be parsed from the parameters/results of the task run then we mark **metadata.completeness.materials** as false, making the build non-reproducible. If the materials are captured in the provenance but the build was not running hermetically, we will still mark the completeness as false because we cannot guarantee material completeness unless the build was running hermetically.
+We fill in [predicate.materials](https://slsa.dev/provenance/v0.2#materials) for task run by capturing image url and digest of all the `step` and `sidecar` containers. This information should be accessible via `TaskRun.Status` field. If the materials are captured in the provenance but the build was not running hermetically, we will still mark the completeness as false because we cannot guarantee material completeness unless the build was running hermetically.
 
 ### Provenance for executed TaskRun
 
-The generated provenance for the executed** task run** should contain the following information:
+The generated provenance for the executed **task run** should contain the following information:
 
 ```
   buildType: uri # contains the schema for invocation and buildConfig. We need to host this somewhere and maintain it of course.
@@ -204,17 +204,16 @@ The generated provenance for the executed** task run** should contain the follow
         sha256 : “123fdf35b4e7b1a56a84b2796aab2827edd65c25” # e.g. could be the commit sha 
       Entrypoint: “task.yaml” # the yaml config to run
     parameters:
-      [taskRun](https://github.com/tektoncd/pipeline/blob/b301d88cf4af3301cfff40e3df6d85ad3848df0d/pkg/apis/pipeline/v1beta1/taskrun_types.go#L38-L86):
-        name:
-        serviceAccountName:
-        computeResources:
-        workspaces:
-        podTemplate:
-        taskRunResults:
-        params:
-        sidecarOverrides:
-        stepOverrides:
-        timeout:
+        resources: json
+        serviceAccountName: str
+        computeResources: json
+        workspaces: json
+        podTemplate: json
+        taskRunResults: json
+        params: json
+        sidecarOverrides: json
+        stepOverrides: json
+        timeout: str
     environment:
       tekton-config-feature-flags: # feature flags that led to the build
         - enable-alpha-api: “alpha”
@@ -234,8 +233,9 @@ The generated provenance for the executed** task run** should contain the follow
       parameters: bool
       environment: bool
       materials: bool
-  materials: # provided by users as task run parameters or produced by the task run as results
-    - uri:
+  materials: # captured from step and sidecar information in TaskRun.Status.
+    - uri: "gcr.io/tekton-releases/catalog/upstream/kaniko"
       digest:
+        sha256: 8ee90344c1281efa6e8bcf09b1240ff8e9dda3a7403f0f040891f4644c1ca18e"
    ...
 ```

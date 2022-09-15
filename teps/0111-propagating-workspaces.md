@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Propagating Workspaces
 creation-date: '2022-06-03'
-last-updated: '2022-06-03'
+last-updated: '2022-09-16'
 authors:
 - '@chitrangpatel'
 - '@jerop'
@@ -22,6 +22,7 @@ see-also:
   - [Embedded Specifications With Referenced Resources](#embedded-specifications-with-referenced-resources)
 - [Alternatives](#alternatives)
   - [Propagate all workspaces to all PipelineTasks](#propagate-all-workspaces-to-all-pipeline-tasks)
+- [References](#references)
 <!-- /toc -->
 
 ## Summary
@@ -629,3 +630,7 @@ status:
 
 Propagating all `Workspaces` defined at `PipelineRun` down to all the `PipelineTasks` regardless of whether they are used by that `PipelineTask`. However, a workspace may have sensitive data that we don’t want to be accessible to all tasks. This approach is rejected because we only want data available where it is needed. We could remove the unwanted workspaces just before creating the task pod but this method will in turn also propagate workspaces for referenced parameters which we want to avoid because the behavior becomes opaque when users can't see the relationship between Workspaces declared in the referenced resources and the Workspaces supplied in runtime resources.
 
+## References
+
+* [Implementation Pull Requests](https://github.com/tektoncd/pipeline/pulls?q=is%3Apr+TEP-0111+)
+  

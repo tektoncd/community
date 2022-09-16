@@ -239,8 +239,9 @@ This policy should be updated to include Tekton metrics as part of the API. No o
 - Fix [pain points](https://github.com/tektoncd/pipeline/issues/3792) associated with TaskRun and PipelineRun Status.
 - Rename PipelineRun's `spec.taskRunSpecs.taskServiceAccountName` to `spec.taskRunSpecs.serviceAccountName`.
 - Rename PipelineRun's `spec.taskRunSpecs.taskPodTemplate` to `spec.taskRunSpecs.podTemplate`.
-- Rename `taskRun.spec.stepOverrides` to `taskRun.spec.stepSpecs` and `taskRun.spec.sidecarOverrides` to `taskRun.spec.sidecarSpecs`,
-  as it is more consistent with `pipelineRun.spec.taskRunSpecs`.
+- Rename the `taskRunStepOverride` Golang struct to `TaskRunStepSpec`, `taskRun.spec.stepOverrides` to `taskRun.spec.stepSpecs` 
+and `taskRun.spec.sidecarOverrides` to `taskRun.spec.sidecarSpecs`, as it is more consistent with `pipelineRun.spec.taskRunSpecs` 
+(and likewise for `pipelineRun.spec.taskRunSpecs.stepOverrides` and `pipelineRun.spec.taskRunSpecs.sidecarOverrides`)
 - There have been several changes to API fields related to compute resources (see
 [TEP-0094](./0094-configuring-resources-at-runtime.md) and [TEP-0104](./0104-tasklevel-resource-requirements.md)).
   - Step-level compute resource related fields should remain at their current stability levels
@@ -254,6 +255,8 @@ This policy should be updated to include Tekton metrics as part of the API. No o
     - `task.spec.sidecars[].resources`
     - `taskRun.spec.stepOverrides[].resources`
     - `taskRun.spec.sidecarOverrides[].resources`
+    - `pipelineRun.spec.taskRunSpecs[].stepOverrides`
+    - `pipelineRun.spec.taskRunSpecs[].sidecarOverrides`
   (We already have `taskRun.spec.computeResources`.)
 - Rename TaskRun's `status.taskResults` to `status.results` and PipelineRun's `status.pipelineResults` to `status.results`
 to reduce redundancy. (v1beta1 TaskRun also has `status.resourceResults`, but this will not be present in v1 due to the

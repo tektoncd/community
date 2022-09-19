@@ -2,7 +2,7 @@
 status: implementable
 title: Tekton Catalog Git-Based Versioning
 creation-date: '2022-07-12'
-last-updated: '2022-08-08'
+last-updated: '2022-09-28'
 authors:
 - "@jerop"
 - "@vdemeester"
@@ -35,11 +35,13 @@ see-also:
       - [Git Resolver](#git-resolver)
       - [Hub Resolver](#hub-resolver)
       - [HTTP Endpoint](#http-endpoint)
+      - [Tekton Catlin](#tekton-catlin)
   - [Related Work](#related-work)
     - [GitHub Actions](#github-actions)
   - [Future Work](#future-work)
     - [Hub](#hub)
     - [Best Practices](#best-practices)
+    - [Catlin](#catlin)
   - [Alternatives](#alternatives)
     - [One resource per Catalog](#one-resource-per-catalog)
     - [Submodules in Catalogs](#submodules-in-catalogs)
@@ -637,6 +639,19 @@ clusters. These endpoints should continue working as is:
 kubectl apply -f https://api.hub.tekton.dev/v1/resource/tekton/task/buildpacks/0.5/raw
 ```
 
+#### Tekton Catlin
+[Tekton Catlin](https://github.com/tektoncd/catlin) has the capability to validate the file path of catalog resources in the directory-based versioning. The expected resource file path is: ```<catalog>/<resource-type>/<resource-name>/<resource-version>/<resource-name>.yaml``` (e.g. ```catalog/task/git-clone/0.8/git-clone.yaml```).
+
+We propose to add an optional new flag ```versioning``` for [catlin validate](https://github.com/tektoncd/catlin#validate) command and the value can be set to ```git``` or ```directory```, for example:
+
+```shell
+catlin validate <actual-file-path-to-resource> --versioning git
+```
+
+When setting to ```git```, the expected file path is ```<catalog>/<resource-type>/<resource-name>/<resource-name>.yaml``` as required in [Organization Contract](#organization-contract); the expected file path remains unchanged (i.e. ```<catalog>/<resource-type>/<resource-name>/<resource-version>/<resource-name>.yaml```) when setting to ```directory```. The default value of the flag is ```directory```, which will be changed to ```git``` after archiving the [centralized catalog repo](https://github.com/tektoncd/catalog).
+
+Other functionalities of ```Catlin``` should remain the same.
+
 ## Related Work
 
 ### GitHub Actions
@@ -662,6 +677,9 @@ improve the scalability and performance of the Hub - most of this will be implem
 
 We could provide guidelines and recommendations for creating Catalogs e.g. deciding whether to group resources together
 instead of splitting them into separate Catalogs. We can explore this in future work. 
+
+### Catlin 
+Today, [catlin bump](https://github.com/tektoncd/catlin#bump) command only supports directory-based versioning catalog. We could further extend the [catlin bump](https://github.com/tektoncd/catlin#bump) command to support git-based versioning catalogs (where the command will create a new git tag and a corresponding release note based on the current latest version).
 
 ## Alternatives
 

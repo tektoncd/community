@@ -1,9 +1,9 @@
 # Tekton Mission and Roadmap
 
-This doc describes Tekton's mission and the 2021 roadmap.
+This doc describes Tekton's mission and roadmap.
 
 - [Mission and Vision](#mission-and-vision)
-- [2021 Roadmap](#2021-roadmap)
+- [Roadmap](#roadmap)
 - Tekton Project Roadmaps
   - [Pipeline](https://github.com/tektoncd/pipeline/blob/main/roadmap.md)
   - [Triggers](https://github.com/tektoncd/triggers/blob/main/roadmap.md)
@@ -40,7 +40,14 @@ What this vision looks like differs across different [users](user-profiles.md):
   * Use an ecosystem of tools that know how to interact with Tekton components, e.g.
     IDE integrations, linting, CLIs, security and policy systems
 
-## 2021 Roadmap
+## Roadmap
+
+Our community roadmap can be found [here](https://github.com/orgs/tektoncd/projects/26/views/16).
+This project automatically includes issues and PRs with label `area/roadmap`.
+
+### 2021 Roadmap
+
+*2021 Roadmap appears below for historic purposes.*
 
 These are the things we want to work toward in 2021! They are concerns that either impact multiple projects or may
 result in the creation of new projects!

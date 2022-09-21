@@ -333,6 +333,7 @@ orgs:
         description: the results maintainers
         maintainers:
         - abayer
+        - adambkaplan
         - afrittoli
         - bobcatfish
         - vdemeester

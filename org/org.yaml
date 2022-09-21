@@ -454,6 +454,9 @@ orgs:
         - bobcatfish
         - vdemeester
         - skaegi
+        - alhuizenga
+        - lbernick
+        - bendory
         privacy: closed
         repos:
           website: read

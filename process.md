@@ -409,7 +409,7 @@ Tekton repos use
 [Prow](https://github.com/kubernetes/test-infra/tree/master/prow) and related
 tools like
 [Tide](https://github.com/kubernetes/test-infra/tree/master/prow/tide) and
-[Gubernator](https://github.com/kubernetes/test-infra/tree/master/gubernator).
+[Spyglass](https://github.com/kubernetes/test-infra/blob/master/prow/spyglass/README.md).
 This means that automation will be applied to your pull requests.
 
 The configuration for this automation is in
@@ -417,6 +417,13 @@ The configuration for this automation is in
 
 _More on the Prow process in general
 [is available in the k8s docs](https://github.com/kubernetes/community/blob/master/contributors/guide/owners.md#the-code-review-process)._
+
+The Tekton community promotes company diversity as a best practice for pull request.
+This means that, where possible, one of the reviewers of a pull request and the author
+should be affiliated to different organizations.
+
+This best practice may not be applicable by all Tekton projects, please check the
+guidelines on a project specific details for more details.
 
 #### Prow commands
 

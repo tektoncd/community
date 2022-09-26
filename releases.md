@@ -2,19 +2,19 @@
 
 ## Support Policy
 
-The Tekton project maintains three release branches for each project, created one per quarter, which 
+The Tekton project maintains three release branches for each project, created one every four months, which
 results in a overall support window of approximately one year for each of these releases.
 
 This approach allows Tekton to roughly align to the [Kubernetes release cycles][kube-releases] and 
-maintain three supported releases at any point in time.
+maintain **four** supported releases at any point in time.
 
-Tekton is made of a collection of project, and each project may define its own release cadence, as long as
+Tekton is made of a collection of projects, and each project may define its own release cadence, as long as
 this [support policy](#support-policy) is followed. 
 
 Examples:
 
 - A project may release on a monthly basis, and maintain a release branch for every fourth release
-- A project may release on a quarterly basis, and maintain a release branch for the three most recent minor 
+- A project may release every four months, and maintain a release branch for the three most recent minor
   releases
 
 ## Release Numbers
@@ -41,7 +41,7 @@ It is recommended (but not mandatory) to make major releases coincide with suppo
 ## Milestones
 
 Tekton projects may use [GitHub milestones][github-milestones] to plan their next release. This helps the
-maintainer and reviewer team to focus their work for the release and it gives users visibility on what they
+maintainer and reviewer teams to focus their work for the release and it gives users visibility on what they
 may expect for the upcoming releases.
 
 When used, milestone names must include the release number in `v<MAJOR>.<MINOR>` format.
@@ -54,9 +54,9 @@ Project must include release documentation in a `releases.md` file, which must i
 - The release frequency adopted by the project
 - The first release where this [support policy](#support-policy) applies
 - A list of one year worth of releases. For each release:
-    - Number, name, date released, link to release notes
+    - Number, name, date released, link to [release notes][release-notes-guidelines]
     - End of life (EOL) date
-    - List of patch releases, each with link to release notes
+    - List of patch releases, each with link to [release notes][release-notes-guidelines]
 
 The document may include extra project-specific, user-facing release documentation.
 
@@ -76,7 +76,8 @@ builds. The plumbing repository includes examples of [nightly-build pipelines][n
 may use to created their own. Nightly builds are triggered by [cronjobs][nightly-triggers] running
 in the *dogfooding* cluster.
 
-Each nightly build is associated to a git tag, which includes the date and short version of the git sha:
+Nightly builds are not tagged in git. The container images associated to nightly builds are tagged.
+The tag includes the date and short version of the git sha:
 
 ```shell
 VERSION_TAG="v$(date +"%Y%m%d")-$(echo $GIT_SHA | cut -c 1-10)"
@@ -88,7 +89,7 @@ Tekton projects may decide to produce nightly releases.
 Additional requirements compared to nightly builds are:
 
 - fully automated release notes associated to each nightly release
-- the project must choose one nightly release per quarter, give it a semantic version, create a release branch
+- the project must choose one nightly release every four months, give it a semantic version, create a release branch
   and support the release according to the [support policy](#support-policy)
 - the project documentation on the [Tekton website]tekton-web] must include the latest nightly release plus all
   currently supported long term releases
@@ -101,3 +102,4 @@ Additional requirements compared to nightly builds are:
 [nightly-pipeline]: https://github.com/tektoncd/plumbing/tree/main/tekton/ci/cluster-interceptors/build-id/tekton
 [nightly-triggers]: https://github.com/tektoncd/plumbing/tree/main/tekton/cronjobs/dogfooding/releases
 [tekton-web]: https://tekton.dev/docs
+[release-notes-guidelines]: https://github.com/tektoncd/community/blob/main/standards.md#release-notes

@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Object/Dictionary param and result types
 creation-date: '2021-07-14'
-last-updated: '2022-04-08'
+last-updated: '2022-09-26'
 authors:
 - '@bobcatfish'
 - '@skaegi' # proposed most of this in https://github.com/tektoncd/pipeline/issues/1393 2.5 years ago XD
@@ -1099,7 +1099,22 @@ _(Thanks to @wlynch for the suggestion and above example!)_
 
 ## Implementation Pull request(s)
 
-TBD.
+- https://github.com/tektoncd/pipeline/pull/4786
+- https://github.com/tektoncd/pipeline/pull/4861
+- https://github.com/tektoncd/pipeline/pull/4867
+- https://github.com/tektoncd/pipeline/pull/4878
+- https://github.com/tektoncd/pipeline/pull/4883
+- https://github.com/tektoncd/pipeline/pull/4902
+- https://github.com/tektoncd/pipeline/pull/4904
+- https://github.com/tektoncd/pipeline/pull/5007
+- https://github.com/tektoncd/pipeline/pull/5083
+- https://github.com/tektoncd/pipeline/pull/5088
+- https://github.com/tektoncd/pipeline/pull/5090
+- https://github.com/tektoncd/pipeline/pull/5142
+- https://github.com/tektoncd/pipeline/pull/5144
+- https://github.com/tektoncd/pipeline/pull/5197
+- https://github.com/tektoncd/pipeline/pull/5222
+- https://github.com/tektoncd/pipeline/pull/5427
 
 ## References
 

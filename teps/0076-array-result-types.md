@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Array result types
 creation-date: '2021-07-14'
-last-updated: '2022-03-18'
+last-updated: '2022-09-26'
 authors:
 - '@bobcatfish'
 ---
@@ -661,7 +661,16 @@ Note: This section is exclusively for merged pull requests, for this TEP.
 It will be a quick reference for those looking for implementation of this TEP.
 -->
 
-TBD
+- https://github.com/tektoncd/pipeline/pull/4779
+- https://github.com/tektoncd/pipeline/pull/4818
+- https://github.com/tektoncd/pipeline/pull/4855
+- https://github.com/tektoncd/pipeline/pull/4908
+- https://github.com/tektoncd/pipeline/pull/4911
+- https://github.com/tektoncd/pipeline/pull/4920
+- https://github.com/tektoncd/pipeline/pull/4965
+- https://github.com/tektoncd/pipeline/pull/5088
+- https://github.com/tektoncd/pipeline/pull/5132
+- https://github.com/tektoncd/pipeline/pull/5139
 
 ## References
 

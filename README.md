@@ -18,8 +18,6 @@ Tekton community.
 - [our shared document drive](contact.md#shared-drive)
 - [our shared calendar](contact.md#calendar)
 
-For October 2021: check out our [Hacktoberfest](./hacktoberfest-2021.md) ideas!
-
 See our standards regarding:
 
 - [Code of conduct](code-of-conduct.md)
@@ -27,6 +25,7 @@ See our standards regarding:
 - [Commits](standards.md#commits)
 - [Code](standards.md#code)
 - [User profiles](user-profiles.md)
+- [Releases](releases.md)
 
 Find out about our processes:
 

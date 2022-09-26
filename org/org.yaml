@@ -202,6 +202,14 @@ orgs:
         privacy: closed
         repos:
           catlin: write
+      chains.admins:
+        description: the chains admins
+        maintainers:
+        - priyawadhwa
+        - wlynch
+        privacy: closed
+        repos:
+          chains: admin
       chains.maintainers:
         description: the chains maintainers
         maintainers:

@@ -52,6 +52,7 @@ Refer to the following set of questions to help fill the release-note section.
   * If no, just write "NONE" in the release-note block.
   * If yes, a release note is required:
     * Enter detailed release note in the release-note block. If the PR requires additional action from users switching to the new release, include the string "ACTION REQUIRED".
+    * If this PR addresses a publicly known CVE, include the CVE number in the release notes
   * If unsure, include release note.
     * It's recommended to include release note explaining the changes in the PR.
 

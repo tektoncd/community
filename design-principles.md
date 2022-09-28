@@ -38,3 +38,13 @@ The Tekton API currently contains some Kubernetes-isms. These should be treated 
 1. In TEPs, discuss how the proposal affects [conformance](https://github.com/tektoncd/community/blob/main/teps/0012-api-spec.md).
 As mentioned in the conformance document, newly added API fields shouldn't be required for Tekton conformance, but can
 transition to becoming required over time.
+
+## Security
+
+1. Implement [secure design principles][openssf-secure-design] as described by the [OpenSSF badge requirements][openssf-secure-design]
+1. Use the security sections of TEPs when applicable:
+   1. Does the change increase the attack surface of Tekton / significantly impact the threat model?
+   1. Does the change makes it harder for users to follow security best practices through Tekton?
+1. Do not implement cryptographic algorithms in Tekton, rely on proven tools and libraries
+
+[openssf-secure-design]: https://github.com/coreinfrastructure/best-practices-badge/blob/main/doc/other.md#implement_secure_design

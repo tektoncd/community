@@ -20,7 +20,7 @@ Examples:
 ## Release Numbers
 
 Tekton uses [semantic versioning][semantic] to version its own releases. Release numbers are in the format
-MAJOR.MINOR.PATCH `vX.Y`. The [support policy](#support-policy) applies to MAJOR and MINOR releases alike.
+MAJOR.MINOR.PATCH `vX.Y.Z`. The [support policy](#support-policy) applies to MAJOR and MINOR releases alike.
 
 ## Release Tags and Branches
 
@@ -35,7 +35,7 @@ initially points to the git tag `vX.Y.Z`.
     - branch name: `release-vX.M`
     - support window: until `release-vX.M+1`
 
-Once a release support window expires, the corresponding branch is deleted.
+Once a release support window expires, the corresponding branch is deleted. Tags are never deleted.
 It is recommended (but not mandatory) to make major releases coincide with supported ones.
 
 ## Milestones
@@ -85,8 +85,9 @@ VERSION_TAG="v$(date +"%Y%m%d")-$(echo $GIT_SHA | cut -c 1-10)"
 
 ## Nightly releases
 
-Tekton projects may decide to produce nightly releases. 
-Additional requirements compared to nightly builds are:
+Tekton projects may decide to migrate from nightly builds to nightly releases, and use nightly releases to
+replace other releases completely. If a projects decides to do so, it must still comply with the
+[support policy](#support-policy), so the following requirements must be met:
 
 - fully automated release notes associated to each nightly release
 - the project must choose one nightly release every four months, give it a semantic version, create a release branch

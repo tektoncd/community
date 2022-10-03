@@ -14,10 +14,12 @@ authors:
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
   - [Use Cases](#use-cases)
+  - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [PipelineRun controller](#pipelinerun-controller)
   - [TaskRun controller](#taskrun-controller)
   - [Test Plan](#test-plan)
+- [References](#references)
 <!-- /toc -->
 
 ## Summary
@@ -50,6 +52,15 @@ Tekton Developer:
 * I would like to understand the duration of each reconciliation step, so that I can optimize the code to improve reconciliation performance
 * When the pipelines are failing due to a bug, I would like to understand which reconciliation logic caused the issue so that I can easily fix the problem
 
+### Requirements
+
+* Trace all functions in the PipelineRun controller
+* Trace all functions in the TaskRun controller
+* Support Jaeger backend
+* Propagate traces so that subsequent reconciles of the same resource belong to the same trace
+* Propagate traces so that reconciles of a resource owned by a parent resource belong a parent span from the parent resource
+* Reconcile of different resources must belong to separate traces
+
 ## Proposal
 
 Initialize a tracer provider with jaeger as the backend for each reconciler. The jaeger collector URL can be passed as an argument to the controller.
@@ -70,3 +81,10 @@ The spancontext should be also made available as environment variables container
 ### Test Plan
 
 There must be unit tests for recording of spans and e2e tests for context propogation through custom resources. 
+
+## References
+
+[Instrument Tekton resources for tracing](https://github.com/tektoncd/pipeline/issues/2814)
+[OpenTelemetry](https://opentelemetry.io/)
+[OpenTelemetry instrumentation in GO](https://opentelemetry.io/docs/instrumentation/go/manual/)
+[Jaeger Tracing](https://www.jaegertracing.io/)

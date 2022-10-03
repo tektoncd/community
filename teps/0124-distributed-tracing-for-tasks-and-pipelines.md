@@ -84,7 +84,7 @@ There must be unit tests for recording of spans and e2e tests for context propog
 
 ## References
 
-[Instrument Tekton resources for tracing](https://github.com/tektoncd/pipeline/issues/2814)
-[OpenTelemetry](https://opentelemetry.io/)
-[OpenTelemetry instrumentation in GO](https://opentelemetry.io/docs/instrumentation/go/manual/)
-[Jaeger Tracing](https://www.jaegertracing.io/)
+* [Instrument Tekton resources for tracing](https://github.com/tektoncd/pipeline/issues/2814)
+* [OpenTelemetry](https://opentelemetry.io/)
+* [OpenTelemetry instrumentation in GO](https://opentelemetry.io/docs/instrumentation/go/manual/)
+* [Jaeger Tracing](https://www.jaegertracing.io/)

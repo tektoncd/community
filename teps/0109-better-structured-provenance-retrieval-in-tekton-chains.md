@@ -178,7 +178,7 @@ All below examples will be generating in-toto attestation.
     spec:
       ...
       results:
-        - name: ARTIFACT-INPUTS_git-vcs
+        - name: git-vcs-ARTIFACT_INPUTS
           type: object
           description: |
             The source distribution
@@ -189,7 +189,7 @@ All below examples will be generating in-toto attestation.
               type: string
             digest:
               type: string
-        - name: ARTIFACT-OUTPUTS_oci_image
+        - name: oci_image-ARTIFACT_OUTPUTS
           type: object
           description: N/A
           properties:
@@ -203,11 +203,11 @@ All below examples will be generating in-toto attestation.
     TaskRun:
       ...
       results:
-        - name: ARTIFACT-INPUTS_git-vcs
+        - name: git-vcs-ARTIFACT_INPUTS
           value:
             uri: git+https://github.com/foo/bar.git
             digest: sha256:abc
-        - name: ARTIFACT-OUTPUTS_oci-image
+        - name: oci-image-ARTIFACT_OUTPUTS
           value:
             uri: gcr.io/somerepo/someimage
             digest: sha512:abc
@@ -225,19 +225,19 @@ materials: [{
 2. Use Perforce and images as sources, and generates in-toto provenance for a TaskRun that builds a Maven package.
 ``` yaml
 results:
-  - name: ARTIFACT-INPUTS_perforce-vcs
+  - name: perforce-vcs-ARTIFACT_INPUTS
     value:
       uri: http://myp4web:8080/depot/main/atlas/
       digest: sha256:abc
-  - name: ARTIFACT-OUTPUTS_maven-pkg
+  - name: maven-pkg-ARTIFACT_OUTPUTS
     value:
       uri: us-west4-maven.pkg.dev/test-project/test-repo/com/google/guava/guava/31.0/guava-31.0.jar
       digest: sha256:abc
-  - name: ARTIFACT-OUTPUTS_maven-pom
+  - name: maven-pom-ARTIFACT_OUTPUTS
     value:
       uri: us-west4-maven.pkg.dev/test-project/test-repo/com/google/guava/guava/31.0/guava-31.0.pom
       digest: sha256:def
-  - name: ARTIFACT-OUTPUTS_maven-src-pkg
+  - name: maven-src-pkg-ARTIFACT_OUTPUTS
     value:
       uri: us-west4-maven.pkg.dev/test-project/test-repo/com/google/guava/guava/31.0/guava-31.0-sources.jar
       digest: sha256:xyz
@@ -297,7 +297,7 @@ As described above, users of Tekton Chains need to have the results that store p
 
 ```yaml
 results:
-  - name: ARTIFACT-INPUTS_{ARTIFACT-NAME}
+  - name: {ARTIFACT-NAME}-ARTIFACT_INPUTS
     type: object
     description: |
       * uri: resource uri of the artifact. It can uniquely identify the artifact.
@@ -307,7 +307,7 @@ results:
         type: string
       digest:
         type: string
-  - name: ARTIFACT-OUTPUTS_{ARTIFACT-NAME}
+  - name: {ARTIFACT-NAME}-ARTIFACT_OUTPUTS
     type: object
     description: |
       * uri: resource uri of the artifact. It can uniquely identify the artifact.

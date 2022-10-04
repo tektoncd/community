@@ -287,3 +287,4 @@ This is the complete list of Tekton teps:
 |[TEP-0118](0118-matrix-with-explicit-combinations-of-parameters.md) | Matrix with Explicit Combinations of Parameters | implementable | 2022-08-08 |
 |[TEP-0119](0119-add-taskrun-template-in-pipelinerun.md) | Add taskRun template in PipelineRun | implementable | 2022-09-01 |
 |[TEP-0120](0120-canceling-concurrent-pipelineruns.md) | Canceling Concurrent PipelineRuns | proposed | 2022-09-23 |
+|[TEP-0124](0124-distributed-tracing-for-tasks-and-pipelines.md) | Distributed tracing for Tasks and Pipelines | proposed | 2022-09-30 |

@@ -82,6 +82,14 @@ The spancontext should be also made available as environment variables container
 
 There must be unit tests for recording of spans and e2e tests for context propogation through custom resources. 
 
+### POC
+
+A POC was developed to check the feasibility of the implementation. It can be found [here](https://github.com/kmjayadeep/pipeline/tree/opentelemetry-poc)
+
+A trace from PipelineRun looks like the screenshot below.
+
+![Jaeger - PipelineRun](images/0124-jaeger.png "Jaeger - Pipelinerun")
+
 ## References
 
 * [Instrument Tekton resources for tracing](https://github.com/tektoncd/pipeline/issues/2814)

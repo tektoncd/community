@@ -40,3 +40,9 @@ Find out about our processes:
 
 _For guidelines on how to contribute to `tektoncd/community` see
 [CONTRIBUTING.md](CONTRIBUTING.md)._
+
+## Learn about our users community
+
+- Take a look at our [tekton friends](https://github.com/tektoncd/friends) repo
+- Take a look at our [list of adopters](adopters.md)
+- Join our [tekton-users@](https://groups.google.com/forum/#!forum/tekton-users) mailing list

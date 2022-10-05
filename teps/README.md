@@ -262,6 +262,7 @@ This is the complete list of Tekton teps:
 |[TEP-0090](0090-matrix.md) | Matrix | implemented | 2022-06-30 |
 |[TEP-0091](0091-trusted-resources.md) | Trusted Resources | implementable | 2022-08-16 |
 |[TEP-0092](0092-scheduling-timeout.md) | Scheduling Timeout | implementable | 2022-04-11 |
+|[TEP-0093](0093-add-sign-verify-subcommand-to-the-cli.md) | Add sign and verify subcommand to the CLI | proposed | 2022-10-05 |
 |[TEP-0094](0094-configuring-resources-at-runtime.md) | Configuring Resources at Runtime | implemented | 2022-03-11 |
 |[TEP-0095](0095-common-repository-configuration.md) | Common Repository Configuration | proposed | 2021-11-29 |
 |[TEP-0096](0096-pipelines-v1-api.md) | Pipelines V1 API | implementable | 2022-07-26 |

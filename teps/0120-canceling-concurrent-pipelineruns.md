@@ -63,6 +63,9 @@ Controlling load on a cluster or external service
 - An organization has multiple teams working on a mobile application with a limited number of test devices.
 They want to limit the number of concurrent CI runs per team, to prevent one team from using all the available devices
 and crowding out CI runs from other teams.
+- Tekton previously used GKE clusters allocated by Boskos for our Pipelines integration tests, and Boskos caps the number of clusters
+  that can be used at a time. It would have been useful to queue builds so that they could not launch until a cluster was available.
+  (We now use KinD for our Pipelines integration tests.)
 - A Pipeline performs multiple parallelizable things with different concurrency caps, as described in [this comment](https://github.com/tektoncd/pipeline/issues/2591#issuecomment-626778025).
 - Allow users to cap the number of matrixed TaskRuns (alpha) that can run at a given time.
   - Currently, we have the feature flag “default-maximum-matrix-fan-out”, which restricts the total number of TaskRuns
@@ -102,9 +105,9 @@ queueing, or more advanced concurrency strategies.
 
 ## Proposal
 
-Create an experimental project (either a new Github repo or a new subfolder of the experimental repo) with its own reconciler for canceling concurrent PipelineRuns.
-The strategy used in this experimental project will be most similar to the ["Separate concurrency CRD and reconciler" strategy](#separate-concurrency-crd-and-reconciler) below.
-Use this project on our dogfooding cluster for CI PipelineRuns, and allow this experience to inform how we want to make this part of our API.
+We have created an [experimental project](https://github.com/tektoncd/experimental/tree/main/concurrency) with its own reconciler for canceling concurrent PipelineRuns.
+This project uses the ["Separate concurrency CRD and reconciler" strategy](#separate-concurrency-crd-and-reconciler) below.
+We will use this project on our dogfooding cluster for CI PipelineRuns, and allow this experience to inform how we want to make this part of our API.
 
 [TEP-0098: Workflows](./0098-workflows.md) proposes creating a Workflows API for an easier end-to-end, getting started experience with Tekton.
 We will likely want to allow users to configure concurrency controls on Workflows.

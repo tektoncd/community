@@ -15,7 +15,8 @@ Tell us about, we welcome [pull requests](https://github.com/tektoncd/community/
 | kfp-tekton | Kubeflow Pipelines SDK for Tekton | [github.com/kubeflow/kfp-tekton](https://github.com/kubeflow/kfp-tekton/) |
 | OpenShift Pipelines | OpenShift Pipelines is a cloud-native, continuous integration and continuous delivery (CI/CD) solution based on Kubernetes resources. | [github.com/openshift-pipelines](https://github.com/openshift-pipelines) |
 | FRSCA | OpenSSF's Factory for Repeatable Secure Creation of Artifacts (aka FRSCA pronounced Fresca) aims to help secure the supply chain by securing build pipelines. | [github.com/buildsec/frsca](https://github.com/buildsec/frsca) |
-
+| VSCode Tekton extension | VSCode extension to manage Tekton resources. | [github.com/redhat-developer/vscode-tekton](https://github.com/redhat-developer/vscode-tekton) |
+| JetBrains IDEs Tekton plugin | JetBrains IDEs plugin to manage Tekton resources. | [github.com/redhat-developer/intellij-tekton](https://github.com/redhat-developer/intellij-tekton) |
 
 
 ## Vendors

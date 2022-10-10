@@ -63,7 +63,28 @@ Tekton Developer:
 
 ## Proposal
 
-Initialize a tracer provider with jaeger as the backend for each reconciler. The jaeger collector URL can be passed as an argument to the controller.
+Initialize a tracer provider with jaeger as the backend for each reconciler. The jaeger collector Base URL can be passed as an argument to the controller.
+
+The following snippet shows how a tracing provider is initialized
+
+```go
+url := "http://jaeger-collector.jaeger:14268/api/traces"
+
+exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(url)))
+if err != nil {
+  return nil, err
+}
+tp := tracesdk.NewTracerProvider(
+  tracesdk.WithBatcher(exp),
+  // Record information about this application in a Resource.
+  tracesdk.WithResource(resource.NewWithAttributes(
+    semconv.SchemaURL,
+    semconv.ServiceNameKey.String("PipelineRunReconciler"),
+  )),
+)
+```
+
+If jaeger collector url is not provided, the operator will continue working as before and tracing will be disabled. TracerProvider will be replaced with a no-op provider which doesn't record any spans in this case.
 
 ### PipelineRun controller
 A new trace will be initialized in the pipelineRun controller when a new PipelineRun CR is created. The span context will be propogated through the reconciliation methods

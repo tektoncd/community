@@ -308,6 +308,7 @@ orgs:
         - savitaashture
         - sm43
         - concaf
+        - piyush-garg
         privacy: closed
         repos:
           operator: write

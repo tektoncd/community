@@ -21,19 +21,13 @@ one year: every year either two or three of the seats are up for election.
 
 ### Current members
 
-| Full Name                                  |  Company   | GitHub                                        | Slack                                                         | Elected On | Until    |
-|-------------------                         |:----------:|-----------------------------------------------|---------------------------------------------------------------|------------|----------|
-| Priya Wadhwa                               | ChainGuard | [priyawadhwa](https://github.com/priyawadhwa) | [@Priya Wadhwa](https://tektoncd.slack.com/team/U02T0CS9PN0)  | Feb 2022   | Feb 2024 |
-| Vincent Deemester                          |  Red Hat   | [vdemeester](https://github.com/vdemeester)   | [@vdemeester](https://tektoncd.slack.com/team/UHSQGV1L3)      | Feb 2021   | Feb 2023 |
-| Jerop Kipruto (while Christie is on leave) |   Google   | [jerop](https://github.com/jerop)             | [@Jerop Kipruto](https://tektoncd.slack.com/team/U011DPQSP0V) | Apr 2022   | Oct 2022 |
-| Andrea Frittoli                            |    IBM     | [afrittoli](https://github.com/afrittoli)     | [@Andrea Frittoli](https://tektoncd.slack.com/team/UJ411P2CC) | Feb 2022   | Feb 2024 |
-| Dibyo Mukherjee                            |   Google   | [dibyom](https://github.com/dibyom)           | [@Dibyo Mukherjee](https://tektoncd.slack.com/team/UJ73HM7PZ) | Feb 2021   | Feb 2023 |
-
-On leave until Oct 3, 2022:
-
 | Full Name         |  Company   | GitHub                                        | Slack                                                         | Elected On | Until    |
 |-------------------|:----------:|-----------------------------------------------|---------------------------------------------------------------|------------|----------|
+| Priya Wadhwa      | ChainGuard | [priyawadhwa](https://github.com/priyawadhwa) | [@Priya Wadhwa](https://tektoncd.slack.com/team/U02T0CS9PN0)  | Feb 2022   | Feb 2024 |
+| Vincent Deemester |  Red Hat   | [vdemeester](https://github.com/vdemeester)   | [@vdemeester](https://tektoncd.slack.com/team/UHSQGV1L3)      | Feb 2021   | Feb 2023 |
 | Christie Wilson   |   Google   | [bobcatfish](https://github.com/bobcatfish)   | [@Christie Wilson](https://tektoncd.slack.com/team/UJ6DECY78) | Feb 2021   | Feb 2023 |
+| Andrea Frittoli   |    IBM     | [afrittoli](https://github.com/afrittoli)     | [@Andrea Frittoli](https://tektoncd.slack.com/team/UJ411P2CC) | Feb 2022   | Feb 2024 |
+| Dibyo Mukherjee   |   Google   | [dibyom](https://github.com/dibyom)           | [@Dibyo Mukherjee](https://tektoncd.slack.com/team/UJ73HM7PZ) | Feb 2021   | Feb 2023 |
 
 There is no designated facilitator at the moment, the responsibility is
 distributed across the five members of the committee.

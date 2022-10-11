@@ -8,7 +8,6 @@ orgs:
     - vdemeester
     - afrittoli
     - dibyom
-    - jerop
     billing_email: info@cd.foundation
     company: ''
     default_repository_permission: none
@@ -82,6 +81,7 @@ orgs:
     - iancoffey
     - ispasov
     - jagathprakash
+    - jerop
     - jessm12
     - jinchihe
     - jjasghar
@@ -176,7 +176,6 @@ orgs:
         - vdemeester
         - afrittoli
         - dibyom
-        - jerop
         privacy: closed
       catalog.maintainers:
         description: the catalog maintainers

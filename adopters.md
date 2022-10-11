@@ -23,13 +23,13 @@ Tell us about, we welcome [pull requests](https://github.com/tektoncd/community/
 
 | Company | How we use Tekton | Notes | May use logo in Tekton public presentations (optional) | 
 |---------|-----------|---------|----------|
-| coming soon | | | | 
+| IBM | IBM offers Tekton as a Service through IBM Cloud Continuous Delivery Pipelines| [IBM Cloud Continuous Delivery](https://www.ibm.com/cloud/continuous-delivery)| Yes | 
 
 ## End Users
 
 | Company | How we use Tekton | Notes | May use logo in Tekton public presentations (optional) | 
 |---------|-----------|---------|----------|
-| coming soon | | | |
+| IBM | Tekton is used as the basis of IBM Cloud's broadly adopted internal DevSecOps pipelines | | Yes |
 
 ## Tekton Friends
 

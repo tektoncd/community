@@ -17,6 +17,7 @@ Tell us about, we welcome [pull requests](https://github.com/tektoncd/community/
 | FRSCA | OpenSSF's Factory for Repeatable Secure Creation of Artifacts (aka FRSCA pronounced Fresca) aims to help secure the supply chain by securing build pipelines. | [github.com/buildsec/frsca](https://github.com/buildsec/frsca) |
 | VSCode Tekton extension | VSCode extension to manage Tekton resources. | [github.com/redhat-developer/vscode-tekton](https://github.com/redhat-developer/vscode-tekton) |
 | JetBrains IDEs Tekton plugin | JetBrains IDEs plugin to manage Tekton resources. | [github.com/redhat-developer/intellij-tekton](https://github.com/redhat-developer/intellij-tekton) |
+| Automatiko Approval task | Brings approval tasks into Tekton pipeline with various strategies (single approval, multiple approvals, four eye based approval). | [github.com/automatiko-io/automatiko-approval-task](https://github.com/automatiko-io/automatiko-approval-task) |
 
 
 ## Vendors

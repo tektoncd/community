@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Distributed tracing for Tasks and Pipelines
 creation-date: '2022-09-30'
-last-updated: '2022-09-30'
+last-updated: '2022-10-16'
 authors:
 - '@kmjayadeep'
 ---
@@ -11,6 +11,7 @@ authors:
 
 <!-- toc -->
 - [Summary](#summary)
+- [Motivation](#motivation)
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
   - [Use Cases](#use-cases)
@@ -18,11 +19,22 @@ authors:
 - [Proposal](#proposal)
   - [PipelineRun controller](#pipelinerun-controller)
   - [TaskRun controller](#taskrun-controller)
+- [Design Details](#design-details)
+  - [POC](#poc)
+- [Design Evaluation](#design-evaluation)
+  - [Risks and Mitigations](#risks-and-mitigations)
+  - [Drawbacks](#drawbacks)
+- [Alternatives](#alternatives)
+- [Implementation Plan](#implementation-plan)
   - [Test Plan](#test-plan)
 - [References](#references)
 <!-- /toc -->
 
 ## Summary
+
+Instrument Tekton reconciler code using OpenTelemetry and Jaeger.
+
+## Motivation
 
 With distributed tracing, we can track the time taken by each action in the pipeline like reconciling logic, fetching resources, pulling images etc.
 This allows the developers to improve the reconciliation logic and also allow end users to monitor and optimize the pipelines.
@@ -99,9 +111,11 @@ TaskRun reconciler retrieves the parent span context propogated by PipelineRun c
 instrument the logic similar to PipelineRun controller.
 The spancontext should be also made available as environment variables containers (using downward api) running the tasks. So that the task containers can continue the span if it supports it.
 
-### Test Plan
+## Design Details
 
-There must be unit tests for recording of spans and e2e tests for context propogation through custom resources. 
+The high level flow of a trace is shown in the diagram below
+
+![Jaeger - Design](images/0124-diagram.png "Jaeger - Design")
 
 ### POC
 
@@ -110,6 +124,36 @@ A POC was developed to check the feasibility of the implementation. It can be fo
 A trace from PipelineRun looks like the screenshot below.
 
 ![Jaeger - PipelineRun](images/0124-jaeger.png "Jaeger - Pipelinerun")
+
+## Design Evaluation
+
+There is no change to API involved. Enabling tracing is completely optional for the end-user. If tracing is disabled or not configured with correct tracing backend URL,
+the reconcilers will work as usual. Hence we can consider this as a non-breaking change.
+
+### Risks and Mitigations
+
+We have to make sure not to include any sensitive information as part of
+the traces. The scope of this proposal is only to do the plumbing part,
+but we need to consider the security aspect when reviewing PRs related
+to this in the future.
+
+### Drawbacks
+
+The change involves adding a new attribute to `Reconciler` struct for `PipelineRun` and `TaskRun`. It is required to initialize new tracer providers per reconciler.
+
+## Alternatives
+
+The alternative approach is to directly use Zipkin or Jaeger SDK instead of OpenTelemetry. Using OpenTelemetry makes it easy to switch between providers, without changing the code.
+
+## Implementation Plan
+
+The changes are non-disruptive and doesn't involve changes to any
+reconciliation logic. So a single PR is sufficient to include all the
+changes mentioned in this proposal.
+
+### Test Plan
+
+There must be unit tests for recording of spans and e2e tests for context propogation through custom resources.
 
 ## References
 

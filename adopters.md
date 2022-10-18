@@ -25,6 +25,9 @@ Tell us about, we welcome [pull requests](https://github.com/tektoncd/community/
 | Company | How we use Tekton | Notes | May use logo in Tekton public presentations (optional) | 
 |---------|-----------|---------|----------|
 | IBM | IBM offers Tekton as a Service through IBM Cloud Continuous Delivery Pipelines| [IBM Cloud Continuous Delivery](https://www.ibm.com/cloud/continuous-delivery)| Yes | 
+| Google | Tekton is designed to work well with Google Cloud-specific Kubernetes tooling. This includes deployments to Google Kubernetes Engine as well as artifact storage and scanning using Container Registry. You can also build, test, and deploy across multiple environments such as VMs, serverless, Kubernetes, or Firebase.| [Tekton on Google Cloud](https://cloud.google.com/tekton)| Yes |
+
+
 
 ## End Users
 

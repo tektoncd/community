@@ -2,7 +2,7 @@
 status: implementable
 title: Custom Tasks Beta
 creation-date: '2022-07-12'
-last-updated: '2022-07-12'
+last-updated: '2022-10-20'
 authors:
 - '@jerop'
 see-also:
@@ -11,7 +11,8 @@ see-also:
 - TEP-0069
 - TEP-0071
 - TEP-0096
-- TEP-0105 
+- TEP-0105
+- TEP-0121
 ---
 
 # TEP-0114: Custom Tasks Beta
@@ -25,6 +26,7 @@ see-also:
       - [v1alpha1 to v1beta1 + Run to CustomRun](#v1alpha1-to-v1beta1--run-to-customrun)
       - [References and Specifications](#references-and-specifications)
       - [Remove Pod Template](#remove-pod-template)
+      - [Exclude Retries and RetriesStatus](#exclude-retries-and-retriesstatus)
       - [Feature Gates](#feature-gates)
     - [Documentation](#documentation)
     - [Testing](#testing)
@@ -200,6 +202,12 @@ Note that the goal of `Custom Tasks`, as defined in [TEP-0002][tep-0002], is to 
 If a specific `Custom Task` implementation creates `Pods`, that `Custom Task` can have a `Pod` template field in its
 own specification.
 
+##### Exclude Retries and RetriesStatus
+
+Exclude `retries` and `retriesStatus` fields in the initial release. These fields are under active discussion in
+[TEP-0121][tep-0121]. These fields may be reintroduced or replacement features may be implemented, depending on the 
+design decisions we make in [TEP-0121][tep-0121].
+
 ##### Feature Gates
 
 Remove guarding of `Custom Tasks` behind `enable-custom-tasks` and `enable-api-fields` feature gates.
@@ -310,6 +318,7 @@ For further details, see [tektoncd/community#523][523], [tektoncd/community#667]
   - [TEP-0071: Custom Tasks SDK][tep-0071]
   - [TEP-0096: Pipelines V1 API][tep-0096]
   - [TEP-0105: Remove v1alpha1 API][tep-0105]
+  - [TEP-0121: Refine Retries for TaskRuns and CustomRuns][tep-0121]
 - Issues
   - [tektoncd/pipeline#4313: Custom Tasks Beta][4313]
   - [tektoncd/community#523: Custom Tasks Graduation][523]
@@ -324,6 +333,7 @@ For further details, see [tektoncd/community#523][523], [tektoncd/community#667]
 [tep-0071]: 0071-custom-task-sdk.md
 [tep-0061]: 0061-allow-custom-task-to-be-embedded-in-pipeline.md
 [tep-0069]: 0069-support-retries-for-custom-task-in-a-pipeline.md
+[tep-0121]: https://github.com/tektoncd/community/pull/816
 [v0.19.0]: https://github.com/tektoncd/pipeline/releases/tag/v0.19.0
 [wg-notes]: https://docs.google.com/document/d/17PodAxG8hV351fBhSu7Y_OIPhGTVgj6OJ2lPphYYRpU/edit#bookmark=id.8o3u0xfwrgy4
 [5005]: https://github.com/tektoncd/pipeline/pull/5005

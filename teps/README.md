@@ -280,7 +280,7 @@ This is the complete list of Tekton teps:
 |[TEP-0110](0110-decouple-catalog-organization-and-reference.md) | Decouple Catalog Organization and Resource Reference | implemented | 2022-06-29 |
 |[TEP-0111](0111-propagating-workspaces.md) | Propagating Workspaces | implemented | 2022-09-16 |
 |[TEP-0112](0112-replace-volumes-with-workspaces.md) | Replace Volumes with Workspaces | proposed | 2022-07-20 |
-|[TEP-0114](0114-custom-tasks-beta.md) | Custom Tasks Beta | implementable | 2022-07-12 |
+|[TEP-0114](0114-custom-tasks-beta.md) | Custom Tasks Beta | implementable | 2022-10-20 |
 |[TEP-0115](0115-tekton-catalog-git-based-versioning.md) | Tekton Catalog Git-Based Versioning | implementable | 2022-10-03 |
 |[TEP-0116](0116-referencing-finally-task-results-in-pipeline-results.md) | Referencing Finally Task Results in Pipeline Results | implemented | 2022-08-11 |
 |[TEP-0117](0117-tekton-results-logs.md) | Tekton Results Logs | proposed | 2022-08-17 |

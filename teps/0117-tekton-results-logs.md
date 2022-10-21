@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Tekton Results Logs
 creation-date: '2022-07-19'
-last-updated: '2022-08-17'
+last-updated: '2022-10-21'
 authors:
 - '@adambkaplan'
 ---

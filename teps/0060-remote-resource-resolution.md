@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Remote Resource Resolution
 creation-date: '2021-03-23'
-last-updated: '2021-11-01'
+last-updated: '2022-10-24'
 authors:
 - '@sbwsg'
 - '@pierretasci'
@@ -69,7 +69,7 @@ authors:
     - [Applicability For Other Tekton Projects](#applicability-for-other-tekton-projects-7)
   - [Sync Task and Pipeline objects directly into the cluster](#sync-task-and-pipeline-objects-directly-into-the-cluster)
     - [Applicability For Other Tekton Projects](#applicability-for-other-tekton-projects-8)
-- [Open Questions](#open-questions)
+- [Implementation Pull Requests](#implementation-pull-requests)
 - [Future Extensions](#future-extensions)
 - [References](#references)
   - [Related designs and TEPs](#related-designs-and-teps)
@@ -1276,8 +1276,18 @@ could operate with zero understanding of the resources and simply
 drawbacks with regard to deciding which resources should be applied and
 which shouldn't.
 
-## Open Questions
+## Implementation Pull Requests
 
+PRs implementing resource resolution in Pipelines:
+- [Add resolution types to the API](https://github.com/tektoncd/pipeline/commit/5d3f23ef7b8d46f88ddb5806622b802444bb02b4)
+- [Add taskRef remote resolution support](https://github.com/tektoncd/pipeline/pull/4859)
+
+Resolution was originally implemented in https://github.com/tektoncd/resolution.
+It was moved over to the https://github.com/tektoncd/pipeline in the following PRs:
+- [Add types and client for Resolution](https://github.com/tektoncd/pipeline/pull/5200)
+- [Move Resolution bundle, git, and hub resolver pkgs over](https://github.com/tektoncd/pipeline/pull/5384)
+- [Add combined remote resolvers binary](https://github.com/tektoncd/pipeline/pull/5391)
+- [Add resolvers deployment, with release and e2e integration ](https://github.com/tektoncd/pipeline/pull/5395)
 
 ## Future Extensions
 

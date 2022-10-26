@@ -781,11 +781,12 @@ orgs:
         - vdemeester
         - wlynch
         members:
-        - pritidesai
+        - chuangw6
         - dlorenc
         - lcarva
         - loosebazooka
         - mattmoor
+        - pritidesai
         privacy: closed
         repos:
           chains: read

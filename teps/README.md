@@ -291,3 +291,4 @@ This is the complete list of Tekton teps:
 |[TEP-0121](0121-refine-retries-for-taskruns-and-customruns.md) | Refine Retries for TaskRuns and CustomRuns | implementable | 2022-11-14 |
 |[TEP-0123](0123-specifying-on-demand-retry-in-pipelinetask.md) | Specifying on-demand-retry in a PipelineTask | proposed | 2022-10-11 |
 |[TEP-0124](0124-distributed-tracing-for-tasks-and-pipelines.md) | Distributed tracing for Tasks and Pipelines | implementable | 2022-10-16 |
+|[TEP-0125](0125-add-credential-filter-to-entrypoint-logger.md) | Add credential filter to entrypoint logger | proposed | 2022-10-27 |

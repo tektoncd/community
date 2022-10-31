@@ -4,8 +4,8 @@ title: Configmap and Secret as Param Value Source
 authors:
   - "@rpajay"
  
-creation-date: 2022-10-28
-last-updated: 2022-10-28
+creation-date: 2022-10-28\
+last-updated: 2022-10-28\
 status: pending
 
 ---

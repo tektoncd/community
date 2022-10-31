@@ -38,9 +38,9 @@ This is to support Kubernetes native options (ConfigMap or Secret) as value sour
 
 ## Motivation
 
-`PipelineRun` and `TaskRun` Params support passing direct value during its creation. Two supported options to pass values from Secret / ConfigMap are\
-- `TEP 0029-step-workspaces`  where Secret / ConfigMap is mounted as file inside container.\
-- Assigning `Env` from `ConfigMap / Secret` reference for each container / step on creation of pipeline.\
+`PipelineRun` and `TaskRun` Params support passing direct value during its creation. Two supported options to pass values from Secret / ConfigMap are
+- `TEP 0029-step-workspaces`  where Secret / ConfigMap is mounted as file inside container.
+- Assigning `Env` from `ConfigMap / Secret` reference for each container / step on creation of pipeline.
 
 To understand the problem let's take an example. 
 jib-maven[https://github.com/tektoncd/catalog/blob/main/task/jib-maven/0.4/jib-maven.yaml]
@@ -62,18 +62,18 @@ steps:
 		com.google.cloud.tools:jib-maven-plugin:build
 ```
 
-In this tekton hub task where 2 params are\
-- `MAVEN_IMAGE` : Either of the above mentioned solution  doesn't work as the value isn't a param but as an env variable inside the container\
-- `CACERTFILE` : Secret doesn't work out of the box as to access env variable `$(params.CACERTFILE)` needs to be replaced with `$CACERTFILE`\
+In this tekton hub task where 2 params are
+- `MAVEN_IMAGE` : Either of the above mentioned solution  doesn't work as the value isn't a param but as an env variable inside the container
+- `CACERTFILE` : Secret doesn't work out of the box as to access env variable `$(params.CACERTFILE)` needs to be replaced with `$CACERTFILE`
 
 ### Goals
 
 To reference `PipelineRun` or `TaskRun` param value from ConfigMap or Secret. 
 
-It has following advantages\
-- All values passed either as value in param or referenced from `ConfigMap / Secret` can be consistently accessed in a task or all tasks in a pipeline.\
--  Offloads the source of value in a param to its usage in `Pipeline` and `Task`  giving the option to decide the param value on creation of `PipelineRun` or `TaskRun`.\
-- Minimises changing of `Pipeline` or `Task` based on source of the value when executing in multiple clusters / namespace promoting reusability.\
+It has following advantages
+- All values passed either as value in param or referenced from `ConfigMap / Secret` can be consistently accessed in a task or all tasks in a pipeline.
+-  Offloads the source of value in a param to its usage in `Pipeline` and `Task`  giving the option to decide the param value on creation of `PipelineRun` or `TaskRun`.
+- Minimises changing of `Pipeline` or `Task` based on source of the value when executing in multiple clusters / namespace promoting reusability.
 
 ### Non-Goals
 
@@ -117,8 +117,8 @@ From context of `PipelineRun` and `TaskRun` params
 
 ### API
 
-To support the feature supported outlined above, we also propose a small addition to the API. In `ParamSpec` need to  
-`TaskRef` and `PipelineRef` objects will include a `bundle` field.
+To support the feature supported outlined above, we also propose a small addition to the API. 
+In `ParamSpec` need to `TaskRef` and `PipelineRef` objects will include a `ValueFrom` field.
 
 ```go
 type  Param  struct {

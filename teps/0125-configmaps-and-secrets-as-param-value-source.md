@@ -37,9 +37,9 @@ This proposal is to be able to reference `ConfigMap` or `Secret` as value source
 
 ## Motivation
 
-`PipelineRun` and `TaskRun` Params support passing direct value during its creation. Most of the values that are default needs to be saved as default in the `Task` or `Pipeline`.
-
-Two supported options are `TEP 0029-step-workspaces`  where Secret / ConfigMap are mounted as file inside container and assigning `Env from ConfigMap / Secret` reference for each container / step on creation of pipeline.
+`PipelineRun` and `TaskRun` Params support passing direct value during its creation. Two supported options to pass values from Secret / ConfigMap are 
+- `TEP 0029-step-workspaces`  where Secret / ConfigMap is mounted as file inside container
+- Assigning `Env` from `ConfigMap / Secret` reference for each container / step on creation of pipeline.
 
 To understand the problem let's take an example. 
 jib-maven[https://github.com/tektoncd/catalog/blob/main/task/jib-maven/0.4/jib-maven.yaml]
@@ -70,7 +70,7 @@ In this tekton hub task where 2 params are
 To reference `PipelineRun` or `TaskRun` param value from ConfigMap or Secret. 
 
 It has following advantages
-	- All values passed either as value in param or referenced from `ConfigMap / Secret` can be consistently used in a task or all tasks in a pipeline.
+	- All values passed either as value in param or referenced from `ConfigMap / Secret` can be consistently accessed in a task or all tasks in a pipeline.
 	-  Offloads the source of value in a param to its usage in `Pipeline` and `Task`  giving the option to decide the param value on creation of `PipelineRun` or `TaskRun`.
 	- Minimises changing of `Pipeline` or `Task` based on source of the value when executing in multiple clusters / namespace promoting reusability.
 
@@ -83,7 +83,7 @@ It has following advantages
 
 ## Proposal
 
-To achieve the requirement, lets take inspiration from Kubernetes API Env section of each Container.
+To achieve the requirement, lets take inspiration from `Kubernetes API Env section of each Container`
 
 ```go
 // EnvVar represents an environment variable present in a Container.
@@ -106,8 +106,8 @@ type  EnvVarSource  struct {
 
 From context of `PipelineRun` and `TaskRun` params 
 ```yaml
-	- FieldRef : May not fit the context of  `PipelineRun` and `TaskRun` params 
-	- ResourceFieldRef : May not fit the context of  `PipelineRun` and `TaskRun` params 
+	- FieldRef : May not fit the context of  `PipelineRun` and `TaskRun` params as its used to reference field of the pod.
+	- ResourceFieldRef : May not fit the context of  `PipelineRun` and `TaskRun` params as its used to reference resource of the container.
 	- ConfigMapKeyRef : To reference ConfigMap value
 	- SecretKeyRef : To reference Secret value
 ```

@@ -2,7 +2,7 @@
 status: proposed
 title: Tekton Catalog Support Tiers
 creation-date: '2021-08-09'
-last-updated: '2022-10-17'
+last-updated: '2022-11-07'
 authors:
 - '@bobcatfish'
 - '@jerop'
@@ -60,6 +60,12 @@ see-also:
           - [Design Evaluation](#design-evaluation-2)
     - [Automated Testing and Dogfooding](#automated-testing-and-dogfooding-1)
     - [Image Scanning for Common Vulnerabilities and Exposures (CVEs)](#image-scanning-for-common-vulnerabilities-and-exposures-cves-1)
+      - [CVEs Scanning Tool](#cves-scanning-tool)
+      - [Scanning Policy & Surface Vulnerability Report](#scanning-policy--surface-vulnerability-report)
+      - [Extract Container Images from Catalogs](#extract-container-images-from-catalogs)
+      - [Design Evaluation](#design-evaluation-3)
+      - [Alternatives](#alternatives-1)
+        - [1. Store Container Images in Metadata File](#1-store-container-images-in-metadata-file)
     - [Verified Remote Resources](#verified-remote-resources-1)
   - [References](#references)
 <!-- /toc -->
@@ -517,7 +523,117 @@ TODO
 
 ### Image Scanning for Common Vulnerabilities and Exposures (CVEs)
 
-TODO
+#### CVEs Scanning Tool
+
+[Trivy](https://github.com/aquasecurity/trivy) is an open source, simple and comprehensive vulnerability scanner for container images and other artifacts, the advantages of which include but not limited to:
+
+1. **Comprehensive Coverage**: Trivy supports comprehensive vulnerability detection against a wide variety of OS Packages and application dependencies for 8 languages including Go. In addition to container image scanning, Trivy is also able to detect security issues targeting filesystem, git repository, kubernetes cluster and resources.
+2. **High Accuracy**: Trivy provides highly accurate security reports, especially Alpine Linux and RHEL/CentOS.
+3. **Performance & Scalability**: Trivy is fast and scalable thanks to the underlying static analysis technique. The first scan finishes within 10s of submission (depending on the network).
+4. **Easiness**: Trivy can be installed easily, executed both in standalone & client/server mode, and no prerequisite (DB, system library, env requirement...) is required.
+
+A comparison between Trivy and other CVEs scanning tools is available [here](https://aquasecurity.github.io/trivy/v0.17.2/comparison/). Given the above advantages, Trivy will be selected as the vulnerability scanning tool for Tekton Catalogs.
+
+#### Scanning Policy & Surface Vulnerability Report
+
+The Artifact Hub [Scanner Service](https://artifacthub.io/docs/topics/security_report/) uses Trivy as the underlying CVEs scanning tool, periodically running container image security reports for Helm Charts, OLM operators and 5 other kind of resource surfaced by the Artifact Hub. We propose to integrate Tekton Catalogs to the Artifact Hub [Scanner Service](https://artifacthub.io/docs/topics/security_report/) to run and surface Trivy security reports in the Artifact Hub.
+
+In the first iteration of the TEP, we will use the current scanning policy defined the Artifact Hub:
+1. The scanner runs twice an hour and scans packages’ versions that haven’t been scanned yet.
+2. The latest package version available is scanned daily.
+3. The previous versions are scanned weekly. 
+4. The Versions released more than one year ago won’t be scanned anymore.
+
+The container images must be stored in the registries that are publicly available. The security report will be displayed on the Artifact Hub UI for each version of the packages.
+
+#### Extract Container Images from Catalogs
+
+We propose to extract and collect all the container images used in the Tekton resource (`task` or `pipeline`) by iterating through all the values in the `tasks.steps.image` fields of the resource. The extracted container images are stored in the Artifact Hub DB, which will be processed periodically by the Scanner Service](https://artifacthub.io/docs/topics/security_report/). For example, `bash:latest` and `alpine` are extracted in the following `task`:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: hello-world
+...
+spec:
+  steps:
+    - name: say-hello
+      image: bash:latest
+      script: echo 'hello'
+    - name: say-world
+      image: alpine
+      script: echo 'world'
+```
+
+If the `image` value (or part of the value) is specified by `params`, the default value of the `params` (if provided) are collected and used to run the security report. For example, `gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.40.2` is extracted from the following `task`:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: git-clone
+...
+spec:
+...
+  params:
+    - name: gitInitImage
+      description: The image providing the git-init binary that this Task runs.
+      type: string
+      default: "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.40.2"
+  steps:
+    - name: clone
+      image: "$(params.gitInitImage)"
+      script: |
+        #!/usr/bin/env sh
+        ...
+```
+
+Please note that it is presumed that the `image` field references the correct `param` and a valid container image string is formed after the substitution. If wrong values are specified in the `step.image` (either a wrong `param` pointer or invalid container image value), the resource itself is invalid and therefore no vulnerability report will be generated for this step.
+
+Similarly, `bash:latest` and `alpine` are extracted from the following `pipeline`:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: demo-pipeline
+...
+spec:
+  tasks:
+  - name: say-hello
+    taskSpec:
+      steps:
+      - name: say-hello-step
+        image: bash:latest
+        script: echo 'hello'
+  - name: say-world
+    taskSpec:
+      steps:
+      - name: say-world-step
+        image: alpine
+        script: echo 'world'
+```
+
+If a `pipeline` resource contains `pipelineTask` specified by `taskRef` for example:
+
+```yaml
+tasks:
+  - name: build-image
+    taskRef:
+      name: build-and-push
+```
+the container images used in the `pipelineTask` (i.e. `build-and-push`) will **not** be included in the security report.
+
+
+#### Design Evaluation
+
+This design builds on the existing infrastructure and the security report UI design of the Artifact Hub. A significant amount of engineering effort can be saved by leveraging the out-of-box features provided by the Artifact Hub.
+
+#### Alternatives
+##### 1. Store Container Images in Metadata File
+
+The Artifact Hub provides a [generic solution](https://artifacthub.io/docs/topics/security_report/#coredns-plugins-keda-scalers-keptn-integrations-opa-policies-and-tinkerbell-actions) for publishers to specify the container images in a dedicated [`artifacthub-pkg.yml`](https://github.com/artifacthub/hub/blob/master/docs/metadata/artifacthub-pkg.yml#L13) metadata file that can be parsed by the Artifact Hub. While this solution can be easily opted in for Tekton resources, it is an extra cost for Tekton users to maintain the metadata file. Also, we cannot guarantee that the images being scanned are the images actually used in the resource if the metadata file is outdated.
 
 ### Verified Remote Resources
 

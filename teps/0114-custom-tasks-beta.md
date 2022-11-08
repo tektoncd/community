@@ -2,7 +2,7 @@
 status: implementable
 title: Custom Tasks Beta
 creation-date: '2022-07-12'
-last-updated: '2022-11-14'
+last-updated: '2022-11-24'
 authors:
 - '@jerop'
 - '@XinruZhang'
@@ -29,6 +29,7 @@ see-also:
       - [References and Specifications](#references-and-specifications)
       - [Remove Pod Template](#remove-pod-template)
       - [Feature Gates](#feature-gates)
+      - [Cancellation](#cancellation)
     - [Documentation](#documentation)
     - [Testing](#testing)
   - [Optional](#optional)
@@ -205,12 +206,28 @@ own specification.
 
 ##### Feature Gates
 
+##### New Feature Flag `custom-task-version`
+
+Support both `v1alpha1.Run` and `v1beta1.CustomRun` for **four** [long term support (LTS)][long-term-support] 
+releases. So that custom task implementors and end users are able to fully test and migrate Custom Task from
+`v1alpha1` to `v1beta1`. 
+
+Create a new feature flag `custom-task-version` to allow end users to choose which version of custom task to be 
+created out of a `PipelineTask`. We set the default feature flag value to `v1alpha1` in the first LTS release, and
+switch to `v1beta1` in the following three LTS releases.
+
+Say we start to support `v1beta1.CustomRun` in LTS release `X`, and set default value of `custom-task-version`
+to `v1alpha1`. In the LTS release `X+1`, we switch the default value to `v1beta1`. In the LTS release `X+4`, we
+remove the feature flag, and only support `v1beta1`.
+
+##### Existing Feature Gates
+
 Remove guarding of `Custom Tasks` behind `enable-custom-tasks` and `enable-api-fields` feature gates.
 
 When [TEP-0096: Pipelines V1 API][tep-0096] is implemented to add V1 API, `Custom Tasks` will be gated behind feature
 gate `enable-api-fields` being set to `"beta"` - this is out of scope for this TEP  (in scope for TEP-0096).
 
-##### Cancellation
+#### Cancellation
 
 The custom task is responsible for implementing `cancellation` to support pipelineRun level `timeouts` and `cancellation`. If the Custom Task implementor does not support cancellation via `.spec.status`, `Pipeline` **can not** timeout within the specified interval/duration and **can not** be cancelled as expected upon request.
 
@@ -366,3 +383,4 @@ For further details, see [tektoncd/community#523][523], [tektoncd/community#667]
 [5138]: https://github.com/tektoncd/pipeline/issues/5138
 [cancel-pr]: https://github.com/tektoncd/pipeline/blob/main/docs/pipelineruns.md#cancelling-a-pipelinerun
 [gracefully-cancel-pr]: (https://github.com/tektoncd/pipeline/blob/main/docs/pipelineruns.md#gracefully-cancelling-a-pipelinerun)
+[long-term-support]: https://github.com/tektoncd/community/blob/main/releases.md#support-policy

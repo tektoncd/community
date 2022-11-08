@@ -150,7 +150,7 @@ Custom Task authors can implement webhook validation for CR objects of their pro
 
 ### Status Reporting
 
-When the `Run<Example>` is validated and created, the Custom Task controller should be notified and begin doing some operation. When the operation begins, the controller should update the `Run`'s `.status.conditions` to report that it's ongoing:
+When the `Run<Example>` is validated and created, the Custom Task controller must be notified and begin doing some operation. When the operation begins, the controller must update the `Run`'s `.status.conditions` to report that it's ongoing:
 
 ```
 status
@@ -159,7 +159,7 @@ status
     status: Unknown
 ```
 
-When the operation completes, if it was successful, the condition should report `status: True`, and optionally a brief `reason` and human-readable `message`:
+When the operation completes, if it was successful, the condition must report `status: True`, and optionally a brief `reason` and human-readable `message`:
 
 ```
 status
@@ -170,7 +170,7 @@ status
     message: Yay, good times
 ```
 
-If the operation was _unsuccessful_, the condition can report `status: False`, and optionally a `reason` and human-readable `message`:
+If the operation was _unsuccessful_, the condition must report `status: False`, and optionally a `reason` and human-readable `message`:
 
 ```
 status
@@ -324,11 +324,11 @@ Controllers can report any results, regardless of whether the underlying CRD obj
 
 ### Cancellation
 
-To support cancellation of `Run`s, when a `PipelineRun` is cancelled, the `PipelineRun`  controller will attempt to update any ongoing `Run`s' `.spec.status` to `"Cancelled"`, and update `.status.conditions` to signal unsuccessful execution.
+To support cancellation of `Run`s, when a `PipelineRun` is cancelled, the `PipelineRun` controller will attempt to update any ongoing `Run`s' `.spec.status` to `"Cancelled"`.
 
-A Custom Task author can watch for this status update and take any corresponding actions (e.g., cancel a cloud build, stop the waiting timer, tear down the approval listener).
+A Custom Task author must watch for this status change, update `.status.conditions` to signal unsuccessful execution, and take any corresponding actions (e.g., cancel a cloud build, stop the waiting timer, tear down the approval listener).
 
-Supporting cancellation is optional but recommended.
+Supporting cancellation is required.
 
 ### Timeout
 

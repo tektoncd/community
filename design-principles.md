@@ -38,6 +38,7 @@ The Tekton API currently contains some Kubernetes-isms. These should be treated 
 1. In TEPs, discuss how the proposal affects [conformance](https://github.com/tektoncd/community/blob/main/teps/0012-api-spec.md).
 As mentioned in the conformance document, newly added API fields shouldn't be required for Tekton conformance, but can
 transition to becoming required over time.
+1. Limit introducing feature flags that make Tasks and Pipelines behave differently. It should be possible to take a Task or Pipeline and reuse it across systems without requiring that a controller be configured in a specific way to make it work. Exceptions should be discussed with in the TEP and agreed upon with the Tekton community.
 
 ## Security
 

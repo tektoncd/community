@@ -332,6 +332,15 @@ Each V1 CRD should be fully documented before being released, but release of a V
 unrelated documentation issues.
 Once we've achieved the goals of this TEP, we can release a v1 software version of Pipelines.
 
+### Migration plan
+We will start serving v1 versions after the initial release with [v1 CRDs](https://github.com/tektoncd/pipeline/pull/5579).
+And then one release later, we will swap the stored version to v1, mark v1beta1 as deprecated, and document that the EOL
+for v1beta1 is 9 months after that release.
+
+The initial release with v1 CRDs served can serve as a v1 preview, so that we can start migrating the CLI and dashboard, and then
+ v1 will become the official version in the next release. Therefore, supporting v1 versions of CLI, dashboard and any changes to
+ triggers should be prioritized during the current release cycle.
+
 ## Future Work (Out of Scope for V1)
 
 - Supply chain security features, such as Pipelines features required for [SPIRE support](./0089-nonfalsifiable-provenance-support.md)

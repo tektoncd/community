@@ -2,7 +2,7 @@
 status: implementable
 title: Tekton Catalog Git-Based Versioning
 creation-date: '2022-07-12'
-last-updated: '2022-10-03'
+last-updated: '2022-11-09'
 authors:
 - "@jerop"
 - "@vdemeester"
@@ -249,10 +249,17 @@ of Catalogs will make regular releases of Catalogs - the release cadence for the
 in [TEP-0079][tep-0079]. The release notes should provide details about the changes in the specific resources in the
 Catalog in a given release, including notes about breaking changes.
 
-The versions in the Artifact Hub should use the simple version of [semver][semver] - `<major-version>.<minor-version>.0`. We propose that the release tags in Catalogs follow the simplified semantic versioning model - `v<major-version>.<minor-version>`. As such, the tags in the Catalogs will map to versions in the Artifact Hub e.g. tag "v0.7" in a Catalog maps to version "0.7.0" in the Hub. Minor versions are made if there are backwards-compatible changes only in the Catalog, while major versions are made if there are any backwards-incompatible changes in the Catalog. The Hub will recognize this versioning model only, therefore Catalogs must use this versioning to surface versions in the Hub.
+The versions in the Artifact Hub should use [semver][semver] - `<major-version>.<minor-version>.<patch-version>` and this value should match the value of the `app.kubernetes.io/version` label in the resource yaml file. We propose that the release tags in Catalogs follow the semantic versioning model - `v<major-version>.<minor-version>.<patch-version>`. As such, the tags in the Catalogs will map to versions in the Artifact Hub, e.g. tag "v0.7.0" in a Catalog maps to version "0.7.0" in the Hub. Patch versions are made for backward-compatible bug fixes, minor versions are made if there are backward-compatible new features in the Catalog, while major versions are made if there are any backward-incompatible changes in the Catalog. 
+
+Specifically, use patch versions when:
+1. Backward-compatible bug fixes for the features supported in the `<major-verion>.<minor-version>`. For example, fixing the authentication bugs to fetch private repositories in the [git-clone task](https://artifacthub.io/packages/tekton-task/quan-git-clone/git-clone).
+2. Backward-compatible security updates in the resource file.
+3. Backward-compatible updates of the container images that are used in the resource.
+
+Catalog owners can generate tags/releases following the above rules when needed. The Hub will recognize this versioning model only, therefore Catalogs must use this versioning to surface versions in the Hub.
 
 Instead of the centralized Catalog from the community, we will encourage users to create Catalogs in their own GitHub
-organizations and share them through the Hub.
+organizations following the above versioning strategy and share them through the Hub.
 
 #### Examples
 
@@ -320,7 +327,7 @@ up the versions based on the tags in the Catalog.
 ```
 
 Note that the version tags used in this Catalog applies to all the resources. For example, if the Buildpacks team
-updates the "buildpack-phases" `Task` and make a new release tagged "v0.17" then there will be a version "0.17.0" for
+updates the "buildpack-phases" `Task` and make a new release tagged "v0.17.0" then there will be a version "0.17.0" for
 the Catalog. If the Buildpacks team would prefer to decouple the versioning of the resources, they can split the
 resources into separate Catalogs where each will have its own versioning.
 
@@ -413,7 +420,7 @@ The Openshift team can share this Catalog with the `Tasks` in the Artifact Hub w
 They can then version the Catalog and its resources using release tags, which would be picked up by the Artifact Hub.
 
 Note that the version tags used in this Catalog applies to all the resources. For example, if the Openshift team
-updates the "openshift-client" `Task` and makes a new release tagged "v0.5" then there will be a version "0.5.0" for
+updates the "openshift-client" `Task` and makes a new release tagged "v0.5.0" then there will be a version "0.5.0" for
 all the resources in the Catalog. If the Openshift team would prefer to decouple the versioning of a specific resource
 from the rest, they can isolate the resources into its own Catalog where it will have its own versioning.
 
@@ -435,7 +442,7 @@ contributions are distributed in multiple repositories.
 
 This work will be scoped out further in [TEP-0079][tep-0079].
 
-Based on the usefulness of the resources and the bandwidth of the catalog maintainers, the Tekton community has discussed and decided to migrate the following 5 tasks from the current centralized Catalog repository to the `tektoncd-catalog` GitHub organization in the first iteration. The versioning in the new catalog repository starts with `1.0`:
+Based on the usefulness of the resources and the bandwidth of the catalog maintainers, the Tekton community has discussed and decided to migrate the following 5 tasks from the current centralized Catalog repository to the `tektoncd-catalog` GitHub organization in the first iteration. The versioning in the new catalog repository starts with `1.0.0`:
 
 <table>
     <thead>
@@ -448,41 +455,45 @@ Based on the usefulness of the resources and the bandwidth of the catalog mainta
     </thead>
     <tbody>
         <tr>
-            <td rowspan=3><a href="https://github.com/tektoncd/catalog/tree/main/task/git-clone">git-clone</a></td>
+            <td rowspan=4><a href="https://github.com/tektoncd/catalog/tree/main/task/git-clone">git-clone</a></td>
             <td>0.6</td>
-            <td rowspan=3>git-clone</td>
-            <td>1.0</td>
+            <td rowspan=4>git-clone</td>
+            <td>1.0.0</td>
         </tr>
         <tr>
             <td>0.7</td>
-            <td>2.0</td>
+            <td>2.0.0</td>
         </tr>
         <tr>
             <td>0.8</td>
-            <td>3.0</td>
-        </tr>        
+            <td>3.0.0</td>
+        </tr>  
+        <tr>
+            <td>0.9</td>
+            <td>4.0.0</td>
+        </tr>          
         <tr>
             <td rowspan=1><a href="https://github.com/tektoncd/catalog/tree/main/task/golang-build">golang-build</a></td>
             <td>0.3</td>
             <td rowspan=2>golang</td>
-            <td>1.0</td>
+            <td>1.0.0</td>
         </tr>
         <tr>
             <td rowspan=1><a href="https://github.com/tektoncd/catalog/tree/main/task/golang-test">golang-test</a></td>
             <td>0.2</td>
-            <td>1.0</td>
+            <td>1.0.0</td>
         </tr>
         <tr>
             <td rowspan=1><a href="https://github.com/tektoncd/catalog/tree/main/task/kaniko">kaniko</a></td>
             <td>0.6</td>
             <td>kaniko</td>
-            <td>1.0</td>
+            <td>1.0.0</td>
         </tr>
         <tr>
             <td rowspan=1><a href="https://github.com/tektoncd/catalog/tree/main/task/git-batch-merge">git-batch-merge</a></td>
             <td>0.2</td>
             <td>git-batch-merge</td>
-            <td>1.0</td>
+            <td>1.0.0</td>
         </tr>
     </tbody>
 </table>
@@ -605,7 +616,7 @@ spec:
 
 #### Hub Resolver
 
-[Hub Resolver][hub-resolver] has a `"version"` parameter that can be used to get a specific version of a resource. The `"version"` should continue to use the simple version of [semver][semver] (i.e. `<major-version>.<minor-version>`). For example [this version][bp-hub] of buildpacks `Task`:
+[Hub Resolver][hub-resolver] has a `"version"` parameter that can be used to get a specific version of a resource. For example [this version][bp-hub] of buildpacks `Task`:
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -621,7 +632,7 @@ spec:
     - name: name
       value: buildpacks
     - name: version
-      value: 0.5
+      value: 0.5.0
 ```
 
 We propose adding a `"catalog"` parameter to the Hub Resolver. This will be useful in resolving conflicts when
@@ -649,7 +660,7 @@ spec:
 
 As we are working on migrating from the Tekton Hub to the Artifact Hub ([tektoncd/hub#667][667]), we propose adding an optional `"type"` parameter to the Hub Resolver indicating which Hub API should be used to fetch the catalog. The value can be set to `"artifact"` or `"tekton"`. The default value is `"artifact"`.
 
-Note that the Catalog versioning in the Artifact Hub follows the semantic versioning (i.e. `<major-version>.<minor-version>.0`). For backward compatibility in the Hub Resolver, both full (i.e. `<major-version>.<minor-version>.0`) and simplified semantic versioning (i.e. `<major-version>.<minor-version>`) will be accepted by the `"version"` parameter. The Hub Resolver will map the version to the format expected by the target Hub type.
+Note that the Catalog versioning in the Artifact Hub follows the semantic versioning (i.e. `<major-version>.<minor-version>.<patch-version>`). For backward compatibility in the Hub Resolver, both full (i.e. `<major-version>.<minor-version>.<patch-version>`) and simplified semantic versioning (i.e. `<major-version>.<minor-version>`) will be accepted by the `"version"` parameter. The Hub Resolver will map the version to the format expected by the target Hub type.
 
 Example:
 ```yaml
@@ -793,7 +804,7 @@ This could be a future optimization, if needed.
 [hub-resolver]: https://github.com/tektoncd/resolution/tree/5d7918cb5b6f183d79cf0f91f4f08ecb204505a0/hubresolver
 [bp-commit]: https://github.com/tektoncd/catalog/blob/d9183e36f00c712b5de59932650c071674ea89b8/task/buildpacks/0.5/buildpacks.yaml
 [bp-branch]: https://github.com/tektoncd/catalog/blob/main/task/buildpacks/0.5/buildpacks.yaml
-[bp-hub]: https://hub.tekton.dev/tekton/Task/buildpacks/0.5
+[bp-hub]: https://artifacthub.io/packages/tekton-task/tekton-catalog-tasks/buildpacks/0.5.0
 [semver]: https://semver.org/
 [buildpacks]: https://github.com/buildpacks/tekton-integration
 [bt]: https://github.com/tektoncd/catalog/tree/main/task/buildpacks

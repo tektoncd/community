@@ -129,7 +129,7 @@ a file with the following json format:
 }
 ```
 The file is stored in `/tekton/downward/secret-locations.json` and provided via a downward volume 
-from an annotation `tekton.dev/secret-locations` added to the pod.
+from an annotation `tekton.dev/secret-locations-<containerName>` added to the pod.
 
 The entrypoint can then read the environment variables and file contents and redact them
 from the output log stream.

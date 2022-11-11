@@ -2,7 +2,7 @@
 status: proposed
 title: Refine Retries for TaskRuns and CustomRuns
 creation-date: '2022-09-08'
-last-updated: '2022-11-03'
+last-updated: '2022-11-11'
 authors:
 - '@XinruZhang'
 - '@pritidesai'
@@ -10,6 +10,7 @@ authors:
 - '@lbernick'
 see-also:
 - TEP-0069
+- TEP-0002
 ---
 
 # TEP-0121: Refine Retries for TaskRuns and CustomRuns
@@ -44,9 +45,9 @@ Two distinct imperfections on `Retries` we'd like to address in this TEP:
 1. Define retries behavior for PipelineRuns.
 2. The collective timeout for `tasks`, collective timeout for `finally` tasks,  and the `timeout` at the `pipeline` level does not change.
 
-### Use Cases
+### User Experience
 
-#### Retry when Timeout
+#### Interaction between Retries and Timeout
 
 The behavior alignment improves UX. Considering the following example:
 
@@ -77,6 +78,201 @@ Say customers define two child resources within a PipelineRun:
 They set both `retries` and `timeout` for the two resources, under the current implementation, the two runtime objects behave differently, which is not intuitive.
 - `task-run-example` will be retried once after 10s.
 - `custom-run-example` will be timed out after 10s. But if the corresponding CustomRun controller implements retries **for *each* attempt**, like in TaskRuns, instead of **for all attempts** per the documented guidance, then the `custom-run-example` would be retried once after 10s, working similarly to the `task-run-example`.
+
+#### Retries in Custom Runs
+
+Some Custom Tasks need retry logic that is different from just creating a new instance of a Run when a previous attempt has failed, as described in [TEP-0069](./0069-support-retries-for-custom-task-in-a-pipeline.md).
+One example is the [TaskLoop custom task](https://github.com/tektoncd/experimental/tree/main/task-loops), which creates one TaskRun for each value in an array parameter for a single Task.
+If retries are specified, only failed TaskRuns are retried. Creating a new Run would retry every TaskRun, even the successful ones.
+
+```yaml
+apiVersion: custom.tekton.dev/v1alpha1
+kind: TaskLoop
+metadata:
+  name: testloop
+spec:
+  taskRef:
+    name: my-task
+  iterateParam: test-type
+  retries: 2
+```
+
+```yaml
+apiVersion: tekton.dev/v1alpha1
+kind: Run
+metadata:
+  generateName: testloop-run-
+spec:
+  params:
+    - name: test-type
+      value:
+        - codeanalysis
+        - unittests
+        - e2etests
+  ref:
+    apiVersion: custom.tekton.dev/v1alpha1
+    kind: TaskLoop
+    name: testloop
+```
+
+When this Run is created by itself, it will create three TaskRuns, and retry any that fail twice.
+
+It's also possible to specify retries on the Run, for example:
+
+By reference:
+```yaml
+apiVersion: tekton.dev/v1alpha1
+kind: Run
+metadata:
+  generateName: testloop-run-
+spec:
+  params:
+    - name: test-type
+      value:
+        - codeanalysis
+        - unittests
+        - e2etests
+  retries: 2
+  ref:
+    apiVersion: custom.tekton.dev/v1alpha1
+    kind: TaskLoop
+    name: testloop
+```
+
+Inline:
+```yaml
+apiVersion: tekton.dev/v1alpha1
+kind: Run
+metadata:
+  generateName: testloop-run-
+spec:
+  params:
+    - name: test-type
+      value:
+        - codeanalysis
+        - unittests
+        - e2etests
+  retries: 5
+  spec:
+    apiVersion: custom.tekton.dev/v1alpha1
+    kind: TaskLoop
+    spec:
+      taskRef:
+        name: my-task
+      iterateParam: test-type
+      retries: 2
+```
+In both cases, retries are defined on both the Run and in the custom task spec, resulting in undefined behavior.
+It's up to the custom task controller to decide what to do in this case.
+
+There are two ways this Run can be specified in a Pipeline: inline, and by reference.
+In both cases, it is possible to define "retries" on both the Pipeline Task, and the TaskLoop spec.
+
+Example definition by reference:
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: ci-pipeline
+spec:
+  pipelineSpec:
+    tasks:
+    - name: loop-task
+      params:
+        - name: test-type
+          value:
+            - codeanalysis
+            - unittests
+            - e2etests
+      retries: 5
+      taskRef:
+        apiVersion: custom.tekton.dev/v1alpha1
+        kind: TaskLoop
+        name: my-task-loop
+```
+When this PipelineRun is created, the following Run will be created:
+
+```yaml
+apiVersion: tekton.dev/v1alpha1
+kind: Run
+spec:
+  params:
+  - name: test-type
+    value:
+    - codeanalysis
+    - unittests
+    - e2etests
+  ref:
+    apiVersion: custom.tekton.dev/v1alpha1
+    kind: TaskLoop
+    name: testloop
+  retries: 5
+status:
+  extraFields:
+    taskLoopSpec:
+      iterateParam: test-type
+      retries: 2
+      taskRef:
+        name: my-task
+```
+
+Here, both the retries defined in the Pipeline Task and in the original Custom Task are passed to the Run,
+and the Run controller must decide how to implement it.
+
+Example inline definition:
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: ci-pipeline
+spec:
+  pipelineSpec:
+    tasks:
+    - name: loop-task
+      params:
+        - name: test-type
+          value:
+            - codeanalysis
+            - unittests
+            - e2etests
+      retries: 5
+      taskSpec:
+        apiVersion: custom.tekton.dev/v1alpha1
+        kind: TaskLoop
+        spec:
+          taskRef:
+            name: my-task
+          iterateParam: test-type
+          retries: 2
+```
+
+When this PipelineRun is created, the following Run will be created:
+
+```yaml
+apiVersion: tekton.dev/v1alpha1
+kind: Run
+spec:
+  params:
+  - name: test-type
+    value:
+    - codeanalysis
+    - unittests
+    - e2etests
+  retries: 5
+  spec:
+    apiVersion: custom.tekton.dev/v1alpha1
+    kind: TaskLoop
+    spec:
+      iterateParam: test-type
+      retries: 2
+      taskRef:
+        name: my-task
+```
+Both runs result in undefined behavior; it's up to the custom run controller to decide how to handle it.
+Having `retries` passed from the Pipeline Task to the Run allows custom run controllers that need custom retry logic
+to avoid creating a new field for `retries` in their custom task spec.
+
+### Use Cases
 
 #### Retry TaskRun Independently
 
@@ -148,6 +344,7 @@ Three sub-options about the way to implement `retriesStatus`:
 
 - Dashboard and CLI may need extra works if we remove `retriesStatus`.
 - If a CustomRun controller doesn't support retries, it results in a poor user experience since the PipelineRun controller passes retries directly to the CustomRun and expects the CustomRun controller to implement it.
+- For custom Tasks that implement their own retry logic, behavior is undefined when retries are specified both on the Run spec and the Run's custom spec.
 
 ### Option 2: Implement `retries` in PipelineRun
 
@@ -156,40 +353,174 @@ Three sub-options about the way to implement `retriesStatus`:
 - Move logic for `retries` to PipelineRun reconciler and create new `TaskRun`s and `Runs` at each attempt.
 - Remove `retriesStatus` from TaskRun & CustomRun
 
+### Details
+
+In this option, if a Pipeline Task specifies `retries`, the PipelineRun controller will create a new instance of the CustomRun or TaskRun if the previous one has failed.
+It's already possible to have multiple TaskRuns or CustomRuns for a Pipeline Task, if it's matrixed.
+The same strategy can be used for reporting retried PipelineTasks, for example:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+spec:
+  ...
+status:
+  childReferences:
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun
+      name: foo-attempt-0
+      pipelineTaskName: foo
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun
+      name: foo-attempt-1
+      pipelineTaskName: foo
+```
+
+TBD:
+- What would this look like for PipelineTasks that are both matrixed and retryable?
+
+### Example for CustomRun implementing specialized retries
+
+Defined inline in a PipelineRun:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: ci-pipeline
+spec:
+  pipelineSpec:
+    tasks:
+    - name: loop-task
+      params:
+        - name: test-type
+          value:
+            - codeanalysis
+            - unittests
+            - e2etests
+      retries: 5
+      taskSpec:
+        apiVersion: custom.tekton.dev/v1alpha1
+        kind: TaskLoop
+        spec:
+          taskRef:
+            name: my-task
+          iterateParam: test-type
+          retries: 2
+```
+With existing syntax, this would result in undefined behavior (i.e. the custom run controller would decide how to handle it).
+With this solution, each TaskLoop Run created by the PipelineRun controller would retry its failed TaskRuns twice.
+If the TaskLoop Run failed, a new TaskLoop Run would be created, up to 5 times.
+Users would need to read the custom task documentation to understand how its specialized `retries` field is different from the default implementation
+provided by the PipelineRun controller.
+
+If a user would like to specify the custom retries field within the Pipeline Task, they must use an inline definition:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: ci-pipeline
+spec:
+  pipelineSpec:
+    tasks:
+    - name: loop-task
+      params:
+        - name: test-type
+          value:
+            - codeanalysis
+            - unittests
+            - e2etests
+      taskSpec:
+        apiVersion: custom.tekton.dev/v1alpha1
+        kind: TaskLoop
+        spec:
+          taskRef:
+            name: my-task
+          iterateParam: test-type
+          retries: 2
+```
+
+It would no longer be possible to specify a retries field in the Pipeline Task and have it passed to the
+custom run by reference. For example, with the following PipelineRun: 
+
+```yaml
+apiVersion: custom.tekton.dev/v1alpha1
+kind: TaskLoop
+metadata:
+  name: testloop
+spec:
+  taskRef:
+    name: my-task
+  iterateParam: test-type
+  retries: 2
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: ci-pipeline
+spec:
+  pipelineSpec:
+    tasks:
+    - name: loop-task
+      params:
+        - name: test-type
+          value:
+            - codeanalysis
+            - unittests
+            - e2etests
+      retries: 5
+      taskRef:
+        apiVersion: custom.tekton.dev/v1alpha1
+        kind: TaskLoop
+        name: my-task-loop
+```
+
+The Run that would be created would be:
+
+```yaml
+apiVersion: tekton.dev/v1alpha1
+kind: Run
+spec:
+  params:
+  - name: test-type
+    value:
+    - codeanalysis
+    - unittests
+    - e2etests
+  ref:
+    apiVersion: custom.tekton.dev/v1alpha1
+    kind: TaskLoop
+    name: testloop
+status:
+  extraFields:
+    taskLoopSpec:
+      iterateParam: test-type
+      retries: 2
+      taskRef:
+        name: my-task
+```
+
+The `retries` specified in the Pipeline Task would not be passed to the custom Run. There would be no ambiguity for the custom run controller, but the user might not know which `retries` field to use.
+
 **Benefits:**
 
 - Consistent interface for `retries`
 - Custom task controller developers get a default implementation of retries for free (by embedding in a pipeline)
 - "Pipelines in pipeline" can be retried the same as the other resources
 - Improve the retries of TaskRuns created from PipelineTasks by using separate TaskRuns for each retry
-- No changes to the PipelineRun API (not in the spec at least)
-- No changes to the TaskRun API (not in the spec at least)
+- No changes to the PipelineRun or TaskRun spec
+- Cannot accidentally introduce changes that make assumptions about how a CustomRun has implemented RetriesStatus
 
 **Concerns:**
 
 - API Change for `Run` and `CustomRun` (need to remove `retries` & `retriesStatus`)
   - We are moving Custom Task Run from alpha (Run) to beta (CustomRun) (see [TEP-0114](https://github.com/tektoncd/community/blob/main/teps/0114-custom-tasks-beta.md)), which is a great timing for us to remove fields from `Run`.
-- Dashboard and CLI may need extra works if we remove `retriesStatus`
+- Dashboard and CLI must be updated to read from PipelineRun status instead of `taskRun.status.retriesStatus` and `customRun.status.retriesStatus`.
+  If a customRun has its own specialized type of retries, this information cannot be reflected on the dashboard.
 - Standalone `TaskRun` can't retry on its own.
-- It's not quite user-friendly if a CustomRun controller implements its own retry strategy, for example:
-
-```yaml
-apiVersion: tekton.dev/v1beta1
-kind: PipelineRun
-metadata:
-  generateName: pr-custom-task-
-spec:
-  pipelineSpec:
-    tasks:
-    - name: wait
-      timeout: "1s"
-      retries: 1 // The common retries field in the PipelineTask
-      taskSpec:
-        specialized-retries: 5 // Specialized retries field in Custom Task Spec.
-        other-spec-fields: foobar
-```
-
-The custom task users would be confused about which retries field to use in order to retry a Run.
+- It's possible to define multiple levels of retries: retries implemented by the PipelineRun controller, and retries implemented in the Custom Task.
+This may be confusing, and custom Task users need to understand the difference.
 
 ## Other things to be considered
 

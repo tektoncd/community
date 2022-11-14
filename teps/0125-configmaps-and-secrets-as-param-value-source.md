@@ -6,7 +6,7 @@ authors:
  
 creation-date: 2022-10-28\
 last-updated: 2022-10-28\
-status: pending
+status: proposed
 
 ---
 # TEP-0110: Configmap and Secret as Taskrun or Pipelinerun Param's Value Source
@@ -33,7 +33,7 @@ status: pending
 
 ## Summary
 
-This proposal is to be able to reference `ConfigMap` or `Secret` as value source for `TaskRun` or `PipelineRun` `Params`.\
+This proposal is to be able to reference `ConfigMap` or `Secret` as value source for `TaskRun` or `PipelineRun` `Params`.
 This is to support Kubernetes native options (ConfigMap or Secret) as value source along with direct value passed to `TaskRun` and `PipelineRun`.
 
 ## Motivation
@@ -43,23 +43,23 @@ This is to support Kubernetes native options (ConfigMap or Secret) as value sour
 - Assigning `Env` from `ConfigMap / Secret` reference for each container / step on creation of pipeline.
 
 To understand the problem let's take an example. 
-jib-maven[https://github.com/tektoncd/catalog/blob/main/task/jib-maven/0.4/jib-maven.yaml]
+[jib-maven](https://github.com/tektoncd/catalog/blob/main/task/jib-maven/0.4/jib-maven.yaml)
 
 ```yaml
 steps:
-	- name: build-and-push
-	  image: $(params.MAVEN_IMAGE)
-	  # Make sh evaluate $HOME.
-	  script: |
-		#!/bin/bash
-		[[ -f /tekton-custom-certs/$(params.CACERTFILE) ]] && \
-		keytool -import -keystore $JAVA_HOME/lib/security/cacerts -storepass "changeit" -file /tekton-custom-certs/$(params.CACERTFILE) -noprompt
-		mvn -B \
-		-Duser.home=$HOME \
-		-Djib.allowInsecureRegistries=$(params.INSECUREREGISTRY) \
-		-Djib.to.image=$(params.IMAGE) \
-		compile \
-		com.google.cloud.tools:jib-maven-plugin:build
+- name: build-and-push
+  image: $(params.MAVEN_IMAGE)
+  # Make sh evaluate $HOME.
+  script: |
+   #!/bin/bash
+   [[ -f /tekton-custom-certs/$(params.CACERTFILE) ]] && \
+   keytool -import -keystore $JAVA_HOME/lib/security/cacerts -storepass "changeit" -file /tekton-custom-certs/$(params.CACERTFILE) -noprompt
+   mvn -B \
+   -Duser.home=$HOME \
+   -Djib.allowInsecureRegistries=$(params.INSECUREREGISTRY) \
+   -Djib.to.image=$(params.IMAGE) \
+   compile \
+   com.google.cloud.tools:jib-maven-plugin:build
 ```
 
 In this tekton hub task where 2 params are
@@ -142,14 +142,14 @@ spec:
   params:
     - name: FROM_CONFIGMAP
       valueFrom:
-	       configMapKeyRef:
-		       name: pipeline-run-configmap
-		       key: HELLO_WORLD_KEY
+       configMapKeyRef:
+        name: pipeline-run-configmap
+        key: HELLO_WORLD_KEY
     - name: FROM_SECRET
       valueFrom:
-	       secretKeyRef:
-		       name: pipeline-run-secret
-		       key: HELLO_WORLD_KEY
+       secretKeyRef:
+        name: pipeline-run-secret
+        key: HELLO_WORLD_KEY
     - name: AS_VALUE
       value: hello-world 
 ```

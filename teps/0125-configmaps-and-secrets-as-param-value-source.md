@@ -107,10 +107,10 @@ type  EnvVarSource  struct {
 
 From context of `PipelineRun` and `TaskRun` params 
 ```yaml
-	- FieldRef : May not fit the context of  `PipelineRun` and `TaskRun` params as its used to reference field of the pod.
-	- ResourceFieldRef : May not fit the context of  `PipelineRun` and `TaskRun` params as its used to reference resource of the container.
-	- ConfigMapKeyRef : To reference ConfigMap value
-	- SecretKeyRef : To reference Secret value
+- FieldRef : May not fit the context of  `PipelineRun` and `TaskRun` params as its used to reference field of the pod.
+- ResourceFieldRef : May not fit the context of  `PipelineRun` and `TaskRun` params as its used to reference resource of the container.
+- ConfigMapKeyRef : To reference ConfigMap value
+- SecretKeyRef : To reference Secret value
 ```
 
 ### Contract

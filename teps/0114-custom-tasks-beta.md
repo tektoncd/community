@@ -2,7 +2,7 @@
 status: implementable
 title: Custom Tasks Beta
 creation-date: '2022-07-12'
-last-updated: '2022-10-20'
+last-updated: '2022-11-14'
 authors:
 - '@jerop'
 see-also:
@@ -26,7 +26,6 @@ see-also:
       - [v1alpha1 to v1beta1 + Run to CustomRun](#v1alpha1-to-v1beta1--run-to-customrun)
       - [References and Specifications](#references-and-specifications)
       - [Remove Pod Template](#remove-pod-template)
-      - [Exclude Retries and RetriesStatus](#exclude-retries-and-retriesstatus)
       - [Feature Gates](#feature-gates)
     - [Documentation](#documentation)
     - [Testing](#testing)
@@ -201,12 +200,6 @@ Remove `podTemplate` field that assumes and implies that all `Custom Tasks` crea
 Note that the goal of `Custom Tasks`, as defined in [TEP-0002][tep-0002], is to support non-Pod `Task` implementations.
 If a specific `Custom Task` implementation creates `Pods`, that `Custom Task` can have a `Pod` template field in its
 own specification.
-
-##### Exclude Retries and RetriesStatus
-
-Exclude `retries` and `retriesStatus` fields in the initial release. These fields are under active discussion in
-[TEP-0121][tep-0121]. These fields may be reintroduced or replacement features may be implemented, depending on the 
-design decisions we make in [TEP-0121][tep-0121].
 
 ##### Feature Gates
 

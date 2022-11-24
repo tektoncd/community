@@ -2,7 +2,7 @@
 status: proposed
 title: Tekton Catalog Support Tiers
 creation-date: '2021-08-09'
-last-updated: '2022-11-07'
+last-updated: '2022-11-23'
 authors:
 - '@bobcatfish'
 - '@jerop'
@@ -67,6 +67,10 @@ see-also:
       - [Alternatives](#alternatives-1)
         - [1. Store Container Images in Metadata File](#1-store-container-images-in-metadata-file)
     - [Verified Remote Resources](#verified-remote-resources-1)
+      - [Sign the Verified Catalog](#sign-the-verified-catalog)
+      - [Verified Catalog Repository Setup](#verified-catalog-repository-setup)
+      - [Design Evaluation](#design-evaluation-4)
+      - [Future Work](#future-work)
   - [References](#references)
 <!-- /toc -->
 
@@ -131,12 +135,12 @@ vulnerabilities and exposures, and surface any issues to Maintainers and Contrib
 
 #### Verified Remote Resources
 
-Contributors need to sign resources they own in the Catalog and Maintainers need to sign resources that are officially
+Contributors need to sign resources they own in the Catalog and Maintainers need to sign resources that are
 provided and maintained by Tekton. They need to sign the resources so that they may be trusted, depending on users'
 requirements, and provenance attestations can be made to meet software supply chain security goals.
 
 [TEP-0091: Verified Remote Resources][tep-0091] will flesh out the details of signing, while this TEP will focus on
-surfacing the verification information and building a corpus of verified resources that users can trust.
+surfacing the signing information and building a corpus of verified resources that users can trust. The verification will be done in the Tekton Pipeline's reconciler after remote resolution as designed in [TEP-0091](https://github.com/tektoncd/community/blob/main/teps/0091-trusted-resources.md#verify-the-resources).
 
 ## Definitions
 
@@ -218,7 +222,7 @@ If there are new best practices, the Catalog MUST be updated if applicable.
 
 ##### Additions to Verified Catalogs
 
-Adding a new Verified Catalog or adding a resource into an Verified Catalog should be an exception, not the norm. The 
+Adding a new Verified Catalog or adding a resource into a Verified Catalog should be an exception, not the norm. The 
 set of Verified Catalogs and their resources should be relatively small so that it is sustainable to maintain them. 
 
 A new Verified Catalog may be created, or a new resource added to it if:
@@ -637,7 +641,56 @@ The Artifact Hub provides a [generic solution](https://artifacthub.io/docs/topic
 
 ### Verified Remote Resources
 
-TODO
+#### Sign the Verified Catalog
+
+Following the design in TEP-0091, all the releases of Verified Catalog resources should be [signed](https://github.com/tektoncd/community/blob/main/teps/0091-trusted-resources.md#sign-the-resources) by the signing [tkn tool](https://github.com/tektoncd/cli/blob/main/docs/cmd/tkn_task_sign.md) and the signature should be stored in the `tekton.dev/signature` annotation:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/signature: MEQCIHhFC480mv7mh/6dxAlp/mvuvGXanuSghMsT+iBhWxt5AiBDvHv8sfKjJ3Ozrzvp+cjr30AOx1SPQDCcaJjlpAoVrA==
+  name: example-task
+spec:
+  steps:
+  - args:
+    - Hello World!
+    command:
+    - echo
+    image: ubuntu
+    name: echo
+    resources: {}
+```
+
+The `tekton.dev/signature` annotation will be parsed by [Artifact Hub][hub] for every published Tekton resource. A `signed` badge will be displayed in the UI for every release of resource that contains the signature annotation, demonstrating that the integrity of the resource can be verified.
+
+![Artifact Hub Signed Badge](images/0079-signed-badge.png)
+
+The [verification](https://github.com/tektoncd/community/blob/main/teps/0091-trusted-resources.md#verify-the-resources) of the signature can be done in the Tekton Pipeline's reconciler during the remote resolution.
+
+A new signing key pair - `verified-catalog` will be generated using KMS to sign the Verified Catalogs, which will be hosted in the [`tekton-releases`](http://console.cloud.google.com/home/dashboard?project=tekton-releases) GCP project (please request access from Tekton Maintainers if needed). The KMS signing permissions(`Cloud KMS Admin`, `Cloud KMS CryptoKey Signer/Verifier`, `Viewer`) are only granted to the Tekton Catalog Maintainers.
+
+#### Verified Catalog Repository Setup
+
+Since the `verified-catalog` key pair signing permission is only granted to Tekton Maintainers, the public contributors are not able to sign the resources with the key. To encourage public contribution to the Verified Catalog and enforce all the resources are signed in the releases, we propose to separate branches in the following way:
+
+- **Main** branch - the development branch, both Tekton Maintainers and public contributors can submit code changes via PR. The resources in the **Main** branch should **NOT** contain signatures and the verification is not enforced in the CI.
+
+- **Release** branches (`release-<major>.<minor>.<patch>`) - The Release branches are created based on the Main branch. Only Tekton Maintainers have the permission to create Release branches when needed. 
+  - release-1.0.0
+  - release-1.1.0
+
+The Tekton Maintainers manually [sign](https://github.com/tektoncd/cli/blob/main/docs/cmd/tkn_task_sign.md) the resource files based on the specific commits from the Main branch, and push the signed resources to the Release branch. A CI job will be created to check and verify the signature is provided and valid before the code can be checked in.
+
+The Tekton Maintainers should cut tags/releases based on the Release branches so that every release contains only signed resources.
+
+#### Design Evaluation
+
+This design leverages existing work in [TEP-0091][tep-0091] and the Artifact Hub. Showing the `signed` badge in the Artifact Hub helps users filter the resources that can be verified. The repository setup separates the development and release workspaces, which encourages public contribution and enforces the signed resources in releases at the same time.
+
+#### Future Work
+We only automate the signature verification process in the CI in the current design. In the future, we could further automate the signing and branch/tag creation process.
 
 ## References
 

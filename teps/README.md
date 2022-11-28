@@ -267,7 +267,7 @@ This is the complete list of Tekton teps:
 |[TEP-0095](0095-common-repository-configuration.md) | Common Repository Configuration | proposed | 2021-11-29 |
 |[TEP-0096](0096-pipelines-v1.md) | Pipelines V1 | implementable | 2022-10-06 |
 |[TEP-0097](0097-breakpoints-for-taskruns-and-pipelineruns.md) | breakpoints-for-taskruns-and-pipelineruns | implementable | 2022-07-12 |
-|[TEP-0098](0098-workflows.md) | Workflows | proposed | 2022-11-03 |
+|[TEP-0098](0098-workflows.md) | Workflows | proposed | 2022-12-27 |
 |[TEP-0100](0100-embedded-taskruns-and-runs-status-in-pipelineruns.md) | Embedded TaskRuns and Runs Status in PipelineRuns | implemented | 2022-04-18 |
 |[TEP-0101](0101-env-in-pod-template.md) | Env in POD template | implemented | 2022-12-22 |
 |[TEP-0102](0102-https-connection-to-triggers-interceptor.md) | HTTPS Connection to Triggers ClusterInterceptor | implementable | 2022-04-20 |

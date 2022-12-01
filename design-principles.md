@@ -45,6 +45,10 @@ transition to becoming required over time.
 1. Use the security sections of TEPs when applicable:
    1. Does the change increase the attack surface of Tekton / significantly impact the threat model?
    1. Does the change makes it harder for users to follow security best practices through Tekton?
+   1. Does the change impact Tekton users ability to achieve [SLSA][slsa-requirements] compliance for any of the four levels?
+   1. Does the change introduce features that could be problematic from a [provenance][slsa-provenance] point of view?
 1. Do not implement cryptographic algorithms in Tekton, rely on proven tools and libraries
 
 [openssf-secure-design]: https://github.com/coreinfrastructure/best-practices-badge/blob/main/doc/other.md#implement_secure_design
+[slsa-requirements]: https://slsa.dev/spec/v0.1/requirements 
+[slsa-provenance]: https://slsa.dev/provenance/v0.2

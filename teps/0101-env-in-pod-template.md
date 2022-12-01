@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Env in POD template
 creation-date: '2022-03-17'
-last-updated: '2022-05-16'
+last-updated: '2022-12-02'
 authors:
 - '@rafalbigaj'
 - '@tomcli'

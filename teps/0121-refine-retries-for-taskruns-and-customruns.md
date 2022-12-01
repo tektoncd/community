@@ -2,7 +2,7 @@
 status: implementable
 title: Refine Retries for TaskRuns and CustomRuns
 creation-date: '2022-09-08'
-last-updated: '2022-11-14'
+last-updated: '2022-12-01'
 authors:
 - '@XinruZhang'
 - '@jerop'
@@ -129,13 +129,35 @@ Task-level Timeout (`TaskRunSpec.Timeout` and `RunSpec.Timeout`) is set for each
 
 ### Retries in TaskRuns and CustomRuns
 
-Add a new `Retries` field to [TaskRunSpec](https://pkg.go.dev/github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1#TaskRunSpec). Model the `CustomRunSpec` based on the `RunSpec` to use the existing `retries` field.
+Add a new `Retries` field in [TaskRunSpec](https://pkg.go.dev/github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1#TaskRunSpec). Model the `CustomRunSpec` based on the `RunSpec` to use the existing `retries` field.
 
 The `PipelineTask.Retries` value, which is specified at `Pipeline` authoring time, is passed to the `TaskRunSpec.Retries` and `CustomRunSpec.Retries` during the execution of a `PipelineRun`.
 
 The `TaskRun` and `CustomRun` controllers handle their own `Retries`. 
 
 The `PipelineRun` controller does not check for `len(retriesStatus)` to determine whether a `TaskRun` or `CustomRun` is done executing. Instead, uses `ConditionSucceeded` as the only way to decide if the `TaskRun` or `CustomRun` has completed execution.
+
+#### Execution Status of a `failed` `pipelineTask` with `retries`
+
+The following table shows how an overall status of a `taskRun` or a `customRun` for a `pipelineTask` with `retries` set to 3:
+
+| `status` | `reason`    |`completionTime` is set | description                                                                                                |
+|----------|-------------|------------------------|------------------------------------------------------------------------------------------------------------|
+| Unknown  | Running     | No                     | The `taskRun` has been validated and started to perform its work.                                          |
+| Unknown  | ToBeRetried | No                     | The `taskRun` (zero attempt of a `pipelineTask`) finished executing but failed. It has 3 retries pending.  |
+| Unknown  | Running     | No                     | First attempt of a `taskRun` has started to perform its work.                                              |
+| Unknown  | ToBeRetried | No                     | The `taskRun` (first attempt of a `pipelineTask`) finished executing but failed. It has 2 retries pending. |
+| Unknown  | Running     | No                     | Second attempt of a `taskRun` has started to perform its work.                                             |
+| Unknown  | ToBeRetried | No                     | The `taskRun` (second attempt of a `pipelineTask`) finished executing but failed. It has 1 retry pending.  |
+| Unknown  | Running     | No                     | Third attempt of a `taskRun` has started to perform its work.                                              |
+| False    | Failed      | Yes                    | The `taskRun` (third attempt of a `pipelineTask`) finished executing but failed. No more retries pending.  |
+
+Pipeline controller can now rely on `ConditionSucceeded` set to `Failed` after all the retries are exhausted.
+
+`TaskRun` reconciler archives existing status into `retriesStatus` at the end of each Reconcile loop when the `TaskRun`'s `Failure` is detected,
+then resets the existing status of a `taskRun` such that a next attempt starts executing.
+
+For clarity and backward compatibility, the status of each attempt in `retriesStatus` will be set to `Failed` and `CompletionTime` of each retry attempt remains consistent with the time set by the taskRun controller when it exited with non-zero or timed-out.
 
 Before this change, the `PipelineRun` controller created a `TaskRun` for any `pipelineTask` and scheduled the same `PipelineTask` if it had failed but not exhausted all the `retries`. The reason for implementing it this way was the `TaskRun` reconciler marked that particular `TaskRun` as `failed`. Now with this change, the `PipelineRun` controller still schedules a `PipelineTask` and creates a `TaskRun` but `TaskRun` reconciler will
 not mark a `TaskRun` as failure until all the `retries` are exhausted. This way, `PipelineRun` no longer need to check for any additional clause other than `ConditionSucceeded` set to `Failed`.
@@ -354,11 +376,11 @@ taskRun-attempt-1 ... taskRun-attempt-n
 
 For TaskRuns, introduce a new ConditionType `Conditions.RetrySucceeded` to report intermediate status and sending events for failed attempts (instead of using `RetriesStatus` to keep everything managed in one `TaskRun` object):
 
-`status`| Description
-:-------|:----------
-True    | Retry succeeded
-False   | Retry failed
-Unknown | Running a retry attempt
+| `status` | Description             |
+|:---------|:------------------------|
+| True     | Retry succeeded         |
+| False    | Retry failed            |
+| Unknown  | Running a retry attempt |
 
 In this way, we are able to easily show the status as following
 

@@ -375,7 +375,7 @@ and a place to discuss community operations and process.
 | <img width="30px" src="https://github.com/dibyom.png">      | Dibyo Mukherjee   | Google     | [dibyom](https://github.com/dibyom)           |
 | <img width="30px" src="https://github.com/vdemeester.png">  | Vincent Demeester | Red Hat    | [vdemeester](https://github.com/vdemeester)   |
 | <img width="30px" src="https://github.com/pritidesai.png">  | Priti Desai       | IBM        | [pritidesai](https://github.com/pritidesai)   |
-| <img width="30px" src="https://github.com/priyawadhwa.png"> | Priya Wadhwa      | Chainguard | [priyawadhwa](https://github.com/priyawadhwa) |
+| <img width="30px" src="https://github.com/wlynch.png">      | Billy Lynch       | Chainguard | [wlynch](https://github.com/wlynch)           |
 | <img width="30px" src="https://github.com/jerop.png">       | Jerop Kipruto     | Google     | [jerop](https://github.com/jerop)             |
 
 ## Software Supply Chain Security (s3c)

@@ -1,7 +1,7 @@
 orgs:
   tektoncd:
     admins:
-    - priyawadhwa
+    - wlynch
     - bobcatfish
     - tekton-robot
     - thelinuxfoundation
@@ -175,7 +175,7 @@ orgs:
       governing-board:
         description: Tekton Governing Board members
         members:
-        - priyawadhwa
+        - wlynch
         - bobcatfish
         - vdemeester
         - afrittoli

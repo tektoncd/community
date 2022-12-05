@@ -167,9 +167,7 @@ Will need to test all three possible scenarios
 ## Alternatives
 
 1. TEP 0029-step-workspaces or step env variable
-
-   - pros: not all params values can be passed this way
-   - cons: only script section can use its values
+   - Only script section can use its values
 
 
 ## Infrastructure Needed (optional)

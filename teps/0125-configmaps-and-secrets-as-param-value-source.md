@@ -63,8 +63,8 @@ steps:
 ```
 
 In this tekton hub task where 2 params are
-- `MAVEN_IMAGE` : Either of the above mentioned solution  doesn't work as the value isn't a param but as an env variable inside the container
-- `CACERTFILE` : Secret doesn't work out of the box as to access env variable `$(params.CACERTFILE)` needs to be replaced with `$CACERTFILE`
+- `MAVEN_IMAGE`: Neither of the alternative solutions mentioned above (workspaces and env) work here as the value isn't used in a script but directly an a property of the step - image
+- `CACERTFILE`: Secret doesn't work out of the box as to access env variable `$(params.CACERTFILE)` needs to be replaced with `$CACERTFILE`
 
 ### Goals
 

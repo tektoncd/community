@@ -75,8 +75,6 @@ It has following advantages
 -  Offloads the source of value in a param to its usage in `Pipeline` and `Task`  giving the option to decide the param value on creation of `PipelineRun` or `TaskRun`.
 - Minimises changing of `Pipeline` or `Task` based on source of the value when executing in multiple clusters / namespace promoting reusability.
 
-### Non-Goals
-
 
 ## Requirements
 
@@ -90,17 +88,17 @@ To achieve the requirement, lets take inspiration from `Kubernetes API Env secti
 // EnvVar represents an environment variable present in a Container.
 
 type  EnvVar  struct {
-	Name string  `json:"name" protobuf:"bytes,1,opt,name=name"`
-	Value string  `json:"value,omitempty" protobuf:"bytes,2,opt,name=value"`
-	ValueFrom *EnvVarSource `json:"valueFrom,omitempty" protobuf:"bytes,3,opt,name=valueFrom"`
+  Name string  `json:"name" protobuf:"bytes,1,opt,name=name"`
+  Value string  `json:"value,omitempty" protobuf:"bytes,2,opt,name=value"`
+  ValueFrom *EnvVarSource `json:"valueFrom,omitempty" protobuf:"bytes,3,opt,name=valueFrom"`
 }
 
 // EnvVarSource represents a source for the value of an EnvVar.
 type  EnvVarSource  struct {
-	FieldRef *ObjectFieldSelector `json:"fieldRef,omitempty" protobuf:"bytes,1,opt,name=fieldRef"`
-	ResourceFieldRef *ResourceFieldSelector `json:"resourceFieldRef,omitempty" protobuf:"bytes,2,opt,name=resourceFieldRef"`
-	ConfigMapKeyRef *ConfigMapKeySelector `json:"configMapKeyRef,omitempty" protobuf:"bytes,3,opt,name=configMapKeyRef"`
-	SecretKeyRef *SecretKeySelector `json:"secretKeyRef,omitempty" protobuf:"bytes,4,opt,name=secretKeyRef"`
+  FieldRef *ObjectFieldSelector `json:"fieldRef,omitempty" protobuf:"bytes,1,opt,name=fieldRef"`
+  ResourceFieldRef *ResourceFieldSelector `json:"resourceFieldRef,omitempty" protobuf:"bytes,2,opt,name=resourceFieldRef"`
+  ConfigMapKeyRef *ConfigMapKeySelector `json:"configMapKeyRef,omitempty" protobuf:"bytes,3,opt,name=configMapKeyRef"`
+  SecretKeyRef *SecretKeySelector `json:"secretKeyRef,omitempty" protobuf:"bytes,4,opt,name=secretKeyRef"`
 }
 
 ```
@@ -113,7 +111,6 @@ From context of `PipelineRun` and `TaskRun` params
 - SecretKeyRef : To reference Secret value
 ```
 
-### Contract
 
 ### API
 
@@ -122,16 +119,16 @@ In `ParamSpec` need to `TaskRef` and `PipelineRef` objects will include a `Value
 
 ```go
 type  Param  struct {
-	Name string  `json:"name"`
-	Value ArrayOrString `json:"value"`
-	// Additional field ValueFrom to fetch value from ConfigMap or Secret
-	ValueFrom *ValueSource `json:"valueFrom,omitempty" protobuf:"bytes,3,opt,name=valueFrom"`
+  Name string  `json:"name"`
+  Value ArrayOrString `json:"value"`
+  // Additional field ValueFrom to fetch value from ConfigMap or Secret
+  ValueFrom *ValueSource `json:"valueFrom,omitempty" protobuf:"bytes,3,opt,name=valueFrom"`
 }
 
 // ValueSource represents a source for the value.
 type  ValueSource  struct {
-	ConfigMapKeyRef *corev1.ConfigMapKeySelector `json:"configMapKeyRef,omitempty" protobuf:"bytes,3,opt,name=configMapKeyRef"`
-	SecretKeyRef *corev1.SecretKeySelector `json:"secretKeyRef,omitempty" protobuf:"bytes,4,opt,name=secretKeyRef"`
+  ConfigMapKeyRef *corev1.ConfigMapKeySelector `json:"configMapKeyRef,omitempty" protobuf:"bytes,3,opt,name=configMapKeyRef"`
+  SecretKeyRef *corev1.SecretKeySelector `json:"secretKeyRef,omitempty" protobuf:"bytes,4,opt,name=secretKeyRef"`
 }
 ```
 
@@ -155,16 +152,6 @@ spec:
 ```
 
 
-### User Stories (optional)
-
-#### Versioned `Task`s and `Pipeline`s and Pipeline-as-code
-
-
-#### Tooling
-
-
-### Risks and Mitigations
-
 ## Test Plan
 
 Will need to test all three possible scenarios
@@ -175,7 +162,8 @@ Will need to test all three possible scenarios
 ## Drawbacks
 
 - Controller will need access to `Secrets` and `Configmaps` across all namespaces
-- 
+
+
 ## Alternatives
 
 1. TEP 0029-step-workspaces or step env variable

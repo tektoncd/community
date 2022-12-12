@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Custom Tasks Beta
 creation-date: '2022-07-12'
-last-updated: '2022-11-24'
+last-updated: '2022-12-12'
 authors:
 - '@jerop'
 - '@XinruZhang'
@@ -229,14 +229,17 @@ gate `enable-api-fields` being set to `"beta"` - this is out of scope for this T
 
 #### Cancellation
 
-The custom task is responsible for implementing `cancellation` to support pipelineRun level `timeouts` and `cancellation`. If the Custom Task implementor does not support cancellation via `.spec.status`, `Pipeline` **can not** timeout within the specified interval/duration and **can not** be cancelled as expected upon request.
+The `Custom Task` is responsible for implementing `cancellation` to support `PipelineRun` level `timeouts` and
+`cancellation`. If the `Custom Task` implementor does not support cancellation via `.spec.status`, `Pipeline`
+**can not** timeout within the specified interval/duration and **can not** be cancelled as expected upon request.
 
-Pipeline Controller sets the `spec.Status` and `spec.StatusMessage` to signal `CustomRuns` about the `Cancellation`, while `CustomRun` controller updates its `status.conditions` as following once noticed the change on `spec.Status`.
+Pipeline Controller sets the `spec.Status` and `spec.StatusMessage` to signal `CustomRuns` about the `Cancellation`,
+while `CustomRun` controller updates its `status.conditions` as following once noticed the change on `spec.Status`.
 
-| Pipeline Signal | `CustomRun.Spec.Status` | `CustomRun.Spec.StatusMessage` | `CustomRun.Status.Conditions` | 
-|:--- |:--- |:--- |:---|
-|[Cancelling][cancel-pr]<br>[Gracefully Cancelling][gracefully-cancel-pr] | `RunCancelled` | `CustomRun cancelled as the PipelineRun it belongs to has been cancelled. `| `Type: Succeeded`<br>`Status:False`<br>`Reason:CustomRunCancelled` |
-|`Pipeline` timeouts | `RunCancelled` | `CustomRun cancelled as the PipelineRun it belongs to has timed out.`| `Type: Succeeded`<br>`Status:False`<br>`Reason:CustomRunCancelled`|
+| Pipeline Signal                                                          | `CustomRun.Spec.Status` | `CustomRun.Spec.StatusMessage`                                              | `CustomRun.Status.Conditions`                                      | 
+|:-------------------------------------------------------------------------|:------------------------|:----------------------------------------------------------------------------|:-------------------------------------------------------------------|
+| [Cancelling][cancel-pr]<br>[Gracefully Cancelling][gracefully-cancel-pr] | `RunCancelled`          | `CustomRun cancelled as the PipelineRun it belongs to has been cancelled. ` | `Type: Succeeded`<br>`Status:False`<br>`Reason:CustomRunCancelled` |
+| `Pipeline` timeouts                                                      | `RunCancelled`          | `CustomRun cancelled as the PipelineRun it belongs to has timed out.`       | `Type: Succeeded`<br>`Status:False`<br>`Reason:CustomRunCancelled` |
 
 #### Documentation
 
@@ -334,6 +337,7 @@ For further details, see [tektoncd/community#523][523], [tektoncd/community#667]
 
 ## References
 
+- [Implementation Pull Requests][prs]
 - Tekton Enhancement Proposals
   - [TEP-0002: Custom Tasks][tep-0002]
   - [TEP-0061: Embed Custom Tasks in Pipeline][tep-0061]
@@ -384,3 +388,4 @@ For further details, see [tektoncd/community#523][523], [tektoncd/community#667]
 [cancel-pr]: https://github.com/tektoncd/pipeline/blob/main/docs/pipelineruns.md#cancelling-a-pipelinerun
 [gracefully-cancel-pr]: (https://github.com/tektoncd/pipeline/blob/main/docs/pipelineruns.md#gracefully-cancelling-a-pipelinerun)
 [long-term-support]: https://github.com/tektoncd/community/blob/main/releases.md#support-policy
+[prs]: https://github.com/tektoncd/pipeline/pulls?q=is%3Apr+tep-0114+

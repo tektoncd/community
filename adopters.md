@@ -34,6 +34,7 @@ Tell us about, we welcome [pull requests](https://github.com/tektoncd/community/
 | Company | How we use Tekton | Notes | May use logo in Tekton public presentations (optional) |
 |---------|-----------|---------|----------|
 | IBM | Tekton is used as the basis of IBM Cloud's broadly adopted internal DevSecOps pipelines | | Yes |
+| Marriott Vacations Worldwide | All corporate CI/CD pipelines were migrated from Jenkins to Tekton, running on ROSA (RedHat Openshift Service on AWS) | | Yes |
 | Nubank | Tekton is the basis of the Nubank's primary CI/CD platform, supporting millions of builds per month | Yes |
 
 ## Tekton Friends

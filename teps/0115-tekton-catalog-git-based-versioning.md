@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Tekton Catalog Git-Based Versioning
 creation-date: '2022-07-12'
-last-updated: '2022-11-09'
+last-updated: '2022-12-14'
 authors:
 - "@jerop"
 - "@vdemeester"
@@ -44,6 +44,7 @@ see-also:
     - [Tekton Hub Git-Based Versioning](#tekton-hub-git-based-versioning)
     - [One resource per Catalog](#one-resource-per-catalog)
     - [Submodules in Catalogs](#submodules-in-catalogs)
+  - [Implementation PRs](#implementation-prs)
   - [References](#references)
 <!-- /toc -->
 
@@ -783,6 +784,13 @@ that can be in one Catalog with a shared git-based versioning.
 We could require that each resource is defined in its own repository, then they are included in the Catalog as
 [submodules][submodules]. This will ensure that each resource will have its own tag, hence its own versioning.
 This could be a future optimization, if needed.
+
+## Implementation PRs
+
+- [Git Resolver revision resolution](https://github.com/tektoncd/resolution/pull/75)
+- [Artifact Hub Resolver](https://github.com/tektoncd/pipeline/pull/5666)
+- [Catlin git-based validation](https://github.com/tektoncd/catlin/pull/6)
+- [Artifact Hub Git-based versioning](https://github.com/artifacthub/hub/pull/2337)
 
 ## References
 

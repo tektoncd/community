@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Larger Results via Sidecar Logs
 creation-date: '2022-11-30'
-last-updated: '2022-12-01'
+last-updated: '2022-12-15'
 authors:
 - '@chitrangpatel'
 - '@jerop'
@@ -128,7 +128,7 @@ After the `Steps` have terminated, the `TaskRun` controller will write the `Resu
 instead of using the `Termination Message`, hence bypassing the 4KB limit. This approach keeps the rest of the existing
 functionality the same and does not require any external storage mechanism.
 
-For further details, see the [demonstration][demo] of the [implementation][poc].
+For further details, see the [demonstration][demo].
 
 This proposal provides an opportunity to experiment with this solution to provide `Results` within the CRDs as we
 continue to explore other alternatives, including those that involve external storage.
@@ -195,7 +195,7 @@ The `Sidecar` will run a binary that:
 - when all `Steps` have completed, it immediately parses all the `Results` in paths and prints them to stdout in a
   parsable pattern.
 
-For further details, see the [demonstration][demo] of the [implementation][poc].
+For further details, see the [demonstration][demo].
 
 ## Design Evaluation
 
@@ -257,7 +257,7 @@ These are some questions we plan to answer in the experiment:
 ## References
 
 - Implementation:
-  - [Implementation Pull Request][poc]
+  - [Implementation Pull Requests][prs]
   - [Demonstration by Chitrang][demo]
 - Tekton Enhancement Proposals:
   - [TEP-0075: Object Parameters and Results][tep-0075]
@@ -284,7 +284,7 @@ These are some questions we plan to answer in the experiment:
 [L3]: https://slsa.dev/spec/v0.1/levels
 [crd-size]: https://github.com/kubernetes/kubernetes/issues/82292
 [demo]: https://drive.google.com/file/d/1NrWudE_XBqweomiY24DP2Txnl1yN0yD9/view
-[poc]: https://github.com/tektoncd/pipeline/pull/5695
+[prs]: https://github.com/tektoncd/pipeline/pulls?q=is%3Apr+tep-0127+
 [performance]: https://github.com/tektoncd/community/pull/745#issuecomment-1206668381
 [tep-0075]: ./0075-object-param-and-result-types.md
 [tep-0076]: ./0076-array-result-types.md

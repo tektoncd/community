@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: end-to-end provenance collection
 creation-date: '2021-09-16'
-last-updated: '2022-05-12'
+last-updated: '2023-03-21'
 authors:
 - '@nadgowdas'
 - '@lcarva'
@@ -734,6 +734,13 @@ Pull-request(s) merged.
 Note: This section is exclusively for merged pull requests, for this TEP.
 It will be a quick reference for those looking for implementation of this TEP.
 -->
+- https://github.com/tektoncd/chains/pull/436
+- https://github.com/tektoncd/chains/pull/598
+- https://github.com/tektoncd/chains/pull/568
+- https://github.com/tektoncd/chains/pull/573
+- https://github.com/tektoncd/chains/pull/564
+- https://github.com/tektoncd/chains/pull/599
+- https://github.com/tektoncd/chains/pull/590
 
 ## References (optional)
 

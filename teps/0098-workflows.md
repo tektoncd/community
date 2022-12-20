@@ -683,6 +683,6 @@ It will be a quick reference for those looking for implementation of this TEP.
 
 - [TEP-0021: Results API](./0021-results-api.md)
 - [TEP-0032: Tekton Notifications](./0032-tekton-notifications.md)
-- [TEP-0083: Scheduled and polling runs](./0083-scheduled-and-polling-runs-in-tekton.md)
+- [TEP-0083: Polling runs](./0083-polling-runs-in-tekton.md)
 - [TEP-0095: Common repository configuration](./0095-common-repository-configuration.md)
 - [TEP-0120: Canceling concurrent PipelineRuns](./0120-canceling-concurrent-pipelineruns.md)

@@ -40,7 +40,7 @@ Several projects and designs currently in-flight in the Tekton ecosystem
 are related to or directly working with source repository-related information.
 These include:
 
-- [Scheduled and Polling Runs in Tekton](0083-scheduled-and-polling-runs-in-tekton.md)
+- [Polling Runs in Tekton](0083-polling-runs-in-tekton.md)
 - [Workflows](../working-groups.md#workflows)
 - [Pipeline-as-Code](https://github.com/openshift-pipelines/pipelines-as-code)
 - [Remote Resource Resolution](0060-remote-resource-resolution.md)

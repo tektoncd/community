@@ -1,6 +1,6 @@
 ---
 status: proposed
-title: Scheduled and Polling runs in Tekton
+title: Polling runs in Tekton
 creation-date: '2021-09-13'
 last-updated: '2021-09-13'
 authors:
@@ -8,7 +8,7 @@ authors:
 - '@sm43'
 ---
 
-# TEP-0083: Scheduled and Polling runs in Tekton
+# TEP-0083: Polling runs in Tekton
 
 <!-- toc -->
 - [Summary](#summary)
@@ -53,9 +53,8 @@ updates.
 [documentation style guide]: https://github.com/kubernetes/community/blob/master/contributors/guide/style-guide.md
 -->
 
-This TEP introduces an idea for a feature in triggers which allows user to 
-- Schedule a pipelinerun/taskrun at a certain time
-- Setup a poll which looks for changes on a repository and triggers pipelinerun/taskrun.
+This TEP introduces an idea for a feature in triggers which allows user to
+setup a poll which looks for changes on a repository and triggers pipelinerun/taskrun.
 
 ## Motivation
 
@@ -68,10 +67,6 @@ demonstrate the interest in a TEP within the wider Tekton community.
 [experience reports]: https://github.com/golang/go/wiki/ExperienceReports
 -->
 
-- To allow users to schedule a pipelinerun/taskrun at a certain time or at certain interval
-
-    Ex. I want to run a pipeline every day at 8 am. Currently, I can do this by setting up a cronjob, but having as a part of Trigger could be a good idea. So, Triggers can start a pipelinerun at the time mentioned by me.
-
 - To allow users to use triggers without need to setup a webhook. Triggers could have a feature which allow user to setup a polling feature for a repository which would look for changes in repository and trigger a pipelinerun or taskrun.
 
     This was briefly discussed on Issue [#1168](https://github.com/tektoncd/triggers/issues/1168) and [#480](https://github.com/tektoncd/triggers/issues/480).
@@ -79,8 +74,8 @@ demonstrate the interest in a TEP within the wider Tekton community.
     This can be solved currently by a setting up a cronjob to check for changes but having as a part of triggers could enhance triggers.
 
 
-Both of the feature could be use cases of conditional triggering where one is at certain time and other would at a certain time if an additional condition passes. They are
-proposed together as the part implementation would be similar which would be discussed in design part in further iterations.
+Both this feature and scheduled runs could be use cases of conditional triggering where one is at certain time
+and other would run at a certain time if an additional condition passes.
 
 ### Goals
 
@@ -98,10 +93,6 @@ and make progress.
 
 ### Use Cases (optional)
 
-(Scheduled Run)
-- As a user, I want to run a pipeline everyday at a certain time. Currently, I can setup using a cronjob which would trigger the run but having this integrated with triggers would be nice. we would do without this feature would be : a cronjob + creating a PipelineRun or a cronjob and a http call to a trigger (to simulate a webhook event).
-
-(Polling)
 - As a user, I don't have permission to setup a webhook on a repository having a polling feature could be helpful to solve this issue. I can configure the polling feature to look for changes and trigger a pipeline.
 
 - Due to restriction of company, users might not be able to expose eventlistener publicly so this could be an option which would look for changes at certain duration and trigger a Pipelinerun. [Reference.](https://github.com/tektoncd/triggers/issues/480#issuecomment-620605920)
@@ -316,7 +307,7 @@ It will be a quick reference for those looking for implementation of this TEP.
 ## References (optional)
 
 -  Polling a repository to detect changes and trigger a pipeline [#1168](https://github.com/tektoncd/triggers/issues/1168) 
--   Poll based change detection? [#480](https://github.com/tektoncd/triggers/issues/480)
+-  Poll based change detection? [#480](https://github.com/tektoncd/triggers/issues/480)
 
 
 <!--

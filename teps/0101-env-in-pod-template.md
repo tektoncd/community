@@ -79,13 +79,17 @@ tags, and then generate with `hack/update-toc.sh`.
   - [User Experience (optional)](#user-experience-optional)
   - [Performance (optional)](#performance-optional)
 - [Design Details](#design-details)
+    - [PipelineRun and TaskRun API Changes](#pipelinerun-and-taskrun-api-changes)
+    - [Global Default Environment Variables](#global-default-environment-variables)
+    - [Precedence Order](#precedence-order)
+    - [Forbidden Environment Variables](#forbidden-environment-variables)
 - [Test Plan](#test-plan)
 - [Design Evaluation](#design-evaluation)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
-- [Implementation Pull request(s)](#implementation-pull-request-s)
+- [Implementation Pull request(s)](#implementation-pull-requests)
 - [References (optional)](#references-optional)
 <!-- /toc -->
 

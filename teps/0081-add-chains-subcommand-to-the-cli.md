@@ -10,7 +10,6 @@ authors:
 # TEP-0081: Add Chains sub-command to the CLI
 
 <!-- toc -->
-
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goals](#goals)
@@ -26,11 +25,9 @@ authors:
   - [User Experience](#user-experience)
 - [Design Details](#design-details)
 - [Test Plan](#test-plan)
-- [Design Evaluation](#design-evaluation)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
 - [Implementation Pull request(s)](#implementation-pull-requests)
-- [References (optional)](#references-optional)
 <!-- /toc -->
 
 ## Summary

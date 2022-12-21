@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Refine Retries for TaskRuns and CustomRuns
 creation-date: '2022-09-08'
-last-updated: '2022-12-01'
+last-updated: '2022-12-21'
 authors:
 - '@XinruZhang'
 - '@jerop'
@@ -403,16 +403,26 @@ Implementors of Custom Tasks can choose to implement this approach.
 
 Note that though we are able to utilize the `retriesStatus` to achieve the same goal, but using `ConditionType` is more appropriate to report status. 
 
-
 ## References
-
-- [TEP-0002: Custom Tasks](https://github.com/tektoncd/community/blob/main/teps/0002-custom-tasks.md)
-- [TEP-0069: Custom Tasks Retries](https://github.com/tektoncd/community/blob/main/teps/0069-support-retries-for-custom-task-in-a-pipeline.md)
-- [TEP-0100: Slim down PipelineRunStatus](https://github.com/tektoncd/community/blob/main/teps/0100-embedded-taskruns-and-runs-status-in-pipelineruns.md)
-- [Issue #5248: Decouple Retries implementation between TaskRun reconciler and PipelineRun reconciler](https://github.com/tektoncd/pipeline/issues/5248)
-- [PR #5393: Clarify the behavior of CustomRun retries](https://github.com/tektoncd/pipeline/pull/5393)
-
+- Implementation
+  - [Implementation PRs][prs]
+  - [Demo][demo] [18:05-21:00]
+- Tekton Enhancement Proposals:
+  - [TEP-0002: Custom Tasks][tep-0002]
+  - [TEP-0069: Custom Tasks Retries][tep-0069]
+  - [TEP-0100: Slim down PipelineRunStatus][tep-0100]
+- PRs
+  - [PR #5393: Clarify the behavior of CustomRun retries][5393]
+- Issues
+  - [Issue #5248: Decouple Retries implementation between TaskRun reconciler and PipelineRun reconciler][5248]
 
 [^ansible-conditional-stop]: https://github.com/ansible/ansible/pull/76101
 [^retry-strategy]: https://docs.microsoft.com/en-us/azure/architecture/best-practices/transient-faults#challenges
 [^transient-errors]: https://learn.microsoft.com/en-us/azure/architecture/best-practices/transient-faults#why-do-transient-faults-occur-in-the-cloud
+[tep-0002]: https://github.com/tektoncd/community/blob/main/teps/0002-custom-tasks.md
+[tep-0069]: https://github.com/tektoncd/community/blob/main/teps/0069-support-retries-for-custom-task-in-a-pipeline.md
+[tep-0100]: https://github.com/tektoncd/community/blob/main/teps/0100-embedded-taskruns-and-runs-status-in-pipelineruns.md
+[5393]: https://github.com/tektoncd/pipeline/pull/5393
+[5248]: https://github.com/tektoncd/pipeline/issues/5248
+[prs]: https://github.com/tektoncd/pipeline/pulls?q=is%3Apr+TEP-0121+
+[demo]: https://drive.google.com/corp/drive/u/0/folders/1HtbupUIIeTOi77Exv-tFUYNrHjUlf19L

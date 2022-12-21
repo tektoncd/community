@@ -21,7 +21,7 @@ see-also:
   - [Step Specification](#step-specification)
   - [TaskRef](#taskref)
   - [TaskRun Specification](#taskrun-specification)
-  - [Configuration feature flags](#configuration-feature-flags)
+  - [Configuration Feature Flags](#configuration-feature-flags)
   - [Materials](#materials)
   - [Provenance for executed TaskRun](#provenance-for-executed-taskrun)
 <!-- /toc -->

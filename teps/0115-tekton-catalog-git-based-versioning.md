@@ -16,6 +16,7 @@ see-also:
 ---
 
 <!-- toc -->
+- [TEP-0115: Tekton Catalog Git-Based Versioning](#tep-0115-tekton-catalog-git-based-versioning)
   - [Summary](#summary)
   - [Motivation](#motivation)
   - [Definitions](#definitions)
@@ -28,7 +29,7 @@ see-also:
         - [eBay - Catalog with one Task](#ebay---catalog-with-one-task)
         - [OpenShift](#openshift)
       - [Migration](#migration)
-        - [Surface Tekton Catalogs on Artifact Hub](#surface-tekton-catalogs-on-the-artifact-hub)
+        - [Surface Tekton Catalogs on the Artifact Hub](#surface-tekton-catalogs-on-the-artifact-hub)
         - [Tekton Catalog GitHub Organization](#tekton-catalog-github-organization)
         - [Getting Started with Git-Based Versioning](#getting-started-with-git-based-versioning)
     - [Git-Based Resource Reference](#git-based-resource-reference)

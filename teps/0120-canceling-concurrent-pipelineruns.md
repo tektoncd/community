@@ -21,6 +21,14 @@ authors:
   - [Requirements](#requirements)
   - [Future Work](#future-work)
 - [Proposal](#proposal)
+- [Alternatives](#alternatives)
+  - [Separate concurrency CRD and reconciler](#separate-concurrency-crd-and-reconciler)
+  - [Concurrency logic in Pipelines controller, with configuration in new CRD](#concurrency-logic-in-pipelines-controller-with-configuration-in-new-crd)
+  - [Add concurrency controls to Triggers](#add-concurrency-controls-to-triggers)
+  - [Configuration on TriggerTemplate](#configuration-on-triggertemplate)
+  - [Configuration on Pipeline spec](#configuration-on-pipeline-spec)
+  - [Configuration on PipelineRun spec](#configuration-on-pipelinerun-spec)
+  - [Cluster-level concurrency ConfigMap](#cluster-level-concurrency-configmap)
 - [References](#references)
 <!-- /toc -->
 

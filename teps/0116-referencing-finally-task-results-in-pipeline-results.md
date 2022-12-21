@@ -20,8 +20,6 @@ authors:
   - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [Notes and Caveats](#notes-and-caveats)
-- [Design Details](#design-details)
-- [Design Evaluation](#design-evaluation)
   - [Reusability](#reusability)
 - [References](#references)
 <!-- /toc -->

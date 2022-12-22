@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Env in POD template
 creation-date: '2022-03-17'
-last-updated: '2022-12-02'
+last-updated: '2022-12-22'
 authors:
 - '@rafalbigaj'
 - '@tomcli'
@@ -878,7 +878,8 @@ Note: This section is exclusively for merged pull requests, for this TEP.
 It will be a quick reference for those looking for implementation of this TEP.
 -->
 
-Previously open: https://github.com/tektoncd/pipeline/pull/3566
+1. Previously open: https://github.com/tektoncd/pipeline/pull/3566
+2. https://github.com/tektoncd/pipeline/pull/5699
 
 ## References (optional)
 

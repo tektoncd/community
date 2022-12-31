@@ -29,14 +29,15 @@ See our standards regarding:
 
 Find out about our processes:
 
-- [Find something to work on](process.md#finding-something-to-work-on)
-- [Propose features](process.md#proposing-features)
-- [Contributor ladder](process.md#contributor-ladder)
-- [Pull request reviews](process.md#reviews)
-- [Propose projects](process.md#proposing-projects)
+- [Find something to work on](./process/README.md#finding-something-to-work-on)
+- [Propose features](./process/README.md#proposing-features)
+- [Contributor ladder](./process/contributor-ladder.md)
+- Pull request [reviews](./process/README.md#reviews) and [process](./process/README.md#pull-request-process)
+- [Propose projects](./process/README.md#proposing-projects)
 - [GitHub Org Management](org/README.md), including
   [requirements to join the org](org/README.md#requirements)
-- [The CDF CLA](process.md#cla)
+- [The CDF CLA](./process/README.md#cla)
+- [Postmortems](./process/README.md#postmortems)
 
 _For guidelines on how to contribute to `tektoncd/community` see
 [CONTRIBUTING.md](CONTRIBUTING.md)._

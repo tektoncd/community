@@ -249,7 +249,7 @@ This is the complete list of Tekton teps:
 |[TEP-0074](0074-deprecate-pipelineresources.md) | Deprecate PipelineResources | implementable | 2022-04-11 |
 |[TEP-0075](0075-object-param-and-result-types.md) | Object/Dictionary param and result types | implemented | 2022-09-26 |
 |[TEP-0076](0076-array-result-types.md) | Array result types | implemented | 2022-09-26 |
-|[TEP-0079](0079-tekton-catalog-support-tiers.md) | Tekton Catalog Support Tiers | proposed | 2022-11-23 |
+|[TEP-0079](0079-tekton-catalog-support-tiers.md) | Tekton Catalog Support Tiers | implementable | 2023-01-12 |
 |[TEP-0080](0080-support-domainscoped-parameterresult-names.md) | Support domain-scoped parameter/result names | implemented | 2021-08-19 |
 |[TEP-0081](0081-add-chains-subcommand-to-the-cli.md) | Add Chains sub-command to the CLI | implemented | 2022-04-27 |
 |[TEP-0082](0082-workspace-hinting.md) | Workspace Hinting | proposed | 2021-10-26 |

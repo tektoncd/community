@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Tekton Catalog Support Tiers
 creation-date: '2021-08-09'
-last-updated: '2022-11-23'
+last-updated: '2023-01-12'
 authors:
 - '@bobcatfish'
 - '@jerop'
@@ -59,18 +59,32 @@ see-also:
       - [2. Community Catalogs in tektoncd-catalog GitHub Org](#2-community-catalogs-in-tektoncd-catalog-github-org)
         - [Design Evaluation](#design-evaluation-2)
   - [Automated Testing and Dogfooding](#automated-testing-and-dogfooding-1)
+    - [Test Pipelines](#test-pipelines)
+      - [Setup](#setup)
+      - [Execution](#execution)
+      - [Verification](#verification)
+      - [Example](#example)
+    - [Verified Catalog Testing Infrastructure](#verified-catalog-testing-infrastructure)
+      - [Integration Test](#integration-test)
+        - [Integration Test on PR Merge](#integration-test-on-pr-merge)
+        - [Nightly Integration Test](#nightly-integration-test)
+      - [Build Test](#build-test)
+    - [Community Catalog Template Testing Infrastructure](#community-catalog-template-testing-infrastructure)
+      - [Example](#example-1)
+    - [Design Evaluation](#design-evaluation-3)
+    - [Future Work](#future-work)
   - [Image Scanning for Common Vulnerabilities and Exposures (CVEs)](#image-scanning-for-common-vulnerabilities-and-exposures-cves-1)
     - [CVEs Scanning Tool](#cves-scanning-tool)
     - [Scanning Policy &amp; Surface Vulnerability Report](#scanning-policy--surface-vulnerability-report)
     - [Extract Container Images from Catalogs](#extract-container-images-from-catalogs)
-    - [Design Evaluation](#design-evaluation-3)
+    - [Design Evaluation](#design-evaluation-4)
     - [Alternatives](#alternatives-1)
       - [1. Store Container Images in Metadata File](#1-store-container-images-in-metadata-file)
   - [Verified Remote Resources](#verified-remote-resources-1)
     - [Sign the Verified Catalog](#sign-the-verified-catalog)
     - [Verified Catalog Repository Setup](#verified-catalog-repository-setup)
-    - [Design Evaluation](#design-evaluation-4)
-    - [Future Work](#future-work)
+    - [Design Evaluation](#design-evaluation-5)
+    - [Future Work](#future-work-1)
 - [References](#references)
 <!-- /toc -->
 
@@ -117,7 +131,7 @@ feedback and iterate quickly.
 
 #### Ownership and Maintenance
 
-Every resource in the [`tektoncd-catalog`](https://github.com/tektoncd-catalog) GitHub organization needs to have Owners to maintain them. The Ownership needs to be distributed among community members and Tekton Maintainers to ensure that the workload is manageable and sustainable.
+Every resource in the [`tektoncd-catalog`][tektoncd-catalog] GitHub organization needs to have Owners to maintain them. The Ownership needs to be distributed among community members and Tekton Maintainers to ensure that the workload is manageable and sustainable.
 
 #### Automated Testing and Dogfooding
 
@@ -140,7 +154,7 @@ provided and maintained by Tekton. They need to sign the resources so that they 
 requirements, and provenance attestations can be made to meet software supply chain security goals.
 
 [TEP-0091: Verified Remote Resources][tep-0091] will flesh out the details of signing, while this TEP will focus on
-surfacing the signing information and building a corpus of verified resources that users can trust. The verification will be done in the Tekton Pipeline's reconciler after remote resolution as designed in [TEP-0091](https://github.com/tektoncd/community/blob/main/teps/0091-trusted-resources.md#verify-the-resources).
+surfacing the signing information and building a corpus of verified resources that users can trust. The verification will be done in the Tekton Pipeline's reconciler after remote resolution as designed in [TEP-0091][tep-0091].
 
 ## Definitions
 
@@ -161,7 +175,7 @@ Today, they are defined in [OWNERS][catalog-owners] file in the existing Catalog
 
 ### Ownership and Maintenance
 
-As previously discussed in [TEP-0115][tep-0115-org] and [migration](https://github.com/tektoncd/hub/issues/667) to the [Artifact Hub][hub],
+As previously discussed in [TEP-0115][tep-0115-org] and [migration][migration] to the [Artifact Hub][hub],
 the Tekton Community has decided to migrate to the decentralized model for Catalogs and use the Artifact Hub to surface Tekton Catalogs.
 Given the above changes, we propose creating two support tiers: `Community` and `Verified`. Community Catalogs make it easy for Contributors to share resources, while the Verified Catalogs provide high quality resources that users can rely on. Community and Verified Catalogs will be published in the [Hub][hub].
 
@@ -233,11 +247,11 @@ community and existing bandwidth to maintain the resource.
 #### Hub
 
 Users rely on the [Artifact Hub][hub] to discover shared resources. The Artifact Hub supports publishing resources from
-multiple Catalogs. Users and organizations can create their own Catalogs and share them in the Artifact Hub ([guide](https://artifacthub.io/docs/topics/repositories/tekton-tasks/)), as long as they comply with the Catalog contract.
+multiple Catalogs. Users and organizations can create their own Catalogs and share them in the Artifact Hub ([guide][artifact-hub-guide]), as long as they comply with the Catalog contract.
 
 To distinguish the Catalogs support tier in the Hub, the [Tekton Catalog Maintainers][catalog-owners] have reserved the `tektoncd` org in the Artifact Hub. **Only** the catalogs published under the `tektoncd` org are with the `Verified` support tier. The community contributors are able to create their own Artifact Hub organization to publish Catalogs, the support tier of such Catalogs are `Community`.
 
-The [Tekton Catalog Maintainers][catalog-owners] also reserved the `tektoncd-legacy` org in the Hub, surfacing the current [centralized Catalog repo](https://github.com/tektoncd/catalog) following the legacy directory-based versioning. We will stop surfacing catalogs from the centralized Catalog repo in the Artifact Hub after the 9-month migration period as discussed in [TEP-0115][tep-0115-migration].
+The [Tekton Catalog Maintainers][catalog-owners] also reserved the `tektoncd-legacy` org in the Hub, surfacing the current [centralized Catalog repo][central-catalog-repo] following the legacy directory-based versioning. We will stop surfacing catalogs from the centralized Catalog repo in the Artifact Hub after the 9-month migration period as discussed in [TEP-0115][tep-0115-migration].
 
 #### CLI
 
@@ -507,7 +521,7 @@ makes it easier to enforce the applicable quality standards while maintaining th
 
 Resources in the verified tier are effectively resources in the community tier that are tested. Given that resources in the community tier can be tested or untested, we can use a simpler mechanism to indicate their testing status, such as a badge in the Artifact Hub. Therefore, adding a verified support tier is unnecessary, and we'd prefer to keep the tiers simple.
 
-The *official* Tekton Catalog support tier collides with the Artifact Hub ["official status"](https://artifacthub.io/docs/topics/repositories/#official-status), which means the publisher **owns the software deployed by a package** (e.g. the `kaniko` task published by the kaniko maintainers can claim the `official status` instead of the Tekton maintainers). The naming collision causes confusion and inconsistency between the Tekton and the Artifact Hub users, and therefore we prefer to avoid using the term *official* in Tekton Catalogs. 
+The *official* Tekton Catalog support tier collides with the Artifact Hub ["official status"][artifact-hub-official-status], which means the publisher **owns the software deployed by a package** (e.g. the `kaniko` task published by the kaniko maintainers can claim the `official status` instead of the Tekton maintainers). The naming collision causes confusion and inconsistency between the Tekton and the Artifact Hub users, and therefore we prefer to avoid using the term *official* in Tekton Catalogs. 
 
 ##### 2. Community Catalogs in tektoncd-catalog GitHub Org
 
@@ -523,24 +537,384 @@ general oversight. Contributors are already hosting Catalogs in their own organi
 
 ### Automated Testing and Dogfooding
 
-TODO
+In this section, we design the automated test infrastructure and test pipelines setup for both Verified Catalogs and Community Catalogs.
+
+#### Test Pipelines
+
+Following the Catalog Contract defined in [TEP-0115][tep-0115-contract], the owners need to provide one or more test `pipelines` in the `./{resource-type}/{resource-name}/tests/pipelineRun.yaml` file of the catalog resource directories to run the integration test for the resource.
+
+The `pipelines` SHOULD contain 3 parts: `setup`, `execution`, and `verification`.
+
+##### Setup
+
+The `pipelines` MAY have tasks or resources that do any required setup (e.g. resolving `git-clone` task via Hub Resolver)
+
+##### Execution
+
+The `pipelines` MUST have the resource under test. 
+
+The resource SHOULD be executed more than once. This can be made easier by leveraging fanning out resources with combinations of `Parameters`, as proposed in [TEP-0090: Matrix][tep-0090].
+
+If the resource is a `Pipeline`, then we need `Pipelines in Pipelines` support in Tekton Pipelines as proposed in [TEP-0056: Pipelines in Pipelines][tep-0056].
+
+##### Verification
+
+The `Pipeline` SHOULD have resources that assert that the resource under test has worked when applicable by:
+
+* Verifying all `Results`
+* Verifying all `Workspace` mutations
+* Verifying any expected “side effects” (e.g. a successful deployment)
+
+##### Example
+The following is a test `pipeline` example for [`kaniko`][kaniko] task, which ***sets up*** the `fetch-repository` task via Hub Resolver, ***executes*** the `kaniko` task, and ***verifies*** the URL and Digest produced by the `kaniko` task.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: kaniko-test-pipeline
+spec:
+  workspaces:
+  - name: shared-workspace
+  params:
+  - name: image
+    description: reference of the image to build
+  tasks:
+  - name: fetch-repository  # Setup
+    taskRef:
+      resolver: hub
+      params:
+      - name: name
+        value: git-clone
+      - name: version
+        value: "0.9"
+    workspaces:
+    - name: output
+      workspace: shared-workspace
+    params:
+    - name: url
+      value: https://github.com/kelseyhightower/nocode
+    - name: subdirectory
+      value: ""
+    - name: deleteExisting
+      value: "true"
+  - name: kaniko  # Execution
+    taskRef:
+      name: kaniko
+    runAfter:
+    - fetch-repository
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    params:
+    - name: IMAGE
+      value: $(params.image)
+    - name: EXTRA_ARGS
+      value:
+        - --skip-tls-verify
+  - name: verify-digest # Verification
+    runAfter:
+    - kaniko
+    params:
+    - name: digest
+      value: $(tasks.kaniko.results.IMAGE_DIGEST)
+    taskSpec:
+      params:
+      - name: digest
+      steps:
+      - name: bash
+        image: ubuntu
+        script: |
+          echo $(params.digest)
+          case .$(params.digest) in
+            ".sha"*) exit 0 ;;
+            *)       echo "Digest value is not correct" && exit 1 ;;
+          esac
+  - name: verify-url # Verification
+    runAfter:
+    - kaniko
+    params:
+    - name: url
+      value: $(tasks.kaniko.results.IMAGE_URL)
+    taskSpec:
+      params:
+      - name: url
+      steps:
+      - name: bash
+        image: ubuntu
+        script: |
+          echo $(params.url)
+          case .$(params.url) in
+            *"/kaniko-nocode") exit 0 ;;
+            *)       echo "URL value is not correct" && exit 1 ;;
+          esac
+```
+
+#### Verified Catalog Testing Infrastructure
+
+In this section, we design the test infrastructure and test strategy for the Verified Catalogs based on the `test pipeline` setup as described above.
+
+As discussed in [TEP-0115][tep-0115-org], the Verified Catalogs will be hosted as separate repositories in the [tektoncd-catalog][tektoncd-catalog] GitHub organization. These repositories are owned by Tekton Maintainers and should follow the `tektoncd` [project requirements][tektoncd-project-requirement].
+
+The Verified Catalogs test should use the existing infrastructure provided in the [plumbing repo][plumbing] to meet the same standard of automation with other `tektoncd` projects. Specifically, we will continue to use `Prow`  and the existing [Prow Cluster][prow-cluster] for repository and organization management requirements (i.e. label management, reviewer auto assignment, and pull request management...).
+
+To dogfood Tekton, we propose to use Tekton as the test automation infrastructure for the Verified Catalogs, leveraging the [Dogfooding Cluster][dogfooding-cluster] and the existing [Tekton setup][plumbing-tekton] in the plumbing repo.
+
+We propose two required tests and the corresponding GitHub checks for the Verified Catalogs:
+
+##### Integration Test
+
+The integration tests SHOULD run the catalog resource from end to end. The integration tests should be run both as a CI gated check on PR merge and on a nightly basis.
+
+We propose to use the [kind-e2e task][kind-e2e] to spin up a `KinD` cluster to run the test `pipelines` when triggered. The `kind-e2e task` executes the `./test/e2e-tests.sh` script in the target catalog which then runs the test `pipelines` in the catalog resource directory(`./{resource-type}/{resource-name}/tests/`). The `Tekton Pipelines` versions to be tested against can be configured in the `./test/e2e-tests.sh` script, which will be further discussed in the below sections.
+
+Please refer to the [kind-e2e doc][kind-e2e-doc] for more information.
+
+###### Integration Test on PR Merge
+
+We propose to test the Verified Catalogs against:
+- The **most recent** `Tekton Pipelines` release 
+- The **minimum compatible** `Tekton Pipelines` release (specified by `tekton.dev/minVersion` label of the Task)
+
+The successful completion of the integration tests passes the `pull-tekton-catalog-integration-tests-latest` and `pull-tekton-catalog-integration-tests-min-compatible` GitHub checks respectively to unblock a PR merge. The integration test should be triggered by pull request `opened`, `reopened`, `synchronize` events, or by `/test pull-tekton-catalog-integration-tests-latest` and `/test pull-tekton-catalog-integration-tests-min-compatible` comments in the pull request.
+
+
+This is a conceptual high-level flow:
+
+  ```
+           |                                      |
+           v                                      v
+  start-integration-test-GitHub-check       git-batch-merge
+                                                  |
+                                                  v
+                                            kind-e2e-test
+                                                  |
+                                                  v      
+                                  update-integration-test-GitHub-check
+                                                  |
+                                                  v     
+                                            upload-logs                                                                          
+  ```
+
+###### Nightly Integration Test
+
+We propose to test the Verified Catalogs against the **latest nightly release** of `Tekton Pipelines` as periodic nightly jobs. 
+
+The pro and con of this approach are the same: we may catch issues with Tekton Pipelines itself. Since backward incompatible changes require an ApiGroup bump, this should never fail, but probably sometimes will. Failures here are probably caused by bugs in Tekton Pipelines. This means we may catch more issues before releases, but also means that Catalog tests may fail for non-catalog related reasons.
+
+Since these failures are more likely to be caused by Tekton Pipelines than by the Tasks, we will only run these as periodic nightly jobs and not let these failures block a PR merge. 
+
+The failures of nightly tests should be automatically sent to a dedicated new slack channel - `catalog-maintainers` to raise the awareness of the failures to the Tekton Catalog Maintainers (we have a [send-to-channel-slack][send-to-channel-slack] catalog task to support this). It will be up to Tekton Catalog Maintainers to track down their failures.
+
+##### Build Test
+
+The build tests SHOULD check the syntax of the yaml files and the contract of the Catalog. The successful completion of the build test pass `pull-tekton-catalog-build-tests` GitHub check to unblock a PR merge. The Build Test should be triggered by pull request `opened`, `reopened`, `synchronize` events, or the `/test pull-tekton-catalog-build-test` comment in the pull request.
+
+[Catlin][catlin-repo] is a command-line tool that lints Tekton Resources and Catalogs which checks
+  - If the resource is on a valid path
+  - If the resource is a valid Tekton Resource
+  - If all mandatory fields are added to the resource file
+  - If all images used in Task Spec are tagged
+  - If platforms are specified in a correct format
+
+We propose to use [Catlin Task][catlin-task] in the build test. This is a conceptual flow:
+
+  ```
+           |                              |
+           v                              v
+  start-build-test-GitHub-check      git-batch-merge
+                                          |
+                                          v
+                                     catlin-lint
+                                          |
+                                          v      
+                              update-build-test-GitHub-check
+                                          |
+                                          v     
+                                    upload-logs                                                                          
+  ```
+
+#### Community Catalog Template Testing Infrastructure
+
+The test infrastructure in the plumbing repo is designed for all `tektoncd` projects, which may not fit a Community Catalog repo's needs and may be too complicated for the authors to start with. To encourage Community Catalog authors to set up automated tests for their catalogs (using Tekton!), we propose to provide a template repo in the `tektoncd-catalog` GitHub org for Community Catalog authors to follow. This tutorial-like template should contain the **simple and minimum** required setup for the automated build tests and integration tests, guiding Community Catalog authors to achieve the same testing functionality as the Verified Catalogs using Tekton primitives.
+
+##### Example
+The following is a simplified `EventListener` + `Trigger` example listening `/test pull-tekton-catalog-build-test` command.
+
+```yaml
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: tekton-catalog-automated-testing-event-listener
+spec:
+  triggers:
+    - name: pull-build-test
+      interceptors:
+      - ref:
+          name: "github"
+        params:
+        - name: "eventTypes"
+          value: ["issue_comment"]
+        - name: "secretRef"
+          value:
+            secretName: github-secret
+            secretKey: secretToken
+      - ref:
+          name: "cel"
+        params:
+        - name: "filter"
+          value: "body.comment.body == '/test pull-tekton-catalog-build-test'"
+        - name: "overlays"
+          value:
+          - key: add_pr_body.pull_request_url
+            expression: "body.issue.pull_request.url"
+      - webhook:
+          objectRef:
+            kind: Service
+            name: add-pr-body
+            apiVersion: v1
+      template:
+        ref: catalog-build-test-template
+      bindings:
+      - ref: catalog-build-test-binding
+  resources:
+    kubernetesResource:
+      serviceType: LoadBalancer
+      spec:
+        template:
+          spec:
+            serviceAccountName: tekton-catalog-automated-testing-sa
+```
+
+The following simplified build test `pipeline` will then be triggered via the `catalog-build-test-template` and the `catalog-build-test-binding`:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: catalog-build-test
+spec:
+  description: >-
+    This pipeline: 1) generate a Github user token;
+    2) start the "pull-tekton-catalog-build-tests" Github Check;
+    3) clone and merge the target repo;
+    4) run Catlin linitng;
+    5) finally, send a comment of linting result and update the Github Check to the PR;
+  workspaces:
+    - name: github-app-secret
+      description: Workspace where the signing private key is stored
+    - name: source
+      description: Workspace where the git repo is prepared for linting.
+  params:
+    ...
+  tasks:
+    - name: generate-token
+      taskRef:
+        resolver: hub
+        params:
+        - name: kind
+          value: task
+        - name: name
+          value: github-app-token
+        - name: version
+          value: "0.2"
+      params:
+        ...
+      workspaces:
+      - name: secrets
+        workspace: github-app-secret
+    - name: start-github-check
+      taskRef:
+        name: update-github-check
+      params:
+      - name: jwt-token
+        value: $(tasks.generate-token.results.token)
+      - name: status
+        value: in_progress
+      - name: check-run-name
+        value: pull-tekton-catalog-build-tests
+    - name: clone-repo
+      taskRef:
+        resolver: hub
+        params:
+        - name: name
+          value: git-batch-merge
+        - name: version
+          value: "0.2"
+      workspaces:
+      - name: output
+        workspace: source
+      params:
+        ...
+    - name: lint-catalog
+      runAfter:
+        - "clone-repo"
+      taskRef:
+        name: catlin-lint
+      workspaces:
+        - name: source
+          workspace: source
+      params:
+        ...
+  finally:
+    - name: post-comment
+      taskRef:
+        resolver: hub
+        params:
+        - name: kind
+          value: task
+        - name: name
+          value: github-add-comment
+        - name: version
+          value: "0.7"
+      params:
+        - name: COMMENT_OR_FILE
+          value: "catlin.txt" # the lint result file generated by lint-catalog Pipeline Task
+        ...
+      workspaces:
+      - name: comment-file
+        workspace: source
+    - name: update-github-check
+      taskRef:
+        name: update-github-check
+      params:
+      - name: status
+        value: completed
+      - name: conclusion
+        value: $(tasks.lint-catalog.status)
+      - name: jwt-token
+        value: $(tasks.generate-token.results.token)
+      - name: check-run-name
+        value: pull-tekton-catalog-build-tests
+        ...
+```
+
+#### Design Evaluation
+
+This design proposes an automated testing strategy to ensure the high quality of the Verified Catalogs while achieving the same amount of automation as other `tektoncd` projects by leveraging the plumping repo. This proposal tries to maximize the use of Tekton native components, which enhance Tekton adoption as "a powerful and flexible framework for creating CI/CD systems" and reveals potential limitations. This design also proposes a tutorial-like template with the simplest and minimum end-to-end testing infra setup to encourage the community Catalog authors to follow, which helps build a robust and sustainable Community Tekton Catalog ecosystem. 
+
+#### Future Work
+
+For now, all the resources in the Verified Catalogs are in `v1beta1` and we only run tests on `v1beta1` API version. Since the community is working on `v1` API version support, we should consider to upgrade the resources in Verified Catalogs and corresponding tests to `v1` API version once it is supported.
+
+While this proposal attempts to maximize the use of Tekton native components for the automated testing as much as possible, the `e2e-tests.sh` test script is still required to enable the end-to-end flow today. In the future, we could investigate replacing the test script with Tekton to further dogfood Tekton.
 
 ### Image Scanning for Common Vulnerabilities and Exposures (CVEs)
 
 #### CVEs Scanning Tool
 
-[Trivy](https://github.com/aquasecurity/trivy) is an open source, simple and comprehensive vulnerability scanner for container images and other artifacts, the advantages of which include but not limited to:
+[Trivy][trivy] is an open source, simple and comprehensive vulnerability scanner for container images and other artifacts, the advantages of which include but not limited to:
 
 1. **Comprehensive Coverage**: Trivy supports comprehensive vulnerability detection against a wide variety of OS Packages and application dependencies for 8 languages including Go. In addition to container image scanning, Trivy is also able to detect security issues targeting filesystem, git repository, kubernetes cluster and resources.
 2. **High Accuracy**: Trivy provides highly accurate security reports, especially Alpine Linux and RHEL/CentOS.
 3. **Performance & Scalability**: Trivy is fast and scalable thanks to the underlying static analysis technique. The first scan finishes within 10s of submission (depending on the network).
 4. **Easiness**: Trivy can be installed easily, executed both in standalone & client/server mode, and no prerequisite (DB, system library, env requirement...) is required.
 
-A comparison between Trivy and other CVEs scanning tools is available [here](https://aquasecurity.github.io/trivy/v0.17.2/comparison/). Given the above advantages, Trivy will be selected as the vulnerability scanning tool for Tekton Catalogs.
+A comparison between Trivy and other CVEs scanning tools is available [here][trivy-comparison]. Given the above advantages, Trivy will be selected as the vulnerability scanning tool for Tekton Catalogs.
 
 #### Scanning Policy & Surface Vulnerability Report
 
-The Artifact Hub [Scanner Service](https://artifacthub.io/docs/topics/security_report/) uses Trivy as the underlying CVEs scanning tool, periodically running container image security reports for Helm Charts, OLM operators and 5 other kind of resource surfaced by the Artifact Hub. We propose to integrate Tekton Catalogs to the Artifact Hub [Scanner Service](https://artifacthub.io/docs/topics/security_report/) to run and surface Trivy security reports in the Artifact Hub.
+The Artifact Hub [Scanner Service][scanner] uses Trivy as the underlying CVEs scanning tool, periodically running container image security reports for Helm Charts, OLM operators and 5 other kind of resource surfaced by the Artifact Hub. We propose to integrate Tekton Catalogs to the Artifact Hub [Scanner Service][scanner] to run and surface Trivy security reports in the Artifact Hub.
 
 In the first iteration of the TEP, we will use the current scanning policy defined the Artifact Hub:
 1. The scanner runs twice an hour and scans packages’ versions that haven’t been scanned yet.
@@ -552,7 +926,7 @@ The container images must be stored in the registries that are publicly availabl
 
 #### Extract Container Images from Catalogs
 
-We propose to extract and collect all the container images used in the Tekton resource (`task` or `pipeline`) by iterating through all the values in the `tasks.steps.image` fields of the resource. The extracted container images are stored in the Artifact Hub DB, which will be processed periodically by the Scanner Service](https://artifacthub.io/docs/topics/security_report/). For example, `bash:latest` and `alpine` are extracted in the following `task`:
+We propose to extract and collect all the container images used in the Tekton resource (`task` or `pipeline`) by iterating through all the values in the `tasks.steps.image` fields of the resource. The extracted container images are stored in the Artifact Hub DB, which will be processed periodically by the [Scanner Service][scanner]. For example, `bash:latest` and `alpine` are extracted in the following `task`:
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -637,13 +1011,13 @@ This design builds on the existing infrastructure and the security report UI des
 #### Alternatives
 ##### 1. Store Container Images in Metadata File
 
-The Artifact Hub provides a [generic solution](https://artifacthub.io/docs/topics/security_report/#coredns-plugins-keda-scalers-keptn-integrations-opa-policies-and-tinkerbell-actions) for publishers to specify the container images in a dedicated [`artifacthub-pkg.yml`](https://github.com/artifacthub/hub/blob/master/docs/metadata/artifacthub-pkg.yml#L13) metadata file that can be parsed by the Artifact Hub. While this solution can be easily opted in for Tekton resources, it is an extra cost for Tekton users to maintain the metadata file. Also, we cannot guarantee that the images being scanned are the images actually used in the resource if the metadata file is outdated.
+The Artifact Hub provides a [generic solution][artifact-hub-image-upload] for publishers to specify the container images in a dedicated [`artifacthub-pkg.yml`][artifact-hub-image-upload-yaml] metadata file that can be parsed by the Artifact Hub. While this solution can be easily opted in for Tekton resources, it is an extra cost for Tekton users to maintain the metadata file. Also, we cannot guarantee that the images being scanned are the images actually used in the resource if the metadata file is outdated.
 
 ### Verified Remote Resources
 
 #### Sign the Verified Catalog
 
-Following the design in TEP-0091, all the releases of Verified Catalog resources should be [signed](https://github.com/tektoncd/community/blob/main/teps/0091-trusted-resources.md#sign-the-resources) by the signing [tkn tool](https://github.com/tektoncd/cli/blob/main/docs/cmd/tkn_task_sign.md) and the signature should be stored in the `tekton.dev/signature` annotation:
+Following the design in TEP-0091, all the releases of Verified Catalog resources should be [signed][tep-0091-sign] by the signing [tkn tool][tkn-sign] and the signature should be stored in the `tekton.dev/signature` annotation:
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -667,9 +1041,9 @@ The `tekton.dev/signature` annotation will be parsed by [Artifact Hub][hub] for 
 
 ![Artifact Hub Signed Badge](images/0079-signed-badge.png)
 
-The [verification](https://github.com/tektoncd/community/blob/main/teps/0091-trusted-resources.md#verify-the-resources) of the signature can be done in the Tekton Pipeline's reconciler during the remote resolution.
+The [verification][tep-0091-verification] of the signature can be done in the Tekton Pipeline's reconciler during the remote resolution.
 
-A new signing key pair - `verified-catalog` will be generated using KMS to sign the Verified Catalogs, which will be hosted in the [`tekton-releases`](http://console.cloud.google.com/home/dashboard?project=tekton-releases) GCP project (please request access from Tekton Maintainers if needed). The KMS signing permissions(`Cloud KMS Admin`, `Cloud KMS CryptoKey Signer/Verifier`, `Viewer`) are only granted to the Tekton Catalog Maintainers.
+A new signing key pair - `verified-catalog` will be generated using KMS to sign the Verified Catalogs, which will be hosted in the [`tekton-releases`][tekton-releases] GCP project (please request access from Tekton Maintainers if needed). The KMS signing permissions(`Cloud KMS Admin`, `Cloud KMS CryptoKey Signer/Verifier`, `Viewer`) are only granted to the Tekton Catalog Maintainers.
 
 #### Verified Catalog Repository Setup
 
@@ -681,7 +1055,7 @@ Since the `verified-catalog` key pair signing permission is only granted to Tekt
   - release-1.0.0
   - release-1.1.0
 
-The Tekton Maintainers manually [sign](https://github.com/tektoncd/cli/blob/main/docs/cmd/tkn_task_sign.md) the resource files based on the specific commits from the Main branch, and push the signed resources to the Release branch. A CI job will be created to check and verify the signature is provided and valid before the code can be checked in.
+The Tekton Maintainers manually [sign][tkn-sign] the resource files based on the specific commits from the Main branch, and push the signed resources to the Release branch. A CI job will be created to check and verify the signature is provided and valid before the code can be checked in.
 
 The Tekton Maintainers should cut tags/releases based on the Release branches so that every release contains only signed resources.
 
@@ -702,6 +1076,10 @@ We only automate the signature verification process in the CI in the current des
 * [TEP-0003: Tekton Catalog Organization][tep-0003]
 * [TEP-0091: Verified Remote Resources][tep-0091]
 
+[artifact-hub-guide]: https://artifacthub.io/docs/topics/repositories/tekton-tasks/
+[artifact-hub-official-status]: https://artifacthub.io/docs/topics/repositories/#official-status
+[artifact-hub-image-upload]: https://artifacthub.io/docs/topics/security_report/
+[artifact-hub-image-upload-yaml]: https://github.com/artifacthub/hub/blob/master/docs/metadata/artifacthub-pkg.yml#L13#coredns-plugins-keda-scalers-keptn-integrations-opa-policies-and-tinkerbell-actions
 [catalog-proposal]: https://docs.google.com/document/d/1O8VHZ-7tNuuRjPNjPfdo8bD--WDrkcz-lbtJ3P8Wugs/edit#heading=h.iyqzt1brkg3o
 [catalog-hub-design]: https://docs.google.com/document/d/1pZY7ROLuW47ymZYqUgAbxskmirrmDg2dd8VPATYXrxI/edit#
 [catalog-support-tiers]: https://docs.google.com/document/d/1BClb6cHQkbSpnHS_OZkmQyDMrB4QX4E5JXxQ_G2er7M/edit?usp=sharing
@@ -710,12 +1088,17 @@ We only automate the signature verification process in the CI in the current des
 [tep-0003-ownership]: ./0003-tekton-catalog-organization.md#ownership
 [tep-0003-upstream]: ./0003-tekton-catalog-organization.md#upstream-catalogs
 [tep-0003-hub]: ./0003-tekton-catalog-organization.md#the-hub-and-multiple-catalogs
+[tep-0056]: ./0056-pipelines-in-pipelines.md
+[tep-0090]: ./0090-matrix.md
 [tep-0091]: ./0091-trusted-resources.md
+[tep-0091-sign]: ./0091-trusted-resources.md#sign-the-resources
+[tep-0091-verification]: ./0091-trusted-resources.md#verify-the-resources
 [tep-0060]: ./0060-remote-resource-resolution.md
 [tep-0110]: ./0110-decouple-catalog-organization-and-reference.md
 [tep-0115]: ./0115-tekton-catalog-git-based-versioning.md
 [tep-0115-org]: ./0115-tekton-catalog-git-based-versioning.md#git-based-versioning
 [tep-0115-migration]: ./0115-tekton-catalog-git-based-versioning.md#migration
+[tep-0115-contract]: ./0115-tekton-catalog-git-based-versioning.md#organization-contract
 [tep-infra]: https://github.com/tektoncd/community/pull/170
 [doc-infra]: https://docs.google.com/document/d/1-czjvjfpuIqYKsfkvZ5RxIbtoFNLTEtOxaZB71Aehdg
 [github-rename]: https://docs.github.com/en/repositories/creating-and-managing-repositories/renaming-a-repository
@@ -725,7 +1108,8 @@ We only automate the signature verification process in the CI in the current des
 [task-authoring-recs]: https://github.com/tektoncd/catalog/blob/main/recommendations.md
 [bundle]: https://tekton.dev/docs/pipelines/pipelines/#tekton-bundles
 [hub-config]: https://github.com/tektoncd/hub/blob/68dfd7ed39ca9fc6ea8eb3c95a729110c6c7f81c/config.yaml#L37-L43
-[catlin]: https://github.com/tektoncd/plumbing/tree/main/catlin
+[catlin-repo]: https://github.com/tektoncd/catlin
+[catlin-task]: https://github.com/tektoncd/plumbing/blob/main/tekton/ci/jobs/tekton-catalog-catlin-lint.yaml
 [rfc2119]: https://datatracker.ietf.org/doc/html/rfc2119
 [bundle-resolver]: https://github.com/tektoncd/resolution/tree/5d7918cb5b6f183d79cf0f91f4f08ecb204505a0/bundleresolver
 [git-resolver]: https://github.com/tektoncd/resolution/tree/7f92187843085874229aa4c43e5c6d7d392a26fa/gitresolver
@@ -733,3 +1117,20 @@ We only automate the signature verification process in the CI in the current des
 [catalog-publish]: https://github.com/tektoncd/catalog/tree/e91c9135dbffc088d70ab60434622b4b65680784/task/tekton-catalog-publish/0.1
 [buildpacks]: https://github.com/buildpacks/tekton-integration
 [eBay]: https://github.com/eBay/tekton-slack-notify
+[migration]: https://github.com/tektoncd/hub/issues/667
+[central-catalog-repo]: https://github.com/tektoncd/catalog
+[kaniko]: https://github.com/tektoncd/catalog/tree/main/task/kaniko/0.6
+[plumbing]: https://github.com/tektoncd/plumbing
+[plumbing-tekton]: https://github.com/tektoncd/plumbing/blob/main/tekton/README.md
+[prow-cluster]: https://github.com/tektoncd/plumbing/blob/main/docs/prow.md
+[dogfooding-cluster]: https://github.com/tektoncd/plumbing/blob/main/docs/dogfooding.md
+[kind-e2e]: https://github.com/tektoncd/plumbing/blob/main/tekton/ci/jobs/e2e-kind.yaml
+[kind-e2e-doc]: https://github.com/tektoncd/plumbing/blob/main/docs/kind-e2e.md
+[trivy]: https://github.com/aquasecurity/trivy
+[trivy-comparison]: https://aquasecurity.github.io/trivy/v0.17.2/comparison/
+[scanner]: https://artifacthub.io/docs/topics/security_report/
+[tkn-sign]: https://github.com/tektoncd/cli/blob/main/docs/cmd/tkn_task_sign.md
+[tekton-releases]: http://console.cloud.google.com/home/dashboard?project=tekton-releases
+[tektoncd-catalog]: https://github.com/tektoncd-catalog
+[tektoncd-project-requirement]: https://github.com/tektoncd/community/blob/main/process.md#project-requirements
+[send-to-channel-slack]: https://github.com/tektoncd/catalog/tree/main/task/send-to-channel-slack/0.1

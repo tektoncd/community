@@ -205,7 +205,7 @@ This is the complete list of Tekton teps:
 |[TEP-0023](0023-implicit-mapping.md) | 0023-Implicit-parameter-mapping | implemented | 2021-12-15 |
 |[TEP-0024](0024-embedded-trigger-templates.md) | Embedded TriggerTemplates | implemented | 2020-10-01 |
 |[TEP-0025](0025-hermekton.md) | Hermetic Builds | implementable | 2020-09-11 |
-|[TEP-0026](0026-interceptor-plugins.md) | interceptor-plugins | implementable | 2020-10-08 |
+|[TEP-0026](0026-interceptor-plugins.md) | interceptor-plugins | implemented | 2020-10-08 |
 |[TEP-0027](0027-https-connection-to-triggers-eventlistener.md) | HTTPS Connection to Triggers EventListener | implementable | 2020-11-01 |
 |[TEP-0028](0028-task-execution-status-at-runtime.md) | task-exec-status-at-runtime | implemented | 2021-06-03 |
 |[TEP-0029](0029-step-workspaces.md) | step-and-sidecar-workspaces | implemented | 2022-07-22 |

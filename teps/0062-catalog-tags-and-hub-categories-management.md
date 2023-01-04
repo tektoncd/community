@@ -10,6 +10,7 @@ authors:
 
 # TEP-0062: Catalog Tags and Hub Categories Management
 
+<!-- toc -->
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goals](#goals)
@@ -17,12 +18,10 @@ authors:
   - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
-
 - [Proposed Solution](#proposed-solution)
-  - [Searching v/s Filtering](#searching-v/s-filtering)
   - [Example of Operator Hub](#example-of-operator-hub)
-  - [Pros of Having Categories](#pros-of-having-categories)
   - [Reason Behind Not Using Tags Only](#reason-behind-not-using-tags-only)
+- [Alternative solution](#alternative-solution)
   - [Risks and Mitigations](#risks-and-mitigations)
   - [Performance (optional)](#performance-optional)
 - [Design Details](#design-details)

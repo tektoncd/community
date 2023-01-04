@@ -4,7 +4,7 @@ authors:
   - "@dibyom"
 creation-date: 2020-10-08
 last-updated: 2020-10-08
-status: implementable
+status: implemented
 ---
 # TEP-0026: Pluggable Interceptors
 
@@ -32,6 +32,7 @@ status: implementable
     - [Use a versioned Request/Response types to the HTTP API](#use-a-versioned-requestresponse-types-to-the-http-api)
 - [Upgrade &amp; Migration Strategy](#upgrade--migration-strategy)
 - [Work Plan](#work-plan)
+- [Implementation Pull Requests](#implementation-pull-requests)
 - [References](#references)
 <!-- /toc -->
 
@@ -110,11 +111,6 @@ interceptors with the advantages of the current built in interceptors
 
 
 ### Non-Goals
-
-<!--
-What is out of scope for this TEP?  Listing non-goals helps to focus discussion
-and make progress.
--->
 
 ## Requirements
 
@@ -504,14 +500,7 @@ While a failed response will look like:
 }
 ```
 
-
 ## Upgrade & Migration Strategy
-
-<!--
-Use this section to detail wether this feature needs an upgrade or
-migration strategy. This is especially useful when we modify a
-behavior or add a feature that may replace and deprecate a current one.
--->
 
 * We'll keep supporting the current [webhook interface](https://github.com/tektoncd/triggers/blob/main/docs/eventlisteners.md#event-interceptor-services) until beta.
 
@@ -524,6 +513,11 @@ behavior or add a feature that may replace and deprecate a current one.
   3. Add TLS support - This will involve adding suport for the `caBundle` field to allow for TLS communication between EventListener and Interceptor.
 
   4. Implement additional features - extra context for debugging, versioning etc.
+
+## Implementation Pull Requests
+
+- [Add ClusterInterceptor CRD for registering interceptors](https://github.com/tektoncd/triggers/pull/960)
+- [Migrate core interceptors to use InterceptorType CRD](https://github.com/tektoncd/triggers/pull/976)
 
 ## References
 

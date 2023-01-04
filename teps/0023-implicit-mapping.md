@@ -12,22 +12,30 @@ superseded-by:
 
 # TEP-0023: Implicit Parameter Mapping for Embedded Specs
 
+<!-- toc -->
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goal](#goal)
   - [Non Goals](#non-goals)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
+  - [Admission Controller](#admission-controller)
   - [Caveats](#caveats)
     - [Naming / type conflicts](#naming--type-conflicts)
+    - [Extra parameters](#extra-parameters)
     - [Common parameter names](#common-parameter-names)
+  - [User Experience](#user-experience)
   - [Performance](#performance)
 - [Design Details](#design-details)
   - [Alternatives](#alternatives)
+    - [Resolve ref params as well](#resolve-ref-params-as-well)
+    - [Don't allow implicit params at the Pipeline/TaskRun level](#dont-allow-implicit-params-at-the-pipelinetaskrun-level)
 - [Test Plan](#test-plan)
 - [Drawbacks](#drawbacks)
+  - [Unused Parameter Noise](#unused-parameter-noise)
 - [Future Work](#future-work)
 - [References](#references)
+<!-- /toc -->
 
 ## Summary
 

@@ -10,19 +10,33 @@ authors:
 
 # TEP-0067: Tekton Catalog Pipeline Organization
 
+<!-- toc -->
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
   - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
+  - [Quality](#quality)
 - [Proposal](#proposal)
-  - [Support-Tiers](#support-tiers)
+  - [Support Tiers](#support-tiers)
   - [Versioning Resources](#versioning-resources)
+    - [Questions](#questions)
   - [Ownership](#ownership)
-  - [Organzation](#organization)
+  - [Organization](#organization)
+    - [Fields added to the yaml file](#fields-added-to-the-yaml-file)
+    - [Scenarios of task references in a pipeline](#scenarios-of-task-references-in-a-pipeline)
+    - [Solutions for how task should be referred in a pipeline](#solutions-for-how-task-should-be-referred-in-a-pipeline)
+- [Proposed Solutions](#proposed-solutions)
+  - [<strong>Tasks added as bundles in Pipeline</strong>](#tasks-added-as-bundles-in-pipeline)
+  - [<strong>Run Tasks from catalog without downloading and applying them</strong>](#run-tasks-from-catalog-without-downloading-and-applying-them)
+- [Alternative Solution](#alternative-solution)
   - [Requirements &amp; Guidelines](#requirements--guidelines)
-  - [Deprecation & Removal strategy](#deprecation--removal-strategy)
+  - [Deprecation &amp; Removal strategy](#deprecation--removal-strategy)
+  - [Notes/Caveats (optional)](#notescaveats-optional)
+  - [Risks and Mitigations](#risks-and-mitigations)
+  - [User Experience (optional)](#user-experience-optional)
+  - [Performance (optional)](#performance-optional)
 - [Design Details](#design-details)
 - [Test Plan](#test-plan)
 - [Design Evaluation](#design-evaluation)
@@ -31,6 +45,7 @@ authors:
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
 - [References (optional)](#references-optional)
+<!-- /toc -->
 
 ## Summary
 

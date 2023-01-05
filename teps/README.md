@@ -200,7 +200,7 @@ This is the complete list of Tekton teps:
 |[TEP-0016](0016-concise-trigger-bindings.md) | Concise Embedded TriggerBindings | implemented | 2020-09-15 |
 |[TEP-0019](0019-other-arch-support.md) | Other Arch Support | proposed | 2020-09-30 |
 |[TEP-0020](0020-s390x-support.md) | s390x Support | implemented | 2021-06-04 |
-|[TEP-0021](0021-results-api.md) | Tekton Results API | implementable | 2020-10-26 |
+|[TEP-0021](0021-results-api.md) | Tekton Results API | implemented | 2020-10-26 |
 |[TEP-0022](0022-trigger-immutable-input.md) | Triggers - Immutable Input Events | implementable | 2020-09-29 |
 |[TEP-0023](0023-implicit-mapping.md) | 0023-Implicit-parameter-mapping | implemented | 2021-12-15 |
 |[TEP-0024](0024-embedded-trigger-templates.md) | Embedded TriggerTemplates | implemented | 2020-10-01 |

@@ -390,12 +390,8 @@ and a place to discuss community operations and process.
 
 ## Software Supply Chain Security (s3c)
 
-<<<<<<< HEAD
-The goal of this working group is to discuss supply chain security initiatives across Tekton.
-=======
 The goal of this working group is to discuss supply chain security initiatives across Tekton (exact scope
 TBD [community#629](https://github.com/tektoncd/community/issues/629)).
->>>>>>> 7c2c1bc (Add Jerome and Lee as API WG facilitators)
 
 | Artifact | Link                                                              |
 |----------|-------------------------------------------------------------------|
@@ -405,17 +401,14 @@ TBD [community#629](https://github.com/tektoncd/community/issues/629)).
 | Community Meeting VC       | [https://zoom.us/j/96593435267?pwd=TTNVYUJEQlNzMXlKYjFXcUwzOUZEdz09](https://zoom.us/j/96593435267?pwd=TTNVYUJEQlNzMXlKYjFXcUwzOUZEdz09) |
 | Community Meeting Calendar | Tuesday every other week, 09:00a-09:30a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NDFuMjg2OTloYTJrYm1jNGM1dWZiZ3JzdGZfMjAyMjAyMjJUMTcwMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
 
-<<<<<<< HEAD
-
 * [**Facilitator list in agenda notes**](https://hackmd.io/gFcAZMFMRwuTaZ1i7Y3fSg?view#Facilitator-instructions)
-=======
+
 | &nbsp;                                                     | Facilitators    | Company | Profile                                     |
 |------------------------------------------------------------|-----------------|---------|---------------------------------------------|
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai     | IBM     | [pritidesai](https://github.com/pritidesai) |
 | <img width="30px" src="https://github.com/imjasonh.png">   | Jason Hall      | Red Hat | [imjasonh](https://github.com/imjasonh)     |
 | <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli | IBM     | [afrittoli](https://github.com/afrittoli)   |
 | <img width="30px" src="https://github.com/xchapter7x.png"> | John Calabrese  | Google  | [xchapter7x](https://github.com/xchapter7x) |
->>>>>>> 7c2c1bc (Add Jerome and Lee as API WG facilitators)
 
 ## TEP-0086: Larger Results
 

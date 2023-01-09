@@ -27,20 +27,29 @@ These docs and the recordings themselves are visible to [all members of our mail
 
 The current working groups are:
 
-- [General](#general)
-- [Triggers](#triggers)
-- [CLI](#cli)
-- [Documentation](#documentation)
-- [Productivity](#productivity)
-- [API](#api)
-- [Dashboard](#dashboard)
-- [Catalog and Hub](#catalog-and-hub)
-- [Operator and Deployment](#operator-and-deployment)
-- [Chains](#chains)
-- [Workflows](#workflows)
-- [Pipeline](#pipeline)
-- [Governing board / Community](#governing-board--community)
-- [Software Supply Chains Security (s3c)](#software-supply-chain-security-s3c)
+- [Tekton working group](#tekton-working-group)
+  - [General](#general)
+    - [Europe + North America](#europe--north-america)
+    - [Europe + Asia](#europe--asia)
+  - [Triggers](#triggers)
+  - [CLI](#cli)
+  - [Documentation](#documentation)
+  - [Productivity](#productivity)
+    - [Europe + North America](#europe--north-america-1)
+    - [Europe + Asia](#europe--asia-1)
+  - [API](#api)
+    - [Europe + North America](#europe--north-america-2)
+    - [Australia + North America](#australia--north-america)
+  - [Dashboard](#dashboard)
+  - [Catalog and hub](#catalog-and-hub)
+  - [Operator and Deployment](#operator-and-deployment)
+  - [Chains](#chains)
+  - [Workflows](#workflows)
+  - [Pipeline](#pipeline)
+  - [Governing Board / Community](#governing-board--community)
+  - [Software Supply Chain Security (s3c)](#software-supply-chain-security-s3c)
+- [The goal of this working group is to discuss supply chain security initiatives across Tekton.](#the-goal-of-this-working-group-is-to-discuss-supply-chain-security-initiatives-across-tekton)
+  - [TEP-0086: Larger Results](#tep-0086-larger-results)
 
 ## General
 
@@ -138,7 +147,6 @@ Connecting to the Meeting VC requires a Zoom account.
 | Document Folder            | [Folder](https://drive.google.com/drive/folders/1dpGatrFh_Wykrs_tUkVK8hLNF1VaGHZd)                                                                                                                                                                                                                             |
 | Slack Channel              | [#docs](https://tektoncd.slack.com/messages/docs)                                                                                                                                                                                                                                                              |
 
-
 | &nbsp;                                                     | Facilitators    | Company | Profile                                     |
 |------------------------------------------------------------|-----------------|---------|---------------------------------------------|
 | <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli | IBM     | [afrittoli](https://github.com/afritolli)   |
@@ -221,6 +229,8 @@ Tekton projects.
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai       | IBM     | [pritidesai](https://github.com/pritidesai) |
 | <img width="30px" src="https://github.com/jerop.png">      | Jerop Kipruto     | Google  | [jerop](https://github.com/jerop)           |
 | <img width="30px" src="https://github.com/xinruzhang.png"> | Xinru Zhang       | Google  | [xinruzhang](https://github.com/xinruzhang) |
+| <img width="30px" src="https://github.com/lbernick.png">   | Lee Bernick       | Google  | [lbernick](https://github.com/lbernick)     |
+| <img width="30px" src="https://github.com/JeromeJu.png">   | Jerome Ju         | Google  | [jeromeJu](https://github.com/JeromeJu)     |
 
 ### Australia + North America
 
@@ -326,7 +336,6 @@ Topics for this WG include the experimental [Tekton Workflows](https://github.co
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/1di4ikeVb8Mksgbq4CzW4m4xUQPZ2dQMLvK1VIJw7OQg/edit)                                                                                                                                                                                                                 |
 | Slack Channels             | [#workflows](https://tektoncd.slack.com/messages/workflows)                                                                                                                                                                                                                                                   |
 
-
 | &nbsp;                                                  | Facilitators     | Company | Profile                               |
 |---------------------------------------------------------|------------------|---------|---------------------------------------|
 | <img width="30px" src="https://github.com/dibyom.png">  | Dibyo Mukherjee  | Google  | [dibyom](https://github.com/dibyom)   |
@@ -345,7 +354,6 @@ Connecting to the Meeting VC requires a Zoom account.
 | Slack Channel              | [#pipeline-dev](https://tektoncd.slack.com/messages/pipeline-dev) |
 | Community Meeting VC       | [https://zoom.us/j/98272582734?pwd=OTBVMWJIbVJZcUU3WnlodTEvVS9PUT09](https://zoom.us/j/98272582734?pwd=OTBVMWJIbVJZcUU3WnlodTEvVS9PUT09) |
 | Community Meeting Calendar | Tuesday every other week, 09:30a-10:00a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NG5jdWV0ZTFxaGo0MHNpYzVnODlrYXZucGhfMjAyMTExMDJUMTYzMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
-
 
 | &nbsp;                                                     | Facilitators      | Company | Profile                                     |
 |------------------------------------------------------------|-------------------|---------|---------------------------------------------|
@@ -369,7 +377,6 @@ and a place to discuss community operations and process.
 | Community Meeting VC       | [Zoom](https://zoom.us/j/96566024785?pwd=WjRKQkNzK1ZDQm9URitaV0w5eVBldz09) |
 | Community Meeting Calendar | Tuesday every other week, 09:00a-09:30a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NjFvcHNib2E2cjNwcGc2dGhnMmY2OGU4YTFfMjAyMjAxMThUMTcwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 
-
 | &nbsp;                                                      | Facilitators      | Company    | Profile                                       |
 |-------------------------------------------------------------|-------------------|------------|-----------------------------------------------|
 | <img width="30px" src="https://github.com/abayer.png">      | Andrew Bayer      | CloudBees  | [abayer](https://github.com/abayer)           |
@@ -382,7 +389,12 @@ and a place to discuss community operations and process.
 
 ## Software Supply Chain Security (s3c)
 
+<<<<<<< HEAD
 The goal of this working group is to discuss supply chain security initiatives across Tekton.
+=======
+The goal of this working group is to discuss supply chain security initiatives across Tekton (exact scope
+TBD [community#629](https://github.com/tektoncd/community/issues/629)).
+>>>>>>> 7c2c1bc (Add Jerome and Lee as API WG facilitators)
 
 | Artifact | Link                                                              |
 |----------|-------------------------------------------------------------------|
@@ -392,8 +404,17 @@ The goal of this working group is to discuss supply chain security initiatives a
 | Community Meeting VC       | [https://zoom.us/j/96593435267?pwd=TTNVYUJEQlNzMXlKYjFXcUwzOUZEdz09](https://zoom.us/j/96593435267?pwd=TTNVYUJEQlNzMXlKYjFXcUwzOUZEdz09) |
 | Community Meeting Calendar | Tuesday every other week, 09:00a-09:30a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NDFuMjg2OTloYTJrYm1jNGM1dWZiZ3JzdGZfMjAyMjAyMjJUMTcwMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
 
+<<<<<<< HEAD
 
 * [**Facilitator list in agenda notes**](https://hackmd.io/gFcAZMFMRwuTaZ1i7Y3fSg?view#Facilitator-instructions)
+=======
+| &nbsp;                                                     | Facilitators    | Company | Profile                                     |
+|------------------------------------------------------------|-----------------|---------|---------------------------------------------|
+| <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai     | IBM     | [pritidesai](https://github.com/pritidesai) |
+| <img width="30px" src="https://github.com/imjasonh.png">   | Jason Hall      | Red Hat | [imjasonh](https://github.com/imjasonh)     |
+| <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli | IBM     | [afrittoli](https://github.com/afrittoli)   |
+| <img width="30px" src="https://github.com/xchapter7x.png"> | John Calabrese  | Google  | [xchapter7x](https://github.com/xchapter7x) |
+>>>>>>> 7c2c1bc (Add Jerome and Lee as API WG facilitators)
 
 ## TEP-0086: Larger Results
 

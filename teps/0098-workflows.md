@@ -2,7 +2,7 @@
 status: proposed
 title: Workflows
 creation-date: '2021-12-06'
-last-updated: '2022-12-27'
+last-updated: '2023-01-09'
 authors:
 - '@dibyom'
 - '@lbernick'
@@ -23,9 +23,17 @@ authors:
 - [Design Considerations](#design-considerations)
   - [Extensibility and Conformance](#extensibility-and-conformance)
   - [User Experience Goals](#user-experience-goals)
+  - [Use of Triggers](#use-of-triggers)
 - [Prior Art](#prior-art)
+  - [Closed-source projects](#closed-source-projects)
+  - [Open-Source projects](#open-source-projects)
+  - [Tekton Experimental Projects/Proposals](#tekton-experimental-projectsproposals)
 - [Proposal](#proposal)
-  - [Notes/Caveats (optional)](#notescaveats-optional)
+  - [Repo Connections](#repo-connections)
+  - [In-Repo Configuration](#in-repo-configuration)
+    - [Option 1: Workflow API independent of where configuration is hosted](#option-1-workflow-api-independent-of-where-configuration-is-hosted)
+    - [Option 2: Bonus features for workflows defined in-repo](#option-2-bonus-features-for-workflows-defined-in-repo)
+  - [API](#api)
   - [Risks and Mitigations](#risks-and-mitigations)
   - [Performance (optional)](#performance-optional)
 - [Design Details](#design-details)
@@ -33,6 +41,22 @@ authors:
 - [Design Evaluation](#design-evaluation)
 - [Drawbacks](#drawbacks)
 - [Alternatives: Strategy](#alternatives-strategy)
+  - [Build Workflows with Extensible API](#build-workflows-with-extensible-api)
+  - [Design Workflows API with Conformance Spec](#design-workflows-api-with-conformance-spec)
+  - [Adopt Pipelines as Code as Workflows Replacement](#adopt-pipelines-as-code-as-workflows-replacement)
+  - [Adopt Pipelines as Code alongside Workflows](#adopt-pipelines-as-code-alongside-workflows)
+  - [Encourage use of Knative EventSources + Tekton Triggers](#encourage-use-of-knative-eventsources--tekton-triggers)
+  - [Build a Workflows implementation on top of another project](#build-a-workflows-implementation-on-top-of-another-project)
+  - [Separate E2E CI/CD projects for each Git provider](#separate-e2e-cicd-projects-for-each-git-provider)
+  - [Improve existing projects](#improve-existing-projects)
+  - [Build some features upstream](#build-some-features-upstream)
+- [Alternatives: Repo Connections](#alternatives-repo-connections)
+  - [Repo CRD](#repo-crd)
+  - [RepoConnection CRD](#repoconnection-crd)
+  - [Build repo connection configuration into Workflow](#build-repo-connection-configuration-into-workflow)
+- [Alternatives: API](#alternatives-api)
+  - [Embed Triggers in Workflow definition](#embed-triggers-in-workflow-definition)
+  - [Create Events API only](#create-events-api-only)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
 - [Implementation Pull request(s)](#implementation-pull-requests)
@@ -73,7 +97,11 @@ including making it easier to separate notifications and other infrastructure ou
 
 ### Future Work
 
+This work is out of scope for an initial version of Workflows.
+
+* Create "starter" Workflows for the most common use cases, similar to GitHub Actions [starter workflows](https://docs.github.com/en/actions/using-workflows/using-starter-workflows)
 * Create a Workflows conformance spec
+* Explore allowing platform builders to add support for other SCMs
 
 ### Non-Goals
 
@@ -293,7 +321,7 @@ While Workflows should support the most commonly used SCMs out of the box, our g
 In addition, platform builders might want their own logic for connecting to SCMs.
 For example, the default implementation of a Github connection could allow the user to send events that trigger PipelineRuns from a Github App they create,
 but a platform builder might want to use their own Github App and include other custom connection logic.
-Therefore, Workflows must provide an extensibility mechanism to allow platform builders to create their own controllers for connecting to repos
+Therefore, Workflows should explore creating an extensibility mechanism to allow platform builders to create their own controllers for connecting to repos
 and sending events from these repo connections, similarly to how users can define their own resolvers or Custom Tasks.
 
 In addition, there are already several implementations of wrappers on top of Tekton Pipelines that allow end users to specify end-to-end CI/CD Pipelines
@@ -323,12 +351,6 @@ In addition, developers should be able to test out their configuration by creati
 The CI/CD pipeline that's run should be based on the contents of the pull request.
 This helps to prevent the frustrating experience of not being able to easily test out CI/CD configuration before checking it into the repo,
 and having to check in many untested commits in order to get something working.
-We could choose a design that allows developers to test their Workflow configuration defined in-repo by opening a pull request,
-or we could choose to address the testing use case by making it easy to write CI Workflows that pull a Pipeline from a Git repo.
-
-The design proposal should include details on how to configure whose pull requests are allowed to trigger Workflows.
-For example, a company might want to allow pull requests to trigger Workflows only if opened by an org member, or if an org member
-comments "/ok-to-test" on the pull request.
 
 It would be nice to be able to test out Workflows locally (on a personal cluster) before creating a pull/merge request, but in practice,
 this would likely require access to secrets that give elevated permissions for source repos, artifact repos, etc.
@@ -396,6 +418,9 @@ with the state of the configuration defined in their repository.
   - There's a catalog of Knative EventSources, including GitHub, GitLab, and Ping EventSources, which could serve the use cases identified.
   Users can also create their own EventSources.
   - See [POC of Workflows based on Knative EventSources](https://github.com/tektoncd/experimental/pull/928)
+- [Tekton-CI](https://github.com/gitops-tools/tekton-ci): a project that allows Tekton PipelineRuns to be stored in a repo and triggered by events on that repo
+  - The developer is still responsible for setting up the webhook, but no Triggers or EventListeners
+- [drone.io](https://docs.drone.io/), a CI platform that supports pipelines on Kubernetes triggered by several major SCMs 
 - [Temporal](https://temporal.io/): A set of SDKs for creating and orchestrating Workflows, which can be used
   in combination with Tekton Pipelines.
 
@@ -412,16 +437,248 @@ and Pipeline definitions into a higher level opinionated syntax that is aware of
 
 ## Proposal
 
+Initially, the cluster operator will install Tekton Workflows onto their Kubernetes cluster.
+Repo admins can connect individual repos to Workflows, and organization admins can connect a set of repos
+associated with the same organization in their SCM.
+This allows Tekton Workflows to receive events from these repos.
+This part of the user journey is discussed in [Repo Connections](#repo-connections).
+
+The cluster operator can then define Workflows for their repo. While Workflows can be defined directly on a cluster or in a separate
+configuration repo, most users are expected to interact with Workflows by committing their Workflow definitions directly to the repo
+being operated on. Special considerations for this user journey are discussed in [In-Repo Configuration](#in-repo-configuration).
+
+The [API](#api) section goes into more detail on the proposed API, with examples.
+A Workflow definition encodes a PipelineRun and the events that trigger it, plus some built-in functionality for the most common use cases.
+This section also includes default Workflow templates that users can create with the Tekton CLI.
+
+Lastly, the [Milestones](#milestones) section proposes a roadmap for implementing the changes in this proposal.
+
+### Repo Connections
+
+The cluster operator or DevOps engineer needs an easy way to connect their repo to Tekton Workflows, so that Workflows
+can trigger PipelineRuns when events occur on the repo. Cluster operators shouldn't have to set up or secure
+webhooks or apps themselves; these steps will happen automatically during Workflows setup.
+
+Initial milestone:
+- Connect a single GitHub repo to Workflows by setting up a webhook or GitHub App on behalf of the cluster operator
+
+Medium-term milestones:
+- Support single-repo connections for Bitbucket and GitLab.
+- Connect a GitHub organization by creating a new GitHub App on behalf of the cluster operator and installing it for a set of repos within that organization
+- Support regularly polling a Git repo and triggering PipelineRuns when changes are observed
+
+Long-term milestones:
+- Support for platform builders to add their own SCM connections
+
+Cluster operators will connect repos using `tkn`, which may guide them through OAuth flows on their SCM.
+Alternative solutions are discussed in [Alternatives: Repo Connections](#alternatives-repo-connections).
+
+### In-Repo Configuration
+
+TODO: select one of the following options.
+
+#### Option 1: Workflow API independent of where configuration is hosted
+
+In this solution, Workflows defined in the repo they operate on are treated no differently than Workflows defined on a cluster or a separate repo.
+They are applied to a cluster by cluster operators via scripts or existing tools, like any other Tekton or Kubernetes CRD.
+Remote resolution is used to achieve separation of concerns by allowing Pipeline definitions to live separately from Workflow definitions.
+For example, if the frontend team has a frontend test Pipeline that lives in the frontend repo, the cluster operator could write the following Workflow to
+use the version of the CI Pipeline on the main branch for testing:
+
+```yaml
+kind: Workflow
+spec:
+  repos:
+  - name: frontend
+  events:
+  - type: pull_request
+    source:
+      repo: frontend
+  pipelineRun:
+    pipelineRef:
+      resolver: git
+      params:
+      - name: name
+        value: browser-tests
+      - name: url
+        value: $(repos.frontend.url)
+      - name: pathInRepo
+        value: /tekton/pipelines/browser-tests.yaml
+      - name: revision
+        value: main
+```
+
+However, it's likely that app developers would want to iterate on the Pipeline they maintain by opening a pull request with the contents of that Pipeline,
+and running CI using that Pipeline. This operation would need to be restricted to "trusted" developers.
+The results of the Pipeline would then be posted back to the SCM.
+A cluster operator could express this via the following Workflow:
+
+```yaml
+kind: Workflow
+spec:
+  repos:
+  - name: frontend
+  events:
+  - name: ci
+    type: pull_request
+    source:
+      repo: frontend
+    filters:
+    # Only allow this Workflow to run if pull request came from a repo owner/collaborator
+    # TODO: Workshop this syntax
+    - author: owners-and-collaborators
+  pipelineRun:
+    pipelineRef:
+      resolver: git
+      params:
+      - name: name
+        value: browser-tests
+      - name: url
+        value: $(repos.frontend.url)
+      - name: pathInRepo
+        value: /tekton/pipelines/browser-tests.yaml
+      - name: revision
+        value: $(events.ci.revision) # Revision is substituted by Tekton Workflows
+  notifications:
+    # TODO: No existing proposals for notification syntax.
+    # This is for illustration purposes, to show how notifications could be made explicit
+    - sink:
+        # Publish notifications back to the same pull request that generated the event
+        # TODO: Workshop this syntax
+        repo: frontend
+        pull_request: events.ci
+```
+
+Pros:
+- All configuration can be directly applied to a cluster via existing tools like kubectl, kustomize, or FluxCD
+- Workflows can be easily migrated between repos
+- Cluster operator has more control over how Pipelines are tested and which developers have permission to do so
+
+Cons:
+- Can only iterate on Pipeline configuration, not full Workflow configuration, by testing via a pull request
+- "repos" configuration is redundant for Workflows stored in the same repo they operate on
+- Cluster operator is responsible for maintaining automation to keep cluster in sync with repo
+- Need to build syntax for notifications, or have triggers explicit while notifications are implicit
+
+#### Option 2: Bonus features for workflows defined in-repo
+
+This solution aims to mirror the user experience provided by popular CI/CD systems by allowing E2E CI/CD configuration to be managed entirely
+within a repo. This approach is used by Pipelines as Code.
+In this solution, Workflows stored in the repo's default branch are automatically run, without a cluster operator having to apply them to a cluster.
+Workflows defined in a repo don't need to declare "repos", have certain variable substitutions built in (such as
+`context.repo_owner`), and are automatically tested when a pull request is opened on the repo by a "trusted" developer.
+They may also use relative paths for referring to Tekton Pipelines or Tasks stored in the same repo.
+
+For example, a Workflow defined in a repo it operates on might look like this:
+
+```yaml
+kind: Workflow
+spec:
+  events:
+  - name: ci
+    type: pull_request
+  pipelineRun:
+    pipelineRef:
+      resolver: git
+      params:
+      - name: name
+        value: browser-tests
+      # No need to specify URL
+      - name: pathInRepo
+        value: ../pipelines/browser-tests.yaml  # Workflows can substitute full path when it creates a PipelineRun
+      - name: revision
+        value: $(events.ci.revision)
+```
+
+If we don't want Workflow syntax to depend on where the Workflow definition is stored, we could refer to the CI/CD configuration stored in a repo
+as a "config file" and create a CLI command (or other tool) to convert the "config file" into a Workflow CRD that can be applied to a cluster or stored
+in another repo.
+
+Pros:
+- More similar to industry standard tools like GitHub actions.
+- Easier to set up. Testing Workflow configuration in a pull request covers many users' needs.
+- May be easier to move configuration around in a repo without renaming all Git resolver params (for example, moving Tekton configuration from a /tekton folder
+to a /config/tekton folder)
+
+Cons:
+- Configuration can't be directly applied to a cluster
+- Affects conformance, since Workflow syntax depends on where it is defined
+- Testing full E2E configuration via a pull request doesn't actually test what events will trigger a PipelineRun and may provide false confidence or a confusing experience
+
+### API
+
+This TEP introduces the Workflow CRD, which configures an end-to-end CI/CD process for a repository,
+including the events that will trigger a CI/CD PipelineRun and where the PipelineRun's status will be posted.
+
+A Workflow has 4 components:
+- [Repositories](#repositories)
+- [Events, Filters, and Notifications](#events-filters-and-notifications)
+- A [PipelineRun](#pipelinerun)
+- [Status](#status)
+
+Alternative solutions are discussed in [Alternatives: API](#alternatives-api).
+
+#### Repositories
+
+A developer can reference connected repositories in their Workflow definition via the `repos` field.
+When the Workflow is created, the controller will validate that repos of the same name are connected.
+Repos are optional, as they're not needed for cron-based Workflows.
+
+TODO: Based on how we decide to handle [in-repo configuration](#in-repo-configuration),
+Workflows defined in-repo may not need a `repos` section.
+
+Repos can be used in parameter substitutions. Supported substitutions are:
+- `$(repo.<reponame>.url)`
+- `$(repo.<reponame>.name)`
+- `$(repo.<reponame>.owner)`
+
+#### Events, Filters, and Notifications
+
 TODO
 
-### Notes/Caveats (optional)
+#### PipelineRun
 
-<!--
-What are the caveats to the proposal?
-What are some important details that didn't come across above.
-Go in to as much detail as necessary here.
-This might be a good place to talk about core concepts and how they relate.
--->
+The PipelineRun to create when an event occurs.
+The [original TEP-0098 proposal](https://docs.google.com/document/d/1CaEti30nnq95jd-bD1Iep4mEnZ5qMEBHax0ixq-9xP0) proposed
+specifying a Pipeline rather than a PipelineRun. However, now that remote resolution has been implemented in Pipelines,
+it's preferred to specify a PipelineRun with a remote reference to a Pipeline.
+
+A Workflows installation will include a service account used to create PipelineRuns (unlike Triggers, where the user must define their
+own service account for an EventListener, bound to existing roles).
+The PipelineRun will be created with a label specifying the name of the workflow: `tekton.dev/workflow: workflow-name`.
+For the initial implementation of this proposal, the PipelineRun will run in the same namespace as the Workflow CRD.
+
+#### Status
+
+A Workflow's status reflects any validation errors that aren't suitable for detecting in an admission webhook
+(i.e. those that block and/or require API calls).
+
+For example, a Workflow that declares repositories that aren't connected, or a Workflow where updates to a repo connection fail,
+would have the following status:
+
+```yaml
+status:
+  conditions:
+  - type: Ready
+    status: "false"
+    reason: ValidationFailed
+    message: "human-readable reason for validation error"
+```
+
+A Workflow with no errors would have the following status:
+
+```yaml
+status:
+  conditions:
+  - type: Ready
+    status: "true"
+```
+
+A Workflow's status doesn't include information about PipelineRuns generated from the Workflow, as it's intended to be long-lived
+and the status would only grow over time. Embedding PipelineRun status information in a Workflow may cause problems similar to those
+created by embedding TaskRun statuses in PipelineRuns, as described in TEP-0100, and provides little value over querying
+PipelineRuns using a label selector based on the Workflow. In the future, a Workflow status may include a reference to the Results API,
+where PipelineRun statuses can be retrieved.
 
 ### Risks and Mitigations
 
@@ -465,20 +722,7 @@ file name, for example, "/teps/images/NNNN-workflow.jpg".
 
 ## Test Plan
 
-<!--
-**Note:** *Not required until targeted at a release.*
-
-Consider the following in developing a test plan for this enhancement:
-- Will there be e2e and integration tests, in addition to unit tests?
-- How will it be tested in isolation vs with other components?
-
-No need to outline all of the test cases, just the general strategy.  Anything
-that would count as tricky in the implementation and anything particularly
-challenging to test should be called out.
-
-All code is expected to have adequate tests (eventually with coverage
-expectations).
--->
+TODO: Details on testing integrations with different SCMs
 
 ## Design Evaluation
 <!--
@@ -653,6 +897,265 @@ Some features proposed in Workflows may make sense to implement directly in Pipe
 [TEP-0082: Workspace Hinting](./0082-workspace-hinting.md) suggests an option of creating a "credentials" or "secrets" type.
 If implemented, this feature could be used to provide an extensibility mechanism for secrets storage.
 Extensibility mechanisms for data storage could also be implemented upstream.
+
+## Alternatives: Repo Connections
+
+### Repo CRD
+
+This solution uses a new Repo CRD, as proposed in [TEP-0095](./.0095-common-repository-configuration.md).
+The cluster operator creates a Repo CRD on their cluster, signaling Workflows to create a connection to this repo.
+However, the goal of TEP-0095 is to store shared metadata about a repo that can be used in many contexts
+(such as Workflows connections, remote resolution, cloning, and polling). Unlike repo metadata, repo connections
+have meaningful "status" and may involve mutating calls to the SCM. Therefore, a Repo CRD as proposed in TEP-0095
+likely isn't appropriate for triggering connections between an SCM and Tekton Workflows. However, we could still explore
+it as a solution for referencing repo metadata from a repo connection.
+
+### RepoConnection CRD
+
+In this solution, when a cluster operator creates an instance of a new RepoConnection CRD, Workflows would automatically
+connect to that repository. (To connect an entire organization to Workflows, we could introduce an SCMConnection CRD that
+has RepoConnection CRDs as [dependent objects](https://kubernetes.io/docs/concepts/overview/working-with-objects/owners-dependents).)
+
+This CRD would likely be very similar to the Knative Eventing [GitHub source](https://github.com/knative/docs/tree/main/code-samples/eventing/github-source).
+It would include a "connector" field that tells Workflows how to connect to the repo, via a string such as "github-webhook" or "github-app".
+It would also include references to Kubernetes secrets with any credentials needed for connection.
+The RepositoryConnection's status would reflect the state of the webhook, GitHub app, or any other connection infrastructure.
+
+For example, to create a GitHub webhook connection, a cluster operator could create the following CRD:
+
+```yaml
+apiVersion: workflows.tekton.dev/v1alpha1
+kind: RepositoryConnection
+metadata:
+  name: pipelines
+  namespace: ops
+spec:
+  url: https://github.com/tektoncd/pipeline
+  connector: github-webhook
+  accessToken:
+    secretKeyRef:
+      name: tekton-robot-access-token
+      key: token
+```
+
+Using a RepositoryConnection CRD could also be useful for allowing platform builders to add support for new SCMs.
+We could use a mechanism similar to CustomRuns, where a CRD is permitted to define arbitrary fields
+and the platform builder must implement a controller to reconcile it. Similarly to remote resolution, a RepositoryConnection
+could be "dispatched" to the right controller based on its labels.
+
+For example:
+
+```yaml
+apiVersion: workflows.tekton.dev/v1alpha1
+kind: RepositoryConnection
+metadata:
+  name: pipelines
+  namespace: ops
+  labels:
+    workflows.tekton.dev/connector: the-hottest-new-scm
+spec:
+  url: https://gitfoo.com/tektoncd/pipeline
+  customFields:  # User can provide arbitrary configuration here
+    appID: 12345
+    appPrivateKey:
+      secretName: gpg-keys
+      key: secret-token
+status:
+  conditions:
+  - type: Succeeded
+    status: Unknown
+    reason: ConnectionInProgress
+    message: "Waiting for user to accept app installation on the repo"
+  customFields:  # Controller can provide arbitrary status here
+    repoStatus: private
+```
+
+However, it's not yet clear how these controllers would dispatch events received from these repos to Tekton Workflows.
+More exploration is needed before designing extensibility mechanisms.
+
+Pros:
+- Using a CRD could better support cases where connections may evolve over time.
+  - For example, setting up a GitHub webhook involves specifying events to subscribe to, which may change as Workflows are created and deleted.
+  - For a platform builder example, Nubank Workflows connects to repos via GitHub deploy keys, and must update these connections when deploy keys are modified.
+
+Cons:
+- Since repo connections are (for the most part) set up once during installation and rarely modified, the value add of a CRD compared to a CLI is less clear.
+- There are multiple ways of providing authentication for a repo connection depending on how the connection is performed. A RepoConnection CRD might include
+  several authentication-related fields that are only useful for some types of connections or that could be confusing when used together.
+
+### Build repo connection configuration into Workflow
+
+In this solution, Workflow configuration would include information needed to connect to a repo. For example:
+
+```yaml
+apiVersion: workflows.tekton.dev/v1alpha1
+kind: Workflow
+spec:
+  repos:
+  - name: pipelines
+    url: https://github.com/tektoncd/pipeline
+    vcsType: github
+    accessToken:
+      secretKeyRef:
+        name: githubsecret
+        key: accessToken
+    secretToken:
+      secretKeyRef:
+        name: githubsecret
+        key: secretToken
+  pipelineRun:
+    ...
+```
+
+This solution is not proposed because we expect repos to be associated with multiple Workflows.
+DevOps engineers would likely prefer to specify repo credentials only once, when setting up Tekton Workflows,
+instead of for each Workflow.
+
+## Alternatives: API
+
+### Embed Triggers in Workflow definition
+
+In this option, a Workflow definition includes a list of Triggers (with the same spec as the Triggers project)
+that should fire when the events occur, and would not include `filters` or a PipelineRun.
+Each event defined in `events` would be passed to each Trigger, and each Trigger would require an Interceptor
+to filter to only the events of interest.
+
+Here's what the CI EventListener would look like as a Workflow with Triggers:
+
+```yaml
+apiVersion: workflows.tekton.dev/v1alpha1
+kind: Workflow
+metadata:
+  name: github-ci
+spec:
+  repos:
+  - name: pipelines
+  events:
+  - source:
+      repo: pipelines
+    types:
+    - check_suite
+  triggers:
+    - name: github-listener
+      interceptors:
+        # No need for a GitHub interceptor.
+        # Payload validation and event type filtering is handled by Workflows
+        - name: "only when a new check suite is requested"
+          ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "body.action in ['requested']"
+      bindings:
+      - name: revision
+        value: $(body.check_suite.head_sha)
+      - name: repo-url
+        value: $(repos.pipelines.clone_url) # Variable replacement by Workflows instead of event body
+      template:
+        ref: github-template
+  # No need to define KubernetesResources such as a load balancer and service account
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: github-template
+spec:
+  params:
+    - name: repo-full-name
+    - name: revision
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: github-ci-run-
+      spec:
+        pipelineSpec:
+          tasks:
+          # No Tasks for creating a GitHub API token or creating/updating a new Check.
+          # Workflows will do this for pull request and check suite events.
+          - name: clone
+            taskRef:
+              resolver: hub
+              - name: git-clone
+            workspaces:
+            - name: output
+              workspace: source
+            params:
+            - name: url
+              value: $(params.repo-url)
+            - name: revision
+              value: $(params.revision)
+          - name: tests
+            taskRef:
+              name: tests
+            workspaces:
+            - name: source
+              workspace: source
+            runAfter:
+            - clone
+        serviceAccountName: container-registry-sa
+        params:
+        - name: repo-url
+          value: $(tt.params.repo-url)
+        - name: revision
+          value: $(tt.params.revision)
+        - name: source
+          volumeClaimTemplate:
+            spec:
+              accessModes:
+              - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 1Gi
+```
+
+Pros:
+- Easy to turn existing Tekton Triggers into Workflows
+- Very flexible compared to proposed solution
+- Easy to trigger TaskRuns and other resources from an event, instead of just PipelineRuns
+- Starting with this solution allows us to focus on a great design for repo connections, event generation, and
+notifications, instead of expanding scope to include simpler syntax for Triggers
+- Don't need to bake in logic for filtering specific events based on SCM
+
+Cons:
+- It may be confusing to have to include some types of interceptors (e.g. CEL) but not others (e.g. GitHub)
+- May be too verbose and hard to understand compared to proposed solution
+
+### Create Events API only
+
+In this solution, we would create only an Events API for use with Triggers, instead of a Workflows API.
+For example, when the following CRD is created, a webhook would be created on behalf of the user with the
+EventListener address as its sink.
+
+```yaml
+apiVersion: workflows.tekton.dev/v1alpha1
+kind: Event
+metadata:
+  name: github-ci-webhook
+  namespace: my-namespace
+spec:
+  source:
+    repo: pipelines
+  types:
+  - pull_request
+  - issue_comment
+  sink:
+    eventListener: github-ci-eventlistener
+```
+
+When combined with repo connections, this solution allows users to map events coming from a repo (a source)
+to existing EventListeners (sinks).
+
+Pros:
+- Very flexible
+- Makes it easier to use Triggers for E2E workflows
+- Don't need to bake in logic for filtering specific events based on SCM
+
+Cons:
+- Knative EventSources may be better suited for a proposal like this.
+- It's still very verbose to configure a CI/CD workflow.
+- Doesn't easily allow for defining more complex configuration, such as concurrency
+- Event configuration is separate from PipelineRun configuration, making it harder to understand
 
 ## Infrastructure Needed (optional)
 

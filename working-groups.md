@@ -363,6 +363,7 @@ Connecting to the Meeting VC requires a Zoom account.
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai       | IBM     | [pritidesai](https://github.com/pritidesai) |
 | <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |
 | <img width="30px" src="https://github.com/xinruzhang.png"> | Xinru Zhang       | Google  | [xinruzhang](https://github.com/xinruzhang) |
+| <img width="30px" src="https://github.com/JeromeJu.png">   | Jerome Ju         | Google  | [JeromeJu](https://github.com/JeromeJu)     |
 
 ## Governing Board / Community
 

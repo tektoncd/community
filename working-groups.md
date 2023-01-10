@@ -380,24 +380,18 @@ and a place to discuss community operations and process.
 
 ## Software Supply Chain Security (s3c)
 
-The goal of this working group is to discuss supply chain security initiatives across Tekton (exact scope 
-TBD [community#629](https://github.com/tektoncd/community/issues/629)).
+The goal of this working group is to discuss supply chain security initiatives across Tekton.
 
 | Artifact | Link                                                              |
 |----------|-------------------------------------------------------------------|
 | Forum    | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Meeting Notes              | [Discussion board](https://github.com/orgs/tektoncd/projects/14/views/1), [HackMD Notes](https://hackmd.io/gFcAZMFMRwuTaZ1i7Y3fSg)
-| Slack Channel              | [#security](https://tektoncd.slack.com/messages/security) |
+| Meeting Notes              | [HackMD Notes](https://hackmd.io/gFcAZMFMRwuTaZ1i7Y3fSg)
+| Slack Channel              | [#s3c-working-group](https://tektoncd.slack.com/messages/s3c-working-group) |
 | Community Meeting VC       | [https://zoom.us/j/96593435267?pwd=TTNVYUJEQlNzMXlKYjFXcUwzOUZEdz09](https://zoom.us/j/96593435267?pwd=TTNVYUJEQlNzMXlKYjFXcUwzOUZEdz09) |
 | Community Meeting Calendar | Tuesday every other week, 09:00a-09:30a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NDFuMjg2OTloYTJrYm1jNGM1dWZiZ3JzdGZfMjAyMjAyMjJUMTcwMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
 
 
-| &nbsp;                                                     | Facilitators    | Company | Profile                                     |
-|------------------------------------------------------------|-----------------|---------|---------------------------------------------|
-| <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai     | IBM     | [pritidesai](https://github.com/pritidesai) |
-| <img width="30px" src="https://github.com/imjasonh.png">   | Jason Hall      | Red Hat | [imjasonh](https://github.com/imjasonh)     |
-| <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli | IBM     | [afrittoli](https://github.com/afrittoli)   |
-| <img width="30px" src="https://github.com/xchapter7x.png"> | John Calabrese  | Google  | [xchapter7x](https://github.com/xchapter7x) |
+* [**Facilitator list in agenda notes**](https://hackmd.io/gFcAZMFMRwuTaZ1i7Y3fSg?view#Facilitator-instructions)
 
 ## TEP-0086: Larger Results
 

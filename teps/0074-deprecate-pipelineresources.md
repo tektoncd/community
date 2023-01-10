@@ -158,9 +158,10 @@ that maybe this concept, at least in its current form, isn't required).
    [ColocatedPipelineRun custom Task](https://github.com/tektoncd/experimental/tree/main/pipeline-in-pod)
 1. ~~Mark PipelineResources as deprecated in our Pipelines documentation; announce it officially in the next
    Pipelines release.~~
-1. Update tutorials, examples (except those used for testing), and dogfooding Pipelines to not use PipelineResources.
-1. Continue to support `PipelineResources` in the Pipelines `v1beta1` API for at least 9 months after announcing their deprecation,
-   following our [stability policy](https://github.com/tektoncd/pipeline/blob/main/api_compatibility_policy.md).
+1. ~~Update tutorials, examples (except those used for testing), and dogfooding Pipelines to not use PipelineResources.~~
+1. ~~Continue to support `PipelineResources` in the Pipelines `v1beta1` API for at least 9 months after announcing their deprecation,
+   following our [stability policy](https://github.com/tektoncd/pipeline/blob/main/api_compatibility_policy.md).~~ `PipelineResources`
+   are going to be removed since it has been 9 months after the deprecation announcement.
 1. Once this TEP is marked as `implementable`, create [tektoncd/images](#new-repo-tektoncdimages) and move the logic
    backing these images to this repo; update the Tekton Pipelines release to reference these images release from there
    instead of within the Tekton Pipelines release itself
@@ -315,13 +316,6 @@ without requiring PipelineResources:
     avoids coupling Task definitions to it (i.e. Tasks should be able to be written and combined with this abstraction
     without relying on details of it and/or limiting their reusability). OR you could argue that the replacment, the
     feature that encapsulates all of the above, is a Task.
-
-## Test Plan
-
-Since this is about removing an existing feature, not exactly sure what to put in the test plan.
-If v1 is released before PipelineResources are removed from the v1beta1 API, we will need to make sure
-that we can continue to support the beta API with references to PipelineResources until 9 months after the deprecation
-announcement or until we stop supporting the beta API, whichever comes first.
 
 ## Design Evaluation
 

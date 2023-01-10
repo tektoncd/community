@@ -220,6 +220,7 @@ Tekton projects.
 | <img width="30px" src="https://github.com/dibyom.png">     | Dibyo Mukherjee   | Google  | [dibyom](https://github.com/dibyom)         |
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai       | IBM     | [pritidesai](https://github.com/pritidesai) |
 | <img width="30px" src="https://github.com/jerop.png">      | Jerop Kipruto     | Google  | [jerop](https://github.com/jerop)           |
+| <img width="30px" src="https://github.com/xinruzhang.png"> | Xinru Zhang       | Google  | [xinruzhang](https://github.com/xinruzhang) |
 
 ### Australia + North America
 
@@ -353,6 +354,7 @@ Connecting to the Meeting VC requires a Zoom account.
 | <img width="30px" src="https://github.com/jerop.png">      | Jerop Kipruto     | Google  | [jerop](https://github.com/jerop)           |
 | <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai       | IBM     | [pritidesai](https://github.com/pritidesai) |
 | <img width="30px" src="https://github.com/vdemeester.png"> | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester) |
+| <img width="30px" src="https://github.com/xinruzhang.png"> | Xinru Zhang       | Google  | [xinruzhang](https://github.com/xinruzhang) |
 
 ## Governing Board / Community
 

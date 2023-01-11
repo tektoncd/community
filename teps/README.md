@@ -270,7 +270,7 @@ This is the complete list of Tekton teps:
 |[TEP-0098](0098-workflows.md) | Workflows | proposed | 2022-12-27 |
 |[TEP-0100](0100-embedded-taskruns-and-runs-status-in-pipelineruns.md) | Embedded TaskRuns and Runs Status in PipelineRuns | implemented | 2022-04-18 |
 |[TEP-0101](0101-env-in-pod-template.md) | Env in POD template | implemented | 2022-12-22 |
-|[TEP-0102](0102-https-connection-to-triggers-interceptor.md) | HTTPS Connection to Triggers ClusterInterceptor | implementable | 2022-04-20 |
+|[TEP-0102](0102-https-connection-to-triggers-interceptor.md) | HTTPS Connection to Triggers ClusterInterceptor | implemented | 2022-04-20 |
 |[TEP-0103](0103-skipping-reason.md) | Skipping Reason | implemented | 2022-05-05 |
 |[TEP-0104](0104-tasklevel-resource-requirements.md) | Task-level Resource Requirements | implemented | 2022-08-16 |
 |[TEP-0105](0105-remove-pipeline-v1alpha1-api.md) | Remove Pipeline v1alpha1 API | implementable | 2022-05-17 |

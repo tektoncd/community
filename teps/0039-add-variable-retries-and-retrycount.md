@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: implemented
 title: Add Variable `retries` and `retry-count`
 creation-date: '2020-10-14'
 last-updated: '2021-01-31'
@@ -19,6 +19,7 @@ authors:
   - [Alternatives](#alternatives)
     - [Exposing the variables to other Task](#exposing-the-variables-to-other-task)
     - [Using Event to notify the users](#using-event-to-notify-the-users)
+- [Implementation Pull Requests](#implementation-pull-requests)
 - [References](#references)
 <!-- /toc -->
 
@@ -146,6 +147,10 @@ emitted.
 The drawback of this method is that the prerequisite work is quite complicated.
 This alternative would require a lot more setup by the user, such as running
 Triggers which they might not use for anything else.
+
+## Implementation Pull Requests
+
+- [Add variables context.pipelineTask.retries and context.task.retry-count](https://github.com/tektoncd/pipeline/pull/3770)
 
 ## References
 

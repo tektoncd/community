@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Trusted Resources
 creation-date: '2022-06-22'
-last-updated: '2022-08-16'
+last-updated: '2023-01-11'
 authors:
 - '@squee1945'
 - '@wlynch'
@@ -614,12 +614,12 @@ Use Kyverno for verifying YAML files: This can be used to verify local resources
 
 ## Implementation Pull request(s)
 
-<!--
-Once the TEP is ready to be marked as implemented, list down all the Github
-Pull-request(s) merged.
-Note: This section is exclusively for merged pull requests, for this TEP.
-It will be a quick reference for those looking for implementation of this TEP.
--->
+- https://github.com/tektoncd/pipeline/pull/5552
+- https://github.com/tektoncd/pipeline/pull/5581
+- https://github.com/tektoncd/pipeline/pull/5714
+- https://github.com/tektoncd/pipeline/pull/5890
+- https://github.com/tektoncd/pipeline/pull/5891
+- https://github.com/tektoncd/pipeline/pull/5965
 
 ## References (optional)
 

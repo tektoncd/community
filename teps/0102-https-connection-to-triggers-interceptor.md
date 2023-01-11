@@ -4,7 +4,7 @@ authors:
   - "@savitaashture"
 creation-date: 2022-03-21
 last-updated: 2022-04-20
-status: implementable
+status: implemented
 ---
 
 # TEP-0102: HTTPS Connection to Triggers ClusterInterceptor
@@ -18,6 +18,7 @@ status: implementable
   - [User Stories](#user-stories)
 - [Design Details](#design-details)
 - [Implementation Details](#implementation-details)
+- [Implementation Pull Requests](#implementation-pull-requests)
 - [References](#references)
 <!-- /toc -->
 
@@ -99,6 +100,10 @@ At high level below are few implementation details
 * Changes to ClusterInterceptor server to run as `HTTPS`.
 * Changes to EventListener in order to connect with ClusterInterceptor securely.
     To support secure connection between clusterinterceptor and eventlistener added new field `caBundle` to clusterinterceptor spec which contains ca cert and will be used by eventlistener in order to verify clusterinterceptor server.
+
+## Implementation Pull Requests
+
+- [Add changes to run clusterinterceptor as HTTPS](https://github.com/tektoncd/triggers/pull/1333)
 
 ## References 
 1. GitHub issue: [#871](https://github.com/tektoncd/triggers/issues/871)

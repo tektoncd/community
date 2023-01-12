@@ -99,6 +99,7 @@ systems.”
   * auto-mapped workspaces
   * task-level resource requirements
   * Array and object parameters and results
+  * [Matrix][pipeline-issue-5265]
 * Workflows
   * Simplify SCM connection with pipeline execution
   * Workflows Availability -- possibly via adoption of Pipelines as Code
@@ -192,3 +193,5 @@ result in the creation of new projects!
     * Best practice getting started example repo(s)
     * E.g. being able to answer questions like “I want to setup a CI pipeline for my repo using Tekton,
       how do I do that in two steps?”
+
+[pipeline-issue-5265]: https://github.com/tektoncd/pipeline/issues/5265

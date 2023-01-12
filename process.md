@@ -10,6 +10,7 @@ you can find documented in their individual `CONTRIBUTING.md` files.
 - Pull request [reviews](#reviews) and [process](#pull-request-process)
 - [Propose projects](process.md#proposing-projects)
 - [The CDF CLA](#cla)
+- [Postmortems](#postmortems)
 
 ## Finding something to work on
 
@@ -596,8 +597,10 @@ Project maintainers may decide to write a postmortem when:
 
 ### Goals of a postmortem
 
-The goal of a postmortem is NOT to identify people to blame for a problem.
-We use postmortems to identify opportunities to remove human error from our systems.
+The goal of a postmortem is to identify opportunities to remove human error from our systems.
+While we do seek to identify root causes of technical and human failures, assigning blame for
+a problem is an antipattern that should be avoided.
+
 Postmortems should cover:
 - How we will investigate and repair the existing incident?
 - How can we detect similar incidents in the future more quickly?

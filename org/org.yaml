@@ -828,3 +828,58 @@ orgs:
         privacy: closed
         repos:
           resolution: maintain
+  tektoncd-catalog:
+    admins:
+    - wlynch
+    - bobcatfish
+    - tekton-robot
+    - thelinuxfoundation
+    - vdemeester
+    - afrittoli
+    - dibyom
+    - QuanZhang-William
+    - vinamra28
+    billing_email: info@cd.foundation
+    company: ""
+    default_repository_permission: none
+    description: ""
+    email: ""
+    has_organization_projects: true
+    has_repository_projects: true
+    location: ""
+    name: ""
+    members:
+    - divyansh42
+    - iancoffey
+    - jerop
+    - jjasghar
+    - piyush-garg
+    - priyawadhwa
+    - PuneetPunamiya
+    - sm43
+    teams:
+      golang.maintainers:
+        description: The maintainers of golang catalog
+        members:
+        - vdemeester
+        - vinamra28
+        privacy: closed
+        repos:
+          golang: maintain
+      golang.collaborators:
+        description: The collaborators of golang catalog
+        maintainers:
+        - vdemeester
+        - vinamra28
+        members:
+        - divyansh42
+        - iancoffey
+        - jjasghar
+        - piyush-garg
+        - PuneetPunamiya
+        - sm43
+        - QuanZhang-William
+        privacy: closed
+        repos:
+          golang: read
+          

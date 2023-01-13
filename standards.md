@@ -10,20 +10,32 @@ Design: Most designs should be first proposed via an issue and possibly a
 API changes should be evaluated according to
 [Tekton Design Principles](https://github.com/tektoncd/community/blob/main/design-principles.md).
 
+Pull request reviewers are expected to meet [reviewer responsibilities](#reviewer-responsibilities).
+
 Each Pull Request is expected to meet the following expectations around:
 
 * [Pull Request Description](#pull-request-description)
 * [Release Notes](#release-notes)
-* [Commits](#commits)
+* [Commit Messages](#commits)
   * [Example Commit Message](#example-commit-message)
+* [Small Pull Requests](#small-pull-requests)
+* [Incremental Feature Development](#incremental-feature-development)
 * [Docs](#docs)
 * [Functionality](#functionality)
 * [Content](#content)
 * [Code](#code)
+  * [Go packages](#go-packages)
   * [Tests](#tests)
   * [Reconciler/Controller Changes](#reconcilercontroller-changes)
 
 _See also [the Tekton review process](https://github.com/tektoncd/community/blob/main/process.md#reviews)._
+
+## Reviewer Responsibilities
+
+* Reviewers are expected to understand the changes well enough that they would feel confident
+  saying they understand what is changing and why:
+  * Read through all the code changes
+  * Read through linked issues and pull requests, including the discussions
 
 ## Pull request description
 
@@ -57,7 +69,8 @@ Refer to the following set of questions to help fill the release-note section.
     * If this PR addresses a publicly known CVE, include the CVE number in the release notes
   * If unsure, include release note.
     * It's recommended to include release note explaining the changes in the PR.
-
+* If a feature is implemented incrementally, use a release note only when it is complete and ready to be used
+  * See [Incremental Feature Development](#incremental-feature-development) for more info
 
 ### None Release Note
 
@@ -71,7 +84,7 @@ NONE
 ```
 ````
 
-### Example Release Note
+### Example Release Notes
 
 #### Poor Release Note
 
@@ -94,7 +107,7 @@ Workspaces are propagated in embedded specifications without mutations.
 ```
 ````
 
-A few examples of good release-notes:
+#### Good Release Notes
 
 
 * Reasonable release note for introducing a new feature:
@@ -114,7 +127,17 @@ Refer to the TEP-00XX for more details.
 ```
 ````
 
-## Commits
+While commit messages explain what changes are being made to the code and why, good release notes should explain the impact on the user.
+For example, if your commit message title is "Add resolvers deployment, with release and e2e integration",
+a great release note could be:
+
+````
+```release-note
+action required: The separate Resolutions project has been folded into Pipeline. If currently using Resolution, remove the tekton-remote-resolution namespace before upgrading and installing the new "resolvers.yaml". 
+```
+````
+
+## Commit Messages
 
 * Use the body to explain [what and why vs. how](https://chris.beams.io/posts/git-commit/#why-not-how).
   Link to an issue whenever possible and [aim for 2 paragraphs](https://www.youtube.com/watch?v=PJjmw9TRB7s),
@@ -124,7 +147,6 @@ Refer to the TEP-00XX for more details.
   * What other approaches did you consider?
   * What side effects will this approach have?
   * What future work remains to be done?
-* Prefer one commit per PR. For multiple commits ensure each makes sense without the context of the others.
 * As much as possible try to stick to these general formatting guidelines:
   * Separate subject line from message body.
   * Write the subject line using the "imperative mood" ([see examples](https://chris.beams.io/posts/git-commit/#imperative)).
@@ -151,6 +173,31 @@ requires developers to follow more links rather than just showing
 what we want.
 ```
 
+## Small Pull Requests
+
+* Small pull requests that make a single, self-contained change are easier to review and easier to roll back or backport.
+  * If you can think of a way to break up a pull request into smaller changes, do it
+* Tests and documentation (where applicable) should always be part of the same pull request when introducing a change
+* Use one commit per PR unless there is a strong reason not to
+  * For multiple commits, ensure each makes sense without the context of the others.
+* Refactoring should be merged before bug fixes and features
+  * If you refactor as a prerequisite that will simplify or enable your new changes,
+  commit and merge the refactor before merging your new changes
+
+## Incremental Feature Development
+
+* New features and API fields should be gated by feature flags.
+* Features may be implemented incrementally to keep pull requests small.
+* When introducing a partial feature, the documentation should include updates that
+  indicate clearly that this functionality is not expected to work and point the reader
+  toward how to follow progress (e.g. via an issue)
+* For example, you could split a new feature into a PR adding new API fields, and a PR implementing those fields.
+  * The first PR would have a commit title like "TEP-XXX: Add field XYZ to API", and no release notes.
+  It would document these fields, including a sentence like "This field is under development and not yet functional.
+  See issue #1234 for more information."
+  * The second PR would have a commit title like "TEP-XXX: Implement support for field XYZ". It would contain release
+  notes explaining the feature and remove documentation references to the feature being under development.
+
 ## Docs
 
 * Include Markdown doc updates for user visible features
@@ -162,33 +209,15 @@ what we want.
 * If possible, in addition to code snippets, include a reference to an end to end example
 * Ensure that all links and references are valid
 
-## Functionality
-
-* It should be safe to cut a release at any time, i.e. merging this PR should not
-  put us into an unreleasable state
-    * When incrementally adding new features, this may mean that a release could contain
-      a partial feature, i.e. the type specification only but no functionality
-    * When introducing a partial feature, the documentation should include updates that
-      indicate clearly that this functionality is not expected to work and point the reader
-      toward how to follow progress (e.g. via an issue)
-
 ## Content
 
 * Whenever logic is added that uses a container image that wasn’t used before, the image used should
   be configurable on the command line so that distributors can build images that meet their
   support and licensing requirements
-* Refactoring should be merged separately from bug fixes and features
-  * i.e. if you refactor as part of implementing something, commit it and merge it before merging the change
-* Prefer small pull requests; if you can think of a way to break up the pull request into multiple, do it
 
 ## Code
 
-* Tekton projects follow the [Go Style Guide](https://google.github.io/styleguide/go/).
-* Reviewers are expected to understand the changes well enough that they would feel confident
-  saying the understand what is changing and why:
-  * Read through all the code changes
-  * Read through linked issues and pull requests, including the discussions
-* Prefer small well factored packages with unit tests
+* Tekton projects follow the [Go Style Guide](https://google.github.io/styleguide/go/) and [Effective Go](https://go.dev/doc/effective_go).
 * Pass kubernetes and tekton client functions into functions that need them as params so
   they can be easily mocked in unit tests
 * [Go Code Review comments](https://github.com/golang/go/wiki/CodeReviewComments)
@@ -197,8 +226,20 @@ what we want.
   * Error strings are not capitalized
   * Handle all errors ([gracefully](https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully))
     * When returning errors, add more context with `fmt.Errorf` and `%v`
-  * Use meaningful package names (avoid util, helper, lib)
   * Prefer short variable names
+
+### Go packages
+
+* Prefer small, well-factored packages with unit tests
+* Use meaningful package names (avoid util, helper, lib). See https://go.dev/blog/package-names
+* Only export functions that provide a meaningful API for consumers of the package
+* All exported functions should have tests
+  * Test exported functions only, since these are the functions package consumers will use.
+    If you find yourself wanting to test an unexported function, consider whether
+    it would make sense to move the test into another package and export it,
+    or to refactor the package so that tests use the same functions as package importers
+  * If your package is named "foo", prefer putting tests in a "foo_test" package in the same folder
+    to ensure that only exported functions are tested
 
 ### Tests
 
@@ -207,13 +248,9 @@ what we want.
   * End to end tests
 * When API changes are introduced (e.g. changes to  `_types.go` files) corresponding changes are made to:
   * Validation + validation tests
-* Unit tests:
+* Unit tests
   * Coverage should remain the same or increase
-  * Test exported functions only, in isolation:
-    * Each exported function should have tests
-    * Each test should only test one function at a time
-    * If you find yourself wanting to test an unexported function, consider whether
-      it would make sense to move the test into another package and export it
+  * Each test should only test one function at a time
 * Test code
   * When using cmp.Diff the argument order is always (want, got) and in the error message include (-want +got)
     (and/or use a lib like [PrintWantGot](https://github.com/tektoncd/pipeline/blob/main/test/diff/print.go))

@@ -21,11 +21,13 @@ collaborators: []
   - [Requirements](#requirements)
 - [Proposal](#proposal)
 - [Design Details](#design-details)
+  - [Command line specifications](#command-line-specifications)
+  - [Sign](#sign)
+  - [Verify](#verify)
 - [Alternatives](#alternatives)
 - [Implementation Plan](#implementation-plan)
   - [Test Plan](#test-plan)
   - [Implementation Pull Requests](#implementation-pull-requests)
-- [References](#references)
 <!-- /toc -->
 
 ## Summary

@@ -4,7 +4,7 @@ authors:
   - "@kbaig"
 creation-date: 2020-07-14
 last-updated: 2020-09-08
-status: implementable
+status: implemented
 ---
 # TEP-0009: Introducing TriggerCRD
 
@@ -30,6 +30,7 @@ status: implementable
 - [Alternatives](#alternatives)
 - [Upgrade &amp; Migration Strategy](#upgrade--migration-strategy)
 - [Open Questions](#open-questions)
+- [Implementation Pull Requests](#implementation-pull-requests)
 <!-- /toc -->
 
 ## Summary
@@ -272,3 +273,7 @@ existing definition in EventListener Spec. Later on definition will be deprecate
 1. What kind of selectors do we need i.e do we need both `namespaceSelecor` and `triggerSelector`?
 2. What should the path for path based EventListener look like? Should they handle multiple triggers?
 3. Can multiple EventListeners point to the same Trigger?
+
+## Implementation Pull Requests
+- [Add a new CRD type called Trigger](https://github.com/tektoncd/triggers/pull/628)
+- [Add EventListener Selector For TriggerCRD](https://github.com/tektoncd/triggers/pull/773)

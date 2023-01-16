@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implemented
 title: Env in POD template
 creation-date: '2022-03-17'
-last-updated: '2022-05-16'
+last-updated: '2022-12-22'
 authors:
 - '@rafalbigaj'
 - '@tomcli'
@@ -79,13 +79,17 @@ tags, and then generate with `hack/update-toc.sh`.
   - [User Experience (optional)](#user-experience-optional)
   - [Performance (optional)](#performance-optional)
 - [Design Details](#design-details)
+    - [PipelineRun and TaskRun API Changes](#pipelinerun-and-taskrun-api-changes)
+    - [Global Default Environment Variables](#global-default-environment-variables)
+    - [Precedence Order](#precedence-order)
+    - [Forbidden Environment Variables](#forbidden-environment-variables)
 - [Test Plan](#test-plan)
 - [Design Evaluation](#design-evaluation)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
-- [Implementation Pull request(s)](#implementation-pull-request-s)
+- [Implementation Pull request(s)](#implementation-pull-requests)
 - [References (optional)](#references-optional)
 <!-- /toc -->
 
@@ -874,7 +878,8 @@ Note: This section is exclusively for merged pull requests, for this TEP.
 It will be a quick reference for those looking for implementation of this TEP.
 -->
 
-Previously open: https://github.com/tektoncd/pipeline/pull/3566
+1. Previously open: https://github.com/tektoncd/pipeline/pull/3566
+2. https://github.com/tektoncd/pipeline/pull/5699
 
 ## References (optional)
 

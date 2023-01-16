@@ -14,11 +14,9 @@ authors:
   - [Use Cases](#use-cases)
 - [Proposal](#proposal)
 - [Design Details](#design-details)
-  - [taskRunTemplate](#implement)
-  - [Implementation Plan](#implementation-plan)
+  - [taskRunTemplate](#taskruntemplate)
   - [Test Plan](#test-plan)
-  
-
+  - [Implementation Plan](#implementation-plan)
 <!-- /toc -->
 
 ## Summary

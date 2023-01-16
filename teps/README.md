@@ -191,7 +191,7 @@ This is the complete list of Tekton teps:
 |[TEP-0006](0006-tekton-metrics.md) | Tekton Metrics | proposed | 2020-07-13 |
 |[TEP-0007](0007-conditions-beta.md) | Conditions Beta | implemented | 2021-06-03 |
 |[TEP-0008](0008-support-knative-service-for-triggers-eventlistener-pod.md) | Support Knative Service for Triggers EventListener Pod | implementable | 2020-08-25 |
-|[TEP-0009](0009-trigger-crd.md) | Trigger CRD | implementable | 2020-09-08 |
+|[TEP-0009](0009-trigger-crd.md) | Trigger CRD | implemented | 2020-09-08 |
 |[TEP-0010](0010-optional-workspaces.md) | Optional Workspaces | implemented | 2020-10-15 |
 |[TEP-0011](0011-redirecting-step-output-streams.md) | redirecting-step-output-streams | implementable | 2020-11-02 |
 |[TEP-0012](0012-api-spec.md) | API Specification | implemented | 2021-12-14 |
@@ -200,12 +200,12 @@ This is the complete list of Tekton teps:
 |[TEP-0016](0016-concise-trigger-bindings.md) | Concise Embedded TriggerBindings | implemented | 2020-09-15 |
 |[TEP-0019](0019-other-arch-support.md) | Other Arch Support | proposed | 2020-09-30 |
 |[TEP-0020](0020-s390x-support.md) | s390x Support | implemented | 2021-06-04 |
-|[TEP-0021](0021-results-api.md) | Tekton Results API | implementable | 2020-10-26 |
-|[TEP-0022](0022-trigger-immutable-input.md) | Triggers - Immutable Input Events | implementable | 2020-09-29 |
+|[TEP-0021](0021-results-api.md) | Tekton Results API | implemented | 2020-10-26 |
+|[TEP-0022](0022-trigger-immutable-input.md) | Triggers - Immutable Input Events | implemented | 2020-09-29 |
 |[TEP-0023](0023-implicit-mapping.md) | 0023-Implicit-parameter-mapping | implemented | 2021-12-15 |
 |[TEP-0024](0024-embedded-trigger-templates.md) | Embedded TriggerTemplates | implemented | 2020-10-01 |
 |[TEP-0025](0025-hermekton.md) | Hermetic Builds | implementable | 2020-09-11 |
-|[TEP-0026](0026-interceptor-plugins.md) | interceptor-plugins | implementable | 2020-10-08 |
+|[TEP-0026](0026-interceptor-plugins.md) | interceptor-plugins | implemented | 2020-10-08 |
 |[TEP-0027](0027-https-connection-to-triggers-eventlistener.md) | HTTPS Connection to Triggers EventListener | implementable | 2020-11-01 |
 |[TEP-0028](0028-task-execution-status-at-runtime.md) | task-exec-status-at-runtime | implemented | 2021-06-03 |
 |[TEP-0029](0029-step-workspaces.md) | step-and-sidecar-workspaces | implemented | 2022-07-22 |
@@ -217,7 +217,7 @@ This is the complete list of Tekton teps:
 |[TEP-0036](0036-start-measuring-tekton-pipelines-performance.md) | Start Measuring Tekton Pipelines Performance | proposed | 2020-11-20 |
 |[TEP-0037](0037-remove-gcs-fetcher.md) | Remove `gcs-fetcher` image | implementing | 2021-01-27 |
 |[TEP-0038](0038-generic-workspaces.md) | Generic Workspaces | proposed | 2020-12-11 |
-|[TEP-0039](0039-add-variable-retries-and-retrycount.md) | Add Variable `retries` and `retry-count` | proposed | 2021-01-31 |
+|[TEP-0039](0039-add-variable-retries-and-retrycount.md) | Add Variable `retries` and `retry-count` | implemented | 2021-01-31 |
 |[TEP-0040](0040-ignore-step-errors.md) | Ignore Step Errors | implemented | 2021-08-11 |
 |[TEP-0041](0041-tekton-component-versioning.md) | Tekton Component Versioning | implementable | 2021-04-26 |
 |[TEP-0042](0042-taskrun-breakpoint-on-failure.md) | taskrun-breakpoint-on-failure | implemented | 2021-12-10 |
@@ -249,7 +249,7 @@ This is the complete list of Tekton teps:
 |[TEP-0074](0074-deprecate-pipelineresources.md) | Deprecate PipelineResources | implementable | 2022-04-11 |
 |[TEP-0075](0075-object-param-and-result-types.md) | Object/Dictionary param and result types | implemented | 2022-09-26 |
 |[TEP-0076](0076-array-result-types.md) | Array result types | implemented | 2022-09-26 |
-|[TEP-0079](0079-tekton-catalog-support-tiers.md) | Tekton Catalog Support Tiers | proposed | 2022-10-17 |
+|[TEP-0079](0079-tekton-catalog-support-tiers.md) | Tekton Catalog Support Tiers | proposed | 2022-11-23 |
 |[TEP-0080](0080-support-domainscoped-parameterresult-names.md) | Support domain-scoped parameter/result names | implemented | 2021-08-19 |
 |[TEP-0081](0081-add-chains-subcommand-to-the-cli.md) | Add Chains sub-command to the CLI | implemented | 2022-04-27 |
 |[TEP-0082](0082-workspace-hinting.md) | Workspace Hinting | proposed | 2021-10-26 |
@@ -267,10 +267,10 @@ This is the complete list of Tekton teps:
 |[TEP-0095](0095-common-repository-configuration.md) | Common Repository Configuration | proposed | 2021-11-29 |
 |[TEP-0096](0096-pipelines-v1.md) | Pipelines V1 | implementable | 2022-10-06 |
 |[TEP-0097](0097-breakpoints-for-taskruns-and-pipelineruns.md) | breakpoints-for-taskruns-and-pipelineruns | implementable | 2022-07-12 |
-|[TEP-0098](0098-workflows.md) | Workflows | proposed | 2021-12-06 |
+|[TEP-0098](0098-workflows.md) | Workflows | proposed | 2022-12-27 |
 |[TEP-0100](0100-embedded-taskruns-and-runs-status-in-pipelineruns.md) | Embedded TaskRuns and Runs Status in PipelineRuns | implemented | 2022-04-18 |
-|[TEP-0101](0101-env-in-pod-template.md) | Env in POD template | proposed | 2022-05-16 |
-|[TEP-0102](0102-https-connection-to-triggers-interceptor.md) | HTTPS Connection to Triggers ClusterInterceptor | implementable | 2022-04-20 |
+|[TEP-0101](0101-env-in-pod-template.md) | Env in POD template | implemented | 2022-12-22 |
+|[TEP-0102](0102-https-connection-to-triggers-interceptor.md) | HTTPS Connection to Triggers ClusterInterceptor | implemented | 2022-04-20 |
 |[TEP-0103](0103-skipping-reason.md) | Skipping Reason | implemented | 2022-05-05 |
 |[TEP-0104](0104-tasklevel-resource-requirements.md) | Task-level Resource Requirements | implemented | 2022-08-16 |
 |[TEP-0105](0105-remove-pipeline-v1alpha1-api.md) | Remove Pipeline v1alpha1 API | implementable | 2022-05-17 |
@@ -281,13 +281,17 @@ This is the complete list of Tekton teps:
 |[TEP-0110](0110-decouple-catalog-organization-and-reference.md) | Decouple Catalog Organization and Resource Reference | implemented | 2022-06-29 |
 |[TEP-0111](0111-propagating-workspaces.md) | Propagating Workspaces | implemented | 2022-09-16 |
 |[TEP-0112](0112-replace-volumes-with-workspaces.md) | Replace Volumes with Workspaces | proposed | 2022-07-20 |
-|[TEP-0114](0114-custom-tasks-beta.md) | Custom Tasks Beta | implementable | 2022-10-20 |
-|[TEP-0115](0115-tekton-catalog-git-based-versioning.md) | Tekton Catalog Git-Based Versioning | implementable | 2022-10-03 |
+|[TEP-0114](0114-custom-tasks-beta.md) | Custom Tasks Beta | implemented | 2022-12-12 |
+|[TEP-0115](0115-tekton-catalog-git-based-versioning.md) | Tekton Catalog Git-Based Versioning | implemented | 2022-12-14 |
 |[TEP-0116](0116-referencing-finally-task-results-in-pipeline-results.md) | Referencing Finally Task Results in Pipeline Results | implemented | 2022-08-11 |
 |[TEP-0117](0117-tekton-results-logs.md) | Tekton Results Logs | implementable | 2022-10-21 |
 |[TEP-0118](0118-matrix-with-explicit-combinations-of-parameters.md) | Matrix with Explicit Combinations of Parameters | implementable | 2022-08-08 |
 |[TEP-0119](0119-add-taskrun-template-in-pipelinerun.md) | Add taskRun template in PipelineRun | implementable | 2022-09-01 |
 |[TEP-0120](0120-canceling-concurrent-pipelineruns.md) | Canceling Concurrent PipelineRuns | proposed | 2022-09-23 |
-|[TEP-0121](0121-refine-retries-for-taskruns-and-customruns.md) | Refine Retries for TaskRuns and CustomRuns | proposed | 2022-11-03 |
+|[TEP-0121](0121-refine-retries-for-taskruns-and-customruns.md) | Refine Retries for TaskRuns and CustomRuns | implemented | 2022-12-21 |
+|[TEP-0122](0122-complete-build-instructions-and-parameters.md) | Complete Build Instructions and Parameters | proposed | 2022-11-29 |
+|[TEP-0123](0123-specifying-on-demand-retry-in-pipelinetask.md) | Specifying on-demand-retry in a PipelineTask | proposed | 2022-10-11 |
 |[TEP-0124](0124-distributed-tracing-for-tasks-and-pipelines.md) | Distributed tracing for Tasks and Pipelines | implementable | 2022-10-16 |
+|[TEP-0125](0125-add-credential-filter-to-entrypoint-logger.md) | Add credential filter to entrypoint logger | proposed | 2022-10-27 |
 |[TEP-0126](0126-allow-task-sidecars-to-be-specified-in-pipelinerun.md) | Allow Task sidecars to be specified in PipelineRun | proposed | 2022-11-11 |
+|[TEP-0127](0127-larger-results-via-sidecar-logs.md) | Larger Results via Sidecar Logs | implemented | 2022-12-15 |

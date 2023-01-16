@@ -1,10 +1,12 @@
 ---
-status: implementable
+status: implemented
 title: Custom Tasks Beta
 creation-date: '2022-07-12'
-last-updated: '2022-10-20'
+last-updated: '2022-12-12'
 authors:
 - '@jerop'
+- '@XinruZhang'
+
 see-also:
 - TEP-0002
 - TEP-0061
@@ -26,8 +28,10 @@ see-also:
       - [v1alpha1 to v1beta1 + Run to CustomRun](#v1alpha1-to-v1beta1--run-to-customrun)
       - [References and Specifications](#references-and-specifications)
       - [Remove Pod Template](#remove-pod-template)
-      - [Exclude Retries and RetriesStatus](#exclude-retries-and-retriesstatus)
       - [Feature Gates](#feature-gates)
+      - [New Feature Flag <code>custom-task-version</code>](#new-feature-flag-)
+      - [Existing Feature Gates](#existing-feature-gates)
+    - [Cancellation](#cancellation)
     - [Documentation](#documentation)
     - [Testing](#testing)
   - [Optional](#optional)
@@ -202,18 +206,42 @@ Note that the goal of `Custom Tasks`, as defined in [TEP-0002][tep-0002], is to 
 If a specific `Custom Task` implementation creates `Pods`, that `Custom Task` can have a `Pod` template field in its
 own specification.
 
-##### Exclude Retries and RetriesStatus
-
-Exclude `retries` and `retriesStatus` fields in the initial release. These fields are under active discussion in
-[TEP-0121][tep-0121]. These fields may be reintroduced or replacement features may be implemented, depending on the 
-design decisions we make in [TEP-0121][tep-0121].
-
 ##### Feature Gates
+
+##### New Feature Flag `custom-task-version`
+
+Support both `v1alpha1.Run` and `v1beta1.CustomRun` for **four** [long term support (LTS)][long-term-support] 
+releases. So that custom task implementors and end users are able to fully test and migrate Custom Task from
+`v1alpha1` to `v1beta1`. 
+
+Create a new feature flag `custom-task-version` to allow end users to choose which version of custom task to be 
+created out of a `PipelineTask`. We set the default feature flag value to `v1alpha1` in the first LTS release, and
+switch to `v1beta1` in the following three LTS releases.
+
+Say we start to support `v1beta1.CustomRun` in LTS release `X`, and set default value of `custom-task-version`
+to `v1alpha1`. In the LTS release `X+1`, we switch the default value to `v1beta1`. In the LTS release `X+4`, we
+remove the feature flag, and only support `v1beta1`.
+
+##### Existing Feature Gates
 
 Remove guarding of `Custom Tasks` behind `enable-custom-tasks` and `enable-api-fields` feature gates.
 
 When [TEP-0096: Pipelines V1 API][tep-0096] is implemented to add V1 API, `Custom Tasks` will be gated behind feature
 gate `enable-api-fields` being set to `"beta"` - this is out of scope for this TEP  (in scope for TEP-0096).
+
+#### Cancellation
+
+The `Custom Task` is responsible for implementing `cancellation` to support `PipelineRun` level `timeouts` and
+`cancellation`. If the `Custom Task` implementor does not support cancellation via `.spec.status`, `Pipeline`
+**can not** timeout within the specified interval/duration and **can not** be cancelled as expected upon request.
+
+Pipeline Controller sets the `spec.Status` and `spec.StatusMessage` to signal `CustomRuns` about the `Cancellation`,
+while `CustomRun` controller updates its `status.conditions` as following once noticed the change on `spec.Status`.
+
+| Pipeline Signal                                                          | `CustomRun.Spec.Status` | `CustomRun.Spec.StatusMessage`                                              | `CustomRun.Status.Conditions`                                      | 
+|:-------------------------------------------------------------------------|:------------------------|:----------------------------------------------------------------------------|:-------------------------------------------------------------------|
+| [Cancelling][cancel-pr]<br>[Gracefully Cancelling][gracefully-cancel-pr] | `RunCancelled`          | `CustomRun cancelled as the PipelineRun it belongs to has been cancelled. ` | `Type: Succeeded`<br>`Status:False`<br>`Reason:CustomRunCancelled` |
+| `Pipeline` timeouts                                                      | `RunCancelled`          | `CustomRun cancelled as the PipelineRun it belongs to has timed out.`       | `Type: Succeeded`<br>`Status:False`<br>`Reason:CustomRunCancelled` |
 
 #### Documentation
 
@@ -311,6 +339,7 @@ For further details, see [tektoncd/community#523][523], [tektoncd/community#667]
 
 ## References
 
+- [Implementation Pull Requests][prs]
 - Tekton Enhancement Proposals
   - [TEP-0002: Custom Tasks][tep-0002]
   - [TEP-0061: Embed Custom Tasks in Pipeline][tep-0061]
@@ -358,3 +387,7 @@ For further details, see [tektoncd/community#523][523], [tektoncd/community#667]
 [runs-spec-docs]: https://github.com/tektoncd/pipeline/blob/main/docs/runs.md#2-specifying-the-target-custom-task-by-embedding-its-spec
 [custom-tasks-docs]: https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#using-custom-tasks
 [5138]: https://github.com/tektoncd/pipeline/issues/5138
+[cancel-pr]: https://github.com/tektoncd/pipeline/blob/main/docs/pipelineruns.md#cancelling-a-pipelinerun
+[gracefully-cancel-pr]: (https://github.com/tektoncd/pipeline/blob/main/docs/pipelineruns.md#gracefully-cancelling-a-pipelinerun)
+[long-term-support]: https://github.com/tektoncd/community/blob/main/releases.md#support-policy
+[prs]: https://github.com/tektoncd/pipeline/pulls?q=is%3Apr+tep-0114+

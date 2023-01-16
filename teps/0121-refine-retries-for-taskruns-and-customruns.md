@@ -1,12 +1,12 @@
 ---
-status: proposed
+status: implemented
 title: Refine Retries for TaskRuns and CustomRuns
 creation-date: '2022-09-08'
-last-updated: '2022-11-03'
+last-updated: '2022-12-21'
 authors:
 - '@XinruZhang'
-- '@pritidesai'
 - '@jerop'
+- '@pritidesai'
 - '@lbernick'
 see-also:
 - TEP-0069
@@ -15,46 +15,63 @@ see-also:
 # TEP-0121: Refine Retries for TaskRuns and CustomRuns
 <!-- toc -->
 - [Summary](#summary)
+- [Motivation](#motivation)
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
   - [Use Cases](#use-cases)
+    - [Retry when Timeout](#retry-when-timeout)
+    - [Retry TaskRun Independently](#retry-taskrun-independently)
 - [Related Work](#related-work)
-- [Options Under Consideration](#options-under-consideration)
-  - [Option 1: Implement retries for Standalone TaskRun](#option-1-implement-retries-for-standalone-taskrun)
-  - [Option 2: Implement retries in PipelineRun](#option-2-implement-retries-in-pipelinerun)
-- [Appendix](#appendix)
+- [Design Details](#design-details)
+  - [Timeout per Retry](#timeout-per-retry)
+  - [Retries in TaskRuns and CustomRuns](#retries-in-taskruns-and-customruns)
+    - [Execution Status of a <code>failed</code> <code>pipelineTask</code> with <code>retries</code>](#execution-status-of-a---with-)
+  - [Conditions.Succeeded](#conditionssucceeded)
+  - [RetriesStatus](#retriesstatus)
+- [Future Work](#future-work)
+- [Alternatives](#alternatives)
+  - [1. Implement <code>retries</code> in PipelineRun](#1-implement--in-pipelinerun)
+  - [2. Implement <code>retries</code> in TaskRun/Run, use <code>retryAttempts</code> instead of <code>retriesStatus</code>](#2-implement--in-taskrunrun-use--instead-of-)
+    - [Two API Changes](#two-api-changes)
+    - [Two New Labels](#two-new-labels)
+    - [How the <code>Retries</code> Works](#how-the--works)
+  - [3. <code>Conditions.RetrySucceeded</code>](#3-)
 - [References](#references)
 <!-- /toc -->
 
 ## Summary
 
-Two distinct imperfections on `Retries` we'd like to address in this TEP:
+This TEP proposes to clearly define the behavior of `Retries`:
+  - Task-level `Timeout` is for each **retry attempt** for both `TaskRun` and `CustomRun`.
+  - `TaskRun` reconciler implements the `Retries` logic.
+  - Pipeline Controller MUST ONLY use `Condition.Succeeded` to determine the termination status of a `TaskRun`/`CustomRun`.
+  - Keep `retriesStatus` in both `TaskRun` and `CustomRun` (though optional) to contain details of the intermediate retries.
+
+## Motivation
+
+Two distinct imperfections on `Retries` drove this TEP:
 - `Retries` on `Timeout` is designed inconsistently between TaskRun and CustomRun.
   - For CustomRun, [the document](https://github.com/tektoncd/community/blob/33ca1d5254a405b1d479f2350443f6c7979a0b72/teps/0069-support-retries-for-custom-task-in-a-pipeline.md#proposal) instructs developers to **set `Timeout` for all retry attempts**. While in the actual implementation, it is **set for each retry attempt**. See the [ref](https://github.com/tektoncd/pipeline/issues/5582).
   - For TaskRun created out for a PipelineTask, the `Timeout` is **set for each retry attempt**. 
   - For Standalone TaskRun, there's no `Retries` implemented.
-- Both `PipelineRun` reconciler and `TaskRun`|`CustomRun` reconciler are partially responsible for implementing the `Retries` as of today. See https://github.com/tektoncd/pipeline/issues/5248.
+- Both `PipelineRun` and `TaskRun`|`CustomRun` reconcilers are partially responsible for implementing the `Retries` as of today. See https://github.com/tektoncd/pipeline/issues/5248.
 
 
 ### Goals
-1. `Timeout` must be set for **each retry attempt** in the four runtime objects (independent TaskRun, TaskRun part of a Pipeline, independent CustomRun, CustomRun part of a Pipeline) that support `Retries` including no Timeout (Timeout set to 0).
-2. TaskRun reconciler which is part of the Tekton Pipeline Controller implements `retries` for two runtime objects (independent TaskRun and TaskRun part of a Pipeline).
+1. `Timeout` must be set for **each retry attempt** in the four runtime objects (independent `TaskRun`, `TaskRun` part of a Pipeline, independent `CustomRun`, `CustomRun` part of a `Pipeline`) that support `Retries` including no `Timeout` (`Timeout` set to 0).
+2. `TaskRun` reconciler which is part of the Tekton Pipeline Controller implements `Retries` for two runtime objects (independent `TaskRun` and `TaskRun` part of a `Pipeline`).
 
 ### Non-Goals
-1. Define retries behavior for PipelineRuns.
+1. Define `Retries` behavior for PipelineRuns.
 2. The collective timeout for `tasks`, collective timeout for `finally` tasks,  and the `timeout` at the `pipeline` level does not change.
 
 ### Use Cases
 
 #### Retry when Timeout
 
-The behavior alignment improves UX. Considering the following example:
+**The current behavior**, say we have a `Pipeline`:
 
 ```yaml
-apiVersion: tekton.dev/v1beta1
-kind: Pipeline
-metadata:
-  name: custom-task-pipeline
 spec:
   tasks:
   - name: task-run-example
@@ -70,13 +87,11 @@ spec:
     timeout: "10s"
 ```
 
-Say customers define two child resources within a PipelineRun:
-- `task-run-example`
-- `custom-run-example`
+`TaskRun` `task-run-example` and `CustomRun` `custom-run-example` created out of the Pipeline behave differently:
+- `task-run-example` will be **retried** once after 10s.
+- `custom-run-example` will be **failed on timeout** after 10s, if Custom Task authors follow the documentation.
 
-They set both `retries` and `timeout` for the two resources, under the current implementation, the two runtime objects behave differently, which is not intuitive.
-- `task-run-example` will be retried once after 10s.
-- `custom-run-example` will be timed out after 10s. But if the corresponding CustomRun controller implements retries **for *each* attempt**, like in TaskRuns, instead of **for all attempts** per the documented guidance, then the `custom-run-example` would be retried once after 10s, working similarly to the `task-run-example`.
+But if Custom Task authors implement `Retries` **for *each* attempt** (different from what's documented, **retry for all attempts**), then the `custom-run-example` would be retried once after 10s, working similarly to the `task-run-example`.
 
 #### Retry TaskRun Independently
 
@@ -113,43 +128,66 @@ Several observations regarding to the feature table above:
 - GitHub Action doesn't support retry natively, but because the flexibility of **customized actions**, some users write their own `retry` action to make it work, and those customized actions even support what to do before retrying a failed attempt.
 - Concourse mentioned the reason it [retries per attempt is somewhat arbitrary](https://concourse-ci.org/attempts-step.html#attempts-step).
 
-## Options Under Consideration
+## Design Details
 
-No matter how we implement the retry functionality, we propose to set `Timeout` for each retry attempt. This is propsed based on the existing behavior and the investigation about other CI/CD systems, see [related work](#related-work).
+### Timeout per Retry
 
-### Option 1: Implement `retries` for Standalone TaskRun
+Task-level Timeout (`TaskRunSpec.Timeout` and `RunSpec.Timeout`) is set for each `Retry` attempt. The same strategy applies to the `timeout` specified as part of the `pipelineTask` in a `pipeline`.
 
-- Stop relying on `len(retriesStatus)` to determine whether a TaskRun or CustomRun finishes, use `ConditionSucceeded` & `ConditionFalse` & Reason=="TimedOut" instead.
-- `Retries` and `Timeout` are passed from `PipelineTask` to `TaskRunSpec` and `CustomRunSpec`.
+### Retries in TaskRuns and CustomRuns
 
-Three sub-options about the way to implement `retriesStatus`:
+Add a new `Retries` field in [TaskRunSpec](https://pkg.go.dev/github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1#TaskRunSpec). Model the `CustomRunSpec` based on the `RunSpec` to use the existing `retries` field.
 
-- 1.a: Update `retriesStatus` for each retry attempt for `TaskRun`, keep `retriesStatus` for `CustomRun`
-  - No API change
-  - Need to implement a strategy for clients to get the previous pod and read its logs.
+The `PipelineTask.Retries` value, which is specified at `Pipeline` authoring time, is passed to the `TaskRunSpec.Retries` and `CustomRunSpec.Retries` during the execution of a `PipelineRun`.
 
-- 1.b: Update `retriesStatus` for each retry attempt for `TaskRun`, deprecate `retriesStatus` for `CustomRun`
-  - No implementation restrictions of `retriesStatus` for `CustomRun`
-  - Need to implement a strategy for clients to get the previous pod and read its logs.
+The `TaskRun` and `CustomRun` controllers handle their own `Retries`. 
 
-- 1.c: Deprecate `retriesStatus` for both `TaskRun` and `CustomRun`, create a new `TaskRun` for each retry attempt, add a new field `RetryAttempts` in `TaskRunStatusFields` to record names of all retry attempts.
-  - Easier to retrieve logs from retried TaskRuns.
-  - See [Appendix - I](#i-some-implementation-details-about-option-1c) for more implementation details.
+The `PipelineRun` controller does not check for `len(retriesStatus)` to determine whether a `TaskRun` or `CustomRun` is done executing. Instead, uses `ConditionSucceeded` as the only way to decide if the `TaskRun` or `CustomRun` has completed execution.
 
-**Benefits:**
+#### Execution Status of a `failed` `pipelineTask` with `retries`
 
-- Improve `Retries` implementation separation by making it only a TaskRun concern
-- Consistent interface for retries.
-- Consistent termination condition.
-- No changes to CustomRun API.
-- Standalone TaskRun can retry on its own.
+The following table shows how an overall status of a `taskRun` or a `customRun` for a `pipelineTask` with `retries` set to 3:
 
-**Concerns**
+| `status` | `reason`    |`completionTime` is set | description                                                                                                |
+|----------|-------------|------------------------|------------------------------------------------------------------------------------------------------------|
+| Unknown  | Running     | No                     | The `taskRun` has been validated and started to perform its work.                                          |
+| Unknown  | ToBeRetried | No                     | The `taskRun` (zero attempt of a `pipelineTask`) finished executing but failed. It has 3 retries pending.  |
+| Unknown  | Running     | No                     | First attempt of a `taskRun` has started to perform its work.                                              |
+| Unknown  | ToBeRetried | No                     | The `taskRun` (first attempt of a `pipelineTask`) finished executing but failed. It has 2 retries pending. |
+| Unknown  | Running     | No                     | Second attempt of a `taskRun` has started to perform its work.                                             |
+| Unknown  | ToBeRetried | No                     | The `taskRun` (second attempt of a `pipelineTask`) finished executing but failed. It has 1 retry pending.  |
+| Unknown  | Running     | No                     | Third attempt of a `taskRun` has started to perform its work.                                              |
+| False    | Failed      | Yes                    | The `taskRun` (third attempt of a `pipelineTask`) finished executing but failed. No more retries pending.  |
 
-- Dashboard and CLI may need extra works if we remove `retriesStatus`.
-- If a CustomRun controller doesn't support retries, it results in a poor user experience since the PipelineRun controller passes retries directly to the CustomRun and expects the CustomRun controller to implement it.
+Pipeline controller can now rely on `ConditionSucceeded` set to `Failed` after all the retries are exhausted.
 
-### Option 2: Implement `retries` in PipelineRun
+`TaskRun` reconciler archives existing status into `retriesStatus` at the end of each Reconcile loop when the `TaskRun`'s `Failure` is detected,
+then resets the existing status of a `taskRun` such that a next attempt starts executing.
+
+For clarity and backward compatibility, the status of each attempt in `retriesStatus` will be set to `Failed` and `CompletionTime` of each retry attempt remains consistent with the time set by the taskRun controller when it exited with non-zero or timed-out.
+
+Before this change, the `PipelineRun` controller created a `TaskRun` for any `pipelineTask` and scheduled the same `PipelineTask` if it had failed but not exhausted all the `retries`. The reason for implementing it this way was the `TaskRun` reconciler marked that particular `TaskRun` as `failed`. Now with this change, the `PipelineRun` controller still schedules a `PipelineTask` and creates a `TaskRun` but `TaskRun` reconciler will
+not mark a `TaskRun` as failure until all the `retries` are exhausted. This way, `PipelineRun` no longer need to check for any additional clause other than `ConditionSucceeded` set to `Failed`.
+
+### Conditions.Succeeded
+
+The `TaskRun` and `CustomRun` controllers MUST set `Conditions.Succeeded` to `False` only upon eventual failure of the `TaskRun` or `CustomRun` when all the Retries have been exhausted. We will implement this behavior for `TaskRuns` and clearly document this requirement for `CustomRuns`.
+
+This is a change to meaning of `Conditions.Succeeded` for `TaskRuns` so this change is a blocker for V1 **software** release.
+
+### RetriesStatus
+
+Keep `RetriesStatus` for both `CustomRun` and `TaskRun` to hold information about `intermediate` retries. So that users are able to know the current status of the runtime objects -- how many retries were executed until now, the result and logs of each retry.
+
+Note that this field is optional. Custom Task implementers have the freedom to implement the `Retries` as what they want.
+
+## Future Work
+
+## Alternatives
+
+### 1. Implement `retries` in PipelineRun
+
+No matter how we implement the retry functionality, we propose to set `Timeout` for each retry attempt. This is proposed based on the existing behavior and the investigation about other CI/CD systems, see [related work](#related-work).
 
 - Make `retries` a `PipelineRun` concern
 - Remove `retries` from `CustomRun` spec
@@ -191,23 +229,7 @@ spec:
 
 The custom task users would be confused about which retries field to use in order to retry a Run.
 
-## Other things to be considered
-
-### Retry Pipeline-in-pipeline
-
-Retrying pipeline-in-pipeline has a lot of uncertainty, we'd like to use another TEP to confirm it.
-
-One consideration we may want to revisit when designing retry pipeline-in-pipeline: we may want to focus on retrying PipelineRun as a whole, rather than retry some failed child tasks, because the child tasks are retriable as part of a PipelineRun.
-
-### What if a CustomRun controller doesn't support retries
-
-If a CustomRun controller doesn't implement retries (such as the wait task under experimental folder), this results in a poor user experience since the pipelinerun controller passes retries directly to the CustomRun and expects the CustomRun controller to implement it.
-
-We've had some discussions in [the API WG](https://docs.google.com/document/d/17PodAxG8hV351fBhSu7Y_OIPhGTVgj6OJ2lPphYYRpU/edit#bookmark=id.hwc5acp8tkm). We agreed that we expect all CustomRun controller to implement the retries. However, whether they implement it or not is out of our control.
-
-## Appendix
-
-### I. Some Implementation Details about Option 1.c
+### 2. Implement `retries` in TaskRun/Run, use `retryAttempts` instead of `retriesStatus`
 
 #### Two API Changes
 
@@ -357,15 +379,50 @@ The relationship of the original TaskRun and TaskRuns created for retry is:
 taskRun-attempt-1 ... taskRun-attempt-n
 ```
 
+### 3. `Conditions.RetrySucceeded`
+
+For TaskRuns, introduce a new ConditionType `Conditions.RetrySucceeded` to report intermediate status and sending events for failed attempts (instead of using `RetriesStatus` to keep everything managed in one `TaskRun` object):
+
+| `status` | Description             |
+|:---------|:------------------------|
+| True     | Retry succeeded         |
+| False    | Retry failed            |
+| Unknown  | Running a retry attempt |
+
+In this way, we are able to easily show the status as following
+
+```shell
+> tkn tr list
+NAME                   STARTED          DURATION    STATUS    RETRYSTATUS (new status field)
+tr-587rp               30 minutes ago   5s          Failed    RetryFailed
+tr-xyzcs               1 minutes ago    ---         Running   Retrying
+tr-ffbjg               4 seconds ago    ---         Running   RetryFailed
+```
+
+Implementors of Custom Tasks can choose to implement this approach.
+
+Note that though we are able to utilize the `retriesStatus` to achieve the same goal, but using `ConditionType` is more appropriate to report status. 
+
 ## References
-
-- [TEP-0002: Custom Tasks](https://github.com/tektoncd/community/blob/main/teps/0002-custom-tasks.md)
-- [TEP-0069: Custom Tasks Retries](https://github.com/tektoncd/community/blob/main/teps/0069-support-retries-for-custom-task-in-a-pipeline.md)
-- [TEP-0100: Slim down PipelineRunStatus](https://github.com/tektoncd/community/blob/main/teps/0100-embedded-taskruns-and-runs-status-in-pipelineruns.md)
-- [Issue #5248: Decouple Retries implementation between TaskRun reconciler and PipelineRun reconciler](https://github.com/tektoncd/pipeline/issues/5248)
-- [PR #5393: Clarify the behavior of CustomRun retries](https://github.com/tektoncd/pipeline/pull/5393)
-
+- Implementation
+  - [Implementation PRs][prs]
+  - [Demo][demo] [18:05-21:00]
+- Tekton Enhancement Proposals:
+  - [TEP-0002: Custom Tasks][tep-0002]
+  - [TEP-0069: Custom Tasks Retries][tep-0069]
+  - [TEP-0100: Slim down PipelineRunStatus][tep-0100]
+- PRs
+  - [PR #5393: Clarify the behavior of CustomRun retries][5393]
+- Issues
+  - [Issue #5248: Decouple Retries implementation between TaskRun reconciler and PipelineRun reconciler][5248]
 
 [^ansible-conditional-stop]: https://github.com/ansible/ansible/pull/76101
 [^retry-strategy]: https://docs.microsoft.com/en-us/azure/architecture/best-practices/transient-faults#challenges
 [^transient-errors]: https://learn.microsoft.com/en-us/azure/architecture/best-practices/transient-faults#why-do-transient-faults-occur-in-the-cloud
+[tep-0002]: https://github.com/tektoncd/community/blob/main/teps/0002-custom-tasks.md
+[tep-0069]: https://github.com/tektoncd/community/blob/main/teps/0069-support-retries-for-custom-task-in-a-pipeline.md
+[tep-0100]: https://github.com/tektoncd/community/blob/main/teps/0100-embedded-taskruns-and-runs-status-in-pipelineruns.md
+[5393]: https://github.com/tektoncd/pipeline/pull/5393
+[5248]: https://github.com/tektoncd/pipeline/issues/5248
+[prs]: https://github.com/tektoncd/pipeline/pulls?q=is%3Apr+TEP-0121+
+[demo]: https://drive.google.com/corp/drive/u/0/folders/1HtbupUIIeTOi77Exv-tFUYNrHjUlf19L

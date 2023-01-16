@@ -10,6 +10,7 @@ you can find documented in their individual `CONTRIBUTING.md` files.
 - Pull request [reviews](#reviews) and [process](#pull-request-process)
 - [Propose projects](process.md#proposing-projects)
 - [The CDF CLA](#cla)
+- [Postmortems](#postmortems)
 
 ## Finding something to work on
 
@@ -579,3 +580,29 @@ address).
 
 Members of [the governing board](governance.md) are authorized to administer the
 CDF CLA via the website and can control which repos it is applied to.
+
+## Postmortems
+
+Tekton postmortems can be found in the ["Postmortems" Google Drive folder](https://drive.google.com/corp/drive/folders/1PErAd8IzR9GV6gu5s2uKTkZogzVp3Jl7).
+To create a new postmortem, copy the [template](https://docs.google.com/document/d/1dsW3wS1LPmGh8F5MPdNpnQlJoV0l9wpn6h7iu3YghyA)
+into a new file in the Postmortems folder.
+
+### When to write a postmortem
+
+Project maintainers may decide to write a postmortem when:
+- a project fails to conform to its stability policies
+- users can't cleanly upgrade to a new release
+- a workflow that worked before a release breaks after upgrading
+- any time they want to learn from a failure in existing community processes and improve them
+
+### Goals of a postmortem
+
+The goal of a postmortem is to identify opportunities to remove human error from our systems.
+While we do seek to identify root causes of technical and human failures, assigning blame for
+a problem is an antipattern that should be avoided.
+
+Postmortems should cover:
+- How we will investigate and repair the existing incident?
+- How can we detect similar incidents in the future more quickly?
+- How can we reduce the impact of similar incidents?
+- How can we prevent similar incidents from happening at all? 

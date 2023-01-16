@@ -19,9 +19,9 @@ see-also:
 - [Proposal](#proposal)
   - [Embedded Specifications](#embedded-specifications)
   - [Referenced Resources](#referenced-resources)
-  - [Embedded Specifications With Referenced Resources](#embedded-specifications-with-referenced-resources)
+  - [Embedded Specifications with Referenced Resources](#embedded-specifications-with-referenced-resources)
 - [Alternatives](#alternatives)
-  - [Propagate all workspaces to all PipelineTasks](#propagate-all-workspaces-to-all-pipeline-tasks)
+  - [Propagate all workspaces to all Pipeline Tasks](#propagate-all-workspaces-to-all-pipeline-tasks)
 - [References](#references)
 <!-- /toc -->
 

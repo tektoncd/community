@@ -16,37 +16,38 @@ see-also:
 # TEP-0096: Pipelines V1
 
 <!-- toc -->
-- [TEP-0096: Pipelines V1](#tep-0096-pipelines-v1)
-  - [Summary](#summary)
-  - [Motivation](#motivation)
-    - [Goals](#goals)
-    - [Non Goals](#non-goals)
-  - [Background](#background)
-    - [API versioning vs software versioning](#api-versioning-vs-software-versioning)
-  - [Proposal](#proposal)
-    - [V1 Stability and Deprecation Policy](#v1-stability-and-deprecation-policy)
-      - [Examples](#examples)
-        - [Removing an API field from a V1 CRD](#removing-an-api-field-from-a-v1-crd)
-        - [Adding an optional API field to a V1 CRD](#adding-an-optional-api-field-to-a-v1-crd)
-        - [Removing a flag-gated field or feature from a V1 CRD](#removing-a-flag-gated-field-or-feature-from-a-v1-crd)
-        - [Promoting a behavior flag](#promoting-a-behavior-flag)
-  - [Use Cases](#use-cases)
-    - [Use Cases prioritized for Tekton](#use-cases-prioritized-for-tekton)
-    - [Use Cases not prioritized](#use-cases-not-prioritized)
-  - [Scope](#scope)
-  - [API Definition](#api-definition)
-  - [Features Included](#features-included)
-    - [Documentation](#documentation)
-    - [Production Readiness](#production-readiness)
-    - [Stability](#stability)
-      - [CRD Stability Levels](#crd-stability-levels)
-      - [API Changes](#api-changes)
-      - [Deprecations](#deprecations)
-      - [Behavior flags](#behavior-flags)
-    - [Feature Completeness](#feature-completeness)
-  - [Release plan](#release-plan)
-  - [Future Work (Out of Scope for V1)](#future-work-out-of-scope-for-v1)
-  - [References](#references)
+- [Summary](#summary)
+- [Motivation](#motivation)
+  - [Goals](#goals)
+  - [Non Goals](#non-goals)
+- [Background](#background)
+  - [A note on &quot;Production Readiness&quot;](#a-note-on-production-readiness)
+  - [API versioning vs software versioning](#api-versioning-vs-software-versioning)
+- [Proposal](#proposal)
+  - [V1 Stability and Deprecation Policy](#v1-stability-and-deprecation-policy)
+    - [Examples](#examples)
+      - [Removing an API field from a V1 CRD](#removing-an-api-field-from-a-v1-crd)
+      - [Adding an optional API field to a V1 CRD](#adding-an-optional-api-field-to-a-v1-crd)
+      - [Removing a flag-gated field or feature from a V1 CRD](#removing-a-flag-gated-field-or-feature-from-a-v1-crd)
+      - [Promoting a behavior flag](#promoting-a-behavior-flag)
+- [Use Cases](#use-cases)
+  - [Use Cases prioritized for Tekton](#use-cases-prioritized-for-tekton)
+  - [Use Cases not prioritized](#use-cases-not-prioritized)
+- [Scope](#scope)
+- [API Definition](#api-definition)
+- [Features Included](#features-included)
+  - [Documentation](#documentation)
+  - [Production Readiness](#production-readiness)
+  - [Stability](#stability)
+    - [CRD Stability Levels](#crd-stability-levels)
+    - [API Changes](#api-changes)
+    - [Deprecations](#deprecations)
+    - [Behavior flags](#behavior-flags)
+  - [Feature Completeness](#feature-completeness)
+- [Release plan](#release-plan)
+  - [Migration plan](#migration-plan)
+- [Future Work (Out of Scope for V1)](#future-work-out-of-scope-for-v1)
+- [References](#references)
 <!-- /toc -->
 
 ## Summary
@@ -331,6 +332,15 @@ V1 CRD versions shouldn't depend on goals for metrics or performance.
 Each V1 CRD should be fully documented before being released, but release of a V1 CRD version shouldn't depend on 
 unrelated documentation issues.
 Once we've achieved the goals of this TEP, we can release a v1 software version of Pipelines.
+
+### Migration plan
+We will start serving v1 versions after the initial release with [v1 CRDs](https://github.com/tektoncd/pipeline/pull/5579).
+And then one release later, we will swap the stored version to v1, mark v1beta1 as deprecated, and document that the EOL
+for v1beta1 is 9 months after that release.
+
+The initial release with v1 CRDs served can serve as a v1 preview, so that we can start migrating the CLI and dashboard, and then
+ v1 will become the official version in the next release. Therefore, supporting v1 versions of CLI, dashboard and any changes to
+ triggers should be prioritized during the current release cycle.
 
 ## Future Work (Out of Scope for V1)
 

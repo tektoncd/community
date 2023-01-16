@@ -13,21 +13,21 @@ see-also:
 # TEP-0118: Matrix with Explicit Combinations of Parameters
 
 <!-- toc -->
-  - [Summary](#summary)
-  - [Motivation](#motivation)
-    - [Use Cases](#use-cases)
-      - [Adding a specific combination in the Matrix](#adding-a-specific-combination-in-the-matrix)
-      - [Explicitly defining combinations in the Matrix](#explicitly-defining-combinations-in-the-matrix)
-    - [Goals](#goals)
-    - [Non-Goals](#non-goals)
-  - [Proposal](#proposal)
-    - [Include specific combinations in the Matrix](#include-specific-combinations-in-the-matrix)
-    - [Define explicit combinations in the Matrix](#define-explicit-combinations-in-the-matrix)
-    - [API Change](#api-change)
-  - [Alternatives](#alternatives)
-    - [Using Object Parameters](#using-object-parameters)
-    - [Upgrade and Migration Strategy](#upgrade-and-migration-strategy)
-  - [References](#references)
+- [Summary](#summary)
+- [Motivation](#motivation)
+  - [Use Cases](#use-cases)
+    - [Adding a specific combination in the Matrix](#adding-a-specific-combination-in-the-matrix)
+    - [Explicitly defining combinations in the Matrix](#explicitly-defining-combinations-in-the-matrix)
+  - [Goals](#goals)
+  - [Non-Goals](#non-goals)
+- [Proposal](#proposal)
+  - [Include specific combinations in the Matrix](#include-specific-combinations-in-the-matrix)
+  - [Define explicit combinations in the Matrix](#define-explicit-combinations-in-the-matrix)
+  - [API Change](#api-change)
+- [Alternatives](#alternatives)
+  - [Using Object Parameters](#using-object-parameters)
+  - [Upgrade and Migration Strategy](#upgrade-and-migration-strategy)
+- [References](#references)
 <!-- /toc -->
 
 ## Summary

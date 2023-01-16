@@ -9,6 +9,7 @@ authors:
 
 # TEP-0070: Platform support in Tekton catalog
 
+<!-- toc -->
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goals](#goals)
@@ -20,6 +21,7 @@ authors:
   - [Hub side](#hub-side)
   - [Tekton CLI side](#tekton-cli-side)
 - [References (optional)](#references-optional)
+<!-- /toc -->
 
 ## Summary
 

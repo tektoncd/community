@@ -1,7 +1,7 @@
 orgs:
   tektoncd:
     admins:
-    - priyawadhwa
+    - wlynch
     - bobcatfish
     - tekton-robot
     - thelinuxfoundation
@@ -68,6 +68,7 @@ orgs:
     - dwnusbaum
     - eddycharly
     - ekcasey
+    - EmmaMunley
     - fenglixa
     - fhopfensperger
     - font
@@ -125,6 +126,7 @@ orgs:
     - pratap0007
     - praveen4g0
     - pritidesai
+    - priyawadhwa
     - psschwei
     - rafamqrs
     - raffamendes
@@ -154,7 +156,6 @@ orgs:
     - vtereso
     - waveywaves
     - withlin
-    - wlynch
     - wumaxd
     - xchapter7x
     - xinruzhang
@@ -175,7 +176,7 @@ orgs:
       governing-board:
         description: Tekton Governing Board members
         members:
-        - priyawadhwa
+        - wlynch
         - bobcatfish
         - vdemeester
         - afrittoli
@@ -190,7 +191,7 @@ orgs:
         - vinamra28
         privacy: closed
         repos:
-          catalog: write
+          catalog: maintain
       catlin.maintainers:
         description: the catlin maintainers
         maintainers:
@@ -201,7 +202,7 @@ orgs:
         - piyush-garg
         privacy: closed
         repos:
-          catlin: write
+          catlin: maintain
       chains.admins:
         description: the chains admins
         maintainers:
@@ -224,7 +225,7 @@ orgs:
         - lukehinds
         privacy: closed
         repos:
-          chains: write
+          chains: maintain
       cli.maintainers:
         description: the cli maintainers
         maintainers:
@@ -236,8 +237,8 @@ orgs:
         - vinamra28
         privacy: closed
         repos:
-          cli: write
-          homebrew-tools: write
+          cli: maintain
+          homebrew-tools: maintain
       core.maintainers:
         description: the core maintainers team (pipeline)
         maintainers:
@@ -253,7 +254,7 @@ orgs:
         - abayer
         privacy: closed
         repos:
-          pipeline: write
+          pipeline: maintain
       dashboard.maintainers:
         description: the dashboard maintainers
         maintainers:
@@ -265,7 +266,7 @@ orgs:
         - LyndseyBu
         privacy: closed
         repos:
-          dashboard: write
+          dashboard: maintain
       experimental.maintainers:
         description: the experimental maintainers
         maintainers:
@@ -280,7 +281,7 @@ orgs:
         - priyawadhwa
         privacy: closed
         repos:
-          experimental: write
+          experimental: maintain
       homebrew.maintainers:
         description: the homebrew-tools maintainers
         maintainers:
@@ -290,7 +291,7 @@ orgs:
         - danielhelfand
         privacy: closed
         repos:
-          homebrew-tools: write
+          homebrew-tools: maintain
       hub.maintainers:
         description: the hub maintainers
         maintainers:
@@ -303,7 +304,7 @@ orgs:
         - vinamra28
         privacy: closed
         repos:
-          hub: write
+          hub: maintain
       operator.maintainers:
         description: the operator maintainers
         maintainers:
@@ -318,7 +319,7 @@ orgs:
         - piyush-garg
         privacy: closed
         repos:
-          operator: write
+          operator: maintain
       plumbing.maintainers:
         description: the plumbing maintainers
         maintainers:
@@ -336,7 +337,7 @@ orgs:
         - wlynch
         privacy: closed
         repos:
-          plumbing: write
+          plumbing: maintain
       results.maintainers:
         description: the results maintainers
         maintainers:
@@ -351,11 +352,12 @@ orgs:
         - wlynch
         privacy: closed
         repos:
-          results: write
+          results: maintain
       results.collaborators:
         description: The results collaborators
         maintainers:
         - abayer
+        - alan-ghelardi
         - bobcatfish
         - vdemeester
         - afrittoli
@@ -383,7 +385,7 @@ orgs:
         - savitaashture
         privacy: closed
         repos:
-          triggers: write
+          triggers: maintain
       website.maintainers:
         description: the website maintainers
         maintainers:
@@ -401,7 +403,7 @@ orgs:
         - geriom
         privacy: closed
         repos:
-          website: write
+          website: maintain
       core.collaborators:
         description: The core collaborators
         maintainers:
@@ -444,6 +446,8 @@ orgs:
         - pierretasci
         - lbernick
         - ywluogg
+        - Yongxuanzhang
+        - chuangw6
         # alumni:
         # sbwsg
         privacy: closed
@@ -480,7 +484,7 @@ orgs:
         - pritidesai
         privacy: closed
         repos:
-          community: write
+          community: maintain
       community.collaborators:
         description: The community collaborators
         maintainers:
@@ -823,4 +827,4 @@ orgs:
         # sbwsg
         privacy: closed
         repos:
-          resolution: write
+          resolution: maintain

@@ -16,20 +16,32 @@ authors:
 - [Motivation](#motivation)
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
-  - [Use Cases (optional)](#use-cases-optional)
+  - [Use Cases](#use-cases)
 - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [Risks and Mitigations](#risks-and-mitigations)
   - [User Experience](#user-experience)
-  - [Performance (optional)](#performance-optional)
 - [Design Details](#design-details)
+  - [Sign the Resources](#sign-the-resources)
+  - [Verify the Resources](#verify-the-resources)
+  - [Configuration](#configuration)
+  - [Integrate with Remote Resource Resolution](#integrate-with-remote-resource-resolution)
+- [Threat Models](#threat-models)
 - [Test Plan](#test-plan)
 - [Design Evaluation](#design-evaluation)
+  - [Reusability](#reusability)
+  - [Simplicity](#simplicity)
+  - [Flexibility](#flexibility)
+  - [Performance](#performance)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
-- [Infrastructure Needed (optional)](#infrastructure-needed-optional)
-- [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
-- [Implementation Pull request(s)](#implementation-pull-request-s)
+  - [Options to mitigate the possible impact from mutating webhook](#options-to-mitigate-the-possible-impact-from-mutating-webhook)
+  - [Options for storing the signature](#options-for-storing-the-signature)
+  - [Options for storing the public keys](#options-for-storing-the-public-keys)
+  - [Options for integrating with remote resolution](#options-for-integrating-with-remote-resolution)
+  - [Options for exposing the public keys](#options-for-exposing-the-public-keys)
+  - [Alternatives for trusted resources](#alternatives-for-trusted-resources)
+- [Implementation Pull request(s)](#implementation-pull-requests)
 - [References (optional)](#references-optional)
 <!-- /toc -->
 
@@ -120,7 +132,7 @@ be handled, or user scenarios that will be affected and must be accomodated.
 Sigstore Cosign (https://github.com/sigstore/cosign) has mechanisms to securely
 sign a given OCI image or other artifacts including binaries, scripts etc. This provides a solid footing to leverage Cosign to verify Tekton Resources.
 
-This proposal will introduce signing to allow users to sign their resources YAML files and new verification into Tekton Pipelines' reconciler to detect tampering of the resources, and can indicate that the verification must occur. The public keys are configured at ConfigMap or CRD (`VerificationPolicy`) and can be used to verify the resources.
+This proposal will introduce signing to allow users to sign their resources YAML files and new verification into Tekton Pipelines' reconciler to detect tampering of the resources, and can indicate that the verification must occur. The public keys are configured at CRD (`VerificationPolicy`) and can be used to verify the resources.
 
 **Note:** API Resources (Task, Pipeline) will be verified both when applied to the cluster and when referenced in taskRun/pipelineRun. When the Run is created, referenced resources will be resolved and verified again to confirm continued verification. This will prevent the Run of a resource that was verifiable when created but is no longer verifiable, perhaps due to key revocation, a security breach, or discovery of a new vulnerability since the time of the initial verification.
 
@@ -177,11 +189,7 @@ Situation C: User A signs and publishes the resources (e.g. push to github repo)
 **Verify the Resource in reconciler.**
 The verification will be done in the pipeline's reconciler. By default we will skip a Resource's signature verification. This can be configured in a ConfigMap by the Tekton cluster operator to decide whether to skip the verification or not.
 
-During verification, the signature will be extracted from the resource (or fetched from a remote source can be supported later), and the public keys are fetched from cluster deployed ConfigMap and CRD. Public keys and signature are used to verify the resources.
-
-### Performance
-
-The verification should not introduce too much latency into the reconciler. We propose to do the verification after resolution in the reconciler. So no duplicate resolution is needed compared to doing verification at webhook.
+During verification, the signature will be extracted from the resource (or fetched from a remote source can be supported later), and the public keys are fetched from cluster deployed CRD. Public keys and signature are used to verify the resources.
 
 ## Design Details
 
@@ -241,46 +249,54 @@ The verification should be done in the Tekton Pipeline's reconciler after remote
 
 Before the verification, the signature is extracted from the resource. For the public key there are several options we can choose by configuration.
 
-In this TEP we propose to store the public keys on the Kubernetes installation. For the first step the keys can be stored in a ConfigMap. For advanced feature support, the keys can be configured in a new CRD and deployed to the cluster. This can help to support multiple keys, validate the spec, and have dedicated RBAC policies, so no other components in the cluster can modify the keys.
+In this TEP we propose to store the public keys on the Kubernetes installation. Keys can be configured in a new CRD and deployed to the cluster. This can help to support multiple keys, validate the spec, and have dedicated RBAC policies, so no other components in the cluster can modify the keys.
 
-* To use ConfigMap for verification, we need to fetch the configmap and loop all the public keys to verify the resources.
+How does VerificationPolicy work?
 
-Example of the Key ConfigMap:
-```yaml
-apiVersion: tekton.dev/v1alpha1
-Kind: ConfigMap
-metadata:
- name: verification-public-keys
- namespace: tekton-pipelines
-data:
-  cosignpublickey: "/etc/signing-secrets/cosign.pub" # key file in secret
-  cosignpublickey1: "/etc/signing-secrets/cosign1.pub" # key file in secret
-  kmspublickey: gcpkms://projects/<project>/locations/<location>/keyRings/<keyring>/cryptoKeys/<key> # kms key reference
-  kmspublickey2: gcpkms://projects/<project>/locations/<location>/keyRings/<keyring>/cryptoKeys/<key> # kms key reference
-```
-
-* To use the CRD for verification, we need to fetch all VerificationPolicy in the cluster. For each policy, use the `resources` regex to filter out the resources need to be verified. Then loop all `authorities` to get the `verifiers` for verification. If the resources can pass any of these `verifiers` then the resource is verified.
+You can create multiple `VerificationPolicy` and apply them to the cluster.
+1. Trusted resources will look up policies from the resource namespace (this is fetched from taskrun/pipelinerun namespace).
+2. If multiple policies are found. For each policy we will check if the resource url is matching any of the `patterns` in the `resources` list. If matched then this policy will be used for verification.
+3. If multiple policies are matched, the resource needs to pass all of them to pass verification.
+4. To pass one policy, the resource must successfully match at least one public key in the policy.
 
 Example of the Key CRD:
 ```yaml
 apiVersion: tekton.dev/v1alpha1
-Kind: VerificationPolicy
+kind: VerificationPolicy
 metadata:
- name: verification-policy
- namespace: tekton-pipelines
+  name: verification-policy-a
+  namespace: resource-namespace
 spec:
-   resources:
-    - https://github.com/tektoncd/catalog.git
-    - gcr.io/tekton-releases/catalog/upstream/*
-   authorities:
-    - name: cosign
-      key: /etc/signing-secrets/cosign.pub
-    - name: kms
-      key: gcpkms://projects/<project>/locations/<location>/keyRings/<keyring>/cryptoKeys/<key>
-    - name: keyless
-      keyless:
-        url: "https://fulcio.sigstore.dev"
+  # resources defines a list of patterns
+  resources:
+    - pattern: "https://github.com/tektoncd/catalog.git"  #git resource pattern
+    - pattern: "gcr.io/tekton-releases/catalog/upstream/git-clone"  # bundle resource pattern
+    - pattern: " https://artifacthub.io/"  # hub resource pattern
+  # authorities defines a list of public keys
+  authorities:
+    - name: SecretKey
+      key:
+        # secretRef refers to a secret in the cluster, this secret should contain public keys data
+        secretRef:
+          name: secret-name-a
+          namespace: secret-namespace
+        hashAlgorithm: sha256
+    - name: InlineKey
+      key:
+        # data stores the inline public key data
+        data: "STRING_ENCODED_PUBLIC_KEY"
 ```
+
+`namespace` should be the same of corresponding resources' namespace.
+
+`pattern` is used to filter out remote resources by their sources URL. e.g. git resources pattern can be set to https://github.com/tektoncd/catalog.git. The `pattern` should follow regex schema, we use go regex library's [`Match`](https://pkg.go.dev/regexp#Match) to match the pattern from VerificationPolicy to the `ConfigSource` URL resolved by remote resolution. Note that `.*` will match all resources.
+To learn more about regex syntax please refer to [syntax](https://pkg.go.dev/regexp/syntax). `ConfigSource` is also resolved by remote resolvers, e.g. [gitresolver](https://github.com/tektoncd/pipeline/blob/main/docs/git-resolver.md#resolutionrequest-status).
+To learn more about `ConfigSource` please refer to [ConfigSource](https://github.com/tektoncd/pipeline/blob/main/docs/pipeline-api.md#configsource-1) for more context.
+
+`key` is used to store the public key, note that only one of secretRef, data and kms can be configured at the same time.
+
+`hashAlgorithm` is the algorithm for the public key, by default is `sha256`. It also supports `SHA224`, `SHA384`, `SHA512`.
+
 
 API (Reference from [policy-controller](https://github.com/sigstore/policy-controller)):
 ```go
@@ -406,6 +422,71 @@ Tests for TaskRuns/PipelineRuns:
 How does this proposal affect the reusability, simplicity, flexibility
 and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/master/design-principles.md)
 -->
+
+### Reusability
+
+<!--
+https://github.com/tektoncd/community/blob/main/design-principles.md#reusability
+
+- Are there existing features related to the proposed features? Were the existing features reused?
+- Is the problem being solved an authoring-time or runtime-concern? Is the proposed feature at the appropriate level
+authoring or runtime?
+-->
+
+There are no existing features in Tekton which can be reused.
+
+This problem is runtime-concern and the proposed feature is at runtime level.
+
+
+### Simplicity
+
+<!--
+https://github.com/tektoncd/community/blob/main/design-principles.md#simplicity
+
+- How does this proposal affect the user experience?
+- What’s the current user experience without the feature and how challenging is it?
+- What will be the user experience with the feature? How would it have changed?
+- Does this proposal contain the bare minimum change needed to solve for the use cases?
+- Are there any implicit behaviors in the proposal? Would users expect these implicit behaviors or would they be
+surprising? Are there security implications for these implicit behaviors?
+-->
+
+This proposal doesn't have any effect if users don't enable it. If enabled, users need to sign the resources and config the public key in cluster to bypass verification, the mutating webhook will be skipped for API resources to avoid the failing verification.
+
+### Flexibility
+
+<!--
+https://github.com/tektoncd/community/blob/main/design-principles.md#flexibility
+
+- Are there dependencies that need to be pulled in for this proposal to work? What support or maintenance would be
+required for these dependencies?
+- Are we coupling two or more Tekton projects in this proposal (e.g. coupling Pipelines to Chains)?
+- Are we coupling Tekton and other projects (e.g. Knative, Sigstore) in this proposal?
+- What is the impact of the coupling to operators e.g. maintenance & end-to-end testing?
+- Are there opinionated choices being made in this proposal? If so, are they necessary and can users extend it with
+their own choices?
+-->
+
+Dependencies need to be pulled into tekton pipelines for this proposal:
+*	github.com/sigstore/sigstore
+
+**Note:** We only pull in sigstore libraries into Tekton Pipeline dependency but we are not coupling Tekton and Sigstore services in this proposal.
+
+What is the impact of the coupling to operators e.g. maintenance & end-to-end testing?
+
+* Need to install sigstore in dogfooding cluster to sign & verify official resources as part of testing
+
+Reason why this is required.
+
+* It is a convenient library to load keys because it supports KMS from major cloud providers, and also supports rsa, ecdsa, ed25519 keys loading.
+
+Are there opinionated choices being made in this proposal? If so, are they necessary and can users extend it with
+
+* We choose to use Sigstore to create signer and verifier, users cannot extend/replace it with other options. But users can use whatever keys supported by Sigstore.
+
+### Performance
+
+The verification should not introduce too much latency into the reconciler. We propose to do the verification after resolution in the reconciler. So no duplicate resolution is needed compared to doing verification at webhook.
 
 ## Drawbacks
 

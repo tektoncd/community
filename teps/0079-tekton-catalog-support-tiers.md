@@ -2,7 +2,7 @@
 status: proposed
 title: Tekton Catalog Support Tiers
 creation-date: '2021-08-09'
-last-updated: '2022-10-17'
+last-updated: '2022-11-23'
 authors:
 - '@bobcatfish'
 - '@jerop'
@@ -21,47 +21,57 @@ see-also:
 # TEP-0079: Tekton Catalog Support Tiers
 
 <!-- toc -->
-  - [Summary](#summary)
-  - [Motivation](#motivation)
-    - [Critical User Journeys](#critical-user-journeys)
-      - [User](#user)
-      - [Casual Contributor](#casual-contributor)
-      - [Dedicated Contributor](#dedicated-contributor)
-      - [Tekton Maintainer](#tekton-maintainer)
-    - [Goals](#goals)
-      - [Ownership and Maintenance](#ownership-and-maintenance)
-      - [Automated Testing and Dogfooding](#automated-testing-and-dogfooding)
-      - [Image Scanning for Common Vulnerabilities and Exposures (CVEs)](#image-scanning-for-common-vulnerabilities-and-exposures-cves)
-      - [Verified Remote Resources](#verified-remote-resources)
-  - [Definitions](#definitions)
-  - [Proposal](#proposal)
-    - [Ownership and Maintenance](#ownership-and-maintenance-1)
-      - [Community Catalogs](#community-catalogs)
-        - [Requirements](#requirements)
-      - [Verified Catalogs](#verified-catalogs)
-        - [Requirements](#requirements-1)
-        - [Additions to Verified Catalogs](#additions-to-verified-catalogs)
-      - [Hub](#hub)
-      - [CLI](#cli)
-      - [Cluster](#cluster)
-      - [Bundles](#bundles)
-      - [Remote Resolution](#remote-resolution)
-        - [Bundles Resolver](#bundles-resolver)
-        - [Git Resolver](#git-resolver)
-        - [Hub Resolver](#hub-resolver)
-      - [Responsibilities](#responsibilities)
-        - [Resource Ownership](#resource-ownership)
-        - [Catalog Ownership](#catalog-ownership)
-      - [Design Evaluation](#design-evaluation)
-      - [Alternatives](#alternatives)
-        - [1. Verified Support Tier](#1-verified-support-tier)
-          - [Design Evaluation](#design-evaluation-1)
-        - [2. Community Catalogs in tektoncd-catalog GitHub Org](#2-community-catalogs-in-tektoncd-catalog-github-org)
-          - [Design Evaluation](#design-evaluation-2)
-    - [Automated Testing and Dogfooding](#automated-testing-and-dogfooding-1)
-    - [Image Scanning for Common Vulnerabilities and Exposures (CVEs)](#image-scanning-for-common-vulnerabilities-and-exposures-cves-1)
-    - [Verified Remote Resources](#verified-remote-resources-1)
-  - [References](#references)
+- [Summary](#summary)
+- [Motivation](#motivation)
+  - [Critical User Journeys](#critical-user-journeys)
+    - [User](#user)
+    - [Casual Contributor](#casual-contributor)
+    - [Dedicated Contributor](#dedicated-contributor)
+    - [Tekton Maintainer](#tekton-maintainer)
+  - [Goals](#goals)
+    - [Ownership and Maintenance](#ownership-and-maintenance)
+    - [Automated Testing and Dogfooding](#automated-testing-and-dogfooding)
+    - [Image Scanning for Common Vulnerabilities and Exposures (CVEs)](#image-scanning-for-common-vulnerabilities-and-exposures-cves)
+    - [Verified Remote Resources](#verified-remote-resources)
+- [Definitions](#definitions)
+- [Proposal](#proposal)
+  - [Ownership and Maintenance](#ownership-and-maintenance-1)
+    - [Community Catalogs](#community-catalogs)
+      - [Requirements](#requirements)
+    - [Verified Catalogs](#verified-catalogs)
+      - [Requirements](#requirements-1)
+      - [Additions to Verified Catalogs](#additions-to-verified-catalogs)
+    - [Hub](#hub)
+    - [CLI](#cli)
+    - [Cluster](#cluster)
+    - [Bundles](#bundles)
+    - [Remote Resolution](#remote-resolution)
+      - [Bundles Resolver](#bundles-resolver)
+      - [Git Resolver](#git-resolver)
+      - [Hub Resolver](#hub-resolver)
+    - [Responsibilities](#responsibilities)
+      - [Resource Ownership](#resource-ownership)
+      - [Catalog Ownership](#catalog-ownership)
+    - [Design Evaluation](#design-evaluation)
+    - [Alternatives](#alternatives)
+      - [1. Verified Support Tier](#1-verified-support-tier)
+        - [Design Evaluation](#design-evaluation-1)
+      - [2. Community Catalogs in tektoncd-catalog GitHub Org](#2-community-catalogs-in-tektoncd-catalog-github-org)
+        - [Design Evaluation](#design-evaluation-2)
+  - [Automated Testing and Dogfooding](#automated-testing-and-dogfooding-1)
+  - [Image Scanning for Common Vulnerabilities and Exposures (CVEs)](#image-scanning-for-common-vulnerabilities-and-exposures-cves-1)
+    - [CVEs Scanning Tool](#cves-scanning-tool)
+    - [Scanning Policy &amp; Surface Vulnerability Report](#scanning-policy--surface-vulnerability-report)
+    - [Extract Container Images from Catalogs](#extract-container-images-from-catalogs)
+    - [Design Evaluation](#design-evaluation-3)
+    - [Alternatives](#alternatives-1)
+      - [1. Store Container Images in Metadata File](#1-store-container-images-in-metadata-file)
+  - [Verified Remote Resources](#verified-remote-resources-1)
+    - [Sign the Verified Catalog](#sign-the-verified-catalog)
+    - [Verified Catalog Repository Setup](#verified-catalog-repository-setup)
+    - [Design Evaluation](#design-evaluation-4)
+    - [Future Work](#future-work)
+- [References](#references)
 <!-- /toc -->
 
 ## Summary
@@ -125,12 +135,12 @@ vulnerabilities and exposures, and surface any issues to Maintainers and Contrib
 
 #### Verified Remote Resources
 
-Contributors need to sign resources they own in the Catalog and Maintainers need to sign resources that are officially
+Contributors need to sign resources they own in the Catalog and Maintainers need to sign resources that are
 provided and maintained by Tekton. They need to sign the resources so that they may be trusted, depending on users'
 requirements, and provenance attestations can be made to meet software supply chain security goals.
 
 [TEP-0091: Verified Remote Resources][tep-0091] will flesh out the details of signing, while this TEP will focus on
-surfacing the verification information and building a corpus of verified resources that users can trust.
+surfacing the signing information and building a corpus of verified resources that users can trust. The verification will be done in the Tekton Pipeline's reconciler after remote resolution as designed in [TEP-0091](https://github.com/tektoncd/community/blob/main/teps/0091-trusted-resources.md#verify-the-resources).
 
 ## Definitions
 
@@ -212,7 +222,7 @@ If there are new best practices, the Catalog MUST be updated if applicable.
 
 ##### Additions to Verified Catalogs
 
-Adding a new Verified Catalog or adding a resource into an Verified Catalog should be an exception, not the norm. The 
+Adding a new Verified Catalog or adding a resource into a Verified Catalog should be an exception, not the norm. The 
 set of Verified Catalogs and their resources should be relatively small so that it is sustainable to maintain them. 
 
 A new Verified Catalog may be created, or a new resource added to it if:
@@ -517,11 +527,170 @@ TODO
 
 ### Image Scanning for Common Vulnerabilities and Exposures (CVEs)
 
-TODO
+#### CVEs Scanning Tool
+
+[Trivy](https://github.com/aquasecurity/trivy) is an open source, simple and comprehensive vulnerability scanner for container images and other artifacts, the advantages of which include but not limited to:
+
+1. **Comprehensive Coverage**: Trivy supports comprehensive vulnerability detection against a wide variety of OS Packages and application dependencies for 8 languages including Go. In addition to container image scanning, Trivy is also able to detect security issues targeting filesystem, git repository, kubernetes cluster and resources.
+2. **High Accuracy**: Trivy provides highly accurate security reports, especially Alpine Linux and RHEL/CentOS.
+3. **Performance & Scalability**: Trivy is fast and scalable thanks to the underlying static analysis technique. The first scan finishes within 10s of submission (depending on the network).
+4. **Easiness**: Trivy can be installed easily, executed both in standalone & client/server mode, and no prerequisite (DB, system library, env requirement...) is required.
+
+A comparison between Trivy and other CVEs scanning tools is available [here](https://aquasecurity.github.io/trivy/v0.17.2/comparison/). Given the above advantages, Trivy will be selected as the vulnerability scanning tool for Tekton Catalogs.
+
+#### Scanning Policy & Surface Vulnerability Report
+
+The Artifact Hub [Scanner Service](https://artifacthub.io/docs/topics/security_report/) uses Trivy as the underlying CVEs scanning tool, periodically running container image security reports for Helm Charts, OLM operators and 5 other kind of resource surfaced by the Artifact Hub. We propose to integrate Tekton Catalogs to the Artifact Hub [Scanner Service](https://artifacthub.io/docs/topics/security_report/) to run and surface Trivy security reports in the Artifact Hub.
+
+In the first iteration of the TEP, we will use the current scanning policy defined the Artifact Hub:
+1. The scanner runs twice an hour and scans packages’ versions that haven’t been scanned yet.
+2. The latest package version available is scanned daily.
+3. The previous versions are scanned weekly. 
+4. The Versions released more than one year ago won’t be scanned anymore.
+
+The container images must be stored in the registries that are publicly available. The security report will be displayed on the Artifact Hub UI for each version of the packages.
+
+#### Extract Container Images from Catalogs
+
+We propose to extract and collect all the container images used in the Tekton resource (`task` or `pipeline`) by iterating through all the values in the `tasks.steps.image` fields of the resource. The extracted container images are stored in the Artifact Hub DB, which will be processed periodically by the Scanner Service](https://artifacthub.io/docs/topics/security_report/). For example, `bash:latest` and `alpine` are extracted in the following `task`:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: hello-world
+...
+spec:
+  steps:
+    - name: say-hello
+      image: bash:latest
+      script: echo 'hello'
+    - name: say-world
+      image: alpine
+      script: echo 'world'
+```
+
+If the `image` value (or part of the value) is specified by `params`, the default value of the `params` (if provided) are collected and used to run the security report. For example, `gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.40.2` is extracted from the following `task`:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: git-clone
+...
+spec:
+...
+  params:
+    - name: gitInitImage
+      description: The image providing the git-init binary that this Task runs.
+      type: string
+      default: "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.40.2"
+  steps:
+    - name: clone
+      image: "$(params.gitInitImage)"
+      script: |
+        #!/usr/bin/env sh
+        ...
+```
+
+Please note that it is presumed that the `image` field references the correct `param` and a valid container image string is formed after the substitution. If wrong values are specified in the `step.image` (either a wrong `param` pointer or invalid container image value), the resource itself is invalid and therefore no vulnerability report will be generated for this step.
+
+Similarly, `bash:latest` and `alpine` are extracted from the following `pipeline`:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: demo-pipeline
+...
+spec:
+  tasks:
+  - name: say-hello
+    taskSpec:
+      steps:
+      - name: say-hello-step
+        image: bash:latest
+        script: echo 'hello'
+  - name: say-world
+    taskSpec:
+      steps:
+      - name: say-world-step
+        image: alpine
+        script: echo 'world'
+```
+
+If a `pipeline` resource contains `pipelineTask` specified by `taskRef` for example:
+
+```yaml
+tasks:
+  - name: build-image
+    taskRef:
+      name: build-and-push
+```
+the container images used in the `pipelineTask` (i.e. `build-and-push`) will **not** be included in the security report.
+
+
+#### Design Evaluation
+
+This design builds on the existing infrastructure and the security report UI design of the Artifact Hub. A significant amount of engineering effort can be saved by leveraging the out-of-box features provided by the Artifact Hub.
+
+#### Alternatives
+##### 1. Store Container Images in Metadata File
+
+The Artifact Hub provides a [generic solution](https://artifacthub.io/docs/topics/security_report/#coredns-plugins-keda-scalers-keptn-integrations-opa-policies-and-tinkerbell-actions) for publishers to specify the container images in a dedicated [`artifacthub-pkg.yml`](https://github.com/artifacthub/hub/blob/master/docs/metadata/artifacthub-pkg.yml#L13) metadata file that can be parsed by the Artifact Hub. While this solution can be easily opted in for Tekton resources, it is an extra cost for Tekton users to maintain the metadata file. Also, we cannot guarantee that the images being scanned are the images actually used in the resource if the metadata file is outdated.
 
 ### Verified Remote Resources
 
-TODO
+#### Sign the Verified Catalog
+
+Following the design in TEP-0091, all the releases of Verified Catalog resources should be [signed](https://github.com/tektoncd/community/blob/main/teps/0091-trusted-resources.md#sign-the-resources) by the signing [tkn tool](https://github.com/tektoncd/cli/blob/main/docs/cmd/tkn_task_sign.md) and the signature should be stored in the `tekton.dev/signature` annotation:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/signature: MEQCIHhFC480mv7mh/6dxAlp/mvuvGXanuSghMsT+iBhWxt5AiBDvHv8sfKjJ3Ozrzvp+cjr30AOx1SPQDCcaJjlpAoVrA==
+  name: example-task
+spec:
+  steps:
+  - args:
+    - Hello World!
+    command:
+    - echo
+    image: ubuntu
+    name: echo
+    resources: {}
+```
+
+The `tekton.dev/signature` annotation will be parsed by [Artifact Hub][hub] for every published Tekton resource. A `signed` badge will be displayed in the UI for every release of resource that contains the signature annotation, demonstrating that the integrity of the resource can be verified.
+
+![Artifact Hub Signed Badge](images/0079-signed-badge.png)
+
+The [verification](https://github.com/tektoncd/community/blob/main/teps/0091-trusted-resources.md#verify-the-resources) of the signature can be done in the Tekton Pipeline's reconciler during the remote resolution.
+
+A new signing key pair - `verified-catalog` will be generated using KMS to sign the Verified Catalogs, which will be hosted in the [`tekton-releases`](http://console.cloud.google.com/home/dashboard?project=tekton-releases) GCP project (please request access from Tekton Maintainers if needed). The KMS signing permissions(`Cloud KMS Admin`, `Cloud KMS CryptoKey Signer/Verifier`, `Viewer`) are only granted to the Tekton Catalog Maintainers.
+
+#### Verified Catalog Repository Setup
+
+Since the `verified-catalog` key pair signing permission is only granted to Tekton Maintainers, the public contributors are not able to sign the resources with the key. To encourage public contribution to the Verified Catalog and enforce all the resources are signed in the releases, we propose to separate branches in the following way:
+
+- **Main** branch - the development branch, both Tekton Maintainers and public contributors can submit code changes via PR. The resources in the **Main** branch should **NOT** contain signatures and the verification is not enforced in the CI.
+
+- **Release** branches (`release-<major>.<minor>.<patch>`) - The Release branches are created based on the Main branch. Only Tekton Maintainers have the permission to create Release branches when needed. 
+  - release-1.0.0
+  - release-1.1.0
+
+The Tekton Maintainers manually [sign](https://github.com/tektoncd/cli/blob/main/docs/cmd/tkn_task_sign.md) the resource files based on the specific commits from the Main branch, and push the signed resources to the Release branch. A CI job will be created to check and verify the signature is provided and valid before the code can be checked in.
+
+The Tekton Maintainers should cut tags/releases based on the Release branches so that every release contains only signed resources.
+
+#### Design Evaluation
+
+This design leverages existing work in [TEP-0091][tep-0091] and the Artifact Hub. Showing the `signed` badge in the Artifact Hub helps users filter the resources that can be verified. The repository setup separates the development and release workspaces, which encourages public contribution and enforces the signed resources in releases at the same time.
+
+#### Future Work
+We only automate the signature verification process in the CI in the current design. In the future, we could further automate the signing and branch/tag creation process.
 
 ## References
 

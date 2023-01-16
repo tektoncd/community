@@ -21,14 +21,16 @@ authors:
   - [Non-Goals](#non-goals)
   - [Use Cases (optional)](#use-cases-optional)
 - [Requirements](#requirements)
-  - [Required](#required)
 - [Alternatives](#alternatives)
+  - [Dedicated Storage API Service](#dedicated-storage-api-service)
+    - [Risks and Mitigations](#risks-and-mitigations)
+    - [Design Evaluation](#design-evaluation)
   - [Result Sidecar - Upload results from sidecar](#result-sidecar---upload-results-from-sidecar)
     - [Option: Supporting multiple sidecars](#option-supporting-multiple-sidecars)
-    - [Risks and Mitigations](#risks-and-mitigations)
+    - [Risks and Mitigations](#risks-and-mitigations-1)
     - [User Experience (optional)](#user-experience-optional)
     - [Performance (optional)](#performance-optional)
-    - [Design Evaluation](#design-evaluation)
+    - [Design Evaluation](#design-evaluation-1)
     - [Design Details](#design-details)
       - [Considerations](#considerations)
       - [Open Design Questions](#open-design-questions)
@@ -38,13 +40,13 @@ authors:
   - [N Configmaps Per TaskRun with Patch Merges (c).](#n-configmaps-per-taskrun-with-patch-merges-c)
   - [CRD](#crd)
     - [Notes/Caveats](#notescaveats)
-  - [Dedicated HTTP Service](#dedicated-http-service)
   - [Self-update / mutate the TaskRun via admission controller](#self-update--mutate-the-taskrun-via-admission-controller)
   - [Separate Database](#separate-database)
   - [Store results on PVCs](#store-results-on-pvcs)
   - [No change. Use workspaces.](#no-change-use-workspaces)
   - [Repurpose Artifact Storage API](#repurpose-artifact-storage-api)
   - [Using logs emitted by the Task](#using-logs-emitted-by-the-task)
+  - [Using embedded storage client to store result files in remote storage](#using-embedded-storage-client-to-store-result-files-in-remote-storage)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
 - [Implementation Pull request(s)](#implementation-pull-requests)
@@ -354,6 +356,23 @@ tasks:
   - name: in
     value: "$(tasks.first-task.results.out)"
 ```
+                                  
+Alternatively, the remote storage flag can be specified as a new field. e.g.
+                                  
+```yaml
+tasks:
+- name: first-task
+  taskSpec: foo
+    results:
+    - name: out
+      type: string
+      storage: reference  # <-- *new type*
+- name: second-task
+  taskSpec: bar
+  params:
+  - name: in
+    value: "$(tasks.first-task.results.out)"
+```
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -426,6 +445,20 @@ Questions:
     file contents in the PVCs and replace the pvc/storage path with the new contents. This can avoid the 1.5 MB CRD size as the result contents are
     replaced during init-container, so it won't be part of the pod or taskrun spec. In the API Spec, we could let users to choose whether to opt-in this
     feature for each task to reduce the unnecessary overheads if not needed.
+                                     
+   #### API details:
+   - In the Pipeline API field, introduce a new field `resultWorkspace` for passing all the `reference` type results. The new field consist the name of the workspace name for passing the big results and can extend in the future for more workspace configurations.
+   
+                                     
+   ```yaml
+   apiVersion: tekton.dev/v1beta1
+   kind: Pipeline
+   spec:
+     resultWorkspace:
+       name: shared-data
+   ...
+   ```
+   - POC pull request: [TEP-0086 Large results using workspace POC](https://github.com/tektoncd/pipeline/pull/5337)
 
 Pros:
 - PVCs can leverage with CSI driver to store files in most storages.
@@ -514,7 +547,7 @@ Note: This section is exclusively for merged pull requests, for this TEP.
 It will be a quick reference for those looking for implementation of this TEP.
 -->
 
-- [TEP-0086 remote storage result POC](https://github.com/tektoncd/pipeline/pull/4838)
+- [TEP-0086 Large results using workspace POC](https://github.com/tektoncd/pipeline/pull/5337)
 
 ## Next steps to unblock
 

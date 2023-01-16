@@ -66,16 +66,19 @@ tags, and then generate with `hack/update-toc.sh`.
 -->
 
 <!-- toc -->
-
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
   - [Use Cases](#use-cases)
+    - [Concrete Use Cases](#concrete-use-cases)
   - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [Notes and Caveats](#notes-and-caveats)
 - [Design Details](#design-details)
+  - [Signable Artifacts](#signable-artifacts)
+  - [DigestSets](#digestsets)
+  - [Multi-arch Container Images](#multi-arch-container-images)
 - [Design Evaluation](#design-evaluation)
   - [Reusability](#reusability)
   - [Simplicity](#simplicity)
@@ -85,6 +88,9 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Risks and Mitigations](#risks-and-mitigations)
   - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
+  - [Alternatives for Schemas](#alternatives-for-schemas)
+  - [Inputs / Outputs Distinguishment](#inputs--outputs-distinguishment)
+  - [Using Run Status to generate Provenance Metadata](#using-run-status-to-generate-provenance-metadata)
 - [Implementation Plan](#implementation-plan)
   - [Test Plan](#test-plan)
   - [Infrastructure Needed](#infrastructure-needed)

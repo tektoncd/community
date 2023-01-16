@@ -30,7 +30,7 @@ authors:
   - [Separate Host Connection and Repository Configuration](#separate-host-connection-and-repository-configuration)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)
 - [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
-- [Implementation Pull request(s)](#implementation-pull-request-s)
+- [Implementation Pull request(s)](#implementation-pull-requests)
 - [References (optional)](#references-optional)
 <!-- /toc -->
 

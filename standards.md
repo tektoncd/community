@@ -181,6 +181,7 @@ what we want.
 
 ## Code
 
+* Tekton projects follow the [Go Style Guide](https://google.github.io/styleguide/go/).
 * Reviewers are expected to understand the changes well enough that they would feel confident
   saying the understand what is changing and why:
   * Read through all the code changes

@@ -33,7 +33,7 @@ Extend `PipelineRun` to allow authors to specify sidecars of tasks.
 
 Make tasks more reusable.
 
-Tasks are meant to be shared (e.g. through Git or the ArtifactHub) and refrenced from pipeline runs. This TEP seeks to make tasks more often reusable by removing the limitation that sidecars are "hardcoded" and cannot be changed by the pipeline run author.
+Tasks are meant to be shared (e.g. through Git or the ArtifactHub) and referenced from pipeline runs. This TEP seeks to make tasks more often reusable by removing the limitation that sidecars are "hardcoded" and cannot be changed by the pipeline run author.
 
 ### Goals
 

@@ -37,7 +37,7 @@ Tasks are meant to be shared (e.g. through Git or the ArtifactHub) and refrenced
 
 ### Goals
 
-* Extend `PipelineRun` to allow to specify all apsects of sidecars, matching how [sidecars are specified in tasks](https://tekton.dev/docs/pipelines/tasks/#specifying-sidecars).
+* Extend `PipelineRun` to allow to specify all aspects of sidecars, matching how [sidecars are specified in tasks](https://tekton.dev/docs/pipelines/tasks/#specifying-sidecars).
 
 ### Non-Goals
 

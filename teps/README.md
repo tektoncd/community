@@ -118,3 +118,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0125](0125-add-credential-filter-to-entrypoint-logger.md) | Add credential filter to entrypoint logger | proposed | 2022-10-27 |
 |[TEP-0127](0127-larger-results-via-sidecar-logs.md) | Larger Results via Sidecar Logs | implemented | 2022-12-15 |
 |[TEP-0128](0128-scheduled-runs.md) | Scheduled Runs | implementable | 2022-12-20 |
+|[TEP-0131](0131-larger-results-via-workspace.md) | Larger Results via Workspace | proposed | 2023-01-19 |

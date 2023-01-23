@@ -333,6 +333,8 @@ that results are stored on the TaskRun itself
 
 (See [Risks and mitigations](#risks-and-mitigations).)
 
+**[TEP-0127](0127-larger-results-via-sidecar-logs.md) Larger results via sidecar logs, expands on this.**
+
 ### Result References vs results in TaskRun
 
 Beyond size limits of specific TaskRuns’ results, the fundamental issue is that API objects in etcd are not suitable for
@@ -468,6 +470,8 @@ Pros:
 Cons:
 - Any downsides of PVCs we've encountered in other places (e.g. [TEP-0044 data locality](https://github.com/tektoncd/community/blob/main/teps/0044-data-locality-and-pod-overhead-in-pipelines.md))
 - Any consumer of the opted in remote results would need to mount the PVC
+
+**[TEP-0131](0131-larger-results-via-workspace.md) Larger results via workspace expands on this idea.**
 
 ### No change. Use workspaces.
 

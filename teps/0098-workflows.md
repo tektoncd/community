@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Workflows
 creation-date: '2021-12-06'
-last-updated: '2022-12-27'
+last-updated: '2023-01-23'
 authors:
 - '@dibyom'
 - '@lbernick'
@@ -14,7 +14,6 @@ authors:
 - [Summary](#summary)
 - [Motivation](#motivation)
   - [Goals](#goals)
-  - [Future Work](#future-work)
   - [Non-Goals](#non-goals)
   - [Use Cases](#use-cases)
 - [Requirements](#requirements)
@@ -23,18 +22,46 @@ authors:
 - [Design Considerations](#design-considerations)
   - [Extensibility and Conformance](#extensibility-and-conformance)
   - [User Experience Goals](#user-experience-goals)
+  - [Use of Triggers](#use-of-triggers)
 - [Prior Art](#prior-art)
+  - [Closed-source projects](#closed-source-projects)
+  - [Open-Source projects](#open-source-projects)
+  - [Tekton Experimental Projects/Proposals](#tekton-experimental-projectsproposals)
 - [Proposal](#proposal)
-  - [Notes/Caveats (optional)](#notescaveats-optional)
+  - [Steps](#steps)
+  - [Existing API](#existing-api)
+  - [Proposed API](#proposed-api)
+  - [Events + Filters](#events--filters)
+    - [Example: pull request](#example-pull-request)
+    - [Example: Pull request with target and source branches](#example-pull-request-with-target-and-source-branches)
+    - [Example: Push to main branch](#example-push-to-main-branch)
+    - [Example: Push with changed files](#example-push-with-changed-files)
+    - [Example: Pull request with custom logic](#example-pull-request-with-custom-logic)
+  - [Notes/Caveats](#notescaveats)
+    - [Tekton project requirements](#tekton-project-requirements)
   - [Risks and Mitigations](#risks-and-mitigations)
-  - [Performance (optional)](#performance-optional)
-- [Design Details](#design-details)
-- [Test Plan](#test-plan)
+  - [Risks of not implementing this TEP](#risks-of-not-implementing-this-tep)
 - [Design Evaluation](#design-evaluation)
+  - [Reusability](#reusability)
+  - [Simplicity](#simplicity)
+  - [Flexibility](#flexibility)
+  - [Conformance](#conformance)
 - [Drawbacks](#drawbacks)
 - [Alternatives: Strategy](#alternatives-strategy)
-- [Infrastructure Needed (optional)](#infrastructure-needed-optional)
-- [Upgrade &amp; Migration Strategy (optional)](#upgrade--migration-strategy-optional)
+  - [Build Workflows with Extensible API](#build-workflows-with-extensible-api)
+  - [Design Workflows API with Conformance Spec](#design-workflows-api-with-conformance-spec)
+  - [Adopt Pipelines as Code alongside Workflows](#adopt-pipelines-as-code-alongside-workflows)
+  - [Encourage use of Knative EventSources + Tekton Triggers](#encourage-use-of-knative-eventsources--tekton-triggers)
+  - [Build a Workflows implementation on top of another project](#build-a-workflows-implementation-on-top-of-another-project)
+  - [Separate E2E CI/CD projects for each Git provider](#separate-e2e-cicd-projects-for-each-git-provider)
+  - [Improve existing projects](#improve-existing-projects)
+  - [Build some features upstream](#build-some-features-upstream)
+- [Alternatives: API](#alternatives-api)
+  - [Include repo definitions](#include-repo-definitions)
+  - [Original events syntax proposal](#original-events-syntax-proposal)
+  - [Embed Triggers in Workflow definition](#embed-triggers-in-workflow-definition)
+  - [Create Events API only](#create-events-api-only)
+- [Infrastructure Needed](#infrastructure-needed)
 - [Implementation Pull request(s)](#implementation-pull-requests)
 - [References](#references)
 <!-- /toc -->
@@ -70,10 +97,6 @@ including making it easier to separate notifications and other infrastructure ou
   * Ops teams or cluster operators will still need to interact with the cluster, and we should provide a way for app engineers
     to modify E2E CI/CD configuration directly on the cluster for those who want to.
   * See [User Experience](#user-experience) for more information.
-
-### Future Work
-
-* Create a Workflows conformance spec
 
 ### Non-Goals
 
@@ -251,7 +274,6 @@ spec:
               value: $(tasks.get-github-app-token.results.token)
             - name: success
               value: $(tasks.tests.status)
-        serviceAccountName: container-registry-sa
         params:
         - name: repo-url
           value: $(tt.params.repo-url)
@@ -293,7 +315,7 @@ While Workflows should support the most commonly used SCMs out of the box, our g
 In addition, platform builders might want their own logic for connecting to SCMs.
 For example, the default implementation of a Github connection could allow the user to send events that trigger PipelineRuns from a Github App they create,
 but a platform builder might want to use their own Github App and include other custom connection logic.
-Therefore, Workflows must provide an extensibility mechanism to allow platform builders to create their own controllers for connecting to repos
+Therefore, Workflows should explore providing an extensibility mechanism to allow platform builders to create their own controllers for connecting to repos
 and sending events from these repo connections, similarly to how users can define their own resolvers or Custom Tasks.
 
 In addition, there are already several implementations of wrappers on top of Tekton Pipelines that allow end users to specify end-to-end CI/CD Pipelines
@@ -396,6 +418,9 @@ with the state of the configuration defined in their repository.
   - There's a catalog of Knative EventSources, including GitHub, GitLab, and Ping EventSources, which could serve the use cases identified.
   Users can also create their own EventSources.
   - See [POC of Workflows based on Knative EventSources](https://github.com/tektoncd/experimental/pull/928)
+- [Tekton-CI](https://github.com/gitops-tools/tekton-ci): a project that allows Tekton PipelineRuns to be stored in a repo and triggered by events on that repo
+  - The developer is still responsible for setting up the webhook, but no Triggers or EventListeners
+- [drone.io](https://docs.drone.io/), a CI platform that supports pipelines on Kubernetes triggered by several major SCMs 
 - [Temporal](https://temporal.io/): A set of SDKs for creating and orchestrating Workflows, which can be used
   in combination with Tekton Pipelines.
 
@@ -412,85 +437,453 @@ and Pipeline definitions into a higher level opinionated syntax that is aware of
 
 ## Proposal
 
-TODO
+As proposed in [#866](https://github.com/tektoncd/community/issues/883), Pipelines as Code will be adopted into the tektoncd organization.
+It will be built and released as a Tekton project, and renamed to "Workflows", since the scope
+of the Workflows project is larger than storing Pipelines in version control.
+The Tekton community would maintain the project and shape its future to meet the goals of the Workflows project.
+The doc [Pipelines as Code -> Tekton Workflows](https://docs.google.com/document/d/1JAnXFkvs4aeciAJEsl7454e0J3ZHbL1yCPncMBHlTtM/)
+compares Pipelines as Code to the goals of the Workflows project.
 
-### Notes/Caveats (optional)
+### Steps
 
-<!--
-What are the caveats to the proposal?
-What are some important details that didn't come across above.
-Go in to as much detail as necessary here.
-This might be a good place to talk about core concepts and how they relate.
--->
+1. Move the project to the tektoncd org, rename it, run tests on Tekton infrastructure, and publish releases to the tekton-releases GCP project.
+Complete work identified in ["Tekton project requirements"](#tekton-project-requirements) section.
+2. Add support for the [proposed API](#proposed-api) and mark the [existing API](#existing-api) as deprecated.
+The existing API has apiVersion `pipelinesascode.tekton.dev/v1alpha1`, while the new API will have apiVersion `workflows.tekton.dev/v1alpha1`.
+Update all docs to use the new API, and continue to support the existing API for 6 months before removing it.
+3. Update the CLI plugin to use `tkn workflows`, keeping `tkn pac` as an alias for 6 months.
+4. Open subsequent TEPs to support the following features:
+  - Workflows referencing repos they aren't stored in (a feature that will allow us to dogfood Workflows in our plumbing repo)
+  - Integration with the Results API
+  - More configuration options for who can trigger PipelineRuns by opening a pull request
+    - This is currently hard-coded to allow owners, collaborators, and org members to run PipelineRuns and comment "/ok-to-test" on others' PRs.
+  - Triggering PipelineRuns based on polling changed files (likely as an update to [TEP-0083: Scheduled and Polling Runs](./0083-scheduled-and-polling-runs-in-tekton.md))
+  - Queueing concurrent PipelineRuns per-Workflow instead of per-repo
+  - Canceling concurrent PipelineRuns (likely as an update to [TEP-0120: Canceling Concurrent PipelineRuns](./0120-canceling-concurrent-pipelineruns.md))
+  - (optional) Creating "starter" Workflows for the most common use cases,
+    similar to GitHub Actions [starter workflows](https://docs.github.com/en/actions/using-workflows/using-starter-workflows)
+5. Over the long term, explore:
+  - Updating the project to use Triggers for its implementation.
+    - The project used to be based on Triggers (for more info, see the [latest branch](https://github.com/openshift-pipelines/pipelines-as-code/tree/release-0.5.0/config)
+      using a Triggers backend), but migrated to a custom implementation due to several of the [pain points](#use-of-triggers) identified above.
+      We'll have to fix these pain points before reworking the implementation to use Triggers, and the refactoring may be challenging to do incrementally
+      or not worth the time required to do so. We'll have to weigh the difficulty of refactoring against the difficulty of maintaining
+      similar code in both projects.
+  - Building extensibility mechanisms into the project and/or creating a conformance spec. It's not yet clear what this would look like.
+
+### Existing API
+
+Cluster operators can give repo admins [permission to create a Repo CRD](https://pipelinesascode.com/docs/install/installation/#rbac).
+Repo admins can then connect repos with the `tkn pac` CLI, which can create a new GitHub App or webhook on behalf of the user. (It also supports GitLab and BitBucket.)
+The CLI creates the Repo CRD during this process, for example:
+
+```yaml
+apiVersion: pipelinesascode.tekton.dev/v1alpha1
+kind: Repository
+metadata:
+  name: pipelines-repo
+spec:
+  url: https://github.com/tektoncd/pipeline
+```
+
+Developers can then create PipelineRuns to run based on repo events by adding a PipelineRun to their connected repo's ".tekton" folder.
+For example, the [GitHub CI example](#github-based-ci) looks like this with Pipelines as Code's existing API
+(substituting the check_run event for the pull_request event):
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: ci-pipelinerun-web-app
+  annotations:
+    # This annotation directs Pipelines as Code to run the PipelineRun
+    # when a "pull_request" event occurs on the repository
+    pipelinesascode.tekton.dev/on-event: "[pull_request]"
+
+    # This annotation filters events of interest,
+    # meaning the PipelineRun will run only for events with target branch "main"
+    pipelinesascode.tekton.dev/on-target-branch: "[main]"
+
+    # This annotation directs Pipelines as Code to fetch the following tasks
+    # from the hub and apply them to the cluster.
+    pipelinesascode.tekton.dev/task: "pytest"
+    pipelinesascode.tekton.dev/task-1: "git-clone"
+spec:
+  params:
+    # The variable with brackets are specific to Pipelines as Code.
+    # They will automatically be expanded with the events from Github.
+    - name: repo_url
+      value: "{{ repo_url }}"
+    - name: revision
+      value: "{{ revision }}"
+  pipelineSpec:
+    params:
+      - name: repo_url
+      - name: revision
+    workspaces:
+      - name: source
+    tasks:
+      - name: fetch-repository
+        taskRef:
+          name: git-clone
+        workspaces:
+          - name: output
+            workspace: source
+        params:
+          - name: url
+            value: $(params.repo_url)
+          - name: revision
+            value: $(params.revision)
+      - name: unittests
+        runAfter:
+          - fetch-repository
+        workspaces:
+          - name: source
+            workspace: source
+        taskRef:
+          name: pytest
+  workspaces:
+  - name: source
+    volumeClaimTemplate:
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+```
+
+Statuses of PipelineRuns triggered by Pipelines as Code are stored on the Repo CRD, for example:
+
+```yaml
+apiVersion: pipelinesascode.tekton.dev/v1alpha1
+kind: Repository
+metadata:
+  name: pipelines-repo
+spec:
+  url: https://github.com/tektoncd/pipeline
+pipelinerun_status:
+- completionTime: "2022-11-17T17:56:57Z"
+  conditions:
+  - lastTransitionTime: "2022-11-17T17:56:57Z"
+    message: 'Tasks Completed: 2 (Failed: 0, Cancelled 0), Skipped: 0'
+    reason: Succeeded
+    status: "True"
+    type: Succeeded
+  event_type: push
+  logurl: https://giphy.com/search/random-dogs
+  pipelineRunName: ci-pipelinerun-web-app-vdrh2
+  sha: 12345
+  sha_url: https://github.com/tektoncd/pipeline/commit/12345
+  startTime: "2022-11-17T17:54:54Z"
+  target_branch: main
+  title: Example commit message
+```
+
+### Proposed API
+
+No changes are proposed to the installation process.
+However, Workflows will use a new "Workflow" object defined in the repo instead of a PipelineRun with annotations.
+There are a few differences:
+
+- **Variable replacement**: The existing API uses syntax like `{{ repo_owner }}` within a PipelineRun, but this syntax does not work if defined
+in a PipelineRun yaml and applied to a cluster. Instead, variable substitutions for repo metadata are permitted only within `workflow.spec.pipelineRun`,
+and Workflows will substitute these values to create a valid PipelineRun. (This is similar to the pattern used in TriggerTemplates.)
+Variable replacement will use `$(context.foo)` syntax instead of `{{ foo }}` syntax, for consistency with existing Tekton projects.
+
+- **Remote resolution**: The Pipelines as Code resolver will be replaced with remote resolution. `pipelinesascode.tekton.dev/task-n`
+annotations won't be supported in the proposed API.
+
+- **Events and filters**: Configuration specifying which events should trigger PipelineRuns will be moved from PipelineRun annotations into top-level fields
+in Workflows. See [Events and Filters](#events--filters) for more info.
+
+In addition, we will explore removing PipelineRun statuses from the Repo CRD in the subsequent TEP for integration with Results.
+This will ensure the size of the CRD does not continue to grow over time, and will provide a better user experience for fetching records of previous PipelineRuns.
+PipelineRuns triggered by Workflows will have the annotation `workflows.tekton.dev/workflow=<workflow name>` to allow PipelineRuns associated with a Workflow to be easily grouped.
+
+The previous example would be written as follows:
+
+```yaml
+apiVersion: workflows.tekton.dev/v1alpha1
+kind: Workflow
+metadata:
+  name: ci-pipelinerun-web-app
+spec:
+  params:
+  - name: repo_url
+    value: $(context.repo_url)
+  - name: revision
+    value: $(context.revision)
+  events:
+  - type: "pull_request"
+    filters:
+      targetBranches: ["main"]
+  pipelineRun:
+    params:
+      - name: repo_url
+        value: $(wf.params.repo_url)
+      - name: revision
+        value: $(wf.params.revision)
+    pipelineSpec:
+      params:
+        - name: repo_url
+        - name: revision
+      workspaces:
+        - name: source
+      tasks:
+        - name: fetch-repository
+          taskRef:
+            resolver: hub
+            params:
+            - name: name
+              value: git-clone
+          workspaces:
+            - name: output
+              workspace: source
+          params:
+            - name: url
+              value: $(params.repo_url)
+            - name: revision
+              value: $(params.revision)
+        - name: unittests
+          runAfter:
+            - fetch-repository
+          workspaces:
+            - name: source
+              workspace: source
+          taskRef:
+            resolver: hub
+            params:
+            - name: name
+              value: pytest
+    workspaces:
+    - name: source
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+```
+
+We won't support applying Workflows to a cluster in an initial version of this proposal.
+(Workflows applied to a cluster need some information to specify the repo they apply to, unlike Workflows defined directly in a repo.)
+We'll design a solution for Workflows applied to a cluster or stored in other repos in a follow-up TEP.
+
+### Events + Filters
+
+Pipelines as Code supports the following annotations for triggering PipelineRuns:
+- on-event: a list of strings, matching event names of the SCM
+- on-target-branch: a list of string regexes, used to filter the target branch for "pull_request" and "push" events
+- on-cel-expression: a string like 'event == "pull_request" && target_branch == "main" && source_branch == "wip"'
+  - Available fields in CEL expressions are "event", "target_branch", "source_branch", "event_title", and ".pathChanged"
+
+Workflows will specify this information in an "events" field. Events have a `type`, with the same meaning as "on-event" in PAC.
+They may also optionally have `filters`. Supported filters are:
+- targetBranches, a list of regex. Valid for push and pull/merge request events
+- sourceBranches, a list of regex. Valid for pull/merge request events
+- pathsChanged, a list of regex. Valid for push and pull/merge request events
+- cel, a list of string matching the syntax used in a Triggers CEL ClusterInterceptor (e.g. `body.foo.bar`, where `body` is the event payload).
+Valid for any event type.
+
+In order for the PipelineRun to be run, all filters must match. The `targetBranches`, `sourceBranches`, and `pathsChanged` filters
+match if any element in the list matches. The `cel` filter matches if all of the CEL expressions match.
+
+#### Example: pull request
+
+PAC:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+annotations:
+  pipelinesascode.tekton.dev/on-event: "[pull_request]"
+```
+
+Workflows:
+
+```yaml
+apiVersion: workflows.tekton.dev/v1alpha1
+kind: Workflow
+spec:
+  events:
+  - type: pull_request
+```
+
+#### Example: Pull request with target and source branches
+
+PAC:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+annotations:
+  pipelinesascode.tekton.dev/on-cel-expression: |
+    event == "pull_request" && target_branch == "main" && (source_branch == "feature1" || source_branch == "feature2")
+```
+
+Workflows:
+
+```yaml
+apiVersion: workflows.tekton.dev/v1alpha1
+kind: Workflow
+spec:
+  events:
+  - type: pull_request
+    filters:
+      targetBranches:
+      - "main"
+      sourceBranches:
+      - "feature1"
+      - "feature2"
+```
+
+#### Example: Push to main branch
+
+PAC:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+annotations:
+  pipelinesascode.tekton.dev/on-target-branch: "[refs/heads/main]"
+  pipelinesascode.tekton.dev/on-event: "[push]"
+```
+
+Workflows:
+
+```yaml
+apiVersion: workflows.tekton.dev/v1alpha1
+kind: Workflow
+spec:
+  events:
+  - type: push
+    filters:
+      targetBranches:
+      - "refs/heads/main"
+```
+
+#### Example: Push with changed files
+
+PAC:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+annotations:
+  pipelinesascode.tekton.dev/on-cel-expression: event == "push" && "docs/*.md".pathChanged()
+```
+
+Workflows:
+
+```yaml
+apiVersion: workflows.tekton.dev/v1alpha1
+kind: Workflow
+spec:
+  events:
+  - type: push
+    filters:
+      pathsChanged:
+      - "docs/*.md"
+```
+
+#### Example: Pull request with custom logic 
+
+PAC:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+annotations:
+  pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request && event_title.startsWith("[DOWNSTREAM]")
+```
+
+Workflows:
+
+```yaml
+apiVersion: workflows.tekton.dev/v1alpha1
+kind: Workflow
+spec:
+  events:
+  - type: pull_request
+    filters:
+      cel:
+      - body.pull_request.title.startsWith("DOWNSTREAM")
+```
+
+### Notes/Caveats
+
+#### Tekton project requirements
+
+Existing Tekton project requirements can be found [here](../process.md#project-requirements).
+
+- Pipelines as Code already uses the Apache 2.0 License, has a README.md, and uses the same code of conduct as the Tekton org.
+- The [contributing doc](https://github.com/openshift-pipelines/pipelines-as-code/blob/b6791d33d0dc122df91d026372655bfcd0b016e4/docs/content/dev/_index.md)
+must be refactored into DEVELOPMENT.md and CONTRIBUTING.md files.
+- An OWNERS file will be added and CI will be moved to the plumbing repo.
+
+Workflows will be considered an alpha project.
 
 ### Risks and Mitigations
 
-<!--
-What are the risks of this proposal and how do we mitigate. Think broadly.
-For example, consider both security and how this will impact the larger
-kubernetes ecosystem.
+- Existing users may not want API changes.
+  - Mitigation: support existing API for 6 months. Existing Repo CRD is "v1alpha1", although there is no compatibility policy defined.
+- Migrating Workflows implementation to use Triggers may be too difficult to be worth doing.
 
-How will security be reviewed and by whom?
+### Risks of not implementing this TEP
 
-How will UX be reviewed and by whom?
+It's challenging to get Tekton set up E2E, and many alternatives exist for CI/CD.
+Spending a long time designing an ideal E2E API risks redoing existing work and users choosing simpler alternatives
+(potentially including Pipelines as Code), which could hurt Tekton's goal to become the OSS industry standard for CI/CD.
+Adopting Pipelines as Code and iterating on it addresses many common use cases, while still leaving room for future improvements.
 
-Consider including folks that also work outside the WGs or subproject.
--->
-
-### Performance (optional)
-
-<!--
-Consideration about performance.
-What impact does this change have on the start-up time and execution time
-of task and pipeline runs? What impact does it have on the resource footprint
-of Tekton controllers as well as task and pipeline runs?
-
-Consider which use cases are impacted by this change and what are their
-performance requirements.
--->
-
-## Design Details
-
-<!--
-This section should contain enough information that the specifics of your
-change are understandable.  This may include API specs (though not always
-required) or even code snippets.  If there's any ambiguity about HOW your
-proposal will be implemented, this is the place to discuss them.
-
-If it's helpful to include workflow diagrams or any other related images,
-add them under "/teps/images/". It's upto the TEP author to choose the name
-of the file, but general guidance is to include at least TEP number in the
-file name, for example, "/teps/images/NNNN-workflow.jpg".
--->
-
-## Test Plan
-
-<!--
-**Note:** *Not required until targeted at a release.*
-
-Consider the following in developing a test plan for this enhancement:
-- Will there be e2e and integration tests, in addition to unit tests?
-- How will it be tested in isolation vs with other components?
-
-No need to outline all of the test cases, just the general strategy.  Anything
-that would count as tricky in the implementation and anything particularly
-challenging to test should be called out.
-
-All code is expected to have adequate tests (eventually with coverage
-expectations).
--->
+This doesn't imply that we should sacrifice any [design principles](../design-principles.md) or [code standards](../standards.md) for this project.
+It only means that timing is a factor we must consider in our cost/benefit analysis of alternative options.
 
 ## Design Evaluation
-<!--
-How does this proposal affect the api conventions, reusability, simplicity, flexibility 
-and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/master/design-principles.md)
--->
+
+### Reusability
+
+- Pipelines as Code doesn't make use of Tekton Triggers.
+- This proposal doesn't affect the reusability of Tasks and Pipelines.
+- Catalog Tasks, like [github-app-token](https://hub.tekton.dev/tekton/task/github-app-token), aren't good replacements for this functionality,
+because we'd like to avoid people having to build this into their Pipelines.
+
+### Simplicity
+
+Adopting this proposal makes the user experience significantly easier:
+- Webhook or GitHub app can be set up for you with the CLI
+- No need to build notification steps directly into your Pipeline
+- Need to understand contents of SCM event payloads is greatly reduced
+- Easy to test a Pipeline by opening a pull request with its contents
+
+However, there are several opinionated choices made by this proposal:
+- Configuration must be stored in the repo it operates on
+- Hard-coded conditions for users who are permitted to test PipelineRuns by opening a pull request
+- Choosing a few specific filter types for top-level support
+
+It's likely acceptable to have a higher degree of opinionation in Workflows than in Pipelines, since the goals of the project are to make E2E CI/CD configuration easier,
+while Pipelines is intended to be more low level.
+
+This proposal is not the bare minimum change needed to solve this use case, but it includes many features making the user experience much simpler.
+(The bare minimum change would probably be the alternative solution ["Continue to develop the GitHub notifier project"](#continue-to-develop-the-github-notifier-project).)
+
+### Flexibility
+
+- This proposal improves flexibility of Tasks and Pipelines by removing the need for them to contain notification logic.
+- We will explore options for extensibility in the future.
+
+### Conformance
+
+- Workflows defined in a Git repo will not work when applied directly to a cluster.
+- Existing API, with non-conformant parameter substitution syntax, will be supported until it can be replaced with conformant syntax.
+- Doesn't require user to understand how the API is implemented or introduce new Kubernetes-related syntax.
+- Syntax is not specific to an SCM.
 
 ## Drawbacks
 
-<!--
-Why should this TEP _not_ be implemented?
--->
+- Existing API will be present in the tektoncd org until the new one is supported, and for 6 months afterwards, including non-conformant PipelineRun syntax.
 
 ## Alternatives: Strategy
 
@@ -536,41 +929,6 @@ API extensibility mechanism (and later on declaring a conformance spec).
 - Platform builders who want to change only part of the implementation will be forced to recreate the entire implementation.
   - For example, a platform builder might want to add some custom steps to the process of connecting to a repo, or add their own backing
   for secrets storage, without rewriting much of the project.
-
-### Adopt Pipelines as Code as Workflows Replacement
-
-In this solution, originally proposed in [#866](https://github.com/tektoncd/community/issues/883),
-Pipelines as Code would be transferred to the tektoncd organization,
-built and released as a Tekton project, and likely renamed to "Workflows", since the scope
-of the Workflows project is larger than storing Pipelines in version control.
-The Tekton community would maintain the project and shape its future to meet the goals of the Workflows project.
-The doc [Pipelines as Code -> Tekton Workflows](https://docs.google.com/document/d/1JAnXFkvs4aeciAJEsl7454e0J3ZHbL1yCPncMBHlTtM/)
-compares Pipelines as Code to the goals of the Workflows project.
-
-These steps are not set in stone. If this alternative is chosen, it will be fleshed out in more detail in this TEP or a separate one.
-Suggested steps:
-1. Design and implement a solution for parameter substitution in Pipelines as Code that aligns with existing Tekton patterns for variable substitution.
-(The current [syntax](https://pipelinesascode.com/docs/guide/authoringprs/#authoring-pipelineruns-in-tekton-directory)
-includes variable expansion syntax in a PipelineRun that the PipelineRun doesn't understand, and can't be used with Tekton Pipelines.)
-1. Move the project to the tektoncd org, rename it, run tests on Tekton infrastructure, and publish releases to the tekton-releases GCP project.
-Use tekton standards for code, conduct, and contributions. Choose and document a Tekton stability level for the existing API.
-1. Update the project to use remote resolution. For example, we may want to keep the ability to refer to Tekton CRDs in the same
-repo using local paths, but require the use of the built-in hub resolvers rather than using the Pipelines as Code
-[hub resolution](https://pipelinesascode.com/docs/guide/resolver/#tekton-hubhttpshubtektondev) and the built-in git resolver rather than using
-the Pipelines as Code [remote URL syntax](https://pipelinesascode.com/docs/guide/resolver/#remote-http-url).
-(Note: this work is already planned for Pipelines as Code.)
-1. Create a Workflow CRD that allows users to configure much of the behavior that's currently configured through annotations, such as which events
-trigger a PipelineRun and concurrency controls to apply. We may choose to rework the existing implementation so that configuring a PipelineRun
-with annotations would be implemented by creating a Workflow under the hood. We'd support the existing API (PipelineRun with annotations) for at
-least 6 months, and then we can reevaluate how to reduce duplication and create a more consistent API while still maintaining an easy setup experience
-for users who want to configure workflows only via their Git repo rather than on the Kubernetes cluster.
-1. Set a long term goal of updating the project to use Triggers. The project used to be based on Triggers (for more info, see the 
-[latest branch](https://github.com/openshift-pipelines/pipelines-as-code/tree/release-0.5.0/config) using a Triggers backend),
-but migrated to a custom implementation due to several of the [pain points](#use-of-triggers) identified above.
-We'll have to fix these pain points before reworking the implementation to use Triggers, and the refactoring may be challenging to do incrementally
-or not worth the time required to do so. We'll have to weigh the difficulty of refactoring against the difficulty of maintaining
-similar code in both projects.
-1. Explore building extensibility mechanisms into the project. It's not yet clear what this would look like.
 
 ### Adopt Pipelines as Code alongside Workflows
 
@@ -635,6 +993,22 @@ This solution also leads to more vendor lock-in. It's not very useful for multip
 to be Tekton Pipelines conformant if you can't switch Git providers without
 rewriting all of your Tekton Workflows.
 
+### Continue to develop the GitHub notifier project
+
+Setting up Tekton Triggers to receive events from connected repos is possible with today's API,
+although the user experience could be improved. The biggest challenge associated with using Tekton for CI/CD workflows
+is to post results of PipelineRuns back to the SCM during CI. The GitHub notifier project focuses specifically on
+the use case of posting CI PipelineRun results back to GitHub Checks.
+
+Instead of building a separate Workflows project, we could promote this project from experimental to a top-level alpha
+project, and focus our energy on this. We would need to update it to support PipelineRuns as well as TaskRuns.
+
+Pros:
+- Narrow scope; focuses only on the use cases that are most difficult to achieve with existing projects
+
+Cons:
+- Does not improve user experience associated with setting up webhook or GitHub app.
+
 ### Improve existing projects
 
 It's possible that the biggest barriers to adoption and easy setup are that there just aren't enough
@@ -654,21 +1028,281 @@ Some features proposed in Workflows may make sense to implement directly in Pipe
 If implemented, this feature could be used to provide an extensibility mechanism for secrets storage.
 Extensibility mechanisms for data storage could also be implemented upstream.
 
-## Infrastructure Needed (optional)
+## Alternatives: API
 
-<!--
-Use this section if you need things from the project/SIG.  Examples include a
-new subproject, repos requested, github details.  Listing these here allows a
-SIG to get the process for these resources started right away.
--->
+### Include repo definitions
 
-## Upgrade & Migration Strategy (optional)
+In this solution, Workflows defined in the repo they operate on are treated no differently than Workflows defined on a cluster or a separate repo.
+They are applied to a cluster by cluster operators via scripts or existing tools, like any other Tekton or Kubernetes CRD.
+Remote resolution is used to achieve separation of concerns by allowing Pipeline definitions to live separately from Workflow definitions.
+For example, if the frontend team has a frontend test Pipeline that lives in the frontend repo, the cluster operator could write the following Workflow to
+use the version of the CI Pipeline on the main branch for testing:
 
-<!--
-Use this section to detail wether this feature needs an upgrade or
-migration strategy. This is especially useful when we modify a
-behavior or add a feature that may replace and deprecate a current one.
--->
+```yaml
+kind: Workflow
+spec:
+  repos:
+  - name: frontend
+  events:
+  - type: pull_request
+    source:
+      repo: frontend
+  pipelineRun:
+    pipelineRef:
+      resolver: git
+      params:
+      - name: name
+        value: browser-tests
+      - name: url
+        value: $(repos.frontend.url)
+      - name: pathInRepo
+        value: /tekton/pipelines/browser-tests.yaml
+      - name: revision
+        value: main
+```
+
+However, it's likely that app developers would want to iterate on the Pipeline they maintain by opening a pull request with the contents of that Pipeline,
+and running CI using that Pipeline. This operation would need to be restricted to "trusted" developers.
+The results of the Pipeline would then be posted back to the SCM.
+A cluster operator could express this via the following Workflow:
+
+```yaml
+kind: Workflow
+spec:
+  repos:
+  - name: frontend
+  events:
+  - name: ci
+    type: pull_request
+    source:
+      repo: frontend
+    filters:
+    # Only allow this Workflow to run if pull request came from a repo owner/collaborator
+    # TODO: Workshop this syntax
+    - author: owners-and-collaborators
+  pipelineRun:
+    pipelineRef:
+      resolver: git
+      params:
+      - name: name
+        value: browser-tests
+      - name: url
+        value: $(repos.frontend.url)
+      - name: pathInRepo
+        value: /tekton/pipelines/browser-tests.yaml
+      - name: revision
+        value: $(events.ci.revision) # Revision is substituted by Tekton Workflows
+  notifications:
+    # TODO: No existing proposals for notification syntax.
+    # This is for illustration purposes, to show how notifications could be made explicit
+    - sink:
+        # Publish notifications back to the same pull request that generated the event
+        # TODO: Workshop this syntax
+        repo: frontend
+        pull_request: events.ci
+```
+
+Pros:
+- All configuration can be directly applied to a cluster via existing tools like kubectl, kustomize, or FluxCD
+- Workflows can be easily migrated between repos
+- Cluster operator has more control over how Pipelines are tested and which developers have permission to do so
+
+Cons:
+- Can only iterate on Pipeline configuration, not full Workflow configuration, by testing via a pull request
+- "repos" configuration is redundant for Workflows stored in the same repo they operate on
+- Cluster operator is responsible for maintaining automation to keep cluster in sync with repo
+- Need to build syntax for notifications, or have triggers explicit while notifications are implicit
+
+### Original events syntax proposal
+
+The [original design doc](https://docs.google.com/document/d/1CaEti30nnq95jd-bD1Iep4mEnZ5qMEBHax0ixq-9xP0) proposed the following syntax for events:
+
+```yaml
+apiVersion: workflows.tekton.dev/v1alpha1
+kind: Workflow
+spec:
+  triggers:
+  - name: on-pr
+    eventSource:
+      repoRef: pipelines
+    eventType: "pull_request"
+    filters:
+      gitRef:
+        nameRegex: "^main$"
+      pullRequest:
+        pusher: "owner-and-collaborator"
+        comment: "/retest"
+      custom:
+      - cel: "body.action in ['opened', 'reopened']"
+    bindings:
+    - name: commit-sha
+      value: $(body.pull_request.head.sha)
+  repos:
+    ...
+  pipeline:
+    ...
+```
+
+This syntax is not proposed for several reasons:
+- The Triggers project already has a "Triggers" definition, which differs from this one and may be confusing.
+- The source of an event is assumed to be the connected repo.
+  - The original proposal includes cron as an event source, but this is addressed by [TEP-0128: Scheduled Runs](https://github.com/tektoncd/community/pull/904).
+  - We'll explore adding support for triggering based on changed files in a subsequent TEP.
+- There are no bindings, as the proposal uses a PipelineRun instead of a Pipeline.
+- "custom[].cel" syntax is redundant compared to the proposed syntax, since CEL is the only type of "custom" filter.
+- gitRef leaves source/target branch ambiguous.
+- A "pullRequest" filter is redundant with specifying event type "pull_request", and doesn't work well for SCMs that use other terminology.
+
+Pipelines as Code currently hard-codes whose pull requests can trigger a PipelineRun. We'll explore updated configuration options
+for this behavior (including potentially a `pullRequest` filter like the example) in a separate TEP.
+
+### Embed Triggers in Workflow definition
+
+In this option, a Workflow definition includes a list of Triggers (with the same spec as the Triggers project)
+that should fire when the events occur, and would not include `filters` or a PipelineRun.
+Each event defined in `events` would be passed to each Trigger, and each Trigger would require an Interceptor
+to filter to only the events of interest.
+
+Here's what the CI EventListener would look like as a Workflow with Triggers:
+
+```yaml
+apiVersion: workflows.tekton.dev/v1alpha1
+kind: Workflow
+metadata:
+  name: github-ci
+spec:
+  repos:
+  - name: pipelines
+  events:
+  - source:
+      repo: pipelines
+    types:
+    - check_suite
+  triggers:
+    - name: github-listener
+      interceptors:
+        # No need for a GitHub interceptor.
+        # Payload validation and event type filtering is handled by Workflows
+        - name: "only when a new check suite is requested"
+          ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "body.action in ['requested']"
+      bindings:
+      - name: revision
+        value: $(body.check_suite.head_sha)
+      - name: repo-url
+        value: $(repos.pipelines.clone_url) # Variable replacement by Workflows instead of event body
+      template:
+        ref: github-template
+  # No need to define KubernetesResources such as a load balancer and service account
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: github-template
+spec:
+  params:
+    - name: repo-full-name
+    - name: revision
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: github-ci-run-
+      spec:
+        pipelineSpec:
+          tasks:
+          # No Tasks for creating a GitHub API token or creating/updating a new Check.
+          # Workflows will do this for pull request and check suite events.
+          - name: clone
+            taskRef:
+              resolver: hub
+              - name: git-clone
+            workspaces:
+            - name: output
+              workspace: source
+            params:
+            - name: url
+              value: $(params.repo-url)
+            - name: revision
+              value: $(params.revision)
+          - name: tests
+            taskRef:
+              name: tests
+            workspaces:
+            - name: source
+              workspace: source
+            runAfter:
+            - clone
+        serviceAccountName: container-registry-sa
+        params:
+        - name: repo-url
+          value: $(tt.params.repo-url)
+        - name: revision
+          value: $(tt.params.revision)
+        - name: source
+          volumeClaimTemplate:
+            spec:
+              accessModes:
+              - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 1Gi
+```
+
+Pros:
+- Easy to turn existing Tekton Triggers into Workflows
+- Very flexible compared to proposed solution
+- Easy to trigger TaskRuns and other resources from an event, instead of just PipelineRuns
+- Starting with this solution allows us to focus on a great design for repo connections, event generation, and
+notifications, instead of expanding scope to include simpler syntax for Triggers
+- Don't need to bake in logic for filtering specific events based on SCM
+
+Cons:
+- It may be confusing to have to include some types of interceptors (e.g. CEL) but not others (e.g. GitHub)
+- May be too verbose and hard to understand compared to proposed solution
+
+### Create Events API only
+
+In this solution, we would create only an Events API for use with Triggers, instead of a Workflows API.
+For example, when the following CRD is created, a webhook would be created on behalf of the user with the
+EventListener address as its sink.
+
+```yaml
+apiVersion: workflows.tekton.dev/v1alpha1
+kind: Event
+metadata:
+  name: github-ci-webhook
+  namespace: my-namespace
+spec:
+  source:
+    repo: pipelines
+  types:
+  - pull_request
+  - issue_comment
+  sink:
+    eventListener: github-ci-eventlistener
+```
+
+When combined with repo connections, this solution allows users to map events coming from a repo (a source)
+to existing EventListeners (sinks).
+
+Pros:
+- Very flexible
+- Makes it easier to use Triggers for E2E workflows
+- Don't need to bake in logic for filtering specific events based on SCM
+
+Cons:
+- Knative EventSources may be better suited for a proposal like this.
+- It's still very verbose to configure a CI/CD workflow.
+- Doesn't easily allow for defining more complex configuration, such as concurrency
+- Event configuration is separate from PipelineRun configuration, making it harder to understand
+
+## Infrastructure Needed
+
+New "workflows" project in tektoncd org, with CI/CD run on prow + dogfooding cluster and configuration in the plumbing repo.
 
 ## Implementation Pull request(s)
 
@@ -681,6 +1315,7 @@ It will be a quick reference for those looking for implementation of this TEP.
 
 ## References
 
+- [Original design proposal](https://docs.google.com/document/d/1CaEti30nnq95jd-bD1Iep4mEnZ5qMEBHax0ixq-9xP0)
 - [TEP-0021: Results API](./0021-results-api.md)
 - [TEP-0032: Tekton Notifications](./0032-tekton-notifications.md)
 - [TEP-0083: Scheduled and polling runs](./0083-scheduled-and-polling-runs-in-tekton.md)

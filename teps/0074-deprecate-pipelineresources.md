@@ -5,6 +5,7 @@ creation-date: '2021-07-14'
 last-updated: '2022-04-11'
 authors:
 - '@bobcatfish'
+- '@lbernick'
 ---
 
 # TEP-0074: Deprecate PipelineResources
@@ -162,9 +163,6 @@ that maybe this concept, at least in its current form, isn't required).
 1. ~~Continue to support `PipelineResources` in the Pipelines `v1beta1` API for at least 9 months after announcing their deprecation,
    following our [stability policy](https://github.com/tektoncd/pipeline/blob/main/api_compatibility_policy.md).~~ `PipelineResources`
    are going to be removed since it has been 9 months after the deprecation announcement.
-1. Once this TEP is marked as `implementable`, create [tektoncd/images](#new-repo-tektoncdimages) and move the logic
-   backing these images to this repo; update the Tekton Pipelines release to reference these images release from there
-   instead of within the Tekton Pipelines release itself
 
 ### Features that will replace PipelineResources functionality
 
@@ -181,7 +179,7 @@ that maybe this concept, at least in its current form, isn't required).
   - [ ] If the solution to TEP-0044 requires [TEP-0056 Pipelines in Pipelines](https://github.com/tektoncd/community/blob/main/teps/0056-pipelines-in-pipelines.md),
   this should also be in beta
   
-### New repo: tektoncd/images
+### Images used in PipelineResources
 
 PipelineResources are executed inside TaskRuns by running images that are built and published as part of Tekton Pipelines
 releases. These same images are also used by
@@ -192,25 +190,31 @@ These images are versioned alongside Tekton Pipelines, regardless of whether the
 The images are:
 
 * [git-init](https://github.com/tektoncd/pipeline/tree/main/cmd/git-init)
+  * Used in the catalog Tasks "git-clone" and "git-batch-merge"
 * [pullrequest-init](https://github.com/tektoncd/pipeline/tree/main/cmd/pullrequest-init)
+  * Used in the "pull-request" catalog Task, intended as a replacement for the pullrequest PipelineResource
 * [kubeconfigwriter](https://github.com/tektoncd/pipeline/tree/main/cmd/kubeconfigwriter)
+  * Used in the "kubeconfig-creator" catalog Task, intended as a replacement for the cluster PipelineResource
+* [imagedigestexporter](https://github.com/tektoncd/pipeline/tree/main/cmd/imagedigestexporter)
+  * No longer used in any catalog Tasks
 
-(Not sure if we'd consider [imagedigestexporter](https://github.com/tektoncd/pipeline/tree/main/cmd/imagedigestexporter)
-one of these or not?)
+If we deprecate PipelineResources, it doesn't make sense to keep these in the Tekton Pipelines codebase.
 
-If we deprecate PipelineResources, it probably doesn't make sense to keep these in the Tekton Pipelines codebase, so
-the proposal is to create a new repo `tektoncd/images` and move the code for these images there, where they can be
-maintained and released separately from Tekton Pipelines. This would also create a place where we could put other
-images that we decide we want to maintain and publish for catalog tasks.
+As part of [TEP-0079](./0079-tekton-catalog-support-tiers.md), the "git-clone" and "git-batch-merge" Tasks (plus a few others)
+will be moved to a verified catalog maintained by the Tekton org, and the community catalog will be archived.
+Code for the "git-init" image will be moved into the tektoncd-catalog/git-clone repo.
+The "kubconfig-creator" and "pull-request" catalog Tasks will be deprecated, unless there are volunteers to maintain them.
 
-Possible alternative tweaks:
+Code for the pullrequest-init, kubeconfigwriter, and imagedigestexporter images should be removed.
 
+Possible alternatives:
+
+* Create a new repo `tektoncd/images` and move the code for these images there, where they can be
+  maintained and released separately from Tekton Pipelines
 * Keep the images in Tekton Pipelines and keep versioning them the way we currently do
-* Completely deprecate them and find alternative images
 * One repo per image (e.g. tektoncd/git) ("images" is so vague it might be hard to draw the line around what images
   we accept into this repo and which we don't)
-  * git-init is probably the most widely used of the above images, so we could potentially do this just for git-init
-    and deprecate the others
+
 
 ### Risks and Mitigations
 

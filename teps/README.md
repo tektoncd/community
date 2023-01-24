@@ -119,3 +119,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0127](0127-larger-results-via-sidecar-logs.md) | Larger Results via Sidecar Logs | implemented | 2022-12-15 |
 |[TEP-0128](0128-scheduled-runs.md) | Scheduled Runs | implementable | 2022-12-20 |
 |[TEP-0129](0129-multiple-tekton-instances-per-cluster.md) | Multiple Tekton instances per cluster | proposed | 2023-01-11 |
+|[TEP-0130](0130-pipeline-level-service.md) | Pipeline-level Service | proposed | 2023-02-21 |

@@ -294,11 +294,7 @@ This is the working group for [`tektoncd/chains`](https://github.com/tektoncd/ch
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/1UVPSCDyNO-TzEFSv8jrqrEOF_FmV8NFuXncFm1gwmeY/edit)                                                                                                                                                                                                                       |
 | Slack Channels             | [#chains](https://tektoncd.slack.com/messages/chains)                                                                                                                                                                                                                                                               |
 
-| &nbsp;                                                      | Facilitators | Company    | Profile                                       |
-|-------------------------------------------------------------|--------------|------------|-----------------------------------------------|
-| <img width="30px" src="https://github.com/priyawadhwa.png"> | Priya Wadhwa | Chainguard | [priyawadhwa](https://github.com/priyawadhwa) |
-| <img width="30px" src="https://github.com/pritidesai.png">  | Priti Desai  | IBM        | [pritidesai](https://github.com/pritidesai)   |
-| <img width="30px" src="https://github.com/wlynch.png">      | Billy Lynch  | Google     | [wlynch](https://github.com/wlynch)           |
+* [**Facilitator list in agenda notes**](https://docs.google.com/document/d/1UVPSCDyNO-TzEFSv8jrqrEOF_FmV8NFuXncFm1gwmeY/edit#heading=h.5btjdky6ovgk)
 
 ## Workflows
 
@@ -378,13 +374,6 @@ TBD [community#629](https://github.com/tektoncd/community/issues/629)).
 | Community Meeting Calendar | Tuesday every other week, 09:00a-09:30a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NDFuMjg2OTloYTJrYm1jNGM1dWZiZ3JzdGZfMjAyMjAyMjJUMTcwMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
 
 * [**Facilitator list in agenda notes**](https://hackmd.io/gFcAZMFMRwuTaZ1i7Y3fSg?view#Facilitator-instructions)
-
-| &nbsp;                                                     | Facilitators    | Company | Profile                                     |
-|------------------------------------------------------------|-----------------|---------|---------------------------------------------|
-| <img width="30px" src="https://github.com/pritidesai.png"> | Priti Desai     | IBM     | [pritidesai](https://github.com/pritidesai) |
-| <img width="30px" src="https://github.com/imjasonh.png">   | Jason Hall      | Red Hat | [imjasonh](https://github.com/imjasonh)     |
-| <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli | IBM     | [afrittoli](https://github.com/afrittoli)   |
-| <img width="30px" src="https://github.com/xchapter7x.png"> | John Calabrese  | Google  | [xchapter7x](https://github.com/xchapter7x) |
 
 ## Data Interface
 

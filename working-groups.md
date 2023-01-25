@@ -211,7 +211,7 @@ Tekton projects.
 | Artifact | Link                                                              |
 |----------|-------------------------------------------------------------------|
 | Forum    | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Meeting Notes              | [Notes](https://docs.google.com/document/d/17PodAxG8hV351fBhSu7Y_OIPhGTVgj6OJ2lPphYYRpU/edit)
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/17PodAxG8hV351fBhSu7Y_OIPhGTVgj6OJ2lPphYYRpU/edit) |
 | Slack Channel              | [#pipeline-dev](https://tektoncd.slack.com/messages/pipeline-dev) |
 
 ### Europe + North America
@@ -219,7 +219,7 @@ Tekton projects.
 | Artifact             | Link                                                                       |
 |----------------------|----------------------------------------------------------------------------|
 | Community Meeting VC | [Zoom](https://zoom.us/j/93099582210?pwd=V3VRU0hPWWxFdVYybUVQNzdWbmhQQT09) |
-| Community Meeting Calendar | Mondays every week, 09:00a-10:00a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=YnBscG9lcGk3b3ZrN3VxZWpjaXRsMm1uNmJfMjAyMDA0MTNUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL)
+| Community Meeting Calendar | Mondays every week, 09:00a-10:00a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=YnBscG9lcGk3b3ZrN3VxZWpjaXRsMm1uNmJfMjAyMDA0MTNUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 
 | &nbsp;                                                     | Facilitators      | Company | Profile                                     |
 |------------------------------------------------------------|-------------------|---------|---------------------------------------------|
@@ -350,7 +350,7 @@ Connecting to the Meeting VC requires a Zoom account.
 | Artifact | Link                                                              |
 |----------|-------------------------------------------------------------------|
 | Forum    | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Meeting Notes              | [Notes](https://docs.google.com/document/d/1AfJfdyd1JN2P4haBdYOxEn6SMENMgvQF9ps7iF2QSG0/edit)
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1AfJfdyd1JN2P4haBdYOxEn6SMENMgvQF9ps7iF2QSG0/edit) |
 | Slack Channel              | [#pipeline-dev](https://tektoncd.slack.com/messages/pipeline-dev) |
 | Community Meeting VC       | [https://zoom.us/j/98272582734?pwd=OTBVMWJIbVJZcUU3WnlodTEvVS9PUT09](https://zoom.us/j/98272582734?pwd=OTBVMWJIbVJZcUU3WnlodTEvVS9PUT09) |
 | Community Meeting Calendar | Tuesday every other week, 09:30a-10:00a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NG5jdWV0ZTFxaGo0MHNpYzVnODlrYXZucGhfMjAyMTExMDJUMTYzMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
@@ -373,7 +373,7 @@ and a place to discuss community operations and process.
 | Artifact | Link                                                              |
 |----------|-------------------------------------------------------------------|
 | Forum    | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Meeting Notes              | [Notes](https://docs.google.com/document/d/1g2HQk_4ypYEWPX2WjOFa6vOMpwYoRNprph_P09TS1UM/edit)
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1g2HQk_4ypYEWPX2WjOFa6vOMpwYoRNprph_P09TS1UM/edit) |
 | Slack Channel              | [#governance](https://tektoncd.slack.com/messages/governance) |
 | Community Meeting VC       | [Zoom](https://zoom.us/j/96566024785?pwd=WjRKQkNzK1ZDQm9URitaV0w5eVBldz09) |
 | Community Meeting Calendar | Tuesday every other week, 09:00a-09:30a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NjFvcHNib2E2cjNwcGc2dGhnMmY2OGU4YTFfMjAyMjAxMThUMTcwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
@@ -396,7 +396,7 @@ TBD [community#629](https://github.com/tektoncd/community/issues/629)).
 | Artifact | Link                                                              |
 |----------|-------------------------------------------------------------------|
 | Forum    | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Meeting Notes              | [HackMD Notes](https://hackmd.io/gFcAZMFMRwuTaZ1i7Y3fSg)
+| Meeting Notes              | [HackMD Notes](https://hackmd.io/gFcAZMFMRwuTaZ1i7Y3fSg) |
 | Slack Channel              | [#s3c-working-group](https://tektoncd.slack.com/messages/s3c-working-group) |
 | Community Meeting VC       | [https://zoom.us/j/96593435267?pwd=TTNVYUJEQlNzMXlKYjFXcUwzOUZEdz09](https://zoom.us/j/96593435267?pwd=TTNVYUJEQlNzMXlKYjFXcUwzOUZEdz09) |
 | Community Meeting Calendar | Tuesday every other week, 09:00a-09:30a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NDFuMjg2OTloYTJrYm1jNGM1dWZiZ3JzdGZfMjAyMjAyMjJUMTcwMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |

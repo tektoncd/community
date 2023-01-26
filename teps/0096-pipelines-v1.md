@@ -285,6 +285,14 @@ and `taskRun.spec.sidecarOverrides` to `taskRun.spec.sidecarSpecs`, as it is mor
 - Rename TaskRun's `status.taskResults` to `status.results` and PipelineRun's `status.pipelineResults` to `status.results`
 to reduce redundancy. (v1beta1 TaskRun also has `status.resourceResults`, but this will not be present in v1 due to the
 deprecation of PipelineResources.)
+- There were several features that were promoted from alpha to stable when the V1 CRDs release was in progress, and 
+  these features will remain stable in V1 (instead of beta):
+  - [CSI Volumes](https://github.com/tektoncd/pipeline/blob/f1b68123b2de6c5fe05b0db3a98ca77b56e8a91f/docs/workspaces.md#csi)
+  - [Projected Volumes](https://github.com/tektoncd/pipeline/blob/f1b68123b2de6c5fe05b0db3a98ca77b56e8a91f/docs/workspaces.md#projected)
+  - [Propagated Parameters](./0107-propagating-parameters.md)
+  
+  Now that V1 CRDs have been released and beta feature flag is available, all features have to be promoted from alpha
+  to beta to stable.
 
 #### Deprecations
 

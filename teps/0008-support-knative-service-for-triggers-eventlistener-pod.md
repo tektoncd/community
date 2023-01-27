@@ -5,7 +5,7 @@ authors:
   - "@vdemeester"
 creation-date: 2020-07-28
 last-updated: 2020-08-25
-status: implementable
+status: implemented
 ---
 
 # TEP-0008: Support Knative Service for Triggers EventListener Pod
@@ -27,7 +27,6 @@ status: implementable
     - [Kubernetes Based](#kubernetes-based)
     - [Knative Service <code>OR any CRD</code>](#knative-service-)
 - [Design Details](#design-details)
-        - [Note: Duck typing in computer programming is an application of the duck test—&quot;If it walks like a duck and it quacks like a duck, then it must be a duck&quot;... -Wikipedia](#note-duck-typing-in-computer-programming-is-an-application-of-the-duck-testif-it-walks-like-a-duck-and-it-quacks-like-a-duck-then-it-must-be-a-duck--wikipedia)
   - [Contract](#contract)
     - [Spec](#spec)
     - [Status](#status)
@@ -36,6 +35,7 @@ status: implementable
 - [Test Plan](#test-plan)
 - [Alternatives](#alternatives)
 - [Open Points](#open-points)
+- [Implementation PRs](#implementation-prs)
 <!-- /toc -->
 
 ## Summary
@@ -261,7 +261,7 @@ The main goal of this TEP is to make triggers flexible enough to accept any CRD 
 
 Kubernetes Deployment, Knative Service(or any custom CRD) have [PodSpec](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3704) as a common sub-field so usage of
 [WithPodSpec](https://github.com/knative/pkg/blob/master/apis/duck/v1/podspec_types.go#L49), [WithPod{}](https://github.com/knative/pkg/blob/master/apis/duck/v1/podspec_types.go#L41) [duck typing](https://en.wikipedia.org/wiki/Duck_typing) respectively helps users to configure podSpec fields.
-###### Note: Duck typing in computer programming is an application of the duck test—"If it walks like a duck and it quacks like a duck, then it must be a duck"... -Wikipedia 
+**Note**: Duck typing in computer programming is an application of the duck test—"If it walks like a duck and it quacks like a duck, then it must be a duck"... -Wikipedia 
 
 
 Right now triggers eventlistener focused to support Kubernetes Deployment and Knative Service,
@@ -282,7 +282,7 @@ For Knative or new custom should satisfy [WithPod{}](https://github.com/knative/
 ```
 
 #### Status
-```staus
+```status
 type EventListenerStatus struct {
   duckv1beta1.Status `json:",inline"`
 
@@ -343,3 +343,8 @@ But there is discussion thread [here](https://github.com/tektoncd/community/pull
 where there is a point like user should get the way to specify annotation/labels to Deployment/Service.
 
 This is not a blocker to proceed with implementation but it can be considered and addressed if there is any real usecase in future or before moving to `beta` so adding this as part of open points.
+
+## Implementation PRs
+
+- [Enhance existing eventlistener to support PodTemplate for Deployment using duck type](https://github.com/tektoncd/triggers/pull/734)
+- [Add support for custom object to triggers eventlistener](https://github.com/tektoncd/triggers/pull/958)

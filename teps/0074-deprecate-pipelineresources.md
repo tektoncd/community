@@ -22,7 +22,6 @@ authors:
   - [Risks and Mitigations](#risks-and-mitigations)
   - [User Experience](#user-experience)
 - [Design Details](#design-details)
-- [Test Plan](#test-plan)
 - [Design Evaluation](#design-evaluation)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)

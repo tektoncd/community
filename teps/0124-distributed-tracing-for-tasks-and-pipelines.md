@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Distributed tracing for Tasks and Pipelines
 creation-date: '2022-09-30'
-last-updated: '2022-10-16'
+last-updated: '2023-01-29'
 authors:
 - '@kmjayadeep'
 ---
@@ -28,6 +28,7 @@ authors:
 - [Implementation Plan](#implementation-plan)
   - [Test Plan](#test-plan)
 - [References](#references)
+- [Implementation PRs](#implementation-prs)
 <!-- /toc -->
 
 ## Summary
@@ -161,3 +162,7 @@ There must be unit tests for recording of spans and e2e tests for context propog
 * [OpenTelemetry](https://opentelemetry.io/)
 * [OpenTelemetry instrumentation in GO](https://opentelemetry.io/docs/instrumentation/go/manual/)
 * [Jaeger Tracing](https://www.jaegertracing.io/)
+
+## Implementation PRs
+
+- [[TEP-0124] implement opentelemetry Jaeger tracing](https://github.com/tektoncd/pipeline/pull/5746)

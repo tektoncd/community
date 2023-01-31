@@ -2,7 +2,7 @@
 status: implementable
 title: Trusted Resources
 creation-date: '2022-06-22'
-last-updated: '2022-08-16'
+last-updated: '2023-02-23'
 authors:
 - '@squee1945'
 - '@wlynch'
@@ -267,6 +267,8 @@ metadata:
   name: verification-policy-a
   namespace: resource-namespace
 spec:
+  # mode controls whether a failing policy will fail the taskrun/pipelinerun
+  mode: "enforce"
   # resources defines a list of patterns
   resources:
     - pattern: "https://github.com/tektoncd/catalog.git"  #git resource pattern
@@ -289,6 +291,8 @@ spec:
 
 `namespace` should be the same of corresponding resources' namespace.
 
+`mode` controls whether a failing policy will fail the taskrun/pipelinerun, can be set to `enforce` or `warn`, by default is `enforce`. If set to `enforce` then failing policy will fail the taskrun/pipelinerun, if set to `warn` then failing policy will only log the warning without failing the taskrun/pipelinerun.
+
 `pattern` is used to filter out remote resources by their sources URL. e.g. git resources pattern can be set to https://github.com/tektoncd/catalog.git. The `pattern` should follow regex schema, we use go regex library's [`Match`](https://pkg.go.dev/regexp#Match) to match the pattern from VerificationPolicy to the `ConfigSource` URL resolved by remote resolution. Note that `.*` will match all resources.
 To learn more about regex syntax please refer to [syntax](https://pkg.go.dev/regexp/syntax). `ConfigSource` is also resolved by remote resolvers, e.g. [gitresolver](https://github.com/tektoncd/pipeline/blob/main/docs/git-resolver.md#resolutionrequest-status).
 To learn more about `ConfigSource` please refer to [ConfigSource](https://github.com/tektoncd/pipeline/blob/main/docs/pipeline-api.md#configsource-1) for more context.
@@ -298,7 +302,7 @@ To learn more about `ConfigSource` please refer to [ConfigSource](https://github
 `hashAlgorithm` is the algorithm for the public key, by default is `sha256`. It also supports `SHA224`, `SHA384`, `SHA512`.
 
 
-API (Reference from [policy-controller](https://github.com/sigstore/policy-controller)):
+API (Inspired by [policy-controller](https://github.com/sigstore/policy-controller)):
 ```go
 type VerificationPolicy struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -312,6 +316,10 @@ type VerificationPolicySpec struct {
 	Resources []ResourcePattern `json:"resources"`
 	// Authorities defines the rules for validating signatures.
 	Authorities []Authority `json:"authorities"`
+	// Mode controls whether a failing policy will fail the TaskRun or PipelineRun
+	// enforce - if verification fails, mark conditions.TrustedResourcesVerified and conditions.Succeeded as false
+	// warn - if verification fails, only mark conditions.TrustedResourcesVerified as false (but don't mark conditions.Succeeded as false)
+	Mode string `json:"mode,omitempty"`
 }
 
 type ResourcesPattern struct {
@@ -364,26 +372,137 @@ type KeylessRef struct {
 
 ### Configuration
 
-Reconciler will respond to verification failure based on ConfigMap settings to:
-1) Return error in reconciler, mark the status as error with `FailedVerification` reason;
-2) Not return error, but mark the TaskRun/PipelineRun as `FailedVerification`;
-3) Skip the verification;
-
-Configuration sample:
-```yaml
+ ```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: feature-flag
   namespace: tekton-pipelines
 data:
-  verification-policy: enforce
+  trusted-resources-verification-no-match-policy: "fail"
 ```
 
-`verification-policy`. (Optional, `enforce`, `warn` or `skip`, default `skip`):
- * `enforce`: Failing verification will mark the taskruns/pipelineruns as failed.
- * `warn`: Log warning but don't fail the taskruns/pipelineruns.
- * `skip`: Directly skip the verification.
+`trusted-resources-verification-no-match-policy`. (Optional, `ignore`, `warn` or `fail`, default to `ignore`):
+ * `ignore`: Don't fail the taskrun/pipelinerun and skip verification if no matching policies are found. Don't log.
+ * `warn`: Don't fail the taskrun/pipelinerun and log a warning if no matching policies are found.
+ * `fail`: Fail the taskrun/pipelinerun if no matching policies are found.
+
+**Note:** The current proposed `trusted-resources-verification-no-match-policy` will be added to replace the old `resource-verification-mode` in one release and this is not a backwards compatible change.
+
+### Condition Update
+
+Trusted resources should update the taskrun/pipelinerun’s [condition](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties) to indicate if it passes verification or not. This can be done via knative libraries to . Other options are listed in [alternatives](#alternatives).
+
+Need to create conditions for trusted resources so this can co-exist with current `apis.ConditionSucceeded` type:
+```go
+const (
+// ConditionTrustedResourcesVerified specifies that the resources pass trusted resources verification or not.
+ConditionTrustedResourcesVerified apis.ConditionType = "TrustedResourcesVerified"
+)
+```
+
+A successful condition is:
+ ```go
+ apis.Condition{
+			Type:    ConditionTrustedResourcesVerified,
+			Status:  corev1.ConditionTrue,
+			Reason:  podconvert.ReasonResourceVerificationSuccess
+			Message: "Trusted resource verification passed",
+		}
+ ```
+
+A failed condition is:
+  ```go
+ apis.Condition{
+			Type:    ConditionTrustedResourcesVerified,
+			Status:  corev1.ConditionFalse,
+			Reason:  podconvert.ReasonResourceVerificationFailed
+			Message: "", //filled with error message,
+		}
+ ```
+
+### How feature flag and Verification Policy update the status
+
+**No Matching Policies:**
+
+|                             | `Conditions.TrustedResourcesVerified` | `Conditions.Succeeded` |
+|-----------------------------|---------------------------------------|------------------------|
+| `no-match-policy`: "ignore" |                                       |                        |
+| `no-match-policy`: "warn"   | False                                 |                        |
+| `no-match-policy`: "fail"   | False                                 | False                  |
+
+**Examples:**
+  * `trusted-resources-verification-no-match-policy` is set to `ignore`, then no updates on conditions
+  * `trusted-resources-verification-no-match-policy` is set to `warn`, only add `false` `ConditionTrustedResourcesVerified` to `conditions`:
+    ```yaml
+    status:
+      conditions:
+      - lastTransitionTime: "2023-03-01T18:17:05Z"
+        message: Trusted resource verification failed
+        reason: ResourceVerificationFailed
+        status: "False"
+        type: TrustedResourcesVerified
+    ```
+  * `trusted-resources-verification-no-match-policy` is set to `fail`,  add `false` `ConditionTrustedResourcesVerified` and `false` `Conditions.Succeeded` to `conditions`:
+    ```yaml
+    status:
+      conditions:
+      - lastTransitionTime: "2023-03-01T18:17:05Z"
+        message: Trusted resource verification failed
+        reason: ResourceVerificationFailed
+        status: "False"
+        type: TrustedResourcesVerified
+      - lastTransitionTime: "2023-03-01T18:17:10Z"
+        message: resource verification failed
+        reason: ResourceVerificationFailed
+        status: "False"
+        type: Succeeded
+    ```
+
+**Matching Policies(no matter what `trusted-resources-verification-no-match-policy` value is):**
+
+|                          | `Conditions.TrustedResourcesVerified` | `Conditions.Succeeded` |
+|--------------------------|---------------------------------------|------------------------|
+| all policies pass        | True                                  |                        |
+| any enforce policy fails | False                                 | False                  |
+| only warn policies fail  | False                                 |                        |
+
+**Examples:**
+  * all policies pass, add `true` `ConditionTrustedResourcesVerified`:
+      ```yaml
+      status:
+        conditions:
+        - lastTransitionTime: "2023-03-01T18:17:05Z"
+          message: Trusted resource verification passed
+          reason: ResourceVerificationSucceeded
+          status: "True"
+          type: TrustedResourcesVerified
+      ```
+  * any enforce policy fails, add `false` `ConditionTrustedResourcesVerified` and return error in reconciler to set `Conditions.Succeeded` to `false`:
+    ```yaml
+    status:
+      conditions:
+      - lastTransitionTime: "2023-03-01T18:17:05Z"
+        message: Trusted resource verification failed
+        reason: ResourceVerificationFailed
+        status: "False"
+        type: TrustedResourcesVerified
+      - lastTransitionTime: "2023-03-01T18:17:10Z"
+        message: resource verification failed
+        reason: ResourceVerificationFailed
+        status: "False"
+        type: Succeeded
+    ```
+    * only warn policies fail, then only add `false` `ConditionTrustedResourcesVerified`:
+    ```yaml
+    status:
+      conditions:
+      - lastTransitionTime: "2023-03-01T18:17:05Z"
+        message: Trusted resource verification failed
+        reason: ResourceVerificationFailed
+        status: "False"
+        type: TrustedResourcesVerified
+    ```
 
 ### Integrate with Remote Resource Resolution
 
@@ -610,6 +729,19 @@ Reference:
 https://github.com/nadgowdas/protect-the-pipe-demo
 
 Use Kyverno for verifying YAML files: This can be used to verify local resources, but remote resources need to be verified at the reconciler. We may consider to leverage sign and verify from https://github.com/sigstore/k8s-manifest-sigstore
+
+
+### Options to update taskrun/pipelinerun to reflect the verification success/failure
+
+There are several options:
+
+| Method | Pros | Cons |
+| -------- | ----------- | ----------- |
+| Update the annotation | Easy to implement | Easy to be mutated by other components
+| Add a new field `TrustedResourcesVerified` into `status` | A dedicated field to reflect the verification | Need api change
+| Add a new condition into the status condition list | Easy to implement, hard to be mutated |Need a custom condition type and make sure it is not overwritten
+
+In this TEP we propose to add a new condition into the status condition list.
 
 
 ## Implementation Pull request(s)

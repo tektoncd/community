@@ -113,22 +113,19 @@ This is the [`tektoncd/triggers`](https://github.com/tektoncd/triggers) working 
 
 This is the [`tektoncd/cli`](https://github.com/tektoncd/cli) working group.
 
-| Artifact                   | Link                                                                                                                                                                                                                                                                                               |
-|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                                                                                  |
-| Community Meeting VC       | [Zoom](https://zoom.us/j/91680234547?pwd=QXMrNisvRWpsTll0S2FPZWo3ZDd4QT09)                                                                                                                                                                                                                         |
-| Community Meeting Calendar | Tuesdays 08:00a-08:30a EST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=ZmV1ZmI2dnJjYm9wYWFkaXNxdWJuOWo1bWRfMjAyMDAxMjhUMTMwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
-| Meeting Notes              | [Notes](https://docs.google.com/document/d/1J1LkrmLtMdtdJqFcsyOKsJJc4lEm7YL-97D51PzpHrQ/edit)                                                                                                                                                                                                      |
-| Document Folder            | [Folder](https://drive.google.com/drive/folders/1FnMx4h8WkeBEo3vYl3w2IAOa-otf_a2j)                                                                                                                                                                                                                 |
-| Slack Channel              | [#cli](https://tektoncd.slack.com/messages/cli)                                                                                                                                                                                                                                                    |
+| Artifact                   | Link                                                                                                                                                                                                                                                                                                             |
+|----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                                                                                                |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/91680234547?pwd=QXMrNisvRWpsTll0S2FPZWo3ZDd4QT09)                                                                                                                                                                                                                                       |
+| Community Meeting Calendar | Tuesdays every week, 06:00pm-06:30pm IST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=ZmV1ZmI2dnJjYm9wYWFkaXNxdWJuOWo1bWRfMjAyMDAxMjhUMTMwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1J1LkrmLtMdtdJqFcsyOKsJJc4lEm7YL-97D51PzpHrQ/edit)                                                                                                                                                                                                                    |
+| Document Folder            | [Folder](https://drive.google.com/drive/folders/1FnMx4h8WkeBEo3vYl3w2IAOa-otf_a2j)                                                                                                                                                                                                                               |
+| Slack Channel              | [#cli](https://tektoncd.slack.com/messages/cli)                                                                                                                                                                                                                                                                  |
 
-| &nbsp;                                                        | Facilitators     | Company | Profile                                           |
-|---------------------------------------------------------------|------------------|---------|---------------------------------------------------|
-| <img width="30px" src="https://github.com/chmouel.png">       | Chmouel Boudjnah | Red Hat | [chmouel](https://github.com/chmouel)             |
-| <img width="30px" src="https://github.com/danielhelfand.png"> | Daniel Helfand   | VMware  | [danielhelfand](https://github.com/danielhelfand) |
-| <img width="30px" src="https://github.com/pradeepitm12.png">  | Pradeep Kumar    | Red Hat | [pradeepitm12](https://github.com/pradeepitm12)   |
-| <img width="30px" src="https://github.com/pgarg.png">         | Piyush Garg      | Red Hat | [piyush-garg](https://github.com/piyush-garg)     |
-| <img width="30px" src="https://github.com/vinamra28.png">     | Vinamra Jain     | Red Hat | [vinamra28](https://github.com/vinamra28)         |
+| &nbsp;                                                      | Facilitators     | Company  | Profile                                           |
+|-------------------------------------------------------------|------------------|----------|---------------------------------------------------|
+| <img width="30px" src="https://github.com/piyush-garg.png"> | Piyush Garg      | Red Hat  | [piyush-garg](https://github.com/piyush-garg)     |
+| <img width="30px" src="https://github.com/vinamra28.png">   | Vinamra Jain     | Razorpay | [vinamra28](https://github.com/vinamra28)         |
 
 ## Documentation
 
@@ -270,41 +267,39 @@ This is the [`tektoncd/dashboard`](https://github.com/tektoncd/dashboard) workin
 
 This is the working group for [`tektoncd/catalog`](https://github.com/tektoncd/catalog) and [`tektoncd/hub`](https://github.com/tektoncd/hub).
 
-| Artifact                   | Link                                                                                                                                                                                                                                                       |
-|----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                                          |
-| Community Meeting VC       | [Zoom](https://zoom.us/j/92196626411?pwd=bGN4Y3RtaFRGZEpNVkdGa1RHYTFUQT09)                                                                                                                                                                                 |
-| Community Meeting Calendar | Thursdays every second week, 8:30am-9am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NzFzcWhkOGk2MWNzMTI0cGg3MDA4YmUzMHZfMjAyMDA1MTRUMTczMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
-| Meeting Notes              | [Notes](https://docs.google.com/document/d/12180Mqmhoj5JK17zE07DG3OdqYHcUAWVBGydavoxhec/edit)                                                                                                                                                              |
-| Slack Channels             | [#catalog](https://tektoncd.slack.com/messages/catalog) and [#hub](https://tektoncd.slack.com/messages/hub)                                                                                                                                                |
+| Artifact                   | Link                                                                                                                                                                                                                                                |
+|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                                   |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/92196626411?pwd=bGN4Y3RtaFRGZEpNVkdGa1RHYTFUQT09)                                                                                                                                                                          |
+| Community Meeting Calendar | Thursdays every week, 8:30am-9am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NzFzcWhkOGk2MWNzMTI0cGg3MDA4YmUzMHZfMjAyMDA1MTRUMTczMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/12180Mqmhoj5JK17zE07DG3OdqYHcUAWVBGydavoxhec/edit)                                                                                                                                                       |
+| Slack Channels             | [#catalog](https://tektoncd.slack.com/messages/catalog) and [#hub](https://tektoncd.slack.com/messages/hub)                                                                                                                                         |
 
-| &nbsp;                                                      | Facilitators      | Company | Profile                                       |
-|-------------------------------------------------------------|-------------------|---------|-----------------------------------------------|
-| <img width="30px" src="https://github.com/vdemeester.png">  | Vincent Demeester | Red Hat | [vdemeester](https://github.com/vdemeester)   |
-| <img width="30px" src="https://github.com/chmouel.png">     | Chmouel Boudjnah  | Red Hat | [chmouel](https://github.com/chmouel)         |
-| <img width="30px" src="https://github.com/afrittoli.png">   | Andrea Frittoli   | IBM     | [afrittoli](https://github.com/afrittoli)     |
-| <img width="30px" src="https://github.com/piyush-garg.png"> | Piyush Garg       | Red Hat | [piyush-garg](https://github.com/piyush-garg) |
-| <img width="30px" src="https://github.com/vinamra28.png">   | Vinamra Jain      | Red Hat | [vinamra28](https://github.com/vinamra28)     |
+| &nbsp;                                                         | Facilitators      | Company  | Profile                                             |
+|----------------------------------------------------------------|-------------------|----------|-----------------------------------------------------|
+| <img width="30px" src="https://github.com/vdemeester.png">     | Vincent Demeester | Red Hat  | [vdemeester](https://github.com/vdemeester)         |
+| <img width="30px" src="https://github.com/piyush-garg.png">    | Piyush Garg       | Red Hat  | [piyush-garg](https://github.com/piyush-garg)       |
+| <img width="30px" src="https://github.com/vinamra28.png">      | Vinamra Jain      | Razorpay | [vinamra28](https://github.com/vinamra28)           |
+| <img width="30px" src="https://github.com/PuneetPunamiya.png"> | PuneetPunamiya    | Red Hat  | [PuneetPunamiya](https://github.com/PuneetPunamiya) |
 
 ## Operator and Deployment
 
 This is the working group for [`tektoncd/operator`](https://github.com/tektoncd/operator)
 
-| Artifact                   | Link                                                                                                                                                                                                                                                 |
-|----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                                    |
-| Community Meeting VC       | [Zoom](https://zoom.us/j/91950406101?pwd=Uk1CV2ljcW9FY2tkWVBpWWRFTTNlUT09)                                                                                                                                                                           |
-| Community Meeting Calendar | Thursdays every week, 5am -5:30am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NzFzcWhkOGk2MWNzMTI0cGg3MDA4YmUzMHZfMjAyMDA1MTRUMTczMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
-| Meeting Notes              | [Notes](https://docs.google.com/document/d/1mMbwPCTzDCRgr0FNtv8TJaKDfiOfD9pgz1zFmncZReg/edit)                                                                                                                                                        |
-| Slack Channels             | [#operator](https://tektoncd.slack.com/messages/operator)                                                                                                                                                                                            |
+| Artifact                   | Link                                                                                                                                                                                                                                                |
+|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                                   |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/91950406101?pwd=Uk1CV2ljcW9FY2tkWVBpWWRFTTNlUT09)                                                                                                                                                                          |
+| Community Meeting Calendar | Thursdays every week, 6pm-6:30pm IST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NzFzcWhkOGk2MWNzMTI0cGg3MDA4YmUzMHZfMjAyMDA1MTRUMTczMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1mMbwPCTzDCRgr0FNtv8TJaKDfiOfD9pgz1zFmncZReg/edit)                                                                                                                                                       |
+| Slack Channels             | [#operator](https://tektoncd.slack.com/messages/operator)                                                                                                                                                                                           |
 
-| &nbsp;                                                        | Facilitators  | Company | Profile                                           |
-|---------------------------------------------------------------|---------------|---------|---------------------------------------------------|
-| <img width="30px" src="https://github.com/nikhil-thomas.png"> | Nikhil Thomas | Red Hat | [nikhil-thomas](https://github.com/nikhil-thomas) |
-| <img width="30px" src="https://github.com/houshengbo.png">    | Vincent Hou   | IBM     | [houshengbo](https://github.com/houshengbo)       |
-| <img width="30px" src="https://github.com/khrm.png">          | Khurram Baig  | Red Hat | [khrm](https://github.com/khrm)                   |
-| <img width="30px" src="https://github.com/pgarg.png">         | Piyush Garg   | Red Hat | [piyush-garg](https://github.com/piyush-garg)     |
-| <img width="30px" src="https://github.com/sthaha.png">        | Sunil Thaha   | Red Hat | [sthaha](https://github.com/sthaha)               |
+| &nbsp;                                                          | Facilitators      | Company   | Profile                                                |
+|-----------------------------------------------------------------|-------------------|-----------|--------------------------------------------------------|
+| <img width="30px" src="https://github.com/piyush-garg.png">     | Piyush Garg       | Red Hat   | [piyush-garg](https://github.com/piyush-garg)          |
+| <img width="30px" src="https://github.com/vdemeester.png">      | Vincent Demeester | Red Hat   | [vdemeester](https://github.com/vdemeester)            |
+| <img width="30px" src="https://github.com/PuneetPunamiya.png">  | PuneetPunamiya    | Red Hat   | [PuneetPunamiya](https://github.com/PuneetPunamiya)    |
+| <img width="30px" src="https://github.com/savitaashture.png">   | Savita Asthure    | Red Hat   | [savitaashture](https://github.com/savitaashture)      |
 
 ## Chains
 

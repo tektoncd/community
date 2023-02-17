@@ -38,8 +38,6 @@ The current working groups are:
     - [Europe + North America](#europe--north-america-1)
     - [Europe + Asia](#europe--asia-1)
   - [API](#api)
-    - [Europe + North America](#europe--north-america-2)
-    - [Australia + North America](#australia--north-america)
   - [Dashboard](#dashboard)
   - [Catalog and hub](#catalog-and-hub)
   - [Operator and Deployment](#operator-and-deployment)
@@ -205,17 +203,12 @@ This working group is all about proposing and discussing changes to the Tekton
 Pipelines API. Changes to the Pipelines API have ramifications for all other
 Tekton projects.
 
-| Artifact | Link                                                              |
-|----------|-------------------------------------------------------------------|
-| Forum    | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Meeting Notes              | [Notes](https://docs.google.com/document/d/17PodAxG8hV351fBhSu7Y_OIPhGTVgj6OJ2lPphYYRpU/edit) |
-| Slack Channel              | [#pipeline-dev](https://tektoncd.slack.com/messages/pipeline-dev) |
-
-### Europe + North America
-
-| Artifact             | Link                                                                       |
-|----------------------|----------------------------------------------------------------------------|
-| Community Meeting VC | [Zoom](https://zoom.us/j/93099582210?pwd=V3VRU0hPWWxFdVYybUVQNzdWbmhQQT09) |
+| Artifact                   | Link                                                                                                                                                                                                                                                                                                          |
+|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                                                                                             |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/17PodAxG8hV351fBhSu7Y_OIPhGTVgj6OJ2lPphYYRpU/edit)                                                                                                                                                                                                                 |
+| Slack Channel              | [#pipeline-dev](https://tektoncd.slack.com/messages/pipeline-dev)                                                                                                                                                                                                                                             |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/93099582210?pwd=V3VRU0hPWWxFdVYybUVQNzdWbmhQQT09)                                                                                                                                                                                                                                    |
 | Community Meeting Calendar | Mondays every week, 09:00a-10:00a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=YnBscG9lcGk3b3ZrN3VxZWpjaXRsMm1uNmJfMjAyMDA0MTNUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 
 | &nbsp;                                                     | Facilitators      | Company | Profile                                     |
@@ -228,18 +221,6 @@ Tekton projects.
 | <img width="30px" src="https://github.com/xinruzhang.png"> | Xinru Zhang       | Google  | [xinruzhang](https://github.com/xinruzhang) |
 | <img width="30px" src="https://github.com/lbernick.png">   | Lee Bernick       | Google  | [lbernick](https://github.com/lbernick)     |
 | <img width="30px" src="https://github.com/JeromeJu.png">   | Jerome Ju         | Google  | [jeromeJu](https://github.com/JeromeJu)     |
-
-### Australia + North America
-
-| Artifact                   | Link                                                                                                                                                                                                                                                       |
-|----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Community Meeting VC       | [Zoom](https://zoom.us/j/96005376824?pwd=NFdQcXlUTkN5Tm0zcXU3ODljSXNOZz09)                                                                                                                                                                                 |
-| Community Meeting Calendar | Mondays every other week, 3:00pm-3:30pm PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=Mm40OXM2NzRuaXY1Z3J2dTRnNDBiZzk0N3FfMjAyMTA0MjZUMjIwMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
-
-| &nbsp;                                                 | Facilitators  | Company | Profile                             |
-|--------------------------------------------------------|---------------|---------|-------------------------------------|
-| <img width="30px" src="https://github.com/skaegi.png"> | Simon Kaegi   | IBM     | [skaegi](https://github.com/skaegi) |
-| <img width="30px" src="https://github.com/jerop.png">  | Jerop Kipruto | Google  | [jerop](https://github.com/jerop)   |
 
 ## Dashboard
 

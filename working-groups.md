@@ -49,7 +49,7 @@ The current working groups are:
   - [Governing Board / Community](#governing-board--community)
   - [Software Supply Chain Security (s3c)](#software-supply-chain-security-s3c)
 - [The goal of this working group is to discuss supply chain security initiatives across Tekton.](#the-goal-of-this-working-group-is-to-discuss-supply-chain-security-initiatives-across-tekton)
-  - [TEP-0086: Larger Results](#tep-0086-larger-results)
+  - [Data Interface](#data-interface)
 
 ## General
 
@@ -410,15 +410,15 @@ TBD [community#629](https://github.com/tektoncd/community/issues/629)).
 | <img width="30px" src="https://github.com/afrittoli.png">  | Andrea Frittoli | IBM     | [afrittoli](https://github.com/afrittoli)   |
 | <img width="30px" src="https://github.com/xchapter7x.png"> | John Calabrese  | Google  | [xchapter7x](https://github.com/xchapter7x) |
 
-## TEP-0086: Larger Results
+## Data Interface
 
-This working group is all about proposing and discussing changes to [TEP-0086: Larger Results][tep-0086], and related
-topics such as Workspaces and Artifacts.
+The goal of this working group is to discuss changes to the data interface: how users consume, pass and produce data 
+in Tekton. The problem space is scoped in this [document](https://docs.google.com/document/d/1XbeI-_4bFaBize3adQmSL6Czo8MXVvoYn6dJgFZJ_So/edit?usp=sharing).
 
 | Artifact                   | Link                                                                                                                                                                                  |
 |----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                     |
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/1z2ME1o_XHvqv6cVEeElljvqVqHV8-XwtXdTkNklFU_8/edit)                                                                                         |
-| Slack Channel              | [#tep-0086](https://tektoncd.slack.com/messages/tep-0086)                                                                                                                             |
+| Slack Channel              | [#tekton-data-interface](https://tektoncd.slack.com/messages/tekton-data-interface)                                                                                                                             |
 | Community Meeting VC       | [https://zoom.us/j/94243917326?pwd=MThrUVVDSnlEU2FNWG10Yk1CcnRlZz09](https://zoom.us/j/94243917326?pwd=MThrUVVDSnlEU2FNWG10Yk1CcnRlZz09)                                              |
 | Community Meeting Calendar | Wednesday every week, 04:00p-04:30p UTC <br>[Calendar](https://calendar.google.com/calendar?cid=Z29vZ2xlLmNvbV9kM292Y3ZvMXAzMjE5aDk4OTU3M3Y5OGZuc0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t) |

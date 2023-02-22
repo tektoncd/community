@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""get_emails_2.py Extracts github IDs from a CSV and matches them
+"""cncf_emails.py Extracts github IDs from a CSV and matches them
 to emails through a JSON map.
 
 The CVS input file can be obtained from devstats. Clink on the link:
@@ -14,7 +14,7 @@ The output will be a mapping of the GitHub username to the all email addresses
 contained in commits associated with this user in a csv file.
 
 Usage:
-  python3 github_emails_2.py --file users.csv
+  python3 cncf_emails.py --file users.csv
 """
 import argparse
 import csv

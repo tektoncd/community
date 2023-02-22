@@ -13,7 +13,7 @@ The output will be a mapping of the GitHub username to the all email addresses
 contained in commits associated with this user in a csv file.
 
 Usage:
-  python3 github_emails.py --file users --token $GITHUB_OAUTH_TOKEN
+  python3 github_emails.py --file users.csv --token $GITHUB_OAUTH_TOKEN
 """
 import argparse
 import csv
@@ -22,12 +22,16 @@ from typing import List, Dict
 
 
 GITHUB_EVENTS_API = "https://api.github.com/users/{}/events"
+MINIMUM_CONTRIBUTION_COUNT = 15
 
 
-
-def read_users(filename: str) -> List[str]:
+def eligible_users(filename: str, count: int) -> List[str]:
   with open(filename) as f:
-    return [x.strip() for x in f.readlines()]
+    # format of the lines is rank,username,activities
+    users = [x.strip().split(',')[1:3] for x in f.readlines() if ',' in x]
+  # skip the header line in the csv, grab only users with enough contributions
+  users = filter(lambda u: int(u[1]) >= count, users[1:])
+  return [u[0] for u in users]
 
 
 def query_github(users: List[str], token: str) -> Dict[str, Dict]:
@@ -76,11 +80,14 @@ if __name__ == '__main__':
                           help="GitHub oauth token to use when making requests to avoid rate limiting")
   arg_parser.add_argument("--csv", type=str, required=False,
                           help="csv file to write with results")
+  arg_parser.add_argument("--count", type=int, required=False,
+                          help="minimum contribution count to be eligble")
   args = arg_parser.parse_args()
 
   csvfile = args.csv or "emails.csv"
+  count = args.count or MINIMUM_CONTRIBUTION_COUNT
 
-  users = read_users(args.file)
+  users = eligible_users(args.file, count)
   results = query_github(users, args.token)
   emails = extract_emails(results)
   print(emails)

@@ -112,7 +112,7 @@ This is the complete list of Tekton TEPs:
 |[TEP-0119](0119-add-taskrun-template-in-pipelinerun.md) | Add taskRun template in PipelineRun | implementable | 2022-09-01 |
 |[TEP-0120](0120-canceling-concurrent-pipelineruns.md) | Canceling Concurrent PipelineRuns | proposed | 2022-09-23 |
 |[TEP-0121](0121-refine-retries-for-taskruns-and-customruns.md) | Refine Retries for TaskRuns and CustomRuns | implemented | 2022-12-21 |
-|[TEP-0122](0122-complete-build-instructions-and-parameters.md) | Complete Build Instructions and Parameters | implementable | 2022-12-14 |
+|[TEP-0122](0122-complete-build-instructions-and-parameters.md) | Complete Build Instructions and Parameters | implemented | 2023-02-23 |
 |[TEP-0123](0123-specifying-on-demand-retry-in-pipelinetask.md) | Specifying on-demand-retry in a PipelineTask | proposed | 2022-10-11 |
 |[TEP-0124](0124-distributed-tracing-for-tasks-and-pipelines.md) | Distributed tracing for Tasks and Pipelines | implemented | 2023-01-29 |
 |[TEP-0125](0125-add-credential-filter-to-entrypoint-logger.md) | Add credential filter to entrypoint logger | proposed | 2022-10-27 |

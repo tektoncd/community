@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Complete Build Instructions and Parameters
 creation-date: '2022-09-14'
-last-updated: '2022-12-14'
+last-updated: '2023-02-23'
 authors:
 - '@chitrangpatel'
 see-also:
@@ -24,6 +24,7 @@ see-also:
   - [Configuration Feature Flags](#configuration-feature-flags)
   - [Materials](#materials)
   - [Provenance for executed TaskRun](#provenance-for-executed-taskrun)
+- [References](#references)
 <!-- /toc -->
 
 ## Summary
@@ -239,3 +240,7 @@ The generated provenance for the executed **task run** should contain the follow
         sha256: 8ee90344c1281efa6e8bcf09b1240ff8e9dda3a7403f0f040891f4644c1ca18e"
    ...
 ```
+## References
+
+* [Implementation Pull Requests Chains](https://github.com/tektoncd/chains/pulls?q=is%3Apr+author%3Achitrangpatel+is%3Aclosed+*TEP0122*)
+* [Implementation Pull Requests Pipelines](https://github.com/tektoncd/pipeline/pulls?q=is%3Apr+author%3Achitrangpatel+is%3Aclosed+%2BTEP0122%2B)  

@@ -143,7 +143,8 @@ Elections will be held using time-limited
 [CIVS](https://civs.cs.cornell.edu/) using the
 [Schulze method](https://en.wikipedia.org/wiki/Schulze_method). The top vote
 getters will be elected to the open seats. This is the same process used by the
-Kubernetes project.
+Kubernetes project. Voters must opt into the CIVS system at https://civs1.civs.us/cgi-bin/opt_in.pl
+or they won't receive an invitation to vote.
 
 Details about the schedule and logistics of the election will be announced in a
 timely manner by the election officers to eligible candidates and voters via the
@@ -156,6 +157,8 @@ Example timeline:
    they are eligble but are not on our list) (we have used
    [this script](https://github.com/tektoncd/community/tree/main/election) in
    the past)
+1. Prompt eligble voters to opt into CIVS at https://civs1.civs.us/cgi-bin/opt_in.pl
+   so they will be able to vote
 1. 1 week for nominations (previously, starting on a Thursday until midnight PST
    the next Wednesday)
 1. 1 week for the election itself (starting the following Thursday until

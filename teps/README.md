@@ -121,4 +121,5 @@ This is the complete list of Tekton TEPs:
 |[TEP-0129](0129-multiple-tekton-instances-per-cluster.md) | Multiple Tekton instances per cluster | proposed | 2023-01-11 |
 |[TEP-0130](0130-pipeline-level-service.md) | Pipeline-level Service | proposed | 2023-02-21 |
 |[TEP-0131](0131-tekton-conformance-policy.md) | Tekton Conformance Policy | proposed | 2023-02-14 |
+|[TEP-0132](0132-queueing-concurrent-runs.md) | Queueing Concurrent Runs | proposed | 2023-03-20 |
 |[TEP-0133](0133-configure-default-resolver.md) | Configure Default Resolver | implemented | 2023-03-21 |

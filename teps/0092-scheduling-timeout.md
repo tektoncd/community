@@ -1,11 +1,15 @@
 ---
-status: implementable
+status: deferred
 title: Scheduling Timeout
 creation-date: '2021-10-13'
-last-updated: '2022-04-11'
+last-updated: '2023-02-24'
 authors:
 - '@bobcatfish'
 - '@badamowicz' # author of the original issue (https://github.com/tektoncd/pipeline/issues/4078)
+- '@jerop'
+see-also:
+- TEP-0120
+- TEP-0132
 ---
 
 # TEP-0092: Scheduling Timeout
@@ -45,8 +49,23 @@ authors:
 
 ## Summary
 
-Add runtime configuration options to allow setting a timeout for `TaskRuns` which applies before the `TaskRun's`
-underlying pod is scheduled, and only start our existing timeout counters after this timeout has passed, if specified.
+This TEP proposed adding runtime configuration options to allow setting a timeout for `TaskRuns` which would have 
+applied before the `TaskRun's` underlying `Pod` is scheduled, then we would start our existing timeout counters after
+this new timeout had passed, if specified. This TEP was previously `implementable`.
+
+However, we are exploring supporting queueing directly instead of adding a queueing/scheduling timeout because:
+- the way that queueing timeout works in different scenarios is complicated and the way it interacts with other 
+  timeouts from `PipelineTasks` and `PipelineRuns` (through `TaskRunSpecs` and `TaskRunTemplate`) is even more 
+  complicated - see [attempt][948] to clarify the design
+- the main motivation for this proposal was to address queueing TaskRuns in resource-constrained environments; this 
+  problem will be best addressed through a queueing solution instead of relying on a timeout
+- queueing and other concurrency controls is a common feature request - see example [feature request][5835] - so 
+  when we add a queueing solution, we'd have had to account for the scheduling timeout which may have caused further 
+  complexity
+
+Adding concurrency controls is already under discussion in [TEP-0120][tep-0120] which proposes cancelling concurrent
+`PipelineRuns`. We can build on this work by supporting queueing of concurrent `Runs` - see [problem statement][968] 
+for TEP-0132. Once we have a design for TEP-0132, we can revisit marking this TEP as `withdrawn` or `replaced`.
 
 ## Motivation
 
@@ -414,3 +433,10 @@ TBD
 ## References
 
 * [When does a timeout counter actually start?](https://github.com/tektoncd/pipeline/issues/4078)
+
+
+[948]: https://github.com/tektoncd/community/pull/948
+[968]: https://github.com/tektoncd/community/pull/968
+[5835]: https://github.com/tektoncd/pipeline/issues/5835
+[tep-0120]: 0120-canceling-concurrent-pipelineruns.md
+[tep-0120-fw]: 0120-canceling-concurrent-pipelineruns.md#future-work

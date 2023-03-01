@@ -198,6 +198,21 @@ what we want.
   * The second PR would have a commit title like "TEP-XXX: Implement support for field XYZ". It would contain release
   notes explaining the feature and remove documentation references to the feature being under development.
 
+## Functionality
+
+It should be safe to cut a release at any time, i.e. merging this PR should not put us into an unreleasable state.
+Tekton CI ensures that code must compile and pass tests before being merged, but PR authors should still ask themselves,
+"If this was the last PR before the release, would we produce a usable release?"
+
+Some antipatterns to avoid:
+  * PRs shouldn't require concurrent release of code in another repo
+  * PRs shouldn't require a release to be held pending a later PR
+  * Code changes shouldn't be merged without related tests or documentation
+
+Splitting a new feature into multiple PRs is OK; see [Incremental Feature Development](#incremental-feature-development) for more info.
+
+PRs must adhere to the project's API stability policy.
+
 ## Docs
 
 * Include Markdown doc updates for user visible features

@@ -417,47 +417,47 @@ orgs:
         maintainers:
         - bobcatfish
         members:
-        - waveywaves
-        - sthaha
         - abayer
-        - shashwathi
-        - skaegi
-        - nader-ziada
-        - wlynch
-        - dlorenc
-        - dibbles
-        - pritidesai
-        - jerop
+        - afrittoli
+        - chuangw6
         - danielhelfand
-        - jlpettersson
+        - dibbles
         - dibyom
-        - piyush-garg
-        - chmouel
-        - psschwei
+        - dlorenc
         - hrishin
         - ImJasonH
-        - vdemeester
-        - mattmoor
-        - withlin
-        - afrittoli
-        - pierretasci
+        - jerop
         - lbernick
+        - mattmoor
+        - piyush-garg
+        - pritidesai
+        - psschwei
+        - skaegi
+        - vdemeester
+        - waveywaves
+        - withlin
+        - wlynch
+        - XinruZhang
         - ywluogg
         - Yongxuanzhang
-        - chuangw6
-        - XinruZhang
         # alumni:
         # AlanGreene
         # barthy1
+        # chmouel
         # dwnusbaum
         # EliZucker
         # FogDong
         # GregDritschler
         # houshengbo
+        # jlpettersson
+        # nader-ziada
         # othomann
         # Peaorl
+        # pierretasci
         # savitaashture
         # sbwsg
+        # shashwathi
+        # sthaha
         # vincent-pli
         privacy: closed
         repos:

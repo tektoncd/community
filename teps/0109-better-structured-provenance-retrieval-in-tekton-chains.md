@@ -1,5 +1,5 @@
 ---
-status: implementable
+status: implemented
 title: Better structured provenance retrieval in Tekton Chains
 creation-date: "2022-04-29"
 last-updated: "2022-05-02"
@@ -470,13 +470,7 @@ behavior or add a feature that may replace and deprecate a current one.
 
 ### Implementation Pull Requests
 
-<!--
-Once the TEP is ready to be marked as implemented, list down all the GitHub
-merged pull requests.
-
-Note: This section is exclusively for merged pull requests for this TEP.
-It will be a quick reference for those looking for implementation of this TEP.
--->
+- [tektoncd/chains#592](https://github.com/tektoncd/chains/issues/592)
 
 ## References
 

@@ -2,7 +2,7 @@ orgs:
   tektoncd:
     admins:
     - wlynch
-    - bobcatfish
+    - jerop
     - tekton-robot
     - thelinuxfoundation
     - vdemeester
@@ -84,7 +84,6 @@ orgs:
     - iancoffey
     - ispasov
     - jagathprakash
-    - jerop
     - jessm12
     - jinchihe
     - jjasghar
@@ -174,6 +173,7 @@ orgs:
     - alan-ghelardi
     - pxp928
     - chengjoey
+    - bobcatfish
     # alumni:
     # sbwsg
     teams:
@@ -181,7 +181,7 @@ orgs:
         description: Tekton Governing Board members
         members:
         - wlynch
-        - bobcatfish
+        - jerop
         - vdemeester
         - afrittoli
         - dibyom

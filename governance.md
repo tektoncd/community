@@ -4,14 +4,14 @@ The Tekton Governance committee is the governing body of the Tekton open source
 project. It's an elected group that represents the contributors to the project,
 and has an oversight on governance and technical matters.
 
-* [Tekton Governance Committee](#tekton-governance-committee)
-* [Governance Facilitator Role (optional)](#governance-facilitator-role-optional)
-* [Maximum Representation](#maximum-representation)
-* [Committee Responsibilities and Deliverables](#committee-responsibilities-and-deliverables)
-* [Governance Meetings and Decision-Making Process](#governance-meetings-and-decision-making-process)
-* [Elections](#elections)
-* [Permissions and access](#permissions-and-access)
-* [Governing board leave policy](#governing-board-leave-policy)
+- [Tekton Governance Committee](#tekton-governance-committee)
+- [Governance Facilitator Role (optional)](#governance-facilitator-role-optional)
+- [Maximum Representation](#maximum-representation)
+- [Committee Responsibilities and Deliverables](#committee-responsibilities-and-deliverables)
+- [Governance Meetings and Decision-Making Process](#governance-meetings-and-decision-making-process)
+- [Elections](#elections)
+- [Permissions and access](#permissions-and-access)
+- [Governing board leave policy](#governing-board-leave-policy)
 
 ## Tekton Governance Committee
 
@@ -21,29 +21,27 @@ one year: every year either two or three of the seats are up for election.
 
 ### Current members
 
-| Full Name         |  Company   | GitHub                                        | Slack                                                         | Elected On | Until    |
-|-------------------|:----------:|-----------------------------------------------|---------------------------------------------------------------|------------|----------|
-| Billy Lynch (while Priya is on leave) | Chainguard | [wlynch](https://github.com/wlynch) | [@Billy Lynch](https://tektoncd.slack.com/team/UJ7BLGSB0) .   | Dec 2022   | Feb 2023 |
-| Vincent Demeester |  Red Hat   | [vdemeester](https://github.com/vdemeester)   | [@vdemeester](https://tektoncd.slack.com/team/UHSQGV1L3)      | Feb 2021   | Feb 2023 |
-| Christie Wilson   |   Google   | [bobcatfish](https://github.com/bobcatfish)   | [@Christie Wilson](https://tektoncd.slack.com/team/UJ6DECY78) | Feb 2021   | Feb 2023 |
-| Andrea Frittoli   |    IBM     | [afrittoli](https://github.com/afrittoli)     | [@Andrea Frittoli](https://tektoncd.slack.com/team/UJ411P2CC) | Feb 2022   | Feb 2024 |
-| Dibyo Mukherjee   |   Google   | [dibyom](https://github.com/dibyom)           | [@Dibyo Mukherjee](https://tektoncd.slack.com/team/UJ73HM7PZ) | Feb 2021   | Feb 2023 |
-
-On leave until Feb 2023:
-| Priya Wadhwa      | Chainguard | [priyawadhwa](https://github.com/priyawadhwa) | [@Priya Wadhwa](https://tektoncd.slack.com/team/U02T0CS9PN0)  | Feb 2022   | Feb 2024 |
-
+| Full Name         |  Company   | GitHub                                      | Slack                                                         | Elected On | Until    |
+| ----------------- | :--------: | ------------------------------------------- | ------------------------------------------------------------- | ---------- | -------- |
+| Andrea Frittoli   |    IBM     | [afrittoli](https://github.com/afrittoli)   | [@Andrea Frittoli](https://tektoncd.slack.com/team/UJ411P2CC) | Feb 2022   | Feb 2024 |
+| Billy Lynch       | Chainguard | [wlynch](https://github.com/wlynch)         | [@Billy Lynch](https://tektoncd.slack.com/team/UJ7BLGSB0) .   | Feb 2023   | Feb 2024 |
+| Dibyo Mukherjee   |   Google   | [dibyom](https://github.com/dibyom)         | [@Dibyo Mukherjee](https://tektoncd.slack.com/team/UJ73HM7PZ) | Feb 2023   | Feb 2025 |
+| Jerop Kipruto     |   Google   | [jerop](https://github.com/jerop)           | [@Jerop Kipruto](https://tektoncd.slack.com/team/U011DPQSP0V) | Feb 2023   | Feb 2025 |
+| Vincent Demeester |  Red Hat   | [vdemeester](https://github.com/vdemeester) | [@vdemeester](https://tektoncd.slack.com/team/UHSQGV1L3)      | Feb 2023   | Feb 2025 |
 
 There is no designated facilitator at the moment, the responsibility is
 distributed across the five members of the committee.
 
 #### Former members ❤️
 
-| Full Name       | GitHub                                  | Slack                                                         | Elected On          | Until    |
-|-----------------|-----------------------------------------|---------------------------------------------------------------|---------------------|----------|
-| Andrew Bayer    | [abayer](https://github.com/abayer)     | [@Andrew Bayer](https://tektoncd.slack.com/team/UJ6DJ4MSS)    | Feb 2020            | Feb 2022 |
-| Jason Hall      | [ImJasonH](https://github.com/ImJasonH) | [@Jason Hall](https://tektoncd.slack.com/team/UJ3MCRRRA)      | Feb 2020            | Feb 2022 |
-| Dan Lorenc      | [dlorenc](https://github.com/dlorenc)   | [@Dan Lorenc](https://tektoncd.slack.com/team/UJ636MN15)      | Bootstrap committee | Feb 2020 |
-| Kim Lewandowski | [kimsterv](https://github.com/kimsterv) | [@Kim Lewandowski](https://tektoncd.slack.com/team/UJ480G6KS) | Bootstrap committee | Feb 2020 |
+| Full Name       | GitHub                                        | Slack                                                         | Elected On          | Until    |
+| --------------- | --------------------------------------------- | ------------------------------------------------------------- | ------------------- | -------- |
+| Priya Wadhwa    | [priyawadhwa](https://github.com/priyawadhwa) | [@Priya Wadhwa](https://tektoncd.slack.com/team/U02T0CS9PN0)  | Feb 2022            | Feb 2023 |
+| Christie Wilson | [bobcatfish](https://github.com/bobcatfish)   | [@Christie Wilson](https://tektoncd.slack.com/team/UJ6DECY78) | Feb 2021            | Feb 2023 |
+| Andrew Bayer    | [abayer](https://github.com/abayer)           | [@Andrew Bayer](https://tektoncd.slack.com/team/UJ6DJ4MSS)    | Feb 2020            | Feb 2022 |
+| Jason Hall      | [ImJasonH](https://github.com/ImJasonH)       | [@Jason Hall](https://tektoncd.slack.com/team/UJ3MCRRRA)      | Feb 2020            | Feb 2022 |
+| Dan Lorenc      | [dlorenc](https://github.com/dlorenc)         | [@Dan Lorenc](https://tektoncd.slack.com/team/UJ636MN15)      | Bootstrap committee | Feb 2020 |
+| Kim Lewandowski | [kimsterv](https://github.com/kimsterv)       | [@Kim Lewandowski](https://tektoncd.slack.com/team/UJ480G6KS) | Bootstrap committee | Feb 2020 |
 
 ## Governance Facilitator Role (optional)
 
@@ -143,8 +141,9 @@ Elections will be held using time-limited
 [CIVS](https://civs.cs.cornell.edu/) using the
 [Schulze method](https://en.wikipedia.org/wiki/Schulze_method). The top vote
 getters will be elected to the open seats. This is the same process used by the
-Kubernetes project. Voters must opt into the CIVS system at https://civs1.civs.us/cgi-bin/opt_in.pl
-or they won't receive an invitation to vote.
+Kubernetes project. Voters must opt into the CIVS system at
+https://civs1.civs.us/cgi-bin/opt_in.pl or they won't receive an invitation to
+vote.
 
 Details about the schedule and logistics of the election will be announced in a
 timely manner by the election officers to eligible candidates and voters via the
@@ -157,8 +156,8 @@ Example timeline:
    they are eligble but are not on our list) (we have used
    [this script](https://github.com/tektoncd/community/tree/main/election) in
    the past)
-1. Prompt eligble voters to opt into CIVS at https://civs1.civs.us/cgi-bin/opt_in.pl
-   so they will be able to vote
+1. Prompt eligble voters to opt into CIVS at
+   https://civs1.civs.us/cgi-bin/opt_in.pl so they will be able to vote
 1. 1 week for nominations (previously, starting on a Thursday until midnight PST
    the next Wednesday)
 1. 1 week for the election itself (starting the following Thursday until
@@ -260,12 +259,14 @@ Note that we have constrained the board such that no single employer can have mo
 
 When someone joins the governing board:
 
-- They should be added to [the list of current governing board members](#current-members)
+- They should be added to
+  [the list of current governing board members](#current-members)
 - They should be granted
   [the permissions given them as members of the governing board](#permissions-and-access)
 - They will be added to the `#governance-private` and `#governance`
   [slack](contact.md#slack) channels
-- They will be added as facilitators to [the Governing Board and Community meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#governing-board--community)
+- They will be added as facilitators to
+  [the Governing Board and Community meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#governing-board--community)
 - They will be added as managers to
   [the Tekton community Google Drive](https://github.com/tektoncd/community/blob/main/contact.md#shared-drive)
 - They will be added as admins to
@@ -283,11 +284,14 @@ When someone joins the governing board:
 
 When someone leaves the governing board:
 
-- They should be moved from [the list of current governing board members](#current-members) to [the list of former members](#former-members-%EF%B8%8F)
+- They should be moved from
+  [the list of current governing board members](#current-members) to
+  [the list of former members](#former-members-%EF%B8%8F)
 - [The permissions given them as members of the governing board](#permissions-and-access)
   should be revoked, unless they need them to continue to
   [act as build captain](https://github.com/tektoncd/plumbing/tree/main/bots/buildcaptain#tekton-buildcaptain)
-- They may want to be removed as facilitators to [the Governing Board and Community meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#governing-board--community)
+- They may want to be removed as facilitators to
+  [the Governing Board and Community meeting](https://github.com/tektoncd/community/blob/main/working-groups.md#governing-board--community)
   (ask them their preference) - they are welcome to continue
 - They will be removed from the `#governance-private` [slack](contact.md#slack)
   channel
@@ -327,19 +331,24 @@ They have the permissions added through a
 
 ## Governing board leave policy
 
-Any member of the governing board is welcome to take leave from being a governing board member, for any reason (which
-they are not required to disclose). The actions taken will depend on both of:
+Any member of the governing board is welcome to take leave from being a
+governing board member, for any reason (which they are not required to
+disclose). The actions taken will depend on both of:
 
-1. The length of the leave: whether this is greater or less than approximately (at the discretion of the other governing board members)
-   1/4 of their total term (since terms are 2 years, this means the criteria is whether or not the leave is greater than 6 months).
+1. The length of the leave: whether this is greater or less than approximately
+   (at the discretion of the other governing board members) 1/4 of their total
+   term (since terms are 2 years, this means the criteria is whether or not the
+   leave is greater than 6 months).
 2. Whether their seat will be up for election during the period of their leave
 
-If the leave is less than or equal to 1/4 of the board member's total term, and their seat will not be up for
-re-election during that time, the governing board member may select someone to be an acting governing board member for
-the length of the leave. This person must:
+If the leave is less than or equal to 1/4 of the board member's total term, and
+their seat will not be up for re-election during that time, the governing board
+member may select someone to be an acting governing board member for the length
+of the leave. This person must:
 
-* Meet [the maximum representation requirement](#maximum-representation)
-* Meet [the candidate eligibility requirements](#candidate-eligibility)
+- Meet [the maximum representation requirement](#maximum-representation)
+- Meet [the candidate eligibility requirements](#candidate-eligibility)
 
-If the length of the leave is greater than 1/4 of the total term, or their seat will be up for election during the
-leave period, the governing board member will be required to step down from their seat and an election will be held.
+If the length of the leave is greater than 1/4 of the total term, or their seat
+will be up for election during the leave period, the governing board member will
+be required to step down from their seat and an election will be held.

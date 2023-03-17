@@ -14,12 +14,16 @@ things. "Responsibilities" are things that contributor is expected to do.
 "Requirements" are qualifications a person needs to meet to be in that role, and
 "Privileges" are things contributors on that level are entitled to.
 
-- [Community Participant](#community-participant)
-- [Contributor](#contributor)
-- [Organization Member](#organization-member)
-- [Reviewer](#Reviewer)
-- [Maintainer](#maintainer)
-- [Governance Committee Member](#governance-committee-member)
+- [Contributor Ladder](#contributor-ladder)
+  - [Community Participant](#community-participant)
+  - [Contributor](#contributor)
+  - [Organization Member](#organization-member)
+  - [Collaborator](#collaborator)
+  - [Maintainer](#maintainer)
+  - [Governance Committee Member](#governance-committee-member)
+  - [Inactivity](#inactivity)
+    - [Involuntary Removal or Demotion](#involuntary-removal-or-demotion)
+    - [Stepping Down/Emeritus Process](#stepping-downemeritus-process)
 
 ## Community Participant
 
@@ -101,21 +105,23 @@ The process for a Contributor to become an Organization Member is as follows:
    [org.yaml](https://github.com/tektoncd/community/blob/main/org/org.yaml),
    adding your GitHub username to `orgs.tektoncd.members`.
 
-## Reviewer
+## Collaborator
 
-Description: A Reviewer has responsibility for specific code, documentation,
+**Note:** This role used to be called `Reviewer` in the past.
+
+Description: A Collaborator has responsibility for specific code, documentation,
 test, or other project areas. They are collectively responsible, with other
-Reviewers, for reviewing all changes to those areas and indicating whether those
+Collaborators, for reviewing all changes to those areas and indicating whether those
 changes are ready to merge. They have a track record of contribution and review
 in the project.
 
-Reviewers are responsible for a "specific area." This can be a specific code
+Collaborators can be responsible for a "specific area." This can be a specific code
 directory, driver, chapter of the docs, test job, event, or other
 clearly-defined project component that is smaller than an entire repository or
 subproject. Most often it is one or a set of directories in one or more Git
 repositories. The "specific area" below refers to this area of responsibility.
 
-Reviewers have all the rights and responsibilities of an
+Collaborators have all the rights and responsibilities of an
 [Organization Member](#organization-member), plus:
 
 - Responsibilities include:
@@ -139,11 +145,11 @@ Reviewers have all the rights and responsibilities of an
   - May [`/lgtm`](./README.md#prow-commands) pull requests.
   - Can be allowed to [`/approve`](./README.md#prow-commands) pull requests in specific
     sub-directories of a project (by maintainer discretion)
-  - Can recommend and review other contributors to become Reviewers
+  - Can recommend and review other contributors to become Collaborators
 
 To facilitate productivity, small repositories, or repositories that do not
 contain production code may decide to use simpler requirements. To become a
-Reviewer of one of these repositories, you must either:
+Collaborator of one of these repositories, you must either:
 
 - Be an OWNER on any other repository in the Tekton project, and ask an existing
   OWNER to add you.
@@ -158,22 +164,21 @@ Repositories currently using this simpler mechanism are:
 - tektoncd/website
 - tektoncd/experimental
 
-The process of becoming a Reviewer is:
+The process of becoming a Collaborator is:
 
 1. The contributor is nominated by opening a PR against the appropriate
    project/directory
    [OWNERS file](https://www.kubernetes.dev/docs/guide/owners/), adding their
    GitHub username to the `reviewers` list (or corresponding
    [OWNERS alias](https://www.kubernetes.dev/docs/guide/owners/#owners_aliases)).
-2. At least two Reviewers/[Maintainers](#maintainer) of the team that owns that
+2. At least two Collaborator/[Maintainers](#maintainer) of the team that owns that
    repository or directory approve the PR.
-3. Update [org.yaml](../org/org.yaml) to add the new Reviewer to the
-   corresponding
+3. Update [org.yaml](./org/org.yaml) to add the new Collaborator to the corresponding
    [GitHub team(s)](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams).
 
-- Each project has a `<repo>.Reviewers` entry in `org.yaml`, where `<repo>` is
+- Each project has a `<repo>.collaborators` entry in `org.yaml`, where `<repo>` is
   the name of the GitHub repository. The only exception is `pipeline` whose
-  maintainer team is name `core.Reviewers`.
+  maintainer team is name `core.collaborators`.
 
 ## Maintainer
 
@@ -183,11 +188,11 @@ area of a project, and are expected to participate in making decisions about the
 strategy and priorities of the project.
 
 A Maintainer must meet the responsibilities and requirements of a
-[Reviewer](#Reviewer), plus:
+[Collaborator](#Collaborator), plus:
 
 - Responsibilities include:
   - Reviewing PRs that involve multiple parts of the project
-  - Mentoring new [Contributors](#contributor) and [Reviewers](#Reviewer)
+  - Mentoring new [Contributors](#contributor) and [Collaborators](#Collaborator)
   - Writing PRs that involve many parts of the project (e.g. refactoring)
   - Participating in Tekton maintainer activities (build captain, WG lead)
   - Determining strategy and policy for the project
@@ -230,7 +235,7 @@ Repositories currently using this simpler mechanism are:
 
 Process of becoming an Maintainer:
 
-1. Any current Maintainer may nominate a current [Reviewer](#Reviewer) to become
+1. Any current Maintainer may nominate a current [Collaborator](#Collaborator) to become
    a new Maintainer, by opening a PR against the appropriate project/directory
    [OWNERS file](https://www.kubernetes.dev/docs/guide/owners/), adding their
    GitHub username to the `approvers` list (or corresponding

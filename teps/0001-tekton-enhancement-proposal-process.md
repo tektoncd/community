@@ -240,7 +240,7 @@ Metadata items:
 * **status** Required
   * The current state of the TEP.
   * Must be one of `proposed`, `implementable`,
-    `implemented`,`withdrawn`, or `replaced`.
+    `implemented`,`withdrawn`, `deferred` or `replaced`.
 * **authors** Required
   * A list of authors for the TEP. This is simply the github ID. In
     the future we may enhance this to include other types of
@@ -278,6 +278,8 @@ A TEP has the following states
 - `implemented`: The TEP has been implemented and is no longer
   actively changed. From that point on, the TEP should be considered
   *read-only*.
+- `deferred`: The TEP is proposed but not actively being worked on
+  and there are open questions.
 - `withdrawn`: The TEP has been withdrawn by the authors or by the
   community on agreement with the authors.
 - `replaced`: The TEP has been replaced by a new TEP. The
@@ -307,6 +309,13 @@ for withdrawal.
 
 A TEP can be moved to the `implementable` state if it doesn't need
 any more discussion and is approved as is.
+
+A TEP can be marked `deferred` if it is not actively being worked on and
+there are open questions. A `deferred` TEP can be moved to another state
+with an explanation. If we answer the open questions and pick up the TEP,
+it can be marked as `implementable`. If another TEP covers the use cases
+and supersedes the TEP, then it can be marked as `replaced`. A `deferred`
+TEP can be moved to its last state with an explanation and a discussion.
 
 See [Examples](#examples) to see examples of TEP workflow on use cases.
 

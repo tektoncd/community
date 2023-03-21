@@ -63,7 +63,7 @@ This is the complete list of Tekton TEPs:
 |[TEP-0062](0062-catalog-tags-and-hub-categories-management.md) | Catalog Tags and Hub Categories Management | implemented | 2021-12-15 |
 |[TEP-0063](0063-workspace-dependencies.md) | Workspace Dependencies | proposed | 2021-04-23 |
 |[TEP-0066](0066-dogfooding-tekton.md) | Dogfooding Tekton | proposed | 2021-05-16 |
-|[TEP-0067](0067-tekton-catalog-pipeline-organization.md) | Tekton Catalog Pipeline Organization | implementable | 2021-02-22 |
+|[TEP-0067](0067-tekton-catalog-pipeline-organization.md) | Tekton Catalog Pipeline Organization | implemented | 2023-03-21 |
 |[TEP-0069](0069-support-retries-for-custom-task-in-a-pipeline.md) | Support retries for custom task in a pipeline. | implemented | 2021-12-15 |
 |[TEP-0070](0070-tekton-catalog-task-platform-support.md) | Platform support in Tekton catalog | implemented | 2022-08-16 |
 |[TEP-0071](0071-custom-task-sdk.md) | Custom Task SDK | proposed | 2021-06-15 |

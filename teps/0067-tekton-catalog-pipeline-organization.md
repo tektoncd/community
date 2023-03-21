@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Tekton Catalog Pipeline Organization
 creation-date: '2021-02-22'
-last-updated: '2021-02-22'
+last-updated: '2023-03-21'
 authors:
 - '@piyush-garg'
 - '@PuneetPunamiya'

@@ -53,7 +53,7 @@ This is the complete list of Tekton TEPs:
 |[TEP-0050](0050-ignore-task-failures.md) | Ignore Task Failures | implementable | 2022-09-16 |
 |[TEP-0051](0051-ppc64le-architecture-support.md) | ppc64le Support | proposed | 2021-01-28 |
 |[TEP-0052](0052-tekton-results-automated-run-resource-cleanup.md) | Tekton Results: Automated Run Resource Cleanup | implementable | 2021-03-22 |
-|[TEP-0053](0053-nested-triggers.md) | Nested Triggers | implementable | 2021-04-15 |
+|[TEP-0053](0053-nested-triggers.md) | Nested Triggers | implemented | 2023-03-21 |
 |[TEP-0056](0056-pipelines-in-pipelines.md) | Pipelines in Pipelines | implementable | 2022-06-27 |
 |[TEP-0057](0057-windows-support.md) | Windows support | proposed | 2021-03-18 |
 |[TEP-0058](0058-graceful-pipeline-run-termination.md) | Graceful Pipeline Run Termination | implemented | 2021-12-15 |

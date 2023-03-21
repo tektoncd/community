@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Nested Triggers
 creation-date: '2021-02-10'
-last-updated: '2021-04-15'
+last-updated: '2023-03-21'
 authors:
 - '@jmcshane'
 ---
@@ -31,6 +31,7 @@ authors:
     - [Disadvantages](#disadvantages-2)
 - [Implementation Decision](#implementation-decision)
   - [Example <code>triggerGroup</code> Configuration](#example--configuration)
+- [Implementation PRs](#implementation-prs)
 - [References](#references)
 <!-- /toc -->
 
@@ -388,6 +389,10 @@ spec:
 ```
 
 The namespace selector will default to matching the namespace that the event listener runs in.
+
+## Implementation PRs
+
+- [Feature: TriggerGroups #1232](https://github.com/tektoncd/triggers/pull/1232)
 
 ## References
 

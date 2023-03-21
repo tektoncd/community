@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Configure Default Resolver
 creation-date: '2023-03-03'
-last-updated: '2023-03-03'
+last-updated: '2023-03-21'
 authors:
 - '@QuanZhang-William'
 - '@vdemeester'
@@ -26,6 +26,7 @@ collaborators: []
   - [Flexibility](#flexibility)
   - [Reusability](#reusability)
 - [Alternatives](#alternatives)
+- [Implementation PRs](#implementation-prs)
 - [References](#references)
 <!-- /toc -->
 
@@ -191,6 +192,10 @@ Instead of setting the default `Resolver` in the [config-defaults.yaml][config-d
 However, the [resolver feature flag] resides in the `tekton-pipelines-resolver` namespace instead of the `tekton-pipelines` namespace. This alternative introduces an extra dependency to the `tekton-pipelines-resolver` namespace for *Tekton Webhooks and Controllers* while bringing no extra benefit.
 
 We can revisit this alternative if we decide to merge the `tekton-pipelines-resolver` back to the `tekton-pipelines` namespace in the future.
+
+## Implementation PRs
+- [Configure default resolver](https://github.com/tektoncd/pipeline/pull/6317)
+- [Refactor set default test helper](https://github.com/tektoncd/pipeline/pull/6339)
 
 ## References
 - [TEP-0060: Remote Resolution][TEP-0060]

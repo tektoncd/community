@@ -3,8 +3,8 @@ title: redirecting-step-output-streams
 authors:
   - "@chhsia0"
 creation-date: 2020-08-17
-last-updated: 2020-11-02
-status: implementable
+last-updated: 2023-03-21
+status: implemented
 ---
 
 # TEP-0011: Redirecting Step Output Streams
@@ -219,3 +219,5 @@ A proof-of-concept implementation is presented in [tektoncd/pipeline#3103](https
 * Make it possible to extract results from a container's stdout ([tektoncd/pipeline#2925](https://github.com/tektoncd/pipeline/issues/2925)).
 
 * Added `-stdout_file` and `-stderr_file` flags to entrypoint ([tektoncd/pipeline#3103](https://github.com/tektoncd/pipeline/pull/3103)).
+
+* Implementation: https://github.com/tektoncd/pipeline/pull/4882

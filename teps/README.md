@@ -16,7 +16,7 @@ This is the complete list of Tekton TEPs:
 |[TEP-0008](0008-support-knative-service-for-triggers-eventlistener-pod.md) | Support Knative Service for Triggers EventListener Pod | implemented | 2020-08-25 |
 |[TEP-0009](0009-trigger-crd.md) | Trigger CRD | implemented | 2020-09-08 |
 |[TEP-0010](0010-optional-workspaces.md) | Optional Workspaces | implemented | 2020-10-15 |
-|[TEP-0011](0011-redirecting-step-output-streams.md) | redirecting-step-output-streams | implementable | 2020-11-02 |
+|[TEP-0011](0011-redirecting-step-output-streams.md) | redirecting-step-output-streams | implemented | 2023-03-21 |
 |[TEP-0012](0012-api-spec.md) | API Specification | implemented | 2021-12-14 |
 |[TEP-0014](0014-step-timeout.md) | Step Timeout | implemented | 2021-12-13 |
 |[TEP-0015](0015-pending-pipeline.md) | pending-pipeline-run | implemented | 2020-09-10 |

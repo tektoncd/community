@@ -3,8 +3,8 @@ title: HTTPS Connection to Triggers EventListener
 authors:
   - "@savitaashture"
 creation-date: 2020-10-19
-last-updated: 2020-11-01
-status: implementable
+last-updated: 2023-03-21
+status: implemented
 ---
 
 # TEP-0027: HTTPS Connection To Triggers EventListener
@@ -152,3 +152,4 @@ At high level below are few implementation details
 
 ## References 
 1. GitHub issue: https://github.com/tektoncd/triggers/issues/650
+2. Implementation: https://github.com/tektoncd/triggers/pull/819

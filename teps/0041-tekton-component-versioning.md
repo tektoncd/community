@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Tekton Component Versioning
 creation-date: "2021-02-01"
-last-updated: "2021-04-26"
+last-updated: "2023-03-21"
 authors:
   - "@vinamra28"
   - "@piyush-garg"

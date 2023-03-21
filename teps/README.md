@@ -42,7 +42,7 @@ This is the complete list of Tekton TEPs:
 |[TEP-0038](0038-generic-workspaces.md) | Generic Workspaces | proposed | 2020-12-11 |
 |[TEP-0039](0039-add-variable-retries-and-retrycount.md) | Add Variable `retries` and `retry-count` | implemented | 2021-01-31 |
 |[TEP-0040](0040-ignore-step-errors.md) | Ignore Step Errors | implemented | 2021-08-11 |
-|[TEP-0041](0041-tekton-component-versioning.md) | Tekton Component Versioning | implementable | 2021-04-26 |
+|[TEP-0041](0041-tekton-component-versioning.md) | Tekton Component Versioning | implemented | 2023-03-21 |
 |[TEP-0042](0042-taskrun-breakpoint-on-failure.md) | taskrun-breakpoint-on-failure | implemented | 2021-12-10 |
 |[TEP-0044](0044-data-locality-and-pod-overhead-in-pipelines.md) | Data Locality and Pod Overhead in Pipelines | proposed | 2022-05-26 |
 |[TEP-0045](0045-whenexpressions-in-finally-tasks.md) | WhenExpressions in Finally Tasks | implemented | 2021-06-03 |

@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Deprecate PipelineResources
 creation-date: '2021-07-14'
-last-updated: '2022-04-11'
+last-updated: '2023-03-21'
 authors:
 - '@bobcatfish'
 - '@lbernick'
@@ -382,6 +382,7 @@ _See details in [Proposal](#proposal)_
 ## Implementation Pull request(s)
 
 - [Mark PipelineResources as deprecated](https://github.com/tektoncd/pipeline/pull/4376)
+- [Removal of PipelineResources](https://github.com/tektoncd/pipeline/pulls?q=is%3Apr+author%3AJeromeJu+is%3Aclosed+tep074)
 
 ## References
 

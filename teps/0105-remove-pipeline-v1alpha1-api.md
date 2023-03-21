@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Remove Pipeline v1alpha1 API
 creation-date: '2022-04-11'
-last-updated: '2022-05-17'
+last-updated: '2023-03-21'
 authors:
 - '@abayer'
 ---
@@ -82,3 +82,7 @@ some lurking references to `v1alpha1` which should be removed. Documentation
 relating to migrating from `v1alpha1` to `v1beta1` will remain.
 
 Projects downstream of Pipeline will be responsible for updating their own code.
+
+## References
+
+- Implementation: https://github.com/tektoncd/pipeline/pull/5005

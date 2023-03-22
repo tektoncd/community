@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: "Results: JSON Serialized Records"
 creation-date: "2021-05-11"
-last-updated: "2021-07-26"
+last-updated: "2023-03-22"
 authors: ["wlynch@google.com"]
 ---
 
@@ -471,3 +471,5 @@ Use this section to add links to GitHub issues, other TEPs, design docs in Tekto
 shared drive, examples, etc. This is useful to refer back to any other related links
 to get more details.
 -->
+
+Implementation: https://github.com/tektoncd/results/pull/121

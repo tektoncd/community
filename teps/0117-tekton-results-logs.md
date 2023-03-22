@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Tekton Results Logs
 creation-date: '2022-07-19'
-last-updated: '2022-10-21'
+last-updated: '2023-03-22'
 authors:
 - '@adambkaplan'
 ---
@@ -362,3 +362,4 @@ It will be a quick reference for those looking for implementation of this TEP.
 - Initial proof of concept:
   [demo](https://www.youtube.com/watch?v=VVcLeEi9NL4),
   [code](https://github.com/tektoncd/results/pull/203)
+- Implementation: https://github.com/tektoncd/results/pull/301

@@ -265,7 +265,11 @@ PRs must adhere to the project's API stability policy.
   * Validation + validation tests
 * Unit tests
   * Coverage should remain the same or increase
-  * Each test should only test one function at a time
+  * Where possible, each test should have a focused set of inputs and outputs.
+  For example, only one function and set of inputs should be tested at a time,
+  the set of inputs should be limited to make it clear what's being tested,
+  and only the set of outputs that are relevant to the test's expectations should be validated.
+  * Choose descriptive names for test cases
 * Test code
   * When using cmp.Diff the argument order is always (want, got) and in the error message include (-want +got)
     (and/or use a lib like [PrintWantGot](https://github.com/tektoncd/pipeline/blob/main/test/diff/print.go))

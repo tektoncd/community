@@ -117,10 +117,10 @@ the PR. (OWNERS, your review requests can be viewed at
 ### Pull request process
 
 Tekton repos use
-[Prow](https://github.com/kubernetes/test-infra/tree/master/prow) and related
+[Prow](https://docs.prow.k8s.io/docs/overview) and related
 tools like
-[Tide](https://github.com/kubernetes/test-infra/tree/master/prow/tide) and
-[Spyglass](https://github.com/kubernetes/test-infra/blob/master/prow/spyglass/README.md).
+[Tide](https://docs.prow.k8s.io/docs/components/core/tide) and
+[Spyglass](https://docs.prow.k8s.io/docs/spyglass).
 This means that automation will be applied to your pull requests.
 
 The configuration for this automation is in

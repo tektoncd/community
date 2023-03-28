@@ -4,8 +4,9 @@ authors:
   - "@pritidesai"
   - "@jerop"
   - "@vinamra28"
+  - "@bobcatfish"
 creation-date: 2020-10-20
-last-updated: 2022-08-09
+last-updated: 2023-02-20
 status: implementable
 ---
 
@@ -27,6 +28,8 @@ status: implementable
   - [<code>Task</code> claiming to produce <code>Result</code> fails if it doesn't produces](#-claiming-to-produce--fails-if-it-doesnt-produces)
 - [Test Plan](#test-plan)
 - [Alternatives](#alternatives)
+  - [Specifying Default Value during Runtime](#specifying-default-value-during-runtime)
+  - [Specifying Default Value at the time of Authoring the Task](#specifying-default-value-at-the-time-of-authoring-the-task)
   - [Declaring Results as Optional](#declaring-results-as-optional)
 - [Future Work](#future-work)
 - [References](#references)
@@ -81,9 +84,9 @@ a missing task result. There are many reasons for a missing task result:
 * a `task` producing task result failed, no result available
 * a `task` producing result was skipped/disabled and no result generated
 * a `task` producing result did not generate that result even without any failure. We have a
-  [bug report](https://github.com/tektoncd/pipeline/issues/3497) open to declare
+  [bug report][tektoncd/pipeline#3497] open to declare
   such a task as failure. This reason might not hold true after issue
-  [#3497]((https://github.com/tektoncd/pipeline/issues/3497)) is fixed.
+  [#3497][tektoncd/pipeline#3497] is fixed.
 
 Here are the major motivations for `pipeline` authors to design their pipelines with the missing task results:
 
@@ -426,7 +429,8 @@ will fix the `Pipeline`.
 
 ## Proposal
 
-We propose adding an optional field - `default` - to the `Result` specification in `Task`.
+We propose adding default value at the place where variable replacement
+happens and let consumer decide which value it wants to pick up. For example:
 
 ```yaml
 apiVersion: tekton.dev/v1beta1
@@ -434,39 +438,67 @@ kind: Task
 metadata:
   name: task
 spec:
-  results:
-  - name: merge_status
-    description: whether to rebase or squash
-    type: string
-    default: rebase
-  - name: branches
-    description: branches in the repository
-    type: array
-    default:
-    - main
-    - v1alpha1
-    - v1beta1
-    - v1
-  - name: images
-    type: object
-    properties:
-      node:
-       type: string
-       default: "node:latest" 
-      gcloud:
-       type: string
-       default: "gcloud:latest"
   steps:
+  ...
+  results:
+    - name: merge_status
+      description: whether to rebase or squash
+      type: string
+    - name: branches
+      description: branches in the repository
+      type: array
+    - name: images
+      type: object
+      properties:
+        node:
+          type: string
+        gcloud:
+          type: string
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pipeline-with-defaults
+spec:
+  tasks:
+    - name: taskA
+      onError: continue
+      taskRef:
+        name: task
+      results:
+      - name: merge_status
+    - name: taskB
+      runAfter:
+      - "taskA"
+      taskRef:
+        name: demo-task
+      params:
+      - name: param1
+        value: $(tasks.taskA.results.merge_status || "foobar")
+      - name: param2
+        value: $(tasks.taskA.results.branches || [foo, bar, baz])
+      - name: param3
+        value: $(tasks.taskA.results.images || {node="foo", gcloud="bar"})
+    - name: taskC
+      runAfter:
+      - "taskA"
+      taskRef:
+        name: demo-task
+      params:
+      - name: param1
+        value: $(tasks.taskA.results.merge_status)
+      - name: param2
+        value: $(tasks.taskA.results.branches || [foo, bar, baz])
+      - name: param3
+        value: $(tasks.taskA.results.images || {node="foo", gcloud="bar"})
   ...
 ```
 
-
-Adding a default value to `Results` is optional; validation of a `Task` doesn't
-fail if the default value isn't provided.
-
-Adding a default value to a `Result` will guarantee that it will hold a value even
-if the `Task` fails to produce it. If a `Task` does not produce a `Result` that does not
-have a default value, then the `Task` should fail - see [tektoncd/pipeline#3497](https://github.com/tektoncd/pipeline/issues/3497) for further details.
+If the `Task` doesn't produce any result then it should fail. In order to
+continue with the execution of `Pipeline`, `onError: continue` should be added
+in the `PipelineTask` which we anticipate to fail and subsequent `Tasks`
+which are consuming the results produced by the previous `Task` should have a
+default value specified.
 
 The proposed solution can be used to solve the above use cases as follows:
 
@@ -491,7 +523,7 @@ spec:
     - name: build-image
       runAfter: [ "check-pr-content" ]
       when:
-        - input: "$(tasks.check-pr-content.results.image-change)"
+        - input: "$(tasks.check-pr-content.results.image-change || no)"
           operator: in
           values: ["yes"]
       taskRef:
@@ -554,9 +586,9 @@ spec:
       runAfter: [ "build-image" ]
       params:
         - name: trusted-image-name
-          value: "$(tasks.build-trusted.results.image)"
+          value: "$(tasks.build-trusted.results.image || "trusted")"
         - name: untrusted-image-name
-          value: "$(tasks.build-untrusted.results.image)"
+          value: "$(tasks.build-untrusted.results.image || "untrusted")"
       taskRef:
         name: propagate-image-name
   # pipeline result
@@ -586,7 +618,6 @@ spec:
   results:
     - name: check
       description: The result of the check, "passed" or "failed"
-      default: "passed"
   steps:
     - name: check-name
       image: alpine
@@ -631,6 +662,7 @@ spec:
       description: The pullRequestNumber
   tasks:
     - name: check-name-match
+      onError: continue
       taskRef:
         name: check-name-matches
       params:
@@ -640,7 +672,7 @@ spec:
           value: $(params.checkName)
     - name: clone-repo
       when:
-        - input: $(tasks.check-name-match.results.check)
+        - input: $(tasks.check-name-match.results.check || "failed")
           operator: in
           values: ["passed"]
       taskRef:
@@ -655,8 +687,12 @@ spec:
     ...
 ```
 
+In the above example, if the value of parameter `checkName` is not passed,
+the `Task` is failed but in order to continue the execution of the `Pipeline`,
+we use the `onError: continue` flag and 
+
 In the above example, even if the value of parameter `checkName` is not passed,
-default value of `Result` will be produced `passed` and Pipeline's execution will
+default value of `Result` will be produced `failed` and Pipeline's execution will
 be continued. The only case when the execution of `Pipeline` is stopped when
 the wrong value of parameter `checkName` is passed.
 
@@ -669,6 +705,103 @@ Having default results defined in check-name-matches Task will fix the Pipeline.
 1. E2E tests can take the form of YAML examples that demonstrate the syntax for declaring a result with default value and results without defaults
 
 ## Alternatives
+
+### Specifying Default Value during Runtime
+
+Adding an optional field - `default` for a `Result` which can be specified
+during runtime, i.e., in `TaskRun` or `Pipeline` for a `Task` or in `PipelineRun` for a `Pipeline`.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: task
+spec:
+  results:
+  - name: merge_status
+    description: whether to rebase or squash
+    type: string
+  - name: branches
+    description: branches in the repository
+    type: array
+  - name: images
+    type: object
+    properties:
+      node:
+       type: string
+      gcloud:
+       type: string
+  steps:
+  ...
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: task
+spec:
+  taskRef:
+    name: task
+  results:
+  - name: merge_status
+    default: rebase
+  ...
+```
+
+Passing the default value for the `Result` at runtime is optional; validation
+of `TaskRun` or `Pipeline` or `PipelineRun` doesn't fail if the value isn't provided.
+
+Adding a default value to `Results` is optional; validation of a `Task` doesn't
+fail if the default value isn't provided.
+
+Adding a default value to a `Result` will guarantee that it will hold a value even
+if the `Task` fails to produce it. If a `Task` does not produce a `Result` that does not
+have a default value, then the `Task` should fail - see [tektoncd/pipeline#3497][tektoncd/pipeline#3497] for further details.
+
+Values specified in `TaskRun` or `Pipeline` should be overwritten by declaring
+`Task` itself, if `Task` declares a `Result` then it should be considered as
+the final value for that result.
+
+### Specifying Default Value at the time of Authoring the Task
+
+Allow `Results` to declare an optional field as `default`. When a `Task` fails to
+produce a `Result` but has a default value specified, then the `Task` does not fail. When a `Task` fails
+to produce a `Result` that doesn't have any default value specified, then then the `Task` will fail.
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: task
+spec:
+  results:
+  - name: merge_status
+    description: whether to rebase or squash
+    type: string
+    default: "rebase"
+  - name: branches
+    description: branches in the repository
+    type: array
+    default:
+    - "foo"
+    - "bar"
+  - name: images
+    type: object
+    properties:
+      node:
+       type: string
+      gcloud:
+       type: string
+    default:
+      node: "16"
+      gcloud: "true"
+  steps:
+  ...
+```
+
+This solution only solves the issue of `Tasks` not failing when they
+don't produce `Results` as discussed in [tektoncd/pipeline#3497][tektoncd/pipeline#3497].
+However, it does not addressed the use case where an user can
+have different default values at runtime based on their `Pipeline`.
 
 ### Declaring Results as Optional
 
@@ -704,7 +837,7 @@ spec:
 ```
 
 However, this solution only solves the issue of `Tasks` not failing when they don't
-produce `Results` as discussed in [tektoncd/pipeline#3497](https://github.com/tektoncd/pipeline/issues/3497).
+produce `Results` as discussed in [tektoncd/pipeline#3497][tektoncd/pipeline#3497].
 It does not address the use cases for providing default `Results` that can be consumed in subsequent `Tasks`.
 
 
@@ -721,3 +854,6 @@ Determine if we need default `Results` declared at runtime in the future, and ho
 * [Issue reported - "when" expressions do not match user expectations](https://github.com/tektoncd/pipeline/issues/3345)
 
 * [Accessing Execution status of any DAG task from finally](https://github.com/tektoncd/community/blob/master/teps/0028-task-execution-status-at-runtime.md)
+
+
+[tektoncd/pipeline#3497]: https://github.com/tektoncd/pipeline/issues/3497

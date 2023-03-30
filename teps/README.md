@@ -47,7 +47,7 @@ This is the complete list of Tekton TEPs:
 |[TEP-0044](0044-data-locality-and-pod-overhead-in-pipelines.md) | Data Locality and Pod Overhead in Pipelines | proposed | 2022-05-26 |
 |[TEP-0045](0045-whenexpressions-in-finally-tasks.md) | WhenExpressions in Finally Tasks | implemented | 2021-06-03 |
 |[TEP-0046](0046-finallytask-execution-post-timeout.md) | Finally tasks execution post pipelinerun timeout | implemented | 2021-12-14 |
-|[TEP-0047](0047-pipeline-task-display-name.md) | Pipeline Task Display Name | implementable | 2022-01-04 |
+|[TEP-0047](0047-pipeline-task-display-name.md) | Pipeline Task Display Name | implemented | 2023-03-30 |
 |[TEP-0048](0048-task-results-without-results.md) | Task Results without Results | implementable | 2022-08-09 |
 |[TEP-0049](0049-aggregate-status-of-dag-tasks.md) | Aggregate Status of DAG Tasks | implemented | 2021-06-03 |
 |[TEP-0050](0050-ignore-task-failures.md) | Ignore Task Failures | implementable | 2022-09-16 |

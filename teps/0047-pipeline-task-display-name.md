@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Pipeline Task Display Name
 creation-date: '2021-01-28'
-last-updated: '2022-01-04'
+last-updated: '2023-03-30'
 authors:
 - '@itewk'
 - '@abayer'
@@ -143,4 +143,10 @@ None.
 
 ## References (optional)
 
-https://github.com/tektoncd/pipeline/issues/3466#issuecomment-767786717
+- Implementation:
+  - [Implementation Pull Request][prs]
+- Issues:
+  - [add ability to set "displayName" for Pipeline tasks][3466]
+
+[3466]: https://github.com/tektoncd/pipeline/issues/3466#issuecomment-767786717
+[prs]: https://github.com/tektoncd/pipeline/pulls?q=is%3Apr+tep-0047+

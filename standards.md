@@ -248,13 +248,17 @@ PRs must adhere to the project's API stability policy.
 * Prefer small, well-factored packages with unit tests
 * Use meaningful package names (avoid util, helper, lib). See https://go.dev/blog/package-names
 * Only export functions that provide a meaningful API for consumers of the package
+  * Prefer unexported functions/fields/types, or using an [`internal` package](https://go.dev/doc/go1.4#internalpackages).
+    This limits the externally visible API surface, which makes it easier to make changes without worrying about breaking downstream users.
 * All exported functions should have tests
-  * Test exported functions only, since these are the functions package consumers will use.
-    If you find yourself wanting to test an unexported function, consider whether
-    it would make sense to move the test into another package and export it,
-    or to refactor the package so that tests use the same functions as package importers
-  * If your package is named "foo", prefer putting tests in a "foo_test" package in the same folder
-    to ensure that only exported functions are tested
+  * Exported functions are what package consumers will use. We want to make sure
+    these functions work as expected. As a bonus, writing tests is
+    a great way to try out the API to see if it makes sense.
+  * Tests can still be useful for unexported functions, though you should consider:
+      * Can you test the same functionality by using the same API surface as
+        external users?
+      * Does it make sense to export the function or move it to another package?
+     
 
 ### Tests
 

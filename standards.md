@@ -258,7 +258,9 @@ PRs must adhere to the project's API stability policy.
       * Can you test the same functionality by using the same API surface as
         external users?
       * Does it make sense to export the function or move it to another package?
-     
+  * If your tests only rely on exported functions, prefer putting them in a
+    package name suffixed with "_test". This will have the test run in a different
+    package, ensuring that only exported values can be used.     
 
 ### Tests
 

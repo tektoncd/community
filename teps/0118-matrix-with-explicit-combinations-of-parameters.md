@@ -1,5 +1,5 @@
 ---
-status: implementable
+status: implemented
 title: Matrix with Explicit Combinations of Parameters
 creation-date: '2022-08-03'
 last-updated: '2022-08-08'
@@ -97,7 +97,7 @@ spec:
             - "linux/ppc64le"
         - name: flags
           value:
-            - "-race -cover -v" 
+            - "-race -cover -v"
     - ...
 ```
 
@@ -165,7 +165,7 @@ spec:
           workspace: shared-workspace
       matrix:
         - name: IMAGE
-          value: [ "image-1", "image-2", "image-3" ] 
+          value: [ "image-1", "image-2", "image-3" ]
         - name: DOCKERFILE
           value: [ "path/to/Dockerfile1", "path/to/Dockerfile2", "path/to/Dockerfile3" ]
     - ...
@@ -246,21 +246,21 @@ spec:
               - "linux/ppc64le"
               - "linux/s390x"
         include:
-          - name: s390x-no-race 
+          - name: s390x-no-race
             params:
               - name: GOARCH
                 value: "linux/s390x"
               - name: flags
-                value: "-cover -v" 
+                value: "-cover -v"
     - ...
 ```
 
-The `matrix.include` section when specified with `matrix.params` is used to expand existing auto-populated `Matrix`. 
-The above `Matrix` specification will create three `taskRuns`, one for each architecture in `GOARCH` (`"linux/amd64"`, 
-`"linux/ppc64le"`, and `"linux/s390x"`) and with default `flags`. Now, when a `taskRun` is created for the `GOARCH` 
+The `matrix.include` section when specified with `matrix.params` is used to expand existing auto-populated `Matrix`.
+The above `Matrix` specification will create three `taskRuns`, one for each architecture in `GOARCH` (`"linux/amd64"`,
+`"linux/ppc64le"`, and `"linux/s390x"`) and with default `flags`. Now, when a `taskRun` is created for the `GOARCH`
 value of `linux/s390x`, an additional parameter called `flags` with the value of `-cover -v` will be included in the
-`taskRun`. The `matrix.include` section can list `params` which does not exist in the `matrix.params` section. In this 
-example specification, `flags` was not listed in `matrix.params`. At the same time, `matrix.include` section can 
+`taskRun`. The `matrix.include` section can list `params` which does not exist in the `matrix.params` section. In this
+example specification, `flags` was not listed in `matrix.params`. At the same time, `matrix.include` section can
 list `params` which does exist in the `matrix.params` section.
 
 Let's expand this use case to showcase a little more complex combinations, for example:
@@ -314,12 +314,12 @@ Now, let's introduce `include` with a couple of `Parameters`: `"package"`, `"fla
             params:
               - name: package
                 value: "path/to/common/package/"
-          - name: s390x-no-race 
+          - name: s390x-no-race
             params:
               - name: GOARCH
                 value: "linux/s390x"
               - name: flags
-                value: "-cover -v" 
+                value: "-cover -v"
           - name: go117-context
             params:
               - name: version
@@ -332,7 +332,7 @@ Now, let's introduce `include` with a couple of `Parameters`: `"package"`, `"fla
                 value: "I-do-not-exist"
 ```
 
-The first `include` clause is added to all the original `matrix` combintations without overwriting any `parameters` of 
+The first `include` clause is added to all the original `matrix` combintations without overwriting any `parameters` of
 the original combinations:
 
 ```json!
@@ -447,15 +447,15 @@ spec:
               - name: IMAGE
                 value: "image-3"
               - name: DOCKERFILE
-                value: "path/to/Dockerfile3"                
+                value: "path/to/Dockerfile3"
     - ...
 ```
 
 This configuration allows users to take advantage of `Matrix` to fan out without having an auto-populated `Matrix`.
 
-The `include` section in the `Matrix` can be specified with or without `params` section. The initial use case 
+The `include` section in the `Matrix` can be specified with or without `params` section. The initial use case
 [adding-a-specific-combination-in-the-matrix](#adding-a-specific-combination-in-the-matrix) demonstrated using
-`include` section with`params` section. 
+`include` section with`params` section.
 This example of [explicitly-defining-combinations-in-the-matrix](#explicitly-defining-combinations-in-the-matrix)
 demonstrates using `include` section without `params` section. `Matrix` with `include` section without `params`
 section creates the number of `taskRuns` specified in the `include` section with the specified `parameters`.
@@ -479,7 +479,7 @@ type Matrix struct {
 type Include struct {
     // Name the specified combination
     Name string `json:"name,omitempty"`
-    
+
     // Params takes only `Parameters` of type `"string"`
     // The names of the `params` must match the names of the `params` in the underlying `Task`
     Params []Param `json:"params,omitempty"`
@@ -581,6 +581,8 @@ the breaking changes to users in the release notes, and through an email to tekt
 ## References
 
 - [TEP-0090: Matrix](0090-matrix.md)
+- [Implementation]
 
+[implementation]: https://github.com/tektoncd/pipeline/issues/6351
 [kaniko-task]: https://github.com/tektoncd/catalog/blob/main/task/kaniko/0.5/kaniko.yaml
 [golang-test]: https://github.com/tektoncd/catalog/blob/main/task/golang-test/0.2/golang-test.yaml

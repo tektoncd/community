@@ -75,7 +75,7 @@ which the user plans on debugging.
 ```yaml
   debug:
     breakpoints:
-      onFailure: "enabled"
+      onFailure: true
       beforeSteps: ["test-js"]
       afterSteps: ["push-to-registry"]
       
@@ -130,7 +130,7 @@ In the process of debugging a TaskRun, there shouldn't be any interruption. To e
   debug:
     timeout: "120"
     breakpoints:
-      onFailure: "enabled"
+      onFailure: true
       beforeSteps: ["test-js"]
       afterSteps: ["push-to-registry"]
       
@@ -172,7 +172,7 @@ metadata:
 spec:
   debug:
     breakpoints:
-        onFailure: "enabled"
+        onFailure: true
         beforeTasks: ["task-build-archive"]
         afterTasks: ["deploy-frontend"]
 ```
@@ -231,7 +231,7 @@ metadata:
 spec:
   debug:
     breakpoints:
-      onFailure: "enabled"
+      onFailure: true
 ```
 
 ### PipelineRun Timeout Implications
@@ -243,7 +243,7 @@ In the process of debugging a PipelineRun, there shouldn't be any interruption. 
   debug:
     timeout: "120"
     breakpoints:
-      onFailure: "enabled"
+      onFailure: true
       beforeTasks: ["task-build-archive"]
       afterTasks: ["deploy-frontend"]
       
@@ -267,7 +267,7 @@ The scenario below provides details on what the user should do to debug their fa
    spec:
     debug: 
       breakpoint: 
-        onFailure: "enabled"
+        onFailure: true
    ```
 3. Once the TaskRun is created and a step fails, the TaskRun Pod will be in the Running state. Till that time the CLI will wait 
    for the TaskRun to stop executing (due to failure) and go into the limbo state which would be leveraged for debugging.
@@ -280,7 +280,7 @@ The scenario below provides details on what the user should do to debug their fa
     ```yaml
     debug:
       breakpoints: 
-        onFailure: "enabled"
+        onFailure: true
         beforeSteps: []
         afterSteps: []
     ```

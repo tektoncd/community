@@ -220,8 +220,12 @@ Since a pipeline may be running several tasks in parallel, in case of breakpoint
 
 ### Breakpoint on failure of a TaskRun
 
-When we provide `onFailure` as `true` in the `breakpoint` spec of the PipelineRun, this will be applied to all the children TaskRun under
+When we provide `onFailure` as `enabled` in the `breakpoint` spec of the PipelineRun, this will be applied to all the children TaskRun under
 this PipelineRun and hence `onFailure` will be present in the breakpoints of all the children TaskRuns.
+
+> Note: we typically avoid boolean fields due to [k8s api guidelines](https://github.com/kubernetes/community/blob/17a75cb315905854699d1a37c06dd1a5421b8577/contributors/devel/sig-architecture/api-conventions.md?plain=1#L589-L592) 
+> that state "Think twice about bool fields. Many ideas start as boolean but eventually trend towards a small set of mutually exclusive options."
+> so we use a string filed with value `enabled` to enable the onFailure breakpoint.
 
 ```yaml
 apiVersion: tekton.dev/v1beta1

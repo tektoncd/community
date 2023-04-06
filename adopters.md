@@ -18,6 +18,7 @@ Tell us about, we welcome [pull requests](https://github.com/tektoncd/community/
 | VSCode Tekton extension | VSCode extension to manage Tekton resources. | [github.com/redhat-developer/vscode-tekton](https://github.com/redhat-developer/vscode-tekton) |
 | JetBrains IDEs Tekton plugin | JetBrains IDEs plugin to manage Tekton resources. | [github.com/redhat-developer/intellij-tekton](https://github.com/redhat-developer/intellij-tekton) |
 | Automatiko Approval task | Brings approval tasks into Tekton pipeline with various strategies (single approval, multiple approvals, four eye based approval). | [github.com/automatiko-io/automatiko-approval-task](https://github.com/automatiko-io/automatiko-approval-task) |
+| [EPAM Delivery Platform (EDP)](https://epam.github.io/edp-install/) | Cloud-agnostic SaaS/PaaS solution for software development with a pre-defined set of CI/CD pipelines and tools, enabling to kickstart development quickly with established processes for code review, release, versioning, branching, and deployment. | [github.com/epam/edp-tekton](https://github.com/epam/edp-tekton)
 
 
 ## Vendors

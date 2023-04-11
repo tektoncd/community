@@ -740,6 +740,7 @@ orgs:
         - vincent-pli
         - piyush-garg
         - concaf
+        - jkandasa
         privacy: closed
         repos:
           operator: read

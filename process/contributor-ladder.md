@@ -124,7 +124,7 @@ Reviewers have all the rights and responsibilities of an
 - Requirements:
   - Experience as a [Contributor](#contributor) for at least 2 months or 50% of
     the project lifetime, whichever is shorter
-  - Has reviewed, or helped review, at least 15 Pull Requests
+  - Has authored or reviewed at least 15 Pull Requests
     - including being the primary reviewer for at least 5 of the above
   - Has analyzed and resolved test failures in their specific area
   - Has demonstrated an in-depth knowledge of the specific area
@@ -192,7 +192,7 @@ A Maintainer must meet the responsibilities and requirements of a
 - Requirements
   - Have been actively participating in reviews for at least 3 months or 50% of
     the project lifetime, whichever is shorter
-  - Has reviewed at least 30 PRs to the codebase.
+  - Has authored or reviewed at least 30 PRs to the codebase.
     - Have been the primary reviewer for at least 10 substantial PRs to the
       codebase.
   - Demonstrates a broad knowledge of the project across multiple areas

@@ -211,6 +211,7 @@ orgs:
       chains.admins:
         description: the chains admins
         maintainers:
+        - lcarva
         - priyawadhwa
         - wlynch
         privacy: closed
@@ -219,16 +220,9 @@ orgs:
       chains.maintainers:
         description: the chains maintainers
         maintainers:
-        - vdemeester
-        - dlorenc
+        - lcarva
         - priyawadhwa
         - wlynch
-        - lcarva
-        members:
-        - mpeters
-        - skelterjohn
-        - font
-        - lukehinds
         privacy: closed
         repos:
           chains: maintain
@@ -804,20 +798,21 @@ orgs:
       chains.collaborators:
         description: The chains collaborators
         maintainers:
+        - lcarva
+        - priyawadhwa
+        - wlynch
+        members:
         - abayer
         - afrittoli
         - bobcatfish
-        - ImJasonH
-        - vdemeester
-        - wlynch
-        members:
         - chuangw6
         - chitrangpatel
         - dlorenc
-        - lcarva
+        - ImJasonH
         - loosebazooka
         - mattmoor
         - pritidesai
+        - vdemeester
         privacy: closed
         repos:
           chains: read

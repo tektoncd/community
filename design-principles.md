@@ -25,6 +25,10 @@
 1. [Avoid implementing templating logic](https://docs.google.com/document/d/1h_3vSApIsuiwGkrqSiegi4NVaYG4oVzBquGAhIN6qGM/edit#heading=h.6kxvcvm7rs3r); prefer variable replacement.
 1. Avoid implementing our own expression syntax; when required prefer existing languages which are widely used and include supporting development tools.
 1. In TEPs, discuss how the proposal affects the flexibility of Tekton and demonstrate that any specific/opinionated choices are necessary but extensible. 
+1. Before adding an optional field to the spec or status of `CustomRun`, consider
+whether it could be part of the custom spec or custom status instead.
+New fields should be added to the spec or status of the `CustomRun` API only if they
+make sense for all custom run controllers to support.
 
 ## Conformance
 1. Tekton features should work as the user expects in varied environment setup.

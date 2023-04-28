@@ -123,3 +123,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0131](0131-tekton-conformance-policy.md) | Tekton Conformance Policy | proposed | 2023-02-14 |
 |[TEP-0132](0132-queueing-concurrent-runs.md) | Queueing Concurrent Runs | proposed | 2023-03-20 |
 |[TEP-0133](0133-configure-default-resolver.md) | Configure Default Resolver | implemented | 2023-03-21 |
+|[TEP-0134](0134-concise-pipelines.md) | Concise Pipelines | proposed | 2023-04-28 |

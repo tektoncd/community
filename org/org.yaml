@@ -210,16 +210,16 @@ orgs:
           catlin: maintain
       chains.admins:
         description: the chains admins
-        maintainers:
-        - lcarva
-        - priyawadhwa
-        - wlynch
+        members:
+          - lcarva
+          - priyawadhwa
+          - wlynch
         privacy: closed
         repos:
           chains: admin
       chains.maintainers:
         description: the chains maintainers
-        maintainers:
+        members:
         - lcarva
         - priyawadhwa
         - wlynch
@@ -798,10 +798,6 @@ orgs:
           catlin: read
       chains.collaborators:
         description: The chains collaborators
-        maintainers:
-        - lcarva
-        - priyawadhwa
-        - wlynch
         members:
         - abayer
         - afrittoli
@@ -810,10 +806,13 @@ orgs:
         - chitrangpatel
         - dlorenc
         - ImJasonH
+        - lcarva
         - loosebazooka
         - mattmoor
         - pritidesai
+        - priyawadhwa
         - vdemeester
+        - wlynch
         privacy: closed
         repos:
           chains: read

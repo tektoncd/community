@@ -28,7 +28,7 @@ Each Pull Request is expected to meet the following expectations around:
   * [Tests](#tests)
   * [Reconciler/Controller Changes](#reconcilercontroller-changes)
 
-_See also [the Tekton review process](https://github.com/tektoncd/community/blob/main/process.md#reviews)._
+_See also [the Tekton review process](https://github.com/tektoncd/community/blob/main/process/README.md#reviews)._
 
 ## Reviewer Responsibilities
 

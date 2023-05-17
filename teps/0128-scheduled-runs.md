@@ -2,11 +2,12 @@
 status: implementable
 title: Scheduled Runs
 creation-date: '2022-12-20'
-last-updated: '2022-12-20'
+last-updated: '2023-05-17'
 authors:
 - '@vdemeester'
 - '@sm43'
 - '@lbernick'
+- '@khrm'
 collaborators: []
 ---
 
@@ -63,7 +64,100 @@ If the EventListener is exposed outside of the cluster, the user must also sign 
 - Release Pipeline: User would like to create releases of their project on a nightly basis.
 
 ## Proposal
+Create ScheduledTemplate CRD with `resourcetemplates` and `schedule` field
 
+This solution doesn't use TriggerTemplate or TriggerBindings. Instead, it's spec has `resourcetemplates` which can have one or more pipelineruns, taskruns or other allowed Kubernetes and Tekton resources.
+
+```yaml
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: ScheduledTemplate
+metadata:
+  name: nightly-release
+spec:
+  cloudEventSink: http://eventlistener.free.beeceptor.com
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: simple-pipeline-run-
+    spec:
+      pipelineRef:
+        name: simple-pipeline
+      params:
+      - name: message
+        value: "Hi"
+      - name: git-url
+        value: "https://github.com/tektoncd/community.git"
+      workspaces:
+      - name: git-source
+        emptyDir: {}
+    schedule: "0 0 * * *"
+```
+
+`ScheduledTemplate` reconciler which creates resources will be part of the Tekton Triggers.
+
+### CLI
+
+As part of future work for this proposal, we can add a CLI command to manually trigger execution of a ScheduledTrigger
+similar to the kubectl functionality `kubectl create job --from=cronjob/my-cronjob`, for example:
+
+```sh
+tkn crontrigger start <scheduled_template_cr_name>
+```
+
+This functionality is tracked in https://github.com/tektoncd/cli/issues/1833.
+
+## Design Evaluation
+
+### Reusability
+
+This feature is essentially syntactic sugar for a CronJob creating a Tekton resource.
+It uses the functionality of TriggerTemplate but does not depends upon an EventListener.
+The schedule is a runtime concern, similar to other fields specified in EventListeners.
+
+### Simplicity
+
+The user experience with this proposal is much simpler with this proposal
+(a single additional line of configuration) than without it.
+For an example of what the user experience looks like without this proposal, see
+the [nightly release CronJob](https://github.com/tektoncd/plumbing/blob/be9826a5e75722782799e8094c3441295b185fe9/tekton/cronjobs/bases/release/trigger-with-uuid.yaml)
+used in the plumbing repo.
+
+### Flexibility
+
+- No new dependencies needed for this proposal
+- We are not coupling projects together but we add a new controller to Triggers.
+
+### Conformance
+
+- This proposal doesn't require the user to understand how the API is implemented,
+or introduce new Kubernetes concepts into the API.
+
+### Performance
+
+Creating a CronJob to simply create a new Tekton resource may not be very performant;
+however, performance of creating scheduled runs is not as important as (for example) performance
+of creating a run used for CI. Using CronJobs is a reasonable way to start, especially if it helps us avoid
+reimplementing cron syntax.
+
+### Security
+
+This proposal adds a new controller to the triggers with new permissions to create, update, and delete CronJobs.
+
+### Drawbacks
+
+- We might want to avoid setting a precedent of building functionality into Triggers to trigger on many different types
+of events. This proposal couples an event (a time occurring) with a Tekton resource creation, when we may prefer to keep
+events and resource creation separate. However, cron jobs are an extremely common simple use case that likely makes sense
+to address specifically.
+
+- We might want to build this functionality into a higher level API like [Workflows](./0098-workflows.md) or a larger
+feature like [polling runs](./0083-polling-runs-in-tekton.md). This proposal doesn't prevent that,
+and ScheduledTriggers could be leveraged to implement similar functionality in a higher level system.
+
+## Alternatives
+
+### ScheduledTrigger CRD with Triggers in Spec
 Create a new ScheduledTrigger CRD that fires on a specified schedule.
 For example:
 
@@ -126,7 +220,7 @@ this solution has two benefits:
 2. Users can fire multiple Triggers on a scheduled basis with the same service account, using TriggerGroups.
 (For example, Tekton releases all of its experimental projects on a nightly basis with the same Pipeline.)
 
-### Bindings
+#### Bindings
 
 As part of future work for this proposal, we can add two new variable replacements in bindings:
 - $(context.date): date when the run was created, in RFC3339 format
@@ -135,71 +229,49 @@ As part of future work for this proposal, we can add two new variable replacemen
 Like EventListeners, ScheduledTriggers should generate an event ID (a UUID) and support variable replacement
 for $(context.eventID) in bindings.
 
-### CLI
+### Add a field or annotation in Pipelinerun for scheduling
 
-As part of future work for this proposal, we can add a CLI command to manually trigger execution of an EventListener or ScheduledTrigger
-similar to the kubectl functionality `kubectl create job --from=cronjob/my-cronjob`, for example:
-
-```sh
-tkn eventlistener start <el_name> --body "{'foo':'bar'}"
+In this case, we add a controller in the experimental repo which can later be added to pipelines. Or it can be part of the Pipelinerun controller.
+We will add field for scheduling:
+```yaml
+apiVersion: tekton.dev/v1
+kind: Pipelinerun
+metadata:
+  generateName: nightly-release
+spec:
+  schedule: "0 0 * * *"
+  pipelineRef:
+    name: "release"
+  taskRunTemplate:
+    serviceAccountName: ...
 ```
-or
-
-```sh
-tkn crontrigger start <trigger_name>
+Or an annotation:
+```yaml
+apiVersion: tekton.dev/v1
+kind: Pipelinerun
+metadata:
+  generateName: nightly-release
+  annotations:
+    tekton.dev/schedule: "0 0 * * *"
+spec:
+  pipelineRef:
+    name: "release"
+  taskRunTemplate:
+    serviceAccountName: ...
 ```
 
-This functionality is tracked in https://github.com/tektoncd/cli/issues/1833.
 
-## Design Evaluation
+    The controller will watch Pipelinerun and generate jobs based on annotation or field. Controller would need to be modified to skip the pipelinerun with `scheduled` field or annotation.
 
-### Reusability
+Pros:
+- No dependency on Triggers. Enduser doesn't need to know about Trigger CRDs to use scheduling.
 
-This feature is essentially syntactic sugar for a CronJob creating a Tekton resource.
-It uses functionality similar to EventListeners, such as TriggerGroups and CloudEventSinks (but does not actually create an EventListener).
-The schedule is a runtime concern, similar to other fields specified in EventListeners.
-
-### Simplicity
-
-The user experience with this proposal is much simpler with this proposal
-(a single additional line of configuration) than without it.
-For an example of what the user experience looks like without this proposal, see
-the [nightly release CronJob](https://github.com/tektoncd/plumbing/blob/be9826a5e75722782799e8094c3441295b185fe9/tekton/cronjobs/bases/release/trigger-with-uuid.yaml)
-used in the plumbing repo.
-
-### Flexibility
-
-- No new dependencies needed for this proposal
-- We are not coupling projects together, but we are coupling event generation to resource creation to some extent.
-
-### Conformance
-
-- This proposal doesn't require the user to understand how the API is implemented,
-or introduce new Kubernetes concepts into the API.
-
-### Performance
-
-Creating a CronJob to simply create a new Tekton resource may not be very performant;
-however, performance of creating scheduled runs is not as important as (for example) performance
-of creating a run used for CI. Using CronJobs is a reasonable way to start, especially if it helps us avoid
-reimplementing cron syntax.
-
-### Security
-
-This proposal gives the triggers controller new permissions to create, update, and delete CronJobs.
-
-### Drawbacks
-
-- We might want to avoid setting a precedent of building functionality into Triggers to trigger on many different types
-of events. This proposal couples an event (a time occurring) with a Tekton resource creation, when we may prefer to keep
-events and resource creation separate. However, cron jobs are an extremely common simple use case that likely makes sense
-to address specifically.
-
-- We might want to build this functionality into a higher level API like [Workflows](./0098-workflows.md) or a larger
-feature like [polling runs](./0083-polling-runs-in-tekton.md). This proposal doesn't prevent that,
-and ScheduledTriggers could be leveraged to implement similar functionality in a higher level system.
-
-## Alternatives
+Cons:
+- An additional controller in pipelines.
+- Feature doesn't seem to be part of pipelines repo but because we are adding a new field to Pipelinerun, we can only keep it there. If we proceed with annotations, then this can be part of other components also.
+- Pipeline controllers would have to understand to skip PipelineRuns with a `schedule` field or annotation set.
+- This breaks the assumption that a Pipelinerun is associated with a single instance of Pipeline.
+- Only one pipelinerun can be created.
 
 ### ScheduledTrigger CRD with fixed event body
 

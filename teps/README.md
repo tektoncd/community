@@ -117,7 +117,7 @@ This is the complete list of Tekton TEPs:
 |[TEP-0124](0124-distributed-tracing-for-tasks-and-pipelines.md) | Distributed tracing for Tasks and Pipelines | implemented | 2023-01-29 |
 |[TEP-0125](0125-add-credential-filter-to-entrypoint-logger.md) | Add credential filter to entrypoint logger | proposed | 2022-10-27 |
 |[TEP-0127](0127-larger-results-via-sidecar-logs.md) | Larger Results via Sidecar Logs | implemented | 2022-12-15 |
-|[TEP-0128](0128-scheduled-runs.md) | Scheduled Runs | implementable | 2022-12-20 |
+|[TEP-0128](0128-scheduled-runs.md) | Scheduled Runs | implementable | 2023-05-17 |
 |[TEP-0129](0129-multiple-tekton-instances-per-cluster.md) | Multiple Tekton instances per cluster | implementable | 2023-03-30 |
 |[TEP-0130](0130-pipeline-level-service.md) | Pipeline-level Service | proposed | 2023-02-21 |
 |[TEP-0131](0131-tekton-conformance-policy.md) | Tekton Conformance Policy | proposed | 2023-02-14 |

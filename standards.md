@@ -50,6 +50,7 @@ _See also [the Tekton review process](https://github.com/tektoncd/community/blob
     * Please refer the [release-note](#release-notes) section for more details.
 * Add the related [TEP-XXXX] at the beginning of a PR subject line
   * Consider adding the links of the related TEP, Feature Request thread, and related other implementation PRs
+* The changes section should ideally be straight from the descriptive commit message that follows [the commit message standards](#commit-messages).
 * Add the Milestones to the pull request or the issue
   * For tracking the status of each Milestone, please link to the Milestones if the pull request or the issue targets specific releases.
 

@@ -240,7 +240,7 @@ PRs must adhere to the project's API stability policy.
   * Don’t panic
   * Error strings are not capitalized
   * Handle all errors ([gracefully](https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully))
-    * When returning errors, add more context with `fmt.Errorf` and `%v`
+    * When returning errors, add more context with `fmt.Errorf` and `%w`
   * Prefer short variable names
 
 ### Go packages

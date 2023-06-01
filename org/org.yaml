@@ -310,13 +310,11 @@ orgs:
         maintainers:
         - vdemeester
         members:
-        - houshengbo
-        - nikhil-thomas
-        - vincent-pli
         - savitaashture
         - sm43
         - concaf
         - piyush-garg
+        - jkandasa
         privacy: closed
         repos:
           operator: maintain
@@ -508,6 +506,7 @@ orgs:
         - eddycharly
         - skaegi
         - pradeepitm12
+        - jkandasa
         - khrm
         - pratap0007
         - kimsterv
@@ -732,14 +731,11 @@ orgs:
         - ImJasonH
         - vdemeester
         members:
-        - houshengbo
-        - nikhil-thomas
-        - pradeepitm12
         - savitaashture
-        - vincent-pli
         - piyush-garg
         - concaf
         - jkandasa
+        - PuneetPunamiya
         privacy: closed
         repos:
           operator: read

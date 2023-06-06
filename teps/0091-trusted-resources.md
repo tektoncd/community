@@ -2,7 +2,7 @@
 status: implementable
 title: Trusted Resources
 creation-date: '2022-06-22'
-last-updated: '2023-02-23'
+last-updated: '2023-06-06'
 authors:
 - '@squee1945'
 - '@wlynch'
@@ -752,6 +752,35 @@ Pull-request(s) merged.
 Note: This section is exclusively for merged pull requests, for this TEP.
 It will be a quick reference for those looking for implementation of this TEP.
 -->
+
+Milestone 1 (tracked by https://github.com/tektoncd/pipeline/issues/5527):
+
+* Sign and Verify Functions: https://github.com/tektoncd/pipeline/pull/5552
+* Verification in reconciler: https://github.com/tektoncd/pipeline/pull/5581
+* Add VerificationPolicy: https://github.com/tektoncd/pipeline/pull/5714
+* KMS Support:
+  * KMS Library: https://github.com/tektoncd/pipeline/pull/5890
+  * KMS field: https://github.com/tektoncd/pipeline/pull/5891
+  * Enable KMS: https://github.com/tektoncd/pipeline/pull/5965
+
+Milestone 2 (tracked by https://github.com/tektoncd/pipeline/issues/6356):
+
+* Feature flag change: https://github.com/tektoncd/pipeline/pull/6324
+* Add Mode to VerificationPolicy:
+  * https://github.com/tektoncd/pipeline/pull/6328
+  * https://github.com/tektoncd/pipeline/pull/6406
+* Add Condition to Status:
+  * https://github.com/tektoncd/pipeline/pull/6663
+  * https://github.com/tektoncd/pipeline/pull/6673
+  * https://github.com/tektoncd/pipeline/pull/6691
+  * https://github.com/tektoncd/pipeline/pull/6736
+  * https://github.com/tektoncd/pipeline/pull/6754
+  * https://github.com/tektoncd/pipeline/pull/6757
+* V1 Task and Pipeline Support:
+  * https://github.com/tektoncd/pipeline/pull/6724
+  * https://github.com/tektoncd/pipeline/pull/6738
+  * https://github.com/tektoncd/pipeline/pull/6764
+  * https://github.com/tektoncd/pipeline/pull/6765
 
 ## References (optional)
 

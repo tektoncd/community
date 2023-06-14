@@ -18,12 +18,14 @@ collaborators: []
   - [Use Cases](#use-cases)
   - [Requirements](#requirements)
 - [Proposal](#proposal)
-  - [Notes and Caveats](#notes-and-caveats)
 - [Design Details](#design-details)
+  - [Capturing step status update](#capturing-step-status-update)
+  - [POC](#poc)
 - [Design Evaluation](#design-evaluation)
   - [Reusability](#reusability)
   - [Simplicity](#simplicity)
   - [Flexibility](#flexibility)
+  - [Conformance](#conformance)
   - [User Experience](#user-experience)
   - [Performance](#performance)
   - [Risks and Mitigations](#risks-and-mitigations)
@@ -39,7 +41,7 @@ collaborators: []
 
 ## Summary
 
-This proposal extends instrumentation of tekton pipelines to include traces for pod events. Currently only reconciler related events are recorded as traces. The proposal is to capture container state changes (Started -> ContainerCreating -> Running -> Finished ) for each step of each task in the trace.
+This proposal extends instrumentation of tekton pipelines to include traces for pod events. Currently only reconciler related events are recorded as traces. The proposal is to capture container Phases (Waiting -> Running -> Completed ) for each step of each task in the trace.
 
 ## Motivation
 
@@ -48,7 +50,7 @@ When we debug the performance of tekton pipelines, it is important to understand
 ### Goals
 
 - Capture traces during phase change of a task pod
-  - Creation of container
+  - Creation of container and waiting for start
   - Running the container
   - Finish running the container
 - Capture error and exit codes if the task was not successful due to failure in a step
@@ -71,24 +73,7 @@ As a pipeline user:
 
 ## Proposal
 
-<!--
-This is where we get down to the specifics of what the proposal actually is.
-This should have enough detail that reviewers can understand exactly what
-you're proposing, but should not include things like API designs or
-implementation. The "Design Details" section below is for the real
-nitty-gritty.
--->
-
-### Notes and Caveats
-
-<!--
-(optional)
-
-Go in to as much detail as necessary here.
-- What are the caveats to the proposal?
-- What are some important details that didn't come across above?
-- What are the core concepts and how do they relate?
--->
+`TaskRun` status already keeps track of the state of each step in the task, based on container statuses in the pod. The idea is to raise a trace event during transition of a step state.
 
 
 ## Design Details
@@ -122,61 +107,48 @@ status:
 
 ### Capturing step status update
 
-The method `setTaskRunStatusBasedOnStepStatus` in `pkg/pod/status.go` updates the step status based on pod container statuses. 
+The `reconcile` method calls `MakeTaskRunStatus` method to updates the step status fields based on container status. We can keep a copy of `tr.Status.Steps` and compare it with the same after this method is called to determine state transition. It is important to raise events only during state transition so that jaeger doesn't get flooded with duplicate events. The logic is similar to how Kubernetes events are raised in `finishReconcileUpdateEmitEvents` method.
 
-Code block:
-
-```
-trs.Steps = append(trs.Steps, v1beta1.StepState{
-  ContainerState: *s.State.DeepCopy(),
-  Name:           trimStepPrefix(s.Name),
-  ContainerName:  s.Name,
-  ImageID:        s.ImageID,
-})
-```
-
-While capturing the trace, we should only create the event during state transition. So the logic is,
-
-* Take a copy of `trs.Steps`
-* After calling the method `podconvert.MakeTaskRunStatus` from `taskRun.go` (which in-turn executes the above code),
-   - compare the existing status with new status
-   - raise trace event if there is a state transition
-
-If we don't have the above logic in place, we will end up with duplicate trace events corresponding to the same step status.
-
-### Capturing pod failure event
-
-If a task is failed, the following block of code from `failTaskRun()` in `taskrun.go` updates the status for each step in `TaskRun` CR.
-
+Code block example:
 
 ```
-	// Update step states for TaskRun on TaskRun object since pod has been deleted for cancel or timeout
-	for i, step := range tr.Status.Steps {
-		// If running, include StartedAt for when step began running
-		if step.Running != nil {
-			step.Terminated = &corev1.ContainerStateTerminated{
-				ExitCode:   1,
-				StartedAt:  step.Running.StartedAt,
-				FinishedAt: completionTime,
-				Reason:     reason.String(),
-			}
-			step.Running = nil
-			tr.Status.Steps[i] = step
-		}
+// Duplicate stepstates
+beforeSteps := make([]v1beta1.StepState, len(tr.Status.Steps))
+copy(beforeSteps, tr.Status.Steps)
 
-		if step.Waiting != nil {
-			step.Terminated = &corev1.ContainerStateTerminated{
-				ExitCode:   1,
-				FinishedAt: completionTime,
-				Reason:     reason.String(),
-			}
-			step.Waiting = nil
-			tr.Status.Steps[i] = step
-		}
-	}
+// Existing method call to determine new states
+// Convert the Pod's status to the equivalent TaskRun Status.
+tr.Status, err = podconvert.MakeTaskRunStatus(ctx, logger, *tr, pod, c.KubeClientSet, rtr.TaskSpec)
+
+
+// Returns true if stepstate has changed from beforeSteps
+if hasStepStateChanged(beforeSteps, tr.Status.Steps) {
+    // raise events
+
+    if st.Waiting != nil {
+        span.AddEvent("waiting", trace.WithAttributes(attribute.String("reason", st.Waiting.Reason)))
+    }
+    if st.Running != nil {
+        span.AddEvent("running", trace.WithAttributes(attribute.String("startedAt", st.Running.StartedAt.String())))
+    }
+    if st.Terminated != nil {
+        span.AddEvent("terminated", trace.WithAttributes(attribute.String("reason", st.Terminated.Reason)))
+    }
+}
+
 ```
 
-During this phase transition, we can capture the trace and raise an event.
+### POC
+
+The following screenshot shows how the pod status is shown when the container is in `PodInitializing` phase.
+
+![Jaeger - Pod Status](images/0136-podstatus.png "Jaeger - Pod Status")
+
+Similarly, the images below shows `Running` and `Completed` phases respectively.
+
+![Jaeger - Pod Status](images/0136-podstatus-running.png "Pod Status - Running")
+
+![Jaeger - Pod Status](images/0136-podstatus-completed.png "Pod Status - Completed")
 
 
 ## Design Evaluation

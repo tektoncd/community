@@ -126,3 +126,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0134](0134-concise-pipelines.md) | Concise Pipelines | proposed | 2023-04-28 |
 |[TEP-0135](0135-coscheduling-pipelinerun-pods.md) | Coscheduling PipelineRun pods | implementable | 2023-06-22 |
 |[TEP-0136](0136-capture-traces-for-task-pod-events.md) | Capture traces for task pod events | proposed | 2023-06-14 |
+|[TEP-0137](0137-cloudevents-controller.md) | CloudEvents controller | proposed | 2023-06-19 |

@@ -866,6 +866,7 @@ orgs:
     - priyawadhwa
     - PuneetPunamiya
     - sm43
+    - ywluogg
     teams:
       golang.maintainers:
         description: The maintainers of golang catalog
@@ -888,6 +889,7 @@ orgs:
         - PuneetPunamiya
         - sm43
         - QuanZhang-William
+        - ywluogg
         privacy: closed
         repos:
           golang: read

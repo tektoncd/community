@@ -220,6 +220,7 @@ orgs:
       chains.maintainers:
         description: the chains maintainers
         members:
+        - chitrangpatel
         - chuangw6
         - lcarva
         - priyawadhwa
@@ -895,4 +896,4 @@ orgs:
         privacy: closed
         repos:
           golang: read
-          
+

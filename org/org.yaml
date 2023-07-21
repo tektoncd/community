@@ -220,6 +220,7 @@ orgs:
       chains.maintainers:
         description: the chains maintainers
         members:
+        - chuangw6
         - lcarva
         - priyawadhwa
         - wlynch

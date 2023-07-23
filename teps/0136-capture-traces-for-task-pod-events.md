@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: Capture traces for task pod events
 creation-date: '2023-06-14'
-last-updated: '2023-06-14'
+last-updated: '2023-07-23'
 authors:
 - '@kmjayadeep'
 collaborators: []
@@ -24,16 +24,11 @@ collaborators: []
 - [Design Evaluation](#design-evaluation)
   - [Reusability](#reusability)
   - [Simplicity](#simplicity)
-  - [Flexibility](#flexibility)
   - [Conformance](#conformance)
-  - [User Experience](#user-experience)
   - [Performance](#performance)
-  - [Risks and Mitigations](#risks-and-mitigations)
   - [Drawbacks](#drawbacks)
-- [Alternatives](#alternatives)
 - [Implementation Plan](#implementation-plan)
   - [Test Plan](#test-plan)
-  - [Infrastructure Needed](#infrastructure-needed)
   - [Upgrade and Migration Strategy](#upgrade-and-migration-strategy)
   - [Implementation Pull Requests](#implementation-pull-requests)
 - [References](#references)
@@ -167,6 +162,8 @@ https://github.com/tektoncd/community/blob/main/design-principles.md#reusability
 authoring or runtime?
 -->
 
+This feature addresses runtime concerns of TaskRuns. It uses the step states under TaskRun status to determine the transition time of container phases. Taskrun status does not keep track of previous states, which is why this feature is important.
+
 ### Simplicity
 
 <!--
@@ -179,6 +176,8 @@ https://github.com/tektoncd/community/blob/main/design-principles.md#simplicity
 - Are there any implicit behaviors in the proposal? Would users expect these implicit behaviors or would they be
 surprising? Are there security implications for these implicit behaviors?
 -->
+
+This feature improves user experience by giving more visibility into the timing of each task. Currently we can determine the total time taken to run each task. But, the total time may also include time taken for the pod to be scheduled, pulling of images etc. This feature allows more visiblity into this hidden steps.
 
 ### Flexibility
 
@@ -194,6 +193,8 @@ required for these dependencies?
 their own choices?
 -->
 
+There are no additional dependencies with this proposal. The idea is to enhance the existing tracing feature to include more usable information as part of the traces.
+
 ### Conformance
 
 <!--
@@ -205,18 +206,7 @@ https://github.com/tektoncd/community/blob/main/design-principles.md#conformance
 [API spec](https://github.com/tektoncd/pipeline/blob/main/docs/api-spec.md)?
 -->
 
-### User Experience
-
-<!--
-(optional)
-
-Consideration about the user experience. Depending on the area of change,
-users may be Task and Pipeline editors, they may trigger TaskRuns and
-PipelineRuns or they may be responsible for monitoring the execution of runs,
-via CLI, dashboard or a monitoring system.
-
-Consider including folks that also work on CLI and dashboard.
--->
+This feature has no implications on the APIs
 
 ### Performance
 
@@ -231,30 +221,14 @@ of TaskRuns and PipelineRuns?
 as well as TaskRuns and PipelineRuns?
 -->
 
-### Risks and Mitigations
-
-<!--
-What are the risks of this proposal and how do we mitigate? Think broadly.
-For example, consider both security and how this will impact the larger
-Tekton ecosystem. Consider including folks that also work outside the WGs
-or subproject.
-- How will security be reviewed and by whom?
-- How will UX be reviewed and by whom?
--->
+The performance impact of this change is negligible. The traces are pushed to the receiver asynchronously in the background without blocking main threads. This proposal only adds a very small payload to the existing traces.
 
 ### Drawbacks
 
 <!--
 Why should this TEP _not_ be implemented?
 -->
-
-## Alternatives
-
-<!--
-What other approaches did you consider and why did you rule them out? These do
-not need to be as detailed as the proposal, but should include enough
-information to express the idea and why it was not acceptable.
--->
+This is an enhancement to an already existing feature. There are no drawbacks as far as we know.
 
 
 ## Implementation Plan
@@ -280,26 +254,7 @@ All code is expected to have adequate tests (eventually with coverage
 expectations).
 -->
 
-### Infrastructure Needed
-
-<!--
-(optional)
-
-Use this section if you need things from the project or working group.
-Examples include a new subproject, repos requested, GitHub details.
-Listing these here allows a working group to get the process for these
-resources started right away.
--->
-
-### Upgrade and Migration Strategy
-
-<!--
-(optional)
-
-Use this section to detail whether this feature needs an upgrade or
-migration strategy. This is especially useful when we modify a
-behavior or add a feature that may replace and deprecate a current one.
--->
+Integration tests can be added to make sure the pod phases are captured correctly. This feature itself is used for testing and debugging, so there is no point in adding e2e tests.
 
 ### Implementation Pull Requests
 
@@ -321,3 +276,4 @@ shared drive, examples, etc. This is useful to refer back to any other related l
 to get more details.
 -->
 
+* [TEP-0124: Distributed tracing for Tasks and Pipelines](https://github.com/tektoncd/community/blob/main/teps/0124-distributed-tracing-for-tasks-and-pipelines.md)

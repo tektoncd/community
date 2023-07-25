@@ -338,6 +338,7 @@ orgs:
         privacy: closed
         repos:
           plumbing: maintain
+          infra: maintain
       results.maintainers:
         description: the results maintainers
         maintainers:
@@ -645,6 +646,7 @@ orgs:
         privacy: closed
         repos:
           plumbing: read
+          infra: read
       cli.collaborators:
         description: The cli collaborators
         maintainers:

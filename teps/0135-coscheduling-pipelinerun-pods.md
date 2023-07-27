@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Coscheduling PipelineRun pods
 creation-date: '2023-05-01'
-last-updated: '2023-06-22'
+last-updated: '2023-07-27'
 authors:
 - '@lbernick'
 - '@QuanZhang-William'
@@ -467,13 +467,7 @@ As mentioned in ["Configuration"](#configuration), we'll need to replace the "di
 
 ### Implementation Pull Requests
 
-<!--
-Once the TEP is ready to be marked as implemented, list down all the GitHub
-merged pull requests.
-
-Note: This section is exclusively for merged pull requests for this TEP.
-It will be a quick reference for those looking for implementation of this TEP.
--->
+The implementation PRs are summarized in [#6740](https://github.com/tektoncd/pipeline/issues/6740)
 
 ## References
 

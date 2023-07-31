@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implementable
 title: CloudEvents controller
 creation-date: '2023-06-19'
-last-updated: '2023-06-19'
+last-updated: '2023-07-31'
 authors:
 - '@afrittoli'
 collaborators: []
@@ -166,15 +166,7 @@ for the cache to be updated **in order**.
 
 ### Notes and Caveats
 
-<!--
-(optional)
-
-Go in to as much detail as necessary here.
-- What are the caveats to the proposal?
-- What are some important details that didn't come across above?
-- What are the core concepts and how do they relate?
--->
-
+N/A
 
 ## Design Details
 
@@ -349,6 +341,240 @@ Example CDEvent:
 }
 ```
 
+## Design Details
+
+### Events Controller Structure
+
+Tekton today has an event controller, deployed as a separate binary, which is used to send
+events for `v1beta1.CustomRuns`. The same binary will include controllers for three resources:
+`v1.TaskRun`, `v1.PipelineRun` and `v1beta1.CustomRuns`. Since most of the functionality is
+identical for the three controllers and reconcilers, most of the logic will be included in
+shared packages. The new `reconcile/notifications/runtimeobject.go` will include shared reconciler
+functions, and the existing `reconcile/events` will continue to include the event rendering
+and delivery functionality.
+
+We will use the `v1beta1.RunObject` to treat the three resource types consistently:
+
+```golang
+type RunObject interface {
+	// Object requires GetObjectKind() and DeepCopyObject()
+	runtime.Object
+
+	// ObjectMetaAccessor requires a GetObjectMeta that returns the ObjectMeta
+	metav1.ObjectMetaAccessor
+
+	// GetStatusCondition returns a ConditionAccessor
+	GetStatusCondition() apis.ConditionAccessor
+
+	IsSuccessful() bool
+	IsCancelled() bool
+	HasStarted() bool
+	IsDone() bool
+}
+```
+
+`ReconcileKind` method will be as simple as:
+
+```golang
+// ReconcileKind oberves the resource conditions and triggers notifications accordingly
+func (c *Reconciler) ReconcileKind(ctx context.Context, taskRun *v1.TaskRun) pkgreconciler.Event {
+	return notifications.ReconcileRuntimeObject(ctx, c, taskRun)
+}
+```
+
+### Cache Design
+
+We will use a more advanced cache library, `github.com/allegro/bigcache/v3`, which provides
+better performance and reduced need for garbage collection.
+The cache currently is used to store a representation of the events that have been sent
+already. This will be changed to storing an hash of a resource and its condition, that in
+most cases can be used to easily decide whether a certain key needs to be reconciled or not.
+
+```golang
+// ObjectKey is the object condition cache key which combines condition and object kind, namespace and name
+func ObjectKey(object v1beta1.RunObject) (string, error) {
+  (...)
+	return hash(fmt.Sprintf("%s/%s/%s/%s/%s/%s/%s/%s",
+		condition.Status,
+		condition.Reason,
+		condition.Message,
+		object.GetObjectKind().GroupVersionKind().Group,
+		object.GetObjectKind().GroupVersionKind().Version,
+		object.GetObjectKind().GroupVersionKind().Kind,
+		object.GetObjectMeta().GetNamespace(),
+		object.GetObjectMeta().GetName()))
+}
+```
+
+### Events Logic
+
+Tekton events include "start", "running", "unknown", "succeeded" and "failed".
+The switch between "start" and "running" may happen in a single run of the core reconciler,
+and thus it is more complex to achieve for an external observer.
+A better model is provided by the CDEvents list of events, which include "queued", "started"
+and "finished". To mirror that, we will introduce a new "queued" Tekton event, which will be
+sent when no condition at all is set on a resource.
+
+For backwards compatibility we need to continue to produce both the "start" and
+"running" events, which means that in some cases those two events will have to be sent during
+a single events controller reconcile cycle:
+
+```
+if (condition is set) {
+  if (resource is not running) {
+    send start event
+    store start event in cache
+  } else {
+    // resource is running
+    if !(start event in cache) {
+      send start event
+      store start event in cache
+    }
+    send running event
+  }
+}
+```
+
+### CDEvents Design
+
+This section covers the following areas:
+
+- the data required for sending CDEvents
+- when events may be sent, whether that's Tekton driven or user driven
+- the interface available to users to pass the data
+- the mechanism used by the events controller to access it
+
+There are a few different options described, which are not necessarily mutually exclusive,
+i.e. they could be both implemented to give users a richer set of features.
+
+#### Data Required From Users
+
+CDEvents are composed of a three main sections: `context`. `subject` and `customData`.
+The `context` has a fixed structure, e.g.
+
+```json
+  "context": {
+    "version": "0.3.0",
+    "id": "271069a8-fc18-44f1-b38f-9d70a1695819",
+    "source": "/event/source/123",
+    "type": "dev.cdevents.artifact.packaged.0.1.1",
+    "timestamp": "2023-03-20T14:27:05.315384Z"
+  },
+```
+
+The only field where user input is strictly required is the type. Type is made of a fixed
+prefix `dev.cdevents`, a subject e.g. `artifact`, a predicate e.g. `packaged` and a version.
+The version part e.g. `0.1.1` is controller by Tekton, so subject and predicate must be
+provided by the user.
+
+The structure of `subject` has some common fields, `id`, `source` and `type`, while 
+`subject.content` depends on subject and predicate, for instance:
+
+```json
+  "subject": {
+    "id": "pkg:golang/mygit.com/myorg/myapp@234fd47e07d1004f0aed9c",
+    "source": "/event/source/123",
+    "type": "artifact",
+    "content": {
+      "change": {
+        "id": "myChange123",
+        "source": "my-git.example/an-org/a-repo"
+      }
+    }
+  }
+```
+
+The `subject.id` must be provided by the users, as well as the `subject.content` section.
+
+Finally, [`customData`][cdevents-custom-data] hosts user defined content, which can be JSON,
+or any other content type as long as it's base64 encoded.
+
+#### When Events Are Sent
+
+There are several options when it comes to sending events, the tables below captures them
+and some considerations for each. The main distinction is between Tekton controller and user
+controlled. 
+
+For Tekton controlled events, the user provides any data required for sending the events,
+and the Tekton controllers send the events based on the status of resources. This is how
+events are sent today.
+
+For user controller events, user decide when an event is sent, so they to have to ensure that
+the flow of execution allows for the event to be sent. Tekton may provide some
+interface to let users specify the data required and let Tekton send the events.
+Alternatively, events can be sent by the user directly, which is possible today. It gives
+users maximum flexibility but it also leaves the heavy-lifting of sending events to them.
+
+| `TaskRun`/`CustomRun` | Controlled by | Trigger | Data Available | Example Events |
+|:----------------------|:-------------:|:-------:|:--------------:|:--------------:|
+| Before Start | User | Dedicated resource in the Pipeline | Used defined | Any |
+| Start | Tekton | Resource Created | Annotations, Parameters | Build Started, TestSuiteRun Started |
+| Running | Tekton | Condition Changed, Unknown | Annotations, Parameters | |
+| Running | User | Event requested by user | Any data available in the step context | Any |
+| End | Tekton | Condition Changed, True or False | Annotations, Parameters, Results | Build Finished, Artifact Packaged, Service Deployed |
+| After End | User | Dedicated resource in the Pipeline | Any available in the context, results from previous Tasks| Any |
+
+#### User Interface
+
+TBD
+
+#### Events Controller Interface
+
+##### Resource Status
+
+The events controller sends CDEvents based on the input it receives through the status of
+the resources `TaskRun`, `PipelineRun` and `CustomRun` - more specifically, events can only
+be sent when a change happens in the `Condition` of one of these resources.
+In addition, the data required to send an event should be stored in the status of the
+resource for the events controller to consume.
+
+
+##### Custom Resource
+
+The events controller sends CDEvents based on custom resources. The custom resources contain
+all the user data required to send the events, for instance:
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: CustomRun
+metadata:
+  generateName: cdevent-
+spec:
+  ref:
+    apiVersion: custom.tekton.dev/v0
+    kind: CDEvent
+  params:
+    - name: context
+      value:
+        type: dev.cdevents.build.started
+    - name: subject
+      value:
+        id: myBuild123
+    - name: subject-content
+        pipelineName: myPipeline
+        url: http://example.com/myTaskRun123
+    - name: data
+      value:
+        customDataContentType: "application/json"
+        customData: "{\"k1\": \"v1\"}"
+```
+
+The example `CustomRun` above could be produced by the pipeline controller or a sidecar
+running along the workload, depending on the user interface. 
+Alternatively, the same `CustomRun` can be embedded by a user in a `Pipeline` definition,
+for instance the following sequence of tasks could be define:
+
+- task send "build.started" event
+- task execute "build"
+- task send "build.finished" event
+
+The disadvantage of this approach though is that it's up to users to ensure that end the
+third task is executed and has all the context required from the build task.
+
+#### Triggering of CDEvents
+
+The events controller reacts to updates to the watched resources `status`.
+
 ## Design Evaluation
 
 The experimental controller today uses a combination of annotations, parameters and results
@@ -395,16 +621,10 @@ value beyond the conformance to the Tekton API.
 
 ### User Experience
 
-<!--
-(optional)
-
-Consideration about the user experience. Depending on the area of change,
-users may be Task and Pipeline editors, they may trigger TaskRuns and
-PipelineRuns or they may be responsible for monitoring the execution of runs,
-via CLI, dashboard or a monitoring system.
-
-Consider including folks that also work on CLI and dashboard.
--->
+From a user point of view, Tekton will expand its event functionality
+as an opt-in. The only change that over time will be required for
+event users will be to use the new config map, once the deprecated
+configuration option is removed.
 
 ### Performance
 
@@ -442,7 +662,6 @@ be duplicated after a controller restart.
   support for CDEvents
 - Only core CDEvents events could be supported (`TaskRun` and `PipelineRun`
   events)
-
 
 ## Implementation Plan
 
@@ -525,3 +744,4 @@ behavior or add a feature that may replace and deprecate a current one.
 [cdevents-go-sdk]: https://github.com/cdevents/sdk-go
 [purl-go-sdk]: https://github.com/package-url/packageurl-go
 [go-cache-comparison]: https://medium.com/codex/our-go-cache-library-choices-406f2662d6b
+[cdevents-custom-data]: https://github.com/cdevents/spec/blob/v0.3.0/spec.md#cdevents-custom-data

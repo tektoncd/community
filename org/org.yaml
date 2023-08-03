@@ -17,6 +17,7 @@ orgs:
     has_repository_projects: true
     location: ''
     members:
+    - aaron-prindle
     - abayer
     - adambkaplan
     - ak1394

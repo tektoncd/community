@@ -32,7 +32,7 @@ discussions.
   - Must follow the [Tekton CoC](code-of-conduct.md)
 - How users can get involved with the community:
   - Participating in community discussions
-    ([GitHub, Slack, mailing list, etc](contact.md))
+    ([GitHub, Slack, mailing list, etc](/contact.md))
   - Helping other users
   - Submitting bug reports
   - Commenting on issues
@@ -80,11 +80,15 @@ of a [Contributor](#contributor), plus:
     contributions a year, as demonstrated by
     [the Tekton devstats dashboard](https://tekton.devstats.cd.foundation/d/9/developer-activity-counts-by-repository-group-table?orgId=1&var-period_name=Last%20year&var-metric=contributions&var-repogroup_name=All&var-country_name=All).
 - Requirements:
+  - Subscribed to the [tekton-dev mailing list](/contact.md).
+  - Actively contributing to 1 or more subprojects.
   - Must have successful contributions to the project, including at least one of
     the following:
     - Authored or Reviewed 5 PRs,
-    - Or be endorsed by existing Org Members (e.g. if you are joining a team
-      that is working on Tekton).
+    - Or be endorsed by at least 2 existing Org Members:
+      - Endorsers should have close interactions with the prospective member - e.g. code/design/proposal review, coordinating on issues, etc.
+      - Endorsers must be reviewers or approvers in at least one OWNERS file within one of the Tekton sub-projects.
+      - Endorsers must be from multiple member organizations to demonstrate integration across community.
   - Must have 2FA enabled on their GitHub account
 - Privileges:
   - May give commands to CI/CD automation (e.g. `/ok-to-test`)

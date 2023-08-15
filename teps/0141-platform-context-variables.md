@@ -1,11 +1,14 @@
 ---
-status: proposed
+status: implementable
 title: Platform Context Variables
 creation-date: '2023-08-21'
-last-updated: '2023-08-21'
+last-updated: '2023-09-11'
 authors:
 - '@lbernick'
-collaborators: []
+collaborators:
+- '@wlynch'
+- '@dibyom'
+- '@chuangw6'
 ---
 
 # TEP-0141: Platform Context Variables
@@ -23,8 +26,8 @@ collaborators: []
     - [Inject Environment Variables](#inject-environment-variables)
     - [Create a ConfigMap per PipelineRun](#create-a-configmap-per-pipelinerun)
 - [Proposal](#proposal)
-  - [Notes and Caveats](#notes-and-caveats)
 - [Design Details](#design-details)
+  - [Stability level](#stability-level)
   - [TaskRun and PipelineRun syntax](#taskrun-and-pipelinerun-syntax)
   - [Parameter substitution](#parameter-substitution)
   - [Provenance generation](#provenance-generation)
@@ -34,14 +37,18 @@ collaborators: []
   - [Flexibility](#flexibility)
   - [Conformance](#conformance)
   - [User Experience](#user-experience)
-  - [Performance](#performance)
   - [Risks and Mitigations](#risks-and-mitigations)
-  - [Drawbacks](#drawbacks)
-- [Alternatives](#alternatives)
+- [Alternatives: Syntax](#alternatives-syntax)
+  - [Arbitrary context variables](#arbitrary-context-variables)
+  - [Syntax namespaced by platform](#syntax-namespaced-by-platform)
+- [Alternatives: Substitution](#alternatives-substitution)
+  - [Create a configmap per PipelineRun](#create-a-configmap-per-pipelinerun-1)
+  - [Webhook responds to requests for context parameters](#webhook-responds-to-requests-for-context-parameters)
+- [Alternatives: Provenance Generation](#alternatives-provenance-generation)
+  - [Add &quot;AuthInfo&quot; to provenance in status](#add-authinfo-to-provenance-in-status)
+  - [Add &quot;platformParams&quot; to provenance in status](#add-platformparams-to-provenance-in-status)
 - [Implementation Plan](#implementation-plan)
   - [Test Plan](#test-plan)
-  - [Infrastructure Needed](#infrastructure-needed)
-  - [Upgrade and Migration Strategy](#upgrade-and-migration-strategy)
   - [Implementation Pull Requests](#implementation-pull-requests)
 - [References](#references)
 <!-- /toc -->
@@ -51,6 +58,8 @@ collaborators: []
 This TEP proposes support for allowing platforms that build on top of Tekton to specify default, platform-specific variables that can be easily passed into Tasks and Pipelines, such as data from the event that triggered it.
 
 ## Motivation
+
+This feature is inspired by the "context" feature in GitHub Actions; see https://docs.github.com/en/actions/learn-github-actions/contexts#github-context for examples.
 
 ### Use Cases
 
@@ -76,7 +85,7 @@ This TEP proposes support for allowing platforms that build on top of Tekton to 
 ### Requirements
 
 - Chains must be able to identify which context variables are supplied by the vendor.
-  - When generating [provenance](https://slsa.dev/spec/v1.0/provenance), Chains identifies the TaskRun/PipelineRun spec as an "external parameter" (supplied by the user rather than the build system). This design should provide a mechanism for Chains to identify system-provided parameters so they can be output correctly in the "internal parameters" of the provenance's BuildType.  
+  - When generating [provenance](https://slsa.dev/spec/v1.0/provenance), Chains identifies the TaskRun/PipelineRun spec as an "external parameter" (supplied by the user rather than the build system). This design should provide a mechanism for Chains to identify system-provided parameters so they can be output correctly in the "internal parameters" of the provenance's [BuildDefinition](https://slsa.dev/spec/v1.0/provenance#builddefinition).  
 
 - Task/Pipeline authors and users can't add, modify, or remove platform context variables. Doing so could result in falsifiable provenance, where a user could make a variable appear to be injected by the platform when in reality it was not.
 
@@ -224,190 +233,345 @@ The downside of this approach is that Tasks can't easily reference the values of
 
 ## Proposal
 
-<!--
-This is where we get down to the specifics of what the proposal actually is.
-This should have enough detail that reviewers can understand exactly what
-you're proposing, but should not include things like API designs or
-implementation. The "Design Details" section below is for the real
-nitty-gritty.
--->
+There are several components to this proposal:
 
-### Notes and Caveats
-
-<!--
-(optional)
-
-Go in to as much detail as necessary here.
-- What are the caveats to the proposal?
-- What are some important details that didn't come across above?
-- What are the core concepts and how do they relate?
--->
-
+- New TaskRun and PipelineRun syntax allowing TaskRun and PipelineRun authors
+to reference platform-provided context variables
+- The mechanism platform builders use to specify the values of each context variable per Run
+- The way these variables are surfaced in the TaskRun and PipelineRun status and used in provenance generation
 
 ## Design Details
 
-<!--
-This section should contain enough information that the specifics of your
-change are understandable. This may include API specs (though not always
-required) or even code snippets. If there's any ambiguity about HOW your
-proposal will be implemented, this is the place to discuss them.
+### Stability level
 
-If it's helpful to include workflow diagrams or any other related images,
-add them under "/teps/images/". It's upto the TEP author to choose the name
-of the file, but general guidance is to include at least TEP number in the
-file name, for example, "/teps/images/NNNN-workflow.jpg".
--->
+This feature will start as an alpha feature and will be enabled by a new feature flag "enable-platform-context-variables".
 
+### TaskRun and PipelineRun syntax
+
+This TEP proposes adding support for the context variable substitutions in TaskRuns and PipelineRuns of the form `$(context.platform.foo)`, where `foo` is the name of a parameter supplied by the platform. Platforms may provide string, array, or object parameters, so TaskRuns and PipelineRuns may also use substitutions like `$(context.platform.my-array-param[*])` or `$(context.platform.my-object-param.key)`.
+
+For example, for the clone + build Pipeline referenced above, a user could define the following PipelineRun:
+
+```yaml
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: clone-kaniko-build-push-run
+spec:
+  pipelineRef:
+    name: clone-kaniko-build-push
+  params:
+  - name: repo-url
+    value: $(context.platform.repo_url)
+  - name: image
+    value: $(context.platform.image_registry)/myapp
+  workspaces:
+  - name: source-code
+    ...
+```
+
+These variables will be supported for Tasks defined inline in TaskRuns or Pipelines defined inline in PipelineRuns and can be used in any Task/Pipeline fields that [currently accept variable substitutions](https://github.com/tektoncd/pipeline/blob/main/docs/variables.md#fields-that-accept-variable-substitutions). These variable substitutions will not be supported in referenced Tasks and Pipelines; instead, they should be passed into referenced Tasks and Pipelines via parameters.
+
+For example, the following syntax is NOT supported:
+
+```yaml
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: clone-kaniko-build-push
+spec:
+  params:
+  - name: repo-url
+    value: $(context.platform.repo_url)
+  - name: image
+    value: $(context.platform.image_registry)/myapp
+  tasks:
+  - name: fetch-source
+    taskRef:
+      name: git-clone
+  - name: build-and-push
+    taskRef:
+      name: kaniko-build
+```
+
+Instead, the platform-injected parameters must be passed into the parameters of referenced Tasks and Pipelines.
+
+### Parameter substitution
+
+This TEP proposes adding a new "context" section directly into PipelineRuns and TaskRuns, and implement our own RBAC to ensure that only authorized users can set the "context" field. For example, for the PipelineRun defined above by a PipelineRun author, the platform would submit the following PipelineRun to the Kubernetes cluster:
+
+```yaml
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: clone-kaniko-build-push-run
+spec:
+  pipelineRef:
+    name: clone-kaniko-build-push
+  params:
+  - name: repo-url
+    value: $(context.platform.repo_url)
+  - name: image
+    value: $(context.platform.image_registry)/myapp
+  workspaces:
+  - name: source-code
+    ...
+context:
+  params:
+  - name: repo_url
+    value: https://github.com/tektoncd/pipeline
+  - name: image_registry
+    value: gcr.io/user
+```
+
+We will create a new RBAC resource called "context" for the purpose of determining which users can set the "context" field. There's no need to create a "context" CRD. Users that have permission to create and update "contexts" will have the permission to create PipelineRuns and TaskRuns with the context field set. When a TaskRun or PipelineRun with a "context" is created, the validating admission webhook will call the Kubernetes authorization API to determine whether this call should be authorized. This call will happen at most once per TaskRun and PipelineRun, i.e. when it is created.
+
+This approach is prototyped in https://github.com/tektoncd/pipeline/pull/7083.
+
+*Note*: The "context" field cannot be in the status, because the API server doesn't allow creating a TaskRun/PipelineRun and creating/updating the "status" subresource in one API call.
+
+Parameter values cannot be substituted by the platform before creating the PipelineRun or via a mutating admission webhook, since the Pipelines controller needs to be aware of what parameters were supplied by the platform in order to populate them in the status.
+
+For this reason, if context parameters are used in Pipeline Tasks, the Pipelines controller will not substitute their values before creating TaskRuns. For example, the Pipelines controller will create the following TaskRun for the first Task in the example Pipeline:
+
+```yaml
+apiVersion: v1
+kind: TaskRun
+metadata:
+  name: clone-kaniko-build-push-run-fetch-source
+spec:
+  taskRef:
+    resolver: hub
+    params:
+    - name: name
+      value: git-clone
+    - name: version
+      value: "0.7"
+  workspaces:
+  - name: output
+    workspace: source-code
+  params:
+  - name: url
+    value: $(context.platform.repo_url)
+context:
+  params:
+  - name: repo_url
+    value: https://github.com/tektoncd/pipeline
+  - name: image_registry
+    value: gcr.io/user
+```
+
+After a TaskRun or PipelineRun is created with the "context" field, Tekton Pipelines performs parameter substitution. For example, it would update the previous TaskRun with the following status:
+
+```yaml
+status:
+  taskSpec:
+    steps:
+    - image: git-init
+      script: git clone https://github.com/tektoncd/pipeline
+    ...
+```
+
+A PipelineRun or TaskRun fails if it references a context parameter that is not provided by the platform, unless the parameter is optional.
+
+### Provenance generation
+
+Chains will treat information from the "context" field as internal parameters, for example:
+
+```json
+{
+    "predicateType": "https://slsa.dev/provenance/v1",
+    "predicate": {
+        "buildDefinition": {
+            "externalParameters": {
+                "runSpec": {
+                    "taskRef": {
+                        "name": "git-clone",
+                    },
+                    "params": [
+                        {
+                            "name": "repo_url",
+                            "value":  "$(context.platform.repo_url)"
+                        },
+                        {
+                            "name": "git-revision",
+                            "value":  "main"
+                        }
+                    ],
+                    // ...
+                }
+            },
+            "internalParameters": {
+              "tekton-pipelines-feature-flags": {
+                //...
+              },
+              "platform-parameters": {
+                "repo_url": "https://github.com/tektoncd/pipeline"
+              }
+            }
+        }
+    }
+}
+```
 
 ## Design Evaluation
-<!--
-How does this proposal affect the api conventions, reusability, simplicity, flexibility
-and conformance of Tekton, as described in [design principles](https://github.com/tektoncd/community/blob/master/design-principles.md)
--->
 
 ### Reusability
 
-<!--
-https://github.com/tektoncd/community/blob/main/design-principles.md#reusability
-
-- Are there existing features related to the proposed features? Were the existing features reused?
-- Is the problem being solved an authoring-time or runtime-concern? Is the proposed feature at the appropriate level
-authoring or runtime?
--->
+Since platform-injected context variables only make sense in the context of the platform a TaskRun or PipelineRun runs on, references to these variables will only be supported in TaskRuns or PipelineRuns, not in the specs of referenced Tasks or Pipelines. This helps keep Tasks (and Pipelines) reusable.
 
 ### Simplicity
 
-<!--
-https://github.com/tektoncd/community/blob/main/design-principles.md#simplicity
-
-- How does this proposal affect the user experience?
-- What’s the current user experience without the feature and how challenging is it?
-- What will be the user experience with the feature? How would it have changed?
-- Does this proposal contain the bare minimum change needed to solve for the use cases?
-- Are there any implicit behaviors in the proposal? Would users expect these implicit behaviors or would they be
-surprising? Are there security implications for these implicit behaviors?
--->
+This proposal requires less infrastructure for the platform builder to maintain than the alternative of a [webhook server](#webhook-responds-to-requests-for-context-parameters). It also results in a more consistent user experience for Task/Pipeline users, since all platforms that inject parameters will use the `$(context.platform.foo)` syntax rather than customized syntax.
 
 ### Flexibility
 
-<!--
-https://github.com/tektoncd/community/blob/main/design-principles.md#flexibility
-
-- Are there dependencies that need to be pulled in for this proposal to work? What support or maintenance would be
-required for these dependencies?
-- Are we coupling two or more Tekton projects in this proposal (e.g. coupling Pipelines to Chains)?
-- Are we coupling Tekton and other projects (e.g. Knative, Sigstore) in this proposal?
-- What is the impact of the coupling to operators e.g. maintenance & end-to-end testing?
-- Are there opinionated choices being made in this proposal? If so, are they necessary and can users extend it with
-their own choices?
--->
+This proposal avoids opinionation about which parameters should be injected by a platform and what their names should be; for example, it doesn't require an "eventID" or "repoURL" even if these parameters are needed for many use cases. Pipelines does not have any dependencies on Chains as a result of this proposal, although Chains will need to be updated to be able to interpret the "context" field.
 
 ### Conformance
 
-<!--
-https://github.com/tektoncd/community/blob/main/design-principles.md#conformance
-
-- Does this proposal require the user to understand how the Tekton API is implemented?
-- Does this proposal introduce additional Kubernetes concepts into the API? If so, is this necessary?
-- If the API is changing as a result of this proposal, what updates are needed to the
-[API spec](https://github.com/tektoncd/pipeline/blob/main/docs/api-spec.md)?
--->
+This proposal supports Tekton conformance, as it helps platform builders avoid adding non-conformant syntax to PipelineRuns in order to inject parameters. Platforms may choose what parameters to support, and supporting platform context variables will not be required for conformance.
 
 ### User Experience
 
-<!--
-(optional)
+This TEP centers around the needs of the ["platform builder" user profile](../user-profiles.md#3-platform-builder). There are multiple ways platform builders can interact with ["Pipeline and Task users](../user-profiles.md#2-pipeline-and-task-users), impacting the syntax we choose for referencing platform-provided parameters. There are also multiple ways platform builders can implement separation of concerns, impacting the model we choose for performing RBAC on who may set the "context" field.
 
-Consideration about the user experience. Depending on the area of change,
-users may be Task and Pipeline editors, they may trigger TaskRuns and
-PipelineRuns or they may be responsible for monitoring the execution of runs,
-via CLI, dashboard or a monitoring system.
+#### Example: Pipelines as Code
 
-Consider including folks that also work on CLI and dashboard.
--->
+With [Pipelines as Code](https://pipelinesascode.com/), a cluster operator is responsible for [installation](https://pipelinesascode.com/docs/install/operator_installation/) and configuring [connected repositories](https://pipelinesascode.com/docs/guide/repositorycrd/). This might be an infrastructure team member setting up CI/CD for their organization. Team members (CI/CD users) can then write PipelineRuns [referencing context from the connected repository](https://pipelinesascode.com/docs/guide/authoringprs/), and Pipelines as Code is responsible for creating the PipelineRun.
 
-### Performance
+With this proposal, a PipelineRun author could specify `$(context.platform.repo_url)` in their PipelineRun, using Tekton-conformant syntax. Pipelines as Code would add the "context" field when creating the PipelineRun on the cluster. As part of the PAC installation, permissions to create this context would be added to the Pipelines as Code ClusterRole. Tekton documentation would instruct cluster operators to grant these permissions only to "system" identities, not "user" identities. Consumers of artifacts produced by PAC PipelineRuns would rely on cluster operators to not grant these permissions to users.
 
-<!--
-(optional)
+#### Example: Hosted Tekton
 
-Consider which use cases are impacted by this change and what are their
-performance requirements.
-- What impact does this change have on the start-up time and execution time
-of TaskRuns and PipelineRuns?
-- What impact does it have on the resource footprint of Tekton controllers
-as well as TaskRuns and PipelineRuns?
--->
+Other platform builders may choose to abstract away the Kubernetes cluster Tekton runs on, or to build their own implementations of the Tekton API that doesn't run on Kubernetes at all. These platforms would use Tekton-conformant APIs that do not include the "context" field, preventing any CI/CD user from being able to specify this field. Platform builders would manage the RBAC setup for their infrastructure identities, and their infrastructure would be responsible for creating PipelineRuns and TaskRuns with the "context" field set.
 
 ### Risks and Mitigations
 
-<!--
-What are the risks of this proposal and how do we mitigate? Think broadly.
-For example, consider both security and how this will impact the larger
-Tekton ecosystem. Consider including folks that also work outside the WGs
-or subproject.
-- How will security be reviewed and by whom?
-- How will UX be reviewed and by whom?
--->
+A Tekton Pipelines installation will include a new ClusterRole that allows creating PipelineRuns and TaskRuns with "context" set. ClusterOperators should not bind this ClusterRole to any untrusted subjects; otherwise, a user with cluster access could create a TaskRun/PipelineRun with arbitrary parameter values in "context", and the provenance would not correctly reflect that these values came from a user identity. This risk can be mitigated with the future work of [adding "AuthInfo" to PipelineRun/TaskRun status](#add-authinfo-to-provenance-in-status).
 
-### Drawbacks
+## Alternatives: Syntax
 
-<!--
-Why should this TEP _not_ be implemented?
--->
+### Arbitrary context variables
 
-## Alternatives
+We could allow platforms to supply arbitrary parameters in the context, for example: `$(context.repo_url)` or even just `$(repo_url)`. This approach is not proposed for two reasons:
+- It's not clear whether these context parameters come from the platform or from Tekton Pipelines
+- We cannot add new context variables without the risk of breaking backwards compatibility, since platforms may provide a variable with the same name
 
-<!--
-What other approaches did you consider and why did you rule them out? These do
-not need to be as detailed as the proposal, but should include enough
-information to express the idea and why it was not acceptable.
--->
+### Syntax namespaced by platform
 
+We could allow multiple systems to inject context variables at the same time. For example, a platform may be using Triggers, and both Triggers and the platform could inject context variables. This syntax could look like `$(context.platform.triggers.event-id)` and `$(context.platform.vendor.custom-vendor-param)`. However, we expect that it's reasonable for a single platform to manage all the context variables supplied to PipelineRuns, even if some of these variables come from different pieces of infrastructure.
+
+## Alternatives: Substitution
+
+### Create a configmap per PipelineRun
+
+In this solution, the platform creates a ConfigMap per PipelineRun containing the values of context variables for that PipelineRun. Tekton Pipelines would substitute variable values from the ConfigMap and delete it when the PipelineRun is deleted. This is similar to the [existing workaround](#create-a-configmap-per-pipelinerun), except that Pipelines would substitute the values from the ConfigMap into PipelineRun parameters, instead of the platform mounting the ConfigMap as a workspace. There are several issues with this solution:
+
+- Linking the ConfigMap to the PipelineRun is not a great user experience for the platform builder. The best way to do this is to create the ConfigMap first with a deterministic name, and then create a PipelineRun with the same name. (Alternatively, we could add a field in PipelineRun spec for referencing a ConfigMap.) Alternatively, the platform could create the PipelineRun as pending, create a ConfigMap with the PipelineRun as its owner reference, and then start the PipelineRun. Neither option is a great UX.
+- Pulls k8s API into Tekton API (unless we created our own CRD to represent the same thing)
+- Adds more load to etcd
+- A user with permissions to create ConfigMaps can easily falsify provenance, pretending the parameters were injected by the platform.
+
+### Webhook responds to requests for context parameters
+
+In this solution, the platform builder registers a service that responds to HTTP requests for parameter values for a given PipelineRun, via a new field "platform-webhook-url" in the feature-flags configmap. When a PipelineRun or TaskRun is created, the Pipelines controller makes requests to this service to determine what the values of the substituted variables should be.
+
+Pros:
+- Better separation of concerns than creating a ConfigMap per PipelineRun, since this service can be configured once per cluster instead of in namespaces where PipelineRuns run
+
+Cons:
+- Introduces more synchronous requests when processing PipelineRuns and TaskRuns
+- Additional infrastructure for the platform builder to maintain
+- Still cannot be sure that the responses come from the platform rather than a malicious user
+
+## Alternatives: Provenance Generation
+
+### Add "AuthInfo" to provenance in status
+
+In this solution, a new field `authInfo` is added to the [Provenance field](https://github.com/tektoncd/pipeline/blob/main/docs/pipeline-api.md#tekton.dev/v1.Provenance) of TaskRun and PipelineRun status, as described in https://github.com/tektoncd/pipeline/issues/7068. This allows Chains to capture the identity of the Run creator directly from the Tekton API. This work is likely valuable to do in the future, but doesn't block this proposal, since this information is currently available in Kubernetes [audit logs](https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/).
+
+### Add platform context to "resolvedDependencies" in provenance
+
+In this solution, Chains could add platform-injected parameters into the "resolvedDependencies" field of the provenance's [BuildDefinition](https://slsa.dev/spec/v1.0/provenance#builddefinition). The SLSA recommendations are discussed in more detail [here](https://github.com/slsa-framework/slsa/issues/940#issuecomment-1690596411).
+
+### Add "platformParams" to provenance in status
+
+In this solution, a new field `platformParams` is added to the [Provenance field](https://github.com/tektoncd/pipeline/blob/main/docs/pipeline-api.md#tekton.dev/v1.Provenance) of TaskRun and PipelineRun status. This solution would only be necessary for [substitution alternatives](#alternatives-substitution) that don't put context variables directly into the PipelineRun and TaskRun API.
+
+For example:
+
+```yaml
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: clone-kaniko-build-push-run
+spec:
+  pipelineRef:
+    name: clone-kaniko-build-push
+  params:
+  - name: repo-url
+    value: $(context.platform.repo_url)
+  - name: image
+    value: $(context.platform.image_registry)/myapp
+  workspaces:
+  - name: source-code
+    ...
+status:
+  provenance:
+    platformParams:
+    - name: repo_url
+      value: https://github.com/tektoncd/pipeline
+    - name: image_registry
+      value: gcr.io
+```
+
+In the Go types:
+
+```go
+type Provenance struct {
+  // Existing provenance fields
+  RefSource *RefSource `json:"refSource,omitempty"`
+  FeatureFlags *config.FeatureFlags `json:"featureFlags,omitempty"`
+
+  // New provenance field
+  PlatformParams Params `json:"platformParams,omitempty"`
+}
+```
+
+The TaskRun controller will substitute these parameter values in the Task spec, and populate them in the provenance field in its status:
+
+```yaml
+apiVersion: v1
+kind: TaskRun
+metadata:
+  name: clone-kaniko-build-push-run-fetch-source
+spec:
+  ...
+status:
+  taskSpec:
+    params:
+    - name: url
+      value: https://github.com/tektoncd/pipeline
+    ...
+  provenance:
+    platformParams:
+    - name: repo_url
+      value: https://github.com/tektoncd/pipeline
+```
+
+The PipelineRun controller will collect provenance values from child TaskRun statuses and use them to populate provenance in the PipelineRun status.
 
 ## Implementation Plan
 
-<!--
-What are the implementation phases or milestones? Taking an incremental approach
-makes it easier to review and merge the implementation pull request.
--->
-
+Milestone 1: TaskRuns support a new "context" field. Only roles with appropriate permissions may set this field.
+Milestone 2: TaskRun parameters support `$(context.platform.foo)` syntax, which is substituted with the appropriate value from the context.
+Milestone 3a: This feature is supported in PipelineRuns.
+Milestone 3b: Chains correctly generates provenance for TaskRuns and PipelineRuns with "context" parameters.
 
 ### Test Plan
 
-<!--
-Consider the following in developing a test plan for this enhancement:
-- Will there be e2e and integration tests, in addition to unit tests?
-- How will it be tested in isolation vs with other components?
-
-No need to outline all the test cases, just the general strategy. Anything
-that would count as tricky in the implementation and anything particularly
-challenging to test should be called out.
-
-All code is expected to have adequate tests (eventually with coverage
-expectations).
--->
-
-### Infrastructure Needed
-
-<!--
-(optional)
-
-Use this section if you need things from the project or working group.
-Examples include a new subproject, repos requested, GitHub details.
-Listing these here allows a working group to get the process for these
-resources started right away.
--->
-
-### Upgrade and Migration Strategy
-
-<!--
-(optional)
-
-Use this section to detail whether this feature needs an upgrade or
-migration strategy. This is especially useful when we modify a
-behavior or add a feature that may replace and deprecate a current one.
--->
+This feature requires integration tests in addition to unit tests. Our tests can create two new service accounts: one with permission to set the "context" field, and one without. Tests can then create PipelineRuns and TaskRuns with "context" set and ensure that the correct values are substituted. Tests should ensure that the service account that doesn't have permission to set the "context" field cannot create PipelineRuns and TaskRuns with it set. 
 
 ### Implementation Pull Requests
 

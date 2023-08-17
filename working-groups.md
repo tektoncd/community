@@ -398,7 +398,7 @@ This is the working group for [tektoncd/results](https://github.com/tektoncd/res
 | Meeting Notes | [Notes](https://docs.google.com/document/d/1GXKq-tc4oJUHdjIe-usHclugVU06sljo4i8BT2OaHbY/edit?usp=sharing) |
 | Slack Channel              | [#results](https://tektoncd.slack.com/messages/results)            |
 | Community Meeting VC       | [Zoom link](https://zoom.us/j/99187487778?pwd=UGZhOHd3cWJlVFhMTDNTVGxQeG1ndz09#success) |
-| Community Meeting Calendar | Thursday every 2 weeks, 5:30a PST <br>[Calendar](https://calendar.google.com/calendar/event?action=TEMPLATE&tmeid=Nmk2cG5jZ2QyYjJuaWFvdDBjYmxhamlhNzRfMjAyMzAyMDJUMTMzMDAwWiBhZGthcGxhbkByZWRoYXQuY29t&tmsrc=adkaplan%40redhat.com&scp=ALL) |
+| Community Meeting Calendar | Thursday every week, 5:30-6:00a PST <br>[Calendar](https://calendar.google.com/calendar/event?action=TEMPLATE&tmeid=Nmk2cG5jZ2QyYjJuaWFvdDBjYmxhamlhNzRfMjAyMzAyMDJUMTMzMDAwWiBhZGthcGxhbkByZWRoYXQuY29t&tmsrc=adkaplan%40redhat.com&scp=ALL) |
 
 | &nbsp;                                                        | Facilitators    | Company | Profile                                           |
 |-------------------------------------------------------------- |-----------------|---------|---------------------------------------------------|

@@ -19,6 +19,8 @@ Tell us about, we welcome [pull requests](https://github.com/tektoncd/community/
 | JetBrains IDEs Tekton plugin | JetBrains IDEs plugin to manage Tekton resources. | [github.com/redhat-developer/intellij-tekton](https://github.com/redhat-developer/intellij-tekton) |
 | Automatiko Approval task | Brings approval tasks into Tekton pipeline with various strategies (single approval, multiple approvals, four eye based approval). | [github.com/automatiko-io/automatiko-approval-task](https://github.com/automatiko-io/automatiko-approval-task) |
 | [EPAM Delivery Platform (EDP)](https://epam.github.io/edp-install/) | Cloud-agnostic SaaS/PaaS solution for software development with a pre-defined set of CI/CD pipelines and tools, enabling to kickstart development quickly with established processes for code review, release, versioning, branching, and deployment. | [github.com/epam/edp-tekton](https://github.com/epam/edp-tekton)
+| tekton-s3-log-reader | Releases important Kubernetes resources by storing long term Tekton Dashboard logs into S3. It improves performance and End Users experience. | [github.com/allianz-direct/tekton-s3-log-reader](https://github.com/allianz-direct/tekton-s3-log-reader)
+
 
 
 ## Vendors
@@ -38,6 +40,8 @@ Tell us about, we welcome [pull requests](https://github.com/tektoncd/community/
 | Marriott Vacations Worldwide | All corporate CI/CD pipelines were migrated from Jenkins to Tekton, running on ROSA (RedHat Openshift Service on AWS) | | Yes |
 | Nubank | Tekton is the basis of the Nubank's primary CI/CD platform, supporting millions of builds per month | | Yes |
 | OneStock | Tekton is central to OneStock's CI/CD operations, managing 35+ different pipelines for 500+ repositories | | Yes |
+| AllianzDirect | Tekton is the main CI Engine for Allianz Direct Software Release stack | | Yes |
+
 
 ## Tekton Friends
 

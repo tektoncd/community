@@ -133,3 +133,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0142](0142-enable-step-reusability.md) | Enable Step Reusability | implementable | 2023-09-14 |
 |[TEP-0144](0144-param-enum.md) | Param Enum | implementable | 2023-09-20 |
 |[TEP-0145](0145-cel-in-whenexpression.md) | CEL in WhenExpression | implemented | 2023-10-22 |
+|[TEP-0146](0146-parameters-in-script.md) | Parameters in Script | proposed | 2023-10-02 |

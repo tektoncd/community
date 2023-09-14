@@ -16,7 +16,7 @@ Some important channels:
 * `#admin` - Request slack related changes, e.g. proposing new channels
 * `#plumbing` - Request [infrastructure support](https://github.com/tektoncd/plumbing#support)
 
-[Use this link to join the `tektoncd` slack!](https://join.slack.com/t/tektoncd/shared_invite/enQtNjQ1NjQzNTQ3MDQwLTc5MWU4ODg3MGJiYjllZjlmMWI0YWFlMzJjMTkyZGEyMTFhYzY1ZTkzZGU0M2I3NGEyYjU2YzNhOTE4OWQyZTM) We look forward to chatting with you! 😻
+[Use this link to join the `tektoncd` slack!](https://join.slack.com/t/tektoncd/shared_invite/zt-23f3gmgch-3pKwLCrnh2~HLttlX_4djg) We look forward to chatting with you! 😻
 
 
 ## Mailing List

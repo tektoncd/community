@@ -130,3 +130,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0138](0138-decouple-api-and-feature-versioning.md) | Decouple API and feature versioning | implementable | 2023-08-23 |
 |[TEP-0140](0140-producing-results-in-matrix.md) | Producing Results in Matrix | implementable | 2023-08-21 |
 |[TEP-0141](0141-platform-context-variables.md) | Platform Context Variables | proposed | 2023-08-21 |
+|[TEP-0145](0145-cel-in-whenexpression.md) | CEL in WhenExpression | implementable | 2023-10-01 |

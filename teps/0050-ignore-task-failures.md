@@ -2,7 +2,7 @@
 status: implementable
 title: 'Ignore Task Failures'
 creation-date: '2021-02-05'
-last-updated: '2022-09-16'
+last-updated: '2023-09-28'
 authors:
 - '@pritidesai'
 - '@skaegi'
@@ -207,7 +207,7 @@ type PipelineTask struct {
 	//...
 
 	// OnError defines the termination behavior of a pipeline when the task is failed
-	// can be set to [ continueAndFail | stopAndFail ]
+	// can be set to [ continue | stopAndFail ]
 	OnError OnErrorType `json:onError, "omitempty"`
 }
 ```
@@ -218,16 +218,16 @@ type OnErrorType string
 const (
 	// StopAndFail indicates to stop the pipeline if the task is failed
 	StopAndFail OnErrorType = "stopAndFail"
-	// ContinueAndFail indicates to fail the task run but continue executing the rest of the pipeline
-	ContinueAndFail    OnErrorType = "continueAndFail"
+	// Continue indicates to fail the task run but continue executing the rest of the pipeline
+	Continue    OnErrorType = "continue"
 )
 ```
 
-Pipeline author can set the ```OnErrorType``` field to configure the task failure strategy. If set to ```StopAndFail```, the pipeline is stopped and failed when the task is failed. If set to ```ContinueAndFail```, the failure of task is ignored and the pipeline continues to execute the rest of the DAG.
+Pipeline author can set the ```OnErrorType``` field to configure the task failure strategy. If set to ```StopAndFail```, the pipeline is stopped and failed when the task is failed. If set to ```Continue```, the failure of task is ignored and the pipeline continues to execute the rest of the DAG.
 
 ```yaml
 - name: task1
-  onError: continueAndFail
+  onError: continue
   taskSpec:
     steps:
       - image: alpine
@@ -240,7 +240,7 @@ This new field ```OnError``` will be implemented as an ```alpha``` feature and c
 
 Setting ```OnError``` is optional, the default pipeline behavior is ```StopAndFail```
 
-The task run information is available under the ```pipelineRun.status.childReferences```. Note that the original task run status remains as it is irrelevant of the value of ```OnError``` (i.e. a failed task with ```OnError: continueAndFail``` is still marked as failed). We introduce a new [TaskRunReason](https://github.com/tektoncd/pipeline/blob/main/docs/pipeline-api.md#taskrunreasonstring-alias) ```FailureIgnored``` indicating the taskrun is failed but the failure is ignored. The detailed failure information can be found in the ```message``` field of the task run.
+The task run information is available under the ```pipelineRun.status.childReferences```. Note that the original task run status remains as it is irrelevant of the value of ```OnError``` (i.e. a failed task with ```OnError: continue``` is still marked as failed). We introduce a new [TaskRunReason](https://github.com/tektoncd/pipeline/blob/main/docs/pipeline-api.md#taskrunreasonstring-alias) ```FailureIgnored``` indicating the taskrun is failed but the failure is ignored. The detailed failure information can be found in the ```message``` field of the task run.
 
 ```go
 // TaskRunReasonFailureIgnored is the reason set when the Taskrun has failed and the failure is ignored
@@ -266,7 +266,7 @@ spec:
   pipelineSpec:
     tasks:
     - name: task1
-      onError: continueAndFail
+      onError: continue
       taskSpec:
         steps:
           - image: alpine
@@ -306,7 +306,7 @@ status:
           - lastTransitionTime: "2022-08-15T17:26:13Z"
             message: ...
             reason: FailureIgnored
-            status: "False" # The task is failed when OnError is set to continueAndFail
+            status: "False" # The task is failed when OnError is set to continue
             type: Succeeded
           ...
     demo-pipeline-run-task2:
@@ -324,10 +324,10 @@ status:
 ```
 
 ### Ignored Failed Tasks with Retry
-Setting ```Retry``` and ```OnError``` to ```continueAndFail``` at the same time is not allowed in this iteration of the TEP, as there is no point to retry a task that allows to fail. Pipeline validation will be added accordingly. We can support retries with ignored failed task in the future if needed.
+Setting ```Retry``` and ```OnError``` to ```continue``` at the same time is not allowed in this iteration of the TEP, as there is no point to retry a task that allows to fail. Pipeline validation will be added accordingly. We can support retries with ignored failed task in the future if needed.
 
 ### Emit Results from Ignored Failed Tasks
-The task results that are initialized before the task fails will be emitted to ```pipelineResults``` and be available to the rest of the DAG if the task is set to ```onError:continueAndFail```.
+The task results that are initialized before the task fails will be emitted to ```pipelineResults``` and be available to the rest of the DAG if the task is set to ```onError:continue```.
 
 In the following example, the ```pipelineRun``` has 2 tasks. The first task attempts to create 3 results. ```task1.result1``` and ```task1.result3``` are initialized before ```task1``` fails (```task1.step1``` already terminated before initializing ```task1.result2```). ```task1.result1``` and ```task1.result3``` are emitted to the pipeline result and are available to the resource-dependent ```task2```. ```task2``` (and the overall ```pipelineRun```) are therefore executed successfully.
 
@@ -341,7 +341,7 @@ spec:
   pipelineSpec:
     tasks:
       - name: task1
-        onError: continueAndFail
+        onError: continue
         taskSpec:
           results:
             - name: result1
@@ -436,7 +436,7 @@ status:
 ```
 
 ### Tasks with Missing Resource Dependency
-The resource-dependent tasks will be skipped with reason ```Results were missing``` if the expected result is **NOT** emitted from a parent task with ```onError: continueAndFail```. Following the above example, if ```task2``` consumes a result that is **NOT** initialized (```task1.result2```), ```task2``` will be skipped with reason ```Results were missing``` .
+The resource-dependent tasks will be skipped with reason ```Results were missing``` if the expected result is **NOT** emitted from a parent task with ```onError: continue```. Following the above example, if ```task2``` consumes a result that is **NOT** initialized (```task1.result2```), ```task2``` will be skipped with reason ```Results were missing``` .
 
 Input 
 ```yaml
@@ -514,7 +514,7 @@ type PipelineSpec struct {
 
 ## Future Work
 ### Support parameterization for task.OnError
-The failure strategy proposed in this TEP supports only static constant values (```continueAndFail``` and ```stopAndFail```) for ```onError```. We could further extend the support to let users specify values as task parameters (for example ```onError: $(params.CONTINUE)```)
+The failure strategy proposed in this TEP supports only static constant values (```continue``` and ```stopAndFail```) for ```onError```. We could further extend the support to let users specify values as task parameters (for example ```onError: $(params.CONTINUE)```)
 
 ## References
 

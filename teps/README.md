@@ -127,6 +127,6 @@ This is the complete list of Tekton TEPs:
 |[TEP-0135](0135-coscheduling-pipelinerun-pods.md) | Coscheduling PipelineRun pods | implemented | 2023-07-27 |
 |[TEP-0136](0136-capture-traces-for-task-pod-events.md) | Capture traces for task pod events | implementable | 2023-07-23 |
 |[TEP-0137](0137-cloudevents-controller.md) | CloudEvents controller | implementable | 2023-07-31 |
-|[TEP-0138](0138-decouple-api-and-feature-versioning.md) | Decouple api and feature versioning | proposed | 2023-07-27 |
+|[TEP-0138](0138-decouple-api-and-feature-versioning.md) | Decouple API and feature versioning | implementable | 2023-08-23 |
 |[TEP-0140](0140-producing-results-in-matrix.md) | Producing Results in Matrix | implementable | 2023-08-21 |
 |[TEP-0141](0141-platform-context-variables.md) | Platform Context Variables | proposed | 2023-08-21 |

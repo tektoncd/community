@@ -1,5 +1,7 @@
 ---
 status: implemented
+superseded-by:
+- TEP-0138
 title: Tekton Feature Gates
 creation-date: '2020-11-20'
 last-updated: '2021-12-16'

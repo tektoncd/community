@@ -258,6 +258,8 @@ orgs:
         - jerop
         - lbernick
         - abayer
+        - wlynch
+        - yongxuanzhang
         privacy: closed
         repos:
           pipeline: maintain

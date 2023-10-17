@@ -190,7 +190,7 @@ The four steps use different combinations of those:
 
 - `download` step: `/tekton/artifacts/downloads/provenance.json` (optional) -> [`/tekton/artifacts/downloads/<digest>.tgz`]
 - `verify` step: [`/tekton/artifacts/downloads/<digest>.tgz`] -> `/tekton/artifacts/inputs/provenance.json`, [`/tekton/artifacts/inputs/<name>/`)]
-- `digest` step: `/tekton/artifacts/downloads/provenance.json` (optional), [`/tekton/artifacts/outputs/<name>`] -> `/tekton/artifacts/outputs/provenance.json`, [`/tekton/artifacts/uploads/<name>.tgz`)]
+- `digest` step: `/tekton/artifacts/downloads/provenance.json` (optional), [`/tekton/artifacts/outputs/<name>`] -> `/tekton/artifacts/outputs/provenance.json`, [`/tekton/artifacts/uploads/<name>.tgz`]
 - `upload` step: [`/tekton/artifacts/uploads/<name>.tgz`] -> `/tekton/artifacts/uploads/provenance.json`
 
 Steps that download, verify, digest and upload artifacts must be able to handle arrays of `artifacts` to be uploaded/downloaded to/from the same storage, hence the `[ ]` signs to indicate arrays of files and folders. The storage in scope for this TEP is a folder in a volume, typically mounted by the `Task` though a `Workspace`.
@@ -438,45 +438,63 @@ The go binary is built for all Tekton supported architectures and OSes. The step
 #### Digest
 
 ```
-[`ARTIFACT_NAMES`] -> [`/tekton/artifacts/uploads/<digest>.tgz`, `/tekton/artifacts/uploads/<digest>.json`]
+`/tekton/artifacts/downloads/provenance.json` (optional), [`/tekton/artifacts/outputs/<name>`] -> `/tekton/artifacts/outputs/provenance.json`, [`/tekton/artifacts/uploads/<name>.tgz`]
 ```
 
-The `digest` step creates and archive and calculates the digest of an array of artifacts from the local `${ARTIFACT_OUTPUTS}:-/tekton/artifacts/outputs/}` storage, based on a list of `names`:
-- when the `ARTIFACT_NAMES` environment variables is set, the `digest` step searches for each `name` in the `$ARTIFACT_OUTPUTS` folder, and fail if at least one is not found
+The `digest` step creates an archive and calculates the digest of an array of artifacts from the local `${ARTIFACT_OUTPUTS}:-/tekton/artifacts/outputs/}` storage, based on an optional list of artifact names, defined in the `/tekton/artifacts/downloads/provenance.json` provenance file:
+- when the `provenance.json` file is provided, the `digest` step searches for each `name` in the `$ARTIFACT_OUTPUTS` folder, and fail if at least one is not found
 
 ```mermaid
 flowchart LR
   start(( start )) --> loop
-  loop[[for each name in\n $ARTIFACT_NAMES]] --> check{folder exists\n$ARTIFACT_OUTPUTS/\n$ARTIFACT_NAMES}
+  loop[[for each name in\n provenance.json]] --> check{folder exists\n$ARTIFACT_OUTPUTS/\n$name}
   check -- no --> failure(( failure ))
-  check -- yes --> tarball[create a .tar.gz\n+\ntarball digest]
-  tarball --> meta[append to digest.json:\n`uri`, `digest`]
+  check -- yes --> tarball[create a .tgz\nin /tekton/artifacts/uploads\n+\ntarball digest]
+  tarball --> meta[append to prov.json:\n`uri`, `digest`]
   meta --> loop
   meta --> done(( success ))
 ```
 
-- when the `ARTIFACT_NAMES` environment variables is not set, the `digest` step considers any file or folder in the `$ARTIFACT_OUTPUTS` folder as an artifact. This enables use cases where the list of artifact is not known upfront.
+- when the `provenance.json` file is not provided, the `digest` step considers any file or folder in the `$ARTIFACT_OUTPUTS` folder as an artifact. This enables use cases where the list of artifact is not known upfront.
 
 ```mermaid
 flowchart LR
   start(( start )) --> loop
-  loop[[for each file/folder in\n $ARTIFACT_NAMES]] --> tarball[create a .tar.gz\n+\ntarball digest]
-  tarball --> meta[append to digest.json:\n`uri`, `digest`]
+  loop[[for each file/folder in\n $ARTIFACT_OUTPUTS]] --> tarball[create a .tgz\nin /tekton/artifacts/uploads\n+\ntarball digest]
+  tarball --> meta[append to prov.json:\n`uri`, `digest`]
   meta --> loop
   meta --> done(( success ))
 ```
+
+The resulting provenance file contains the digest of all tarballs, stored under `/tekton/artifacts/outputs/provenance.json`.
 
 #### Upload
 
-TBD
+```
+[`/tekton/artifacts/uploads/<name>.tgz`] -> `/tekton/artifacts/uploads/provenance.json`
+```
+
+The `upload` step takes the outputs of the `digest` one, an array of tarballs and a `provenance.json` file with their digests, and uploads them to specific path with the PVC. To reduce the need to for extra parameters, the step will assume that the workspace is mounted to the `/tekton/artifacts/shared` path, and it will copy the artifacts under a `PipelineRun` specific location:
+
+```
+/tekton/artifacts/shared/<pipelinerun-uuid>/<digest.tgz>
+```
+
+Consumers will use the provenance data from the `TaskRun` status to associate the digest in the filename back to an artifact name.
+Using the digest as filename ensures there is no name conflict within the `pipelinerun-uuid` folder.
+A `pipelinerun-uuid` folder is needed to avoid the risk of `PipelineRuns` sharing artifacts in case the PVC is re-used for multiple `PipelineRuns`.
 
 #### Download
 
-TBD
+```
+`/tekton/artifacts/downloads/provenance.json` (optional) -> [`/tekton/artifacts/downloads/<digest>.tgz`]
+```
 
-#### Verification
+#### Verify
 
-TBD
+```
+[`/tekton/artifacts/downloads/<digest>.tgz`] -> `/tekton/artifacts/inputs/provenance.json`, [`/tekton/artifacts/inputs/<name>/`)]
+```
 
 ### Artifact Workspace
 

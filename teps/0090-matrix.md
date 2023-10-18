@@ -271,7 +271,7 @@ my repository and produces a `Result` that is used to dynamically execute `TaskR
 
 Read more in [user experience report #1][kaniko-example-1] and [user experience report #2][kaniko-example-2].
 
-#### 2. Monorepo Build 
+#### 2. Monorepo Build
 
 As a `Pipeline` author, I have several components (dockerfiles/packages/services) in my repository. 
 
@@ -402,7 +402,7 @@ repository and produces a `Result` that is used to dynamically execute the `Task
            test-code-analysis    test-unit-tests           e2e-tests    
 ```
 
-#### 5. Test Sharding 
+#### 5. Test Sharding
 
 As a `Pipeline` author, I have a large test suite that's slow (e.g. browser based tests) and I need to speed it up. 
 I need to split up the test suite into groups, run the tests separately, then combine the results. 
@@ -526,7 +526,7 @@ GitHub Actions workflows syntax also allows users to:
 
 Read more in the [documentation][github-actions].
 
-#### Jenkins 
+#### Jenkins
 
 Jenkins allows users to define a configuration `matrix` to specify what steps to duplicate. It also allows users to 
 exclude certain combinations in the `matrix`
@@ -586,7 +586,7 @@ pipeline {
 
 Read more in the [documentation][jenkins-docs] and related [blog][jenkins-blog].
 
-#### Argo Workflows 
+#### Argo Workflows
 
 Argo Workflows allows users to iterate over:
 - a list of items as static inputs 
@@ -718,7 +718,7 @@ If needed, we can also explore providing more granular controls for maximum numb
 or `Runs` from `Matrices` - either at `PipelineRun`, `Pipeline` or `PipelineTask` levels - later.
 This is an option we can pursue after gathering user feedback - it's out of scope for this TEP.
 
-## Design 
+## Design
 
 In this section, we go into the details of the `Matrix` in relation to:
 
@@ -1060,7 +1060,7 @@ Producing `Results` from fanned out `PipelineTasks` will not be in the initial i
 After [TEP-0075: Object Parameters and Results][tep-0075] and [TEP-0076: Array Results][tep-0076]
 have landed, we will design how to support `Results` from fanned out `PipelineTasks`. 
 
-### Execution Status 
+### Execution Status
 
 Today, `PipelineTasks` in the `finally` section can access the execution `Status` -
 `Succeeded`, `Failed` or `None` - of each `PipelineTask` in the `tasks` section. This
@@ -1615,7 +1615,7 @@ However, this approach has the following disadvantages:
 [tep-0075]: ./0075-object-param-and-result-types.md
 [tep-0076]: ./0076-array-result-types.md
 [tep-0079]: ./0079-tekton-catalog-support-tiers.md
-[tep-0096]: ./0096-pipelines-v1-api.md
+[tep-0096]: ./0096-pipelines-v1.md
 [tep-0100]: ./0100-embedded-taskruns-and-runs-status-in-pipelineruns.md
 [task-loops]: https://github.com/tektoncd/experimental/tree/main/task-loops 
 [issue-2050]: https://github.com/tektoncd/pipeline/issues/2050

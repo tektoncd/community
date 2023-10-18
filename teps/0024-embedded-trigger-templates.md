@@ -87,7 +87,7 @@ There are two changes proposed to the Trigger spec:
     ref: "my-tt"
    ```
 
-## Upgrade & Migration Strategy 
+## Upgrade & Migration Strategy
 
 For the `name` to `ref` change, we'll make the upgrade process backwards
 compatible:
@@ -100,7 +100,7 @@ compatible:
 
 1. In a future release, we'll remove the `name` field from the spec.
 
-## References 
+## References
 
 1. GitHub issue: https://github.com/tektoncd/triggers/issues/616
 

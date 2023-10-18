@@ -533,7 +533,7 @@ of the Catalog, such as by using the `catalog-support-tier` field in Hub configu
 There's no clear benefit for allowing Contributors to host Catalogs in the tektoncd-catalog GitHub Org. However, 
 it adds more maintenance burden because the Tekton Maintainers would have to create the repositories, and provide
 general oversight. Contributors are already hosting Catalogs in their own organizations and repositories e.g.
-[eBay][ebay] and [Buildpacks][buildpacks].
+[eBay][eBay] and [Buildpacks][buildpacks].
 
 ### Automated Testing and Dogfooding
 
@@ -1071,7 +1071,7 @@ We only automate the signature verification process in the CI in the current des
 * [Tekton Catalog and Hub Design][catalog-hub-design]
 * [Pipeline Catalog Integration Proposal][catalog-proposal]
 * [Original Tekton Catalog Tiers Proposal][catalog-support-tiers]
-* [Tekton Catalog Test Infrastructure Design Doc](doc-infra)
+* [Tekton Catalog Test Infrastructure Design Doc][doc-infra]
 * [TEP for Catalog Test Requirements and Infra for Verified+][tep-infra]
 * [TEP-0003: Tekton Catalog Organization][tep-0003]
 * [TEP-0091: Verified Remote Resources][tep-0091]

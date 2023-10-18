@@ -233,20 +233,20 @@ This allows administrators to opt into allowing their users to use alpha and bet
 
 Since we do not yet have any `v1` CRDs, the behavior will look like:
 
-| Feature Versions ->  | beta | alpha |
-| ---  | --- | --- |
-| stable | x | |
-| alpha | x | x |
+| Feature Versions -> | beta | alpha |
+|---------------------|------|-------|
+| stable              | x    |       |
+| alpha               | x    | x     |
 
 x == "**enabled**"
 
 Once we have `v1` CRDs it will become:
 
 | Feature Versions -> | v1 | beta | alpha |
-| --- | --- | --- | --- |
-| stable | x | | |
-| beta | x |  x | |
-| alpha | x | x | x |
+|---------------------|----|------|-------|
+| stable              | x  |      |       |
+| beta                | x  | x    |       |
+| alpha               | x  | x    | x     |
 
 For example:
 

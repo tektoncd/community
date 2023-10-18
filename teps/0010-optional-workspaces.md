@@ -28,7 +28,7 @@ status: implemented
     - [Story 6](#story-6)
   - [Risks and Mitigations](#risks-and-mitigations)
 - [Design Details](#design-details)
-  - [Example: <code>git-clone</code> Catalog Task](#example--catalog-task)
+  - [Example: <code>git-clone</code> Catalog Task](#example-git-clone-catalog-task)
 - [Test Plan](#test-plan)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)

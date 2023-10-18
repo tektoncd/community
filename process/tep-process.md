@@ -3,7 +3,7 @@
 A Tekton Enhancement Proposal (TEP) is a way to propose, communicate
 and coordinate on new efforts for the Tekton project.  You can read
 the full details of the project in
-[TEP-1](0001-tekton-enhancement-proposal-process.md).
+[TEP-1](../teps/0001-tekton-enhancement-proposal-process.md).
 
 * [What is a TEP](#what-is-a-tep)
 * [Creating TEPs](#creating-teps)
@@ -61,7 +61,7 @@ This TEP process is related to
 This proposal attempts to place these concerns within a general
 framework.
 
-See [TEP-1](0001-tekton-enhancement-proposal-process.md) for more
+See [TEP-1](../teps/0001-tekton-enhancement-proposal-process.md) for more
 details.
 
 The TEP `OWNERS` are the **main** owners of the following projects:
@@ -78,7 +78,7 @@ The TEP `OWNERS` are the **main** owners of the following projects:
 
 ## Creating and Merging TEPs
 
-To create a new TEP, use the [teps script](./tools/README.md):
+To create a new TEP, use the [teps script](../teps/tools/README.md):
 
 ```shell
 $ ./teps/tools/teps.py new --title "The title of the TEP" --author nick1 --author nick2
@@ -122,11 +122,11 @@ design and update the missing part in follow-up pull requests which moves the TE
 
 ### Approval requirements
 
-Reviewers should use [`/approve`](../process.md#prow-commands) to indicate that they approve
+Reviewers should use [`/approve`](../process/README.md#prow-commands) to indicate that they approve
 of the PR being merged.
 
 TEP must be approved by ***at least two owners*** from different companies.
-Owners are people who are [maintainers](../process.md#maintainer) for the community repo.
+Owners are people who are [maintainers](../process/contributor-ladder.md#maintainer) for the community repo.
 This should prevent a company from *force pushing* a TEP (and
 thus a feature) in the tektoncd projects.
 
@@ -163,10 +163,10 @@ TEP collaborators are permitted to be reviewers.
 ### Merging TEP PRs
 
 Once all assigned reviewers have approved the PR, the PR author can reach out to one of the assigned reviewers
-or another ["reviewer"](../process.md#reviewer) for the community repo to merge the PR.
-The reviewer can merge the PR by adding a [`/lgtm` label](../process.md#prow-commands).
+or another ["reviewer"](../process/contributor-ladder.md#reviewer) for the community repo to merge the PR.
+The reviewer can merge the PR by adding a [`/lgtm` label](../process/README.md#prow-commands).
   - If a contributor adds "lgtm" before all assignees have had the chance to review,
-  add a ["hold"](../process.md#prow-commands) to prevent the PR from being merged until then.
+  add a ["hold"](../process/README.md#prow-commands) to prevent the PR from being merged until then.
   - Note: automation prevents the PR author from merging their own PR.
 
 If the TEP has undergone substantial changes since any reviewers have approved it, the author

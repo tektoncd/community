@@ -335,7 +335,7 @@ resources into separate Catalogs where each will have its own versioning.
 
 ##### eBay - Catalog with one Task
 
-[eBay][ebay] shared a repository with a single `Task` for sending Slack messages.
+[eBay][eBay] shared a repository with a single `Task` for sending Slack messages.
 
 The eBay team could modify the repository to meet the organization contract in this TEP - this would make it a Catalog. 
 
@@ -746,7 +746,7 @@ approach of tagging new releases in the Catalogs as is done in GitHub Actions.
 We could provide guidelines and recommendations for creating Catalogs e.g. deciding whether to group resources together
 instead of splitting them into separate Catalogs. We can explore this in future work. 
 
-### Catlin 
+### Catlin
 
 Today, [catlin bump](https://github.com/tektoncd/catlin#bump) command only supports directory-based versioning catalog. We could further extend the [catlin bump](https://github.com/tektoncd/catlin#bump) command to support git-based versioning catalogs (where the command will create a new git tag and a corresponding release note based on the current latest version).
 

@@ -626,7 +626,7 @@ status:
 
 ## Alternatives
 
-### Propagate all workspaces to all Pipeline Tasks 
+### Propagate all workspaces to all Pipeline Tasks
 
 Propagating all `Workspaces` defined at `PipelineRun` down to all the `PipelineTasks` regardless of whether they are used by that `PipelineTask`. However, a workspace may have sensitive data that we don’t want to be accessible to all tasks. This approach is rejected because we only want data available where it is needed. We could remove the unwanted workspaces just before creating the task pod but this method will in turn also propagate workspaces for referenced parameters which we want to avoid because the behavior becomes opaque when users can't see the relationship between Workspaces declared in the referenced resources and the Workspaces supplied in runtime resources.
 

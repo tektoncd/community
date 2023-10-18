@@ -456,7 +456,7 @@ Currently, users may mount any type of volume supported by Kubernetes into their
 When considering replacing volumes with Workspaces, we should reconsider what types of volumes are available as Workspace bindings.
 There are several options available:
 
-- [Support all types of volumes as workspace bindings](#support-all-types-of-volumes-in-workspace-binding).
+- [Support all types of volumes as workspace bindings](#support-all-types-of-volumes-in-workspacebinding).
 One downside is that there's no clear use case for many of these volume types in the Tekton API.
 - Support for [hostPath volumes](#support-hostpath-volumes-in-workspace-bindings).
 This helps with advanced docker-in-docker use cases, but isn't necessary for most docker-in-docker use cases and comes with some security concerns.

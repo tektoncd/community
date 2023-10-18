@@ -17,7 +17,6 @@ collaborators: []
     - [Docker builds](#docker-builds)
     - [Other uses for this feature](#other-uses-for-this-feature)
   - [Goals](#goals)
-  - [Non-Goals](#non-goals)
   - [Requirements](#requirements)
   - [Related features in other CI/CD systems](#related-features-in-other-cicd-systems)
 - [User Experience](#user-experience)

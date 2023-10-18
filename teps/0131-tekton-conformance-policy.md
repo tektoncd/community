@@ -24,7 +24,7 @@ collaborators: ['@dibyom@', '@vdemeester@']
   - [Conformance Test Suites](#conformance-test-suites)
   - [Q&amp;A](#qa)
     - [1. Do field requirements mean the same for Tekton users and vendors?](#1-do-field-requirements-mean-the-same-for-tekton-users-and-vendors)
-    - [2 Tekton Conformance Policy (this doc) v.s. <a href="https://github.com/tektoncd/pipeline/blob/main/api_compatibility_policy.md">Tekton API Compatibility Policy</a>.](#2-tekton-conformance-policy-this-doc-vs-tekton-api-compatibility-policy)
+    - [2 Tekton Conformance Policy (this doc) v.s. <a href="https://github.com/tektoncd/pipeline/blob/main/api_compatibility_policy.md">Tekton API Compatibility Policy</a>.](#2-tekton-conformance-policy-this-doc-vs-tekton-api-compatibility-policytekton-api-compatibility-policy)
     - [3. Do we only include GA primitives in the conformance policy?](#3-do-we-only-include-ga-primitives-in-the-conformance-policy)
     - [4. Should we define the Conformance Policy per Tekton Services?](#4-should-we-define-the-conformance-policy-per-tekton-services)
   - [Open Questions](#open-questions)
@@ -146,7 +146,7 @@ Worth noting that even if we bump up the policy version, vendors can still claim
 
 ### Policy Update Procedure
 * **Open a PR** to propose the update.
-* **The PR** must be approved by more than half of [the project OWNERS][project owners] (i.e. 50% + 1) when it involves actual requirements changes (as opposed to typo/grammar fixing).
+* **The PR** must be approved by more than half of [the project OWNERS][Project OWNERs] (i.e. 50% + 1) when it involves actual requirements changes (as opposed to typo/grammar fixing).
 * **Update Notice** ahead of time.
   * Nice to have: conformance test kit can pop up the update notice when vendors run it.
   * How long do we want the update notice to be ahead of is an open question.
@@ -155,7 +155,7 @@ Worth noting that even if we bump up the policy version, vendors can still claim
 
 #### Conformance Test Suites
 
-We can follow "[duck test][duck test]", we provide inputs (YAMLs including all required fields) and outputs (status, results etc.) to see if vendors meet the requirements (vendors will need to convert the YAMLs to the format they support). Vendors are required to open a PR containing an instruction doc for reproducing the test result, and the community reviews and approves the PR (Borrowed the idea from [Kubernetes Conformance Test][Kubernetes Conformance Test]). This is a one-time test, but the test result MUST be reproducible while the Conformance claim is valid.
+We can follow "[duck test][Duck Test]", we provide inputs (YAMLs including all required fields) and outputs (status, results etc.) to see if vendors meet the requirements (vendors will need to convert the YAMLs to the format they support). Vendors are required to open a PR containing an instruction doc for reproducing the test result, and the community reviews and approves the PR (Borrowed the idea from [Kubernetes Conformance Test][Kubernetes Conformance Test]). This is a one-time test, but the test result MUST be reproducible while the Conformance claim is valid.
 
 ### Q&A
 #### 1. Do field requirements mean the same for Tekton users and vendors?

@@ -19,7 +19,7 @@ status: implemented
   - [Risks and Mitigations](#risks-and-mitigations)
 - [Design Details](#design-details)
   - [Caveats](#caveats)
-    - [Resolution of a <code>Step</code> Timeout](#resolution-of-a--timeout)
+    - [Resolution of a <code>Step</code> Timeout](#resolution-of-a-step-timeout)
 - [Test Plan](#test-plan)
 - [References](#references)
 <!-- /toc -->

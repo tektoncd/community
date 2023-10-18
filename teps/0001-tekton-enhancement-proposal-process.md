@@ -139,7 +139,7 @@ The following
 model indentifies the responsible parties for TEPs:
 
 | **Workstream**          | **Driver**          | **Approver**             | **Contributor**                                      | **Informed** |
-| ---                     | ---                 | ---                      | ---                                                  | ---          |
+|-------------------------|---------------------|--------------------------|------------------------------------------------------|--------------|
 | TEP Process Stewardship | Tekton Contributors | Tekton Governing members | Tekton Contributors                                  | Community    |
 | Enhancement delivery    | Enhancement Owner   | Project(s) Owners        | Enhancement Implementer(s) (may overlap with Driver) | Community    |
 

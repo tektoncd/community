@@ -22,7 +22,7 @@ See our standards regarding:
 
 - [Code of conduct](code-of-conduct.md)
 - [Design principles](design-principles.md)
-- [Commits](standards.md#commits)
+- [Commits](standards.md#commit-messages)
 - [Code](standards.md#code)
 - [User profiles](user-profiles.md)
 - [Releases](releases.md)
@@ -33,7 +33,7 @@ Find out about our processes:
 - [Propose features](./process/README.md#proposing-features)
 - [Contributor ladder](./process/contributor-ladder.md)
 - Pull request [reviews](./process/README.md#reviews) and [process](./process/README.md#pull-request-process)
-- [Propose projects](./process/README.md#proposing-projects)
+- [Propose projects](./process/projects.md)
 - [GitHub Org Management](org/README.md), including
   [requirements to join the org](org/README.md#requirements)
 - [The CDF CLA](./process/README.md#cla)

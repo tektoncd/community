@@ -40,7 +40,7 @@ tags, and then generate with `hack/update-toc.sh`.
   - [Efficiency](#efficiency-2)
     - [CelRun Custom Task](#celrun-custom-task)
     - [Expression Language Interceptor](#expression-language-interceptor)
-  - [Status](#status-2)
+  - [Status](#status)
     - [Minimal Skipped](#minimal-skipped)
     - [ConditionSucceeded](#conditionsucceeded)
     - [ConditionSkipped](#conditionskipped)
@@ -658,7 +658,7 @@ To make it flexible, similarly to Triggers which uses language interceptors that
 
 ### Status 
 
-#### Minimal Skipped 
+#### Minimal Skipped
 
 Add `Skipped Tasks` section to the `PipelineRunStatus` that contains a list of `SkippedTasks` that contains a `Name` field which has the `PipelineTaskName`. The `WhenExpressions` that made the `Task` skipped can be found in the `PipelineSpec`, the `Parameter` variables used can be found in the `PipelineSpec` and the `Results` used from previous `Tasks` can be found in the relevant `TaskRun`. It may be more work for users to reverse-engineer to identify why a `Task` was skipped, but gives us the benefit of significantly reducing the `PipelineRunStatus` compared to what we currently have with `Conditions`. 
 

@@ -114,47 +114,47 @@ This will allow us to create a provenance for a task run as [shown](#provenance-
 The table below provides the name and description of the API fields that the Task requires. In addition, it also lists if that information is required, not required, or provided by the provenance. If it is required, it also shows where the information should be provided. Looking at the table below and required [step](#step-specification) information, there are only a handful of fields that are not required for reproducibility. Instead of cherry-picking most of the fields, including the entire taskSpec in the buildConfig section of the provenance is likely the best way to go forward. Additionally, if we update the spec in the future, then chains will not have to be updated correspondingly. The work described in [issue](https://github.com/tektoncd/chains/issues/597) is meant to handle this.
 
 
-| | **Metadata**      | | |
-| ------ | ------------- | ----- | ----- |
-| **Field Name**    | **Description** | **Not Required / Required / Provided by provenance** | **Insert in provenance** |
-| name          | Name of the task | Required | |
-| Spec          | | | |
-| resources     | resources used by steps | Not Required (Deprecated) |  |
-| description   | description of the task | Not Required |  |
-| params        | parameters required by task | Provided |  |
-| results       | results produced by the task | Required(Atleast name, type and  properties (in case of object)) | buildConfig |
-| volumes       | volume mounted on the container | Required | buildConfig |
-| workspaces    | workspace bindings used by the task | Required | buildConfig |
-| steps         | Steps performed by the task | Provided |  |
-| sidecars      | Sidecars running alongside tasks | Required | buildConfig |
-| step template | Specifies a container configuration that will be used as the starting point for all of the Steps in your Task | Required | buildConfig |
+|                | **Metadata**                                                                                                  |                                                                  |                          |
+|----------------|---------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|--------------------------|
+| **Field Name** | **Description**                                                                                               | **Not Required / Required / Provided by provenance**             | **Insert in provenance** |
+| name           | Name of the task                                                                                              | Required                                                         |                          |
+| Spec           |                                                                                                               |                                                                  |                          |
+| resources      | resources used by steps                                                                                       | Not Required (Deprecated)                                        |                          |
+| description    | description of the task                                                                                       | Not Required                                                     |                          |
+| params         | parameters required by task                                                                                   | Provided                                                         |                          |
+| results        | results produced by the task                                                                                  | Required(Atleast name, type and  properties (in case of object)) | buildConfig              |
+| volumes        | volume mounted on the container                                                                               | Required                                                         | buildConfig              |
+| workspaces     | workspace bindings used by the task                                                                           | Required                                                         | buildConfig              |
+| steps          | Steps performed by the task                                                                                   | Provided                                                         |                          |
+| sidecars       | Sidecars running alongside tasks                                                                              | Required                                                         | buildConfig              |
+| step template  | Specifies a container configuration that will be used as the starting point for all of the Steps in your Task | Required                                                         | buildConfig              |
 
 ### Step Specification
 
 The table below provides the name and description of the API fields that the Step requires. In addition, it also lists if that information is required, not required, or provided by the provenance. If it is required, it also shows where the information should be provided. **Deprecated fields have not been included in the table below.**  Like in [Task Specification](#task-specification), almost all fields are either required or provided in the provenance. Therefore for the same reasons, we should include the entire spec in the generated provenance.
 
 
-| | **Metadata**      | | |
-| ------ | ------------- | ----- | ----- |
-| **Field Name**    | **Description** | **Not Required / Required / Provided by provenance** | **Insert in provenance** |
-| name             | Name of the step | Not Required | |
-| image            | Image name for this step | Provided |  |
-| command          | Entrypoint array | Provided |  |
-| args             | Arguments to the entrypoint | Provided |  |
-| working Dir      | Step’s working directory | Required | buildConfig |
-| EnvFrom          | List of sources to populate env variables | Required | buildConfig |
-| Env              | List of env variables to set in the container | Required | buildConfig |
-| Resources        | Compute resources required by this step | Required | buildConfig |
-| VolumeMounts     | Volumes to mount in the step’s filesystem | Required | buildConfig |
-| VolumeDevices    | List of block devices to be used by the step | Required | buildConfig |
-| ImagePullPolicy  | Image Pull Policy | Required | buildConfig |
-| Security Context | security options the step should run with | Required | buildConfig |
-| Script           | Contents of an executable file to execute | Provided |  |
-| Timeout          | Time after which the step times out | Required | buildConfig |
-| Workspaces       | list of workspaces from the task that the step wants exclusive access to | Required | buildConfig |
-| OnError          | behavior of the container on error | Required | buildConfig |
-| StdOut Config    | config of the stdout stream | Required | buildConfig |
-| StdErr Config    | config of the stderr stream | Required | buildConfig |
+|                  | **Metadata**                                                             |                                                      |                          |
+|------------------|--------------------------------------------------------------------------|------------------------------------------------------|--------------------------|
+| **Field Name**   | **Description**                                                          | **Not Required / Required / Provided by provenance** | **Insert in provenance** |
+| name             | Name of the step                                                         | Not Required                                         |                          |
+| image            | Image name for this step                                                 | Provided                                             |                          |
+| command          | Entrypoint array                                                         | Provided                                             |                          |
+| args             | Arguments to the entrypoint                                              | Provided                                             |                          |
+| working Dir      | Step’s working directory                                                 | Required                                             | buildConfig              |
+| EnvFrom          | List of sources to populate env variables                                | Required                                             | buildConfig              |
+| Env              | List of env variables to set in the container                            | Required                                             | buildConfig              |
+| Resources        | Compute resources required by this step                                  | Required                                             | buildConfig              |
+| VolumeMounts     | Volumes to mount in the step’s filesystem                                | Required                                             | buildConfig              |
+| VolumeDevices    | List of block devices to be used by the step                             | Required                                             | buildConfig              |
+| ImagePullPolicy  | Image Pull Policy                                                        | Required                                             | buildConfig              |
+| Security Context | security options the step should run with                                | Required                                             | buildConfig              |
+| Script           | Contents of an executable file to execute                                | Provided                                             |                          |
+| Timeout          | Time after which the step times out                                      | Required                                             | buildConfig              |
+| Workspaces       | list of workspaces from the task that the step wants exclusive access to | Required                                             | buildConfig              |
+| OnError          | behavior of the container on error                                       | Required                                             | buildConfig              |
+| StdOut Config    | config of the stdout stream                                              | Required                                             | buildConfig              |
+| StdErr Config    | config of the stderr stream                                              | Required                                             | buildConfig              |
 
 ### TaskRef
 
@@ -165,24 +165,24 @@ TaskRef is useful for references to existing tasks on the cluster or remote task
 The table below provides the name and description of the API fields that the TaskRun requires. In addition, it also lists if that information is required, not required, or provided by the provenance. If it is required, it also shows where the information should be provided. Note that since task run provides information during runtime, most of the information is contained in the **invocation.Parameters** section of the [provenance](#provenance-for-executed-taskrun).
 
 
-| | **Metadata**      | | |
-| ------ | ------------- | ----- | ----- |
-| **Field Name**    | **Description** | **Not Required / Required / Provided by provenance** | **Insert in provenance** |
-| name| Name of the task run| Not required for completeness |  |
-| | **Spec** | | |
-| resources | resources used by task | Deprecated but required if using older tekton version | invocation.Parameters |
-| service account name | name of the service account | Required | invocation.Parameters |
-| params | parameter values provided by taskrun | Provided | invocation.Parameters |
-| workspaces | workspaces used by the task | Required | invocation.Parameters |
-| pod template | | Required | invocation.Parameters |
-| Timeout | time in which a task should complete | Required for completeness | invocation.Parameters |
-| StepOverrides | Override Step configuration specified in a Task. Currently we can override compute resources. | Required for completeness | invocation.Parameters |
-| SidecarOverrides | Override Sidecar configuration specified in a Task. Currently we can override compute resources. | Required for completeness | invocation.Parameters |
-| ComputeResources | Configure compute resources required by the steps in the task. | Required (because this could also indicate a minimum amount of resources required for the task run.) | invocation.Parameters |
-| [TaskSpec](#task-specification) | Specification of the resolved task | See [spec](#task-specification) | buildConfig |
-| [TaskRef](#taskref)  | Details of the referenced task | Not Required (Since we save the complete TaskSpec even that of a remote task) |  |
-| | **Status** | | |
-| Task Results | Results produced by the task run | Not Required since this is an output | |
+|                                 | **Metadata**                                                                                     |                                                                                                      |                          |
+|---------------------------------|--------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|--------------------------|
+| **Field Name**                  | **Description**                                                                                  | **Not Required / Required / Provided by provenance**                                                 | **Insert in provenance** |
+| name                            | Name of the task run                                                                             | Not required for completeness                                                                        |                          |
+|                                 | **Spec**                                                                                         |                                                                                                      |                          |
+| resources                       | resources used by task                                                                           | Deprecated but required if using older tekton version                                                | invocation.Parameters    |
+| service account name            | name of the service account                                                                      | Required                                                                                             | invocation.Parameters    |
+| params                          | parameter values provided by taskrun                                                             | Provided                                                                                             | invocation.Parameters    |
+| workspaces                      | workspaces used by the task                                                                      | Required                                                                                             | invocation.Parameters    |
+| pod template                    |                                                                                                  | Required                                                                                             | invocation.Parameters    |
+| Timeout                         | time in which a task should complete                                                             | Required for completeness                                                                            | invocation.Parameters    |
+| StepOverrides                   | Override Step configuration specified in a Task. Currently we can override compute resources.    | Required for completeness                                                                            | invocation.Parameters    |
+| SidecarOverrides                | Override Sidecar configuration specified in a Task. Currently we can override compute resources. | Required for completeness                                                                            | invocation.Parameters    |
+| ComputeResources                | Configure compute resources required by the steps in the task.                                   | Required (because this could also indicate a minimum amount of resources required for the task run.) | invocation.Parameters    |
+| [TaskSpec](#task-specification) | Specification of the resolved task                                                               | See [spec](#task-specification)                                                                      | buildConfig              |
+| [TaskRef](#taskref)             | Details of the referenced task                                                                   | Not Required (Since we save the complete TaskSpec even that of a remote task)                        |                          |
+|                                 | **Status**                                                                                       |                                                                                                      |                          |
+| Task Results                    | Results produced by the task run                                                                 | Not Required since this is an output                                                                 |                          |
 
 
 ### Configuration Feature Flags

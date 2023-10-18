@@ -43,7 +43,7 @@ authors:
 - [Design Evaluation](#design-evaluation)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
-- [Alternative #1:  Introduce a <code>schema</code> section specifically for the type schema](#alternative-1--introduce-a--section-specifically-for-the-type-schema)
+- [Alternative #1:  Introduce a <code>schema</code> section specifically for the type schema](#alternative-1-introduce-a-schema-section-specifically-for-the-type-schema)
 - [Alternative #2: Create a wrapper for JSON Schema](#alternative-2-create-a-wrapper-for-json-schema)
 - [Alternative #3: Create our own syntax just for dictionaries](#alternative-3-create-our-own-syntax-just-for-dictionaries)
   - [More alternatives](#more-alternatives)
@@ -289,7 +289,7 @@ objects will likely use string values
 This proposal suggests adding a new `properties` section to param and result definition. If we later support more json
 schema attribute such as `additionalProperties` and `required`, we'd also support them at the same level as the
 `properties` field here. (
-See [Alternative #1 adding a schema section](#alternative-1--introduce-a-schema-section-specifically-for-the-type-schema)
+See [Alternative #1 adding a schema section](#alternative-1-introduce-a-schema-section-specifically-for-the-type-schema)
 .)
 (At that point we should also consider whether we want to adopt strict JSON schema syntax or if we want to support Open
 API schema instead; see [why JSON Schema](#why-json-schema).)

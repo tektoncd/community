@@ -25,7 +25,7 @@ status: implemented
 - [Drawbacks](#drawbacks)
   - [Payload redaction](#payload-redaction)
 - [Alternatives](#alternatives)
-  - [Introduce <code>input</code> field](#introduce--field)
+  - [Introduce <code>input</code> field](#introduce-input-field)
   - [Keep mutable behavior](#keep-mutable-behavior)
 - [Upgrade and Migration Strategy](#upgrade-and-migration-strategy)
 - [Implementation PRs](#implementation-prs)

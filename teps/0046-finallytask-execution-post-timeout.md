@@ -107,11 +107,10 @@ spec:
 The finally task runs after the task completion and both execute normally.
 
 
-| NAME                                                           | TASK NAME        | STARTED        | DURATION   | STATUS                 |
-|----------------------------------------------------------------|------------------|----------------|------------|------------------------|
-| ∙ hello-world-pipeline-run-with-timeout-task2-kxtc6          | task2          | 19 seconds ago | 7 seconds  | Succeeded              |
-| ∙ hello-world-pipeline-run-with-timeout-task1-bqmzz | task1 | 35 seconds ago | 16 seconds | Succeeded |
-|                                                                |                  |                |            |                        |
+| NAME                                                | TASK NAME | STARTED        | DURATION   | STATUS    |
+|-----------------------------------------------------|-----------|----------------|------------|-----------|
+| ∙ hello-world-pipeline-run-with-timeout-task2-kxtc6 | task2     | 19 seconds ago | 7 seconds  | Succeeded |
+| ∙ hello-world-pipeline-run-with-timeout-task1-bqmzz | task1     | 35 seconds ago | 16 seconds | Succeeded |
 
 
 Now if we change the task script in order to have it exceed its timeout (30s), we get the following status report:
@@ -120,7 +119,6 @@ Now if we change the task script in order to have it exceed its timeout (30s), w
 |-----------------------------------------------------|-----------|----------------|------------|------------------------|
 | ∙ hello-world-pipeline-run-with-timeout-task2-44tsb | task2     | 8 seconds ago  | 5 seconds  | Succeeded              |
 | ∙ hello-world-pipeline-run-with-timeout-task1-wgcq7 | task1     | 38 seconds ago | 30 seconds | Failed(TaskRunTimeout) |
-|                                                     |           |                |            |                        |
 
 
 The finally task still executes after the task failure.
@@ -133,8 +131,6 @@ Finally if we reduce the pipelinerun timeout to 10s, our status report shows:
 | NAME                                                | TASK NAME | STARTED       | DURATION   | STATUS                 |
 |-----------------------------------------------------|-----------|---------------|------------|------------------------|
 | ∙ hello-world-pipeline-run-with-timeout-task1-q7fw4 | task1     | 2 minutes ago | 30 seconds | Failed(TaskRunTimeout) |
-|                                                     |           |               |            |                        |
-|                                                     |           |               |            |                        |
 
 
 The pipelinerun timeout take precedence over the task timeout. After 10s the task fails... And the finally task does not get the chance to execute.

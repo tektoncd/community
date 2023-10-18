@@ -19,7 +19,7 @@ see-also:
 - [Requirements](#requirements)
 - [TaskRun Proposal](#taskrun-proposal)
   - [Breakpoint before/after a step](#breakpoint-beforeafter-a-step)
-  - [Breakpoint on failure of a step (already implemented; will be moved to <code>breakpoints.onFailure</code> spec)](#breakpoint-on-failure-of-a-step-already-implemented-will-be-moved-to--spec)
+  - [Breakpoint on failure of a step (already implemented; will be moved to <code>breakpoints.onFailure</code> spec)](#breakpoint-on-failure-of-a-step-already-implemented-will-be-moved-to-breakpointsonfailure-spec)
     - [Controlling step lifecycle](#controlling-step-lifecycle)
       - [Failure of a Step](#failure-of-a-step)
       - [Halting a Step on failure](#halting-a-step-on-failure)

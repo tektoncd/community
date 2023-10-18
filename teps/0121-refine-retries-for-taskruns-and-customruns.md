@@ -25,17 +25,17 @@ see-also:
 - [Design Details](#design-details)
   - [Timeout per Retry](#timeout-per-retry)
   - [Retries in TaskRuns and CustomRuns](#retries-in-taskruns-and-customruns)
-    - [Execution Status of a <code>failed</code> <code>pipelineTask</code> with <code>retries</code>](#execution-status-of-a---with-)
+    - [Execution Status of a <code>failed</code> <code>pipelineTask</code> with <code>retries</code>](#execution-status-of-a-failed-pipelinetask-with-retries)
   - [Conditions.Succeeded](#conditionssucceeded)
   - [RetriesStatus](#retriesstatus)
 - [Future Work](#future-work)
 - [Alternatives](#alternatives)
-  - [1. Implement <code>retries</code> in PipelineRun](#1-implement--in-pipelinerun)
-  - [2. Implement <code>retries</code> in TaskRun/Run, use <code>retryAttempts</code> instead of <code>retriesStatus</code>](#2-implement--in-taskrunrun-use--instead-of-)
+  - [1. Implement <code>retries</code> in PipelineRun](#1-implement-retries-in-pipelinerun)
+  - [2. Implement <code>retries</code> in TaskRun/Run, use <code>retryAttempts</code> instead of <code>retriesStatus</code>](#2-implement-retries-in-taskrunrun-use-retryattempts-instead-of-retriesstatus)
     - [Two API Changes](#two-api-changes)
     - [Two New Labels](#two-new-labels)
-    - [How the <code>Retries</code> Works](#how-the--works)
-  - [3. <code>Conditions.RetrySucceeded</code>](#3-)
+    - [How the <code>Retries</code> Works](#how-the-retries-works)
+  - [3. <code>Conditions.RetrySucceeded</code>](#3-conditionsretrysucceeded)
 - [References](#references)
 <!-- /toc -->
 
@@ -115,12 +115,12 @@ Typically, a retry strategy includes:
 4. Timeout of each attempt
 5. Retry until a certain condition is met
 
-| | [Retry Action in GA](https://github.com/marketplace/actions/retry-action) | [GitLab Job](https://docs.gitlab.com/ee/ci/yaml/#retry) | [Ansible Task](https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html#retrying-a-task-until-a-condition-is-met)| [Concourse Step](https://concourse-ci.org/attempts-step.html#attempts-step) |
-|:---|:---|:---|:---|:---|
-| **When to Retry** |  on failure |configurable|[always retry, conditional stop](https://github.com/ansible/ansible/pull/76101) [^ansible-conditional-stop]|configurable|
-| **Attempts amount** |supported|supported|supported|supported|
-| **Timeout for each attempt** |supported|[supported](https://docs.gitlab.com/ee/ci/yaml/#retrywhen)|supported|supported|
-| **Timeout for all attempts** |[supported](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepstimeout-minutes)|-|-|-|
+|                              | [Retry Action in GA](https://github.com/marketplace/actions/retry-action)                                                         | [GitLab Job](https://docs.gitlab.com/ee/ci/yaml/#retry)    | [Ansible Task](https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html#retrying-a-task-until-a-condition-is-met) | [Concourse Step](https://concourse-ci.org/attempts-step.html#attempts-step) |
+|:-----------------------------|:----------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------|
+| **When to Retry**            | on failure                                                                                                                        | configurable                                               | [always retry, conditional stop](https://github.com/ansible/ansible/pull/76101) [^ansible-conditional-stop]                      | configurable                                                                |
+| **Attempts amount**          | supported                                                                                                                         | supported                                                  | supported                                                                                                                        | supported                                                                   |
+| **Timeout for each attempt** | supported                                                                                                                         | [supported](https://docs.gitlab.com/ee/ci/yaml/#retrywhen) | supported                                                                                                                        | supported                                                                   |
+| **Timeout for all attempts** | [supported](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepstimeout-minutes) | -                                                          | -                                                                                                                                | -                                                                           |
 
 Several observations regarding to the feature table above:
 
@@ -148,16 +148,16 @@ The `PipelineRun` controller does not check for `len(retriesStatus)` to determin
 
 The following table shows how an overall status of a `taskRun` or a `customRun` for a `pipelineTask` with `retries` set to 3:
 
-| `status` | `reason`    |`completionTime` is set | description                                                                                                |
-|----------|-------------|------------------------|------------------------------------------------------------------------------------------------------------|
-| Unknown  | Running     | No                     | The `taskRun` has been validated and started to perform its work.                                          |
-| Unknown  | ToBeRetried | No                     | The `taskRun` (zero attempt of a `pipelineTask`) finished executing but failed. It has 3 retries pending.  |
-| Unknown  | Running     | No                     | First attempt of a `taskRun` has started to perform its work.                                              |
-| Unknown  | ToBeRetried | No                     | The `taskRun` (first attempt of a `pipelineTask`) finished executing but failed. It has 2 retries pending. |
-| Unknown  | Running     | No                     | Second attempt of a `taskRun` has started to perform its work.                                             |
-| Unknown  | ToBeRetried | No                     | The `taskRun` (second attempt of a `pipelineTask`) finished executing but failed. It has 1 retry pending.  |
-| Unknown  | Running     | No                     | Third attempt of a `taskRun` has started to perform its work.                                              |
-| False    | Failed      | Yes                    | The `taskRun` (third attempt of a `pipelineTask`) finished executing but failed. No more retries pending.  |
+| `status` | `reason`    | `completionTime` is set | description                                                                                                |
+|----------|-------------|-------------------------|------------------------------------------------------------------------------------------------------------|
+| Unknown  | Running     | No                      | The `taskRun` has been validated and started to perform its work.                                          |
+| Unknown  | ToBeRetried | No                      | The `taskRun` (zero attempt of a `pipelineTask`) finished executing but failed. It has 3 retries pending.  |
+| Unknown  | Running     | No                      | First attempt of a `taskRun` has started to perform its work.                                              |
+| Unknown  | ToBeRetried | No                      | The `taskRun` (first attempt of a `pipelineTask`) finished executing but failed. It has 2 retries pending. |
+| Unknown  | Running     | No                      | Second attempt of a `taskRun` has started to perform its work.                                             |
+| Unknown  | ToBeRetried | No                      | The `taskRun` (second attempt of a `pipelineTask`) finished executing but failed. It has 1 retry pending.  |
+| Unknown  | Running     | No                      | Third attempt of a `taskRun` has started to perform its work.                                              |
+| False    | Failed      | Yes                     | The `taskRun` (third attempt of a `pipelineTask`) finished executing but failed. No more retries pending.  |
 
 Pipeline controller can now rely on `ConditionSucceeded` set to `Failed` after all the retries are exhausted.
 

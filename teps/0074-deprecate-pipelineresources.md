@@ -19,7 +19,7 @@ authors:
 - [Requirements](#requirements)
 - [Proposal](#proposal)
   - [Features that will replace PipelineResources functionality](#features-that-will-replace-pipelineresources-functionality)
-  - [New repo: tektoncd/images](#new-repo-tektoncdimages)
+  - [Images used in PipelineResources](#images-used-in-pipelineresources)
   - [Risks and Mitigations](#risks-and-mitigations)
   - [User Experience](#user-experience)
 - [Design Details](#design-details)
@@ -46,14 +46,14 @@ This TEP proposes deprecating the CRD [PipelineResource](https://github.com/tekt
 in its current form, and addressing each problem PipelineResources were solving with specific features (see
 [Design details](#design-details) for more depth on how the listed replacements address the feature):
 
-| PipelineResources Feature| Replacement |
-|---|---|
-| Augmenting Tasks with steps that execute on the same pod | [TEP-0044 Decoupling Task composition from scheduling](https://github.com/tektoncd/community/blob/main/teps/0044-decouple-task-composition-from-scheduling.md) |
-| Automatic storage provisioning | [volumeClaimTemplates](https://github.com/tektoncd/pipeline/blob/main/docs/workspaces.md#volumeclaimtemplate), [TEP-0044 Decoupling Task composition from scheduling](https://github.com/tektoncd/community/blob/main/teps/0044-decouple-task-composition-from-scheduling.md) + catalog tasks |
-| PipelineResource specific credential handling |  [TEP-0044 Decoupling Task composition from scheduling](https://github.com/tektoncd/community/blob/main/teps/0044-decouple-task-composition-from-scheduling.md) |
-| Expressing typed inputs and outputs | [TEP-0075 Dictionary/object params and results](https://github.com/tektoncd/community/pull/479) |
-| Reusable parameter bundles | [TEP-0075 Dictionary/object params and results](https://github.com/tektoncd/community/pull/479) |
-| Contract around files provided or expected on disk | [TEP-0030 Workspace paths](https://github.com/tektoncd/community/blob/main/teps/0030-workspace-paths.md) |
+| PipelineResources Feature                                | Replacement                                                                                                                                                                                                                                                                                   |
+|----------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Augmenting Tasks with steps that execute on the same pod | [TEP-0044 Decoupling Task composition from scheduling](https://github.com/tektoncd/community/blob/main/teps/0044-decouple-task-composition-from-scheduling.md)                                                                                                                                |
+| Automatic storage provisioning                           | [volumeClaimTemplates](https://github.com/tektoncd/pipeline/blob/main/docs/workspaces.md#volumeclaimtemplate), [TEP-0044 Decoupling Task composition from scheduling](https://github.com/tektoncd/community/blob/main/teps/0044-decouple-task-composition-from-scheduling.md) + catalog tasks |
+| PipelineResource specific credential handling            | [TEP-0044 Decoupling Task composition from scheduling](https://github.com/tektoncd/community/blob/main/teps/0044-decouple-task-composition-from-scheduling.md)                                                                                                                                |
+| Expressing typed inputs and outputs                      | [TEP-0075 Dictionary/object params and results](https://github.com/tektoncd/community/pull/479)                                                                                                                                                                                               |
+| Reusable parameter bundles                               | [TEP-0075 Dictionary/object params and results](https://github.com/tektoncd/community/pull/479)                                                                                                                                                                                               |
+| Contract around files provided or expected on disk       | [TEP-0030 Workspace paths](https://github.com/tektoncd/community/blob/main/teps/0030-workspace-paths.md)                                                                                                                                                                                      |
 
 This still leaves the door open for adding a similar abstraction, but in the meantime, we can remove this contentious
 concept from our API and move forward toward our [v1 Pipelines release](https://github.com/tektoncd/pipeline/issues/3548).
@@ -299,7 +299,7 @@ without requiring PipelineResources:
     proxy information, etc., which is why
     [the git-clone task has 15 parameters](https://github.com/tektoncd/catalog/blob/main/task/git-clone/0.4/README.md#parameters),
     but having to duplicate these params each time you use them has led to the
-    [git-rebase lacking many of these params]([the git-rebase task has 10 parameters](https://github.com/tektoncd/catalog/blob/main/task/git-rebase/0.1/README.md#parameters))
+    [git-rebase lacking many of these params](https://github.com/tektoncd/catalog/blob/main/task/git-rebase/0.1/README.md#parameters)
   * *Replacement*: Supporting objects ([TEP-0075](https://github.com/tektoncd/community/pull/479)) and eventually more
     complex params and results will allow us to use those to define known interfaces, e.g. a dictionary of values you
     need when connecting to git. This will still be duplicated each time, but we might still be able to use this feature

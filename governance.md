@@ -22,7 +22,7 @@ one year: every year either two or three of the seats are up for election.
 ### Current members
 
 | Full Name         |  Company   | GitHub                                      | Slack                                                         | Elected On | Until    |
-| ----------------- | :--------: | ------------------------------------------- | ------------------------------------------------------------- | ---------- | -------- |
+|-------------------|:----------:|---------------------------------------------|---------------------------------------------------------------|------------|----------|
 | Andrea Frittoli   |    IBM     | [afrittoli](https://github.com/afrittoli)   | [@Andrea Frittoli](https://tektoncd.slack.com/team/UJ411P2CC) | Feb 2022   | Feb 2024 |
 | Billy Lynch       | Chainguard | [wlynch](https://github.com/wlynch)         | [@Billy Lynch](https://tektoncd.slack.com/team/UJ7BLGSB0) .   | Feb 2023   | Feb 2024 |
 | Dibyo Mukherjee   |   Google   | [dibyom](https://github.com/dibyom)         | [@Dibyo Mukherjee](https://tektoncd.slack.com/team/UJ73HM7PZ) | Feb 2023   | Feb 2025 |
@@ -35,7 +35,7 @@ distributed across the five members of the committee.
 #### Former members ❤️
 
 | Full Name       | GitHub                                        | Slack                                                         | Elected On          | Until    |
-| --------------- | --------------------------------------------- | ------------------------------------------------------------- | ------------------- | -------- |
+|-----------------|-----------------------------------------------|---------------------------------------------------------------|---------------------|----------|
 | Priya Wadhwa    | [priyawadhwa](https://github.com/priyawadhwa) | [@Priya Wadhwa](https://tektoncd.slack.com/team/U02T0CS9PN0)  | Feb 2022            | Feb 2023 |
 | Christie Wilson | [bobcatfish](https://github.com/bobcatfish)   | [@Christie Wilson](https://tektoncd.slack.com/team/UJ6DECY78) | Bootstrap committee | Feb 2023 |
 | Andrew Bayer    | [abayer](https://github.com/abayer)           | [@Andrew Bayer](https://tektoncd.slack.com/team/UJ6DJ4MSS)    | Feb 2020            | Feb 2022 |
@@ -85,7 +85,7 @@ The committee is responsible for a series of specific artifacts and activities:
 
 - The [Code of Conduct](code-of-conduct.md) and handling violations
 - The [Project Communication Channels](contact.md)
-- The [Contribution Process](process.md) and
+- The [Contribution Process](./process/README.md) and
   [Development Standards](standards.md)
 - The [Tekton Mission and Vision](roadmap.md)
 - Select [election officers](#election-officers) to run elections
@@ -108,7 +108,7 @@ be altered or dropped.
 
 ### Voter Eligibility
 
-Anyone who has at least 15 [contributions](process.md#contributions) in the last
+Anyone who has at least 15 [contributions](./process/README.md#contributions) in the last
 12 months. The
 [dashboard on tekton.devstats.cd.foundation](https://tekton.devstats.cd.foundation/d/9/developer-activity-counts-by-repository-group-table?orgId=1&var-period_name=Last%20year&var-metric=contributions&var-repogroup_name=All&var-country_name=All)
 will show GitHub based contributions; contributions that are not GitHub based

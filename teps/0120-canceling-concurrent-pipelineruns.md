@@ -54,7 +54,7 @@ If a new deployment PipelineRun starts while a previous one is still running, th
 
 #### Out of scope
 
-- Queueing concurrent PipelineRuns; this is covered in [TEP-0132](./0132-queueing-concurrent-pipelineruns.md).
+- Queueing concurrent PipelineRuns; this is covered in [TEP-0132](./0132-queueing-concurrent-runs.md).
 
 ### Requirements
 

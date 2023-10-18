@@ -31,7 +31,7 @@ collaborators: []
   - [Security](#security)
   - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
-  - [ScheduledTrigger CRD with fixed event body](#crontrigger-crd-with-fixed-event-body)
+  - [ScheduledTrigger CRD with fixed event body](#scheduledtrigger-crd-with-fixed-event-body)
   - [Add schedule to Trigger](#add-schedule-to-trigger)
   - [Add schedule to EventListener](#add-schedule-to-eventlistener)
   - [Create a PingSource](#create-a-pingsource)

@@ -181,7 +181,7 @@ demonstrate the interest in a TEP within the wider Tekton community.
 We want to let UIs/CLIs to show high level summaries of Results, e.g. -
 
 | Result | Type        | Status  | Duration |
-| ------ | ----------- | ------- | -------- |
+|--------|-------------|---------|----------|
 | A      | PipelineRun | SUCCESS | 30s      |
 | B      | TaskRun     | FAILURE | 10s      |
 | C      | CustomRun   | SUCCESS | 5s       |

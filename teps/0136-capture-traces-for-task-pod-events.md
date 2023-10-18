@@ -29,7 +29,6 @@ collaborators: []
   - [Drawbacks](#drawbacks)
 - [Implementation Plan](#implementation-plan)
   - [Test Plan](#test-plan)
-  - [Upgrade and Migration Strategy](#upgrade-and-migration-strategy)
   - [Implementation Pull Requests](#implementation-pull-requests)
 - [References](#references)
 <!-- /toc -->

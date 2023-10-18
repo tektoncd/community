@@ -235,7 +235,7 @@ Implementations should take care to ensure the integrity of result/param content
 - ideally, with tight access controls to prevent tampering and leakage
   for example, an implementation that stored contents in GCS could use signed URLs to only authorize one POST of object contents, only authorize GETs for only one hour, and delete the object contents entirely after one day.
 
-However, we are currently leaning toward using implementations of [the HTTP service](#dedicated-http-service) as the place
+However, we are currently leaning toward using implementations of [the HTTP service](#dedicated-storage-api-service) as the place
 to plug in support for different backends instead.
 
 This alternative provides options for handling a change to result parameter storage and potentially involves adjusting the
@@ -279,7 +279,7 @@ We need to consider both performance and security impacts of the changes and tra
 
 #### Design Details
 
-This approach for recording results coupled with the [*Dedicated HTTP Service*](#dedicated-http-service)
+This approach for recording results coupled with the [*Dedicated HTTP Service*](#dedicated-storage-api-service)
 (with a well defined interface that can be swapped out) can help abstract the backend. With this approach the default
 backend could be a ConfigMap (or CRD) - or we could even continue to use the TaskRun itself to store results - since
 only the HTTP service would need the permissions required to make teh edits (vs a solution where we need to on the fly
@@ -395,7 +395,7 @@ Questions:
 - Should the sidecar be responsible for deciding whether the result should be reported by-value or by-reference? Or is that a controller-wide configuration?
 - Is passing by-value still useful for small pieces of data to be able to have them inlined in TaskRun/PipelineRun statuses?
 
-### N Configmaps Per TaskRun with Patch Merges (c). 
+### N Configmaps Per TaskRun with Patch Merges (c).
 
   - As the TaskRun Pod proceeds, the injected entrypoint would write result data from `/tekton/results/foo` to the ConfigMap. After a TaskRun completes, the TaskRun controller would read the associated ConfigMap data and copy it into the TaskRun’s status. The ConfigMap is then deleted.
   - **Create N ConfigMaps** for each of N results, and grant the workload access to write to these results using one of these focused Roles: 

@@ -46,10 +46,10 @@ see-also:
 - [Future Work](#future-work)
   - [Runtime Specification](#runtime-specification)
 - [Alternatives](#alternatives)
-  - [Specification - Group <code>PipelineRef</code> and <code>PipelineSpec</code>](#specification---group--and-)
-  - [Specification - Use <code>PipelineRunSpec</code> in <code>PipelineTask</code>](#specification---use--in-)
-  - [Specification - Reorganize <code>PipelineTask</code>](#specification---reorganize-)
-  - [Runtime specification - provide overrides for <code>PipelineRun</code>](#runtime-specification---provide-overrides-for-)
+  - [Specification - Group <code>PipelineRef</code> and <code>PipelineSpec</code>](#specification---group-pipelineref-and-pipelinespec)
+  - [Specification - Use <code>PipelineRunSpec</code> in <code>PipelineTask</code>](#specification---use-pipelinerunspec-in-pipelinetask)
+  - [Specification - Reorganize <code>PipelineTask</code>](#specification---reorganize-pipelinetask)
+  - [Runtime specification - provide overrides for <code>PipelineRun</code>](#runtime-specification---provide-overrides-for-pipelinerun)
   - [Runtime specification - provide overrides for all runtime types](#runtime-specification---provide-overrides-for-all-runtime-types)
   - [Status - Require Minimal Status](#status---require-minimal-status)
   - [Status - Populate Embedded and Minimal Status](#status---populate-embedded-and-minimal-status)
@@ -543,7 +543,7 @@ spec:
 
 ### Results
 
-#### Consuming Results 
+#### Consuming Results
 
 `Pipelines` in `Pipelines` will consume `Results`, in the same way as `Tasks` in `Pipelines`.
 
@@ -632,7 +632,7 @@ spec:
         name: notification
 ```
 
-### Workspaces 
+### Workspaces
 
 `PipelineTasks` with `Pipelines` can reference `Workspaces`, in the same way as `PipelineTasks` with `Tasks`. In these
 case, the `Workspaces` from the parent `PipelineRun` will be bound to the child `PipelineRun`. 
@@ -716,7 +716,7 @@ map to `timeouts.pipeline` in the child `PipelineRun`.
 If users need finer-grained timeouts for child `PipelineRuns` as those supported in parent `PipelineRuns`, we can 
 explore supporting them in future work - see [possible solution](#runtime-specification---provide-overrides-for-pipelinerun).
 
-### Matrix 
+### Matrix
 
 Users can fan out `PipelineTasks` with `Tasks` and `Custom Tasks` into multiple `TaskRuns` and `Runs` using `Matrix`.
 In the same way, users can fan out `PipelineTasks` with `Pipelines` into multiple child `PipelineRuns`. This provides

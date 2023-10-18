@@ -321,14 +321,14 @@ features in CEL will no longer work out of the box -
   now an opaque byte string) - users will need to reference the `type` field:
 
   | Before                                               | After                                                 |
-  | ---------------------------------------------------- | ----------------------------------------------------- |
+  |------------------------------------------------------|-------------------------------------------------------|
   | type(record.data) == tekton.pipeline.v1beta1.TaskRun | record.data.type == "tekton.pipeline.v1beta1.TaskRun" |
 
 - Underlying data cannot be directly referenced - users will need to use the
   `value` field:
 
   | Before                           | After                                  |
-  | -------------------------------- | -------------------------------------- |
+  |----------------------------------|----------------------------------------|
   | record.data.name.contains("foo") | record.data.value.name.contains("foo") |
 
 It is possible that we might be able to replicate some of the well-known Any

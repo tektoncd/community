@@ -23,7 +23,7 @@ calendar, and should invite tekton-dev@googlegroups.com to working group
 meetings.
 
 Recordings are made and posted in the minutes of each meeting.
-These docs and the recordings themselves are visible to [all members of our mailing list](#mailing-list).
+These docs and the recordings themselves are visible to [all members of our mailing list](./contact.md#mailing-list).
 
 The current working groups are:
 
@@ -46,7 +46,6 @@ The current working groups are:
   - [Pipeline](#pipeline)
   - [Governing Board / Community](#governing-board--community)
   - [Software Supply Chain Security (s3c)](#software-supply-chain-security-s3c)
-- [The goal of this working group is to discuss supply chain security initiatives across Tekton.](#the-goal-of-this-working-group-is-to-discuss-supply-chain-security-initiatives-across-tekton)
   - [Data Interface](#data-interface)
   - [Results](#results)
 
@@ -307,24 +306,24 @@ and RedHat's [Pipelines as Code](https://github.com/openshift-pipelines/pipeline
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                                                                                             |                                                                                                                                                                                                               |
 | Slack Channels             | [#workflows](https://tektoncd.slack.com/messages/workflows)                                                                                                                                                                                                                                                   |
 
-| &nbsp;                                                   | Points of Contact | Company | Profile                                |
-|----------------------------------------------------------|-------------------|---------|--------------------------------------- |
-| <img width="30px" src="https://github.com/dibyom.png">   | Dibyo Mukherjee   | Google  | [dibyom](https://github.com/dibyom)    |
-| <img width="30px" src="https://github.com/khrm.png">     | Khurram Baig      | Red Hat | [khrm](https://github.com/khrm)        |
-| <img width="30px" src="https://github.com/chmouel.png">  | Chmouel Boudjnah  | Red Hat | [chmouel](https://github.com/chmouel)  |
-| <img width="30px" src="https://github.com/lbernick.png"> | Lee Bernick       | Google  | [lbernick](https://github.com/lbernick)|
+| &nbsp;                                                   | Points of Contact | Company | Profile                                 |
+|----------------------------------------------------------|-------------------|---------|-----------------------------------------|
+| <img width="30px" src="https://github.com/dibyom.png">   | Dibyo Mukherjee   | Google  | [dibyom](https://github.com/dibyom)     |
+| <img width="30px" src="https://github.com/khrm.png">     | Khurram Baig      | Red Hat | [khrm](https://github.com/khrm)         |
+| <img width="30px" src="https://github.com/chmouel.png">  | Chmouel Boudjnah  | Red Hat | [chmouel](https://github.com/chmouel)   |
+| <img width="30px" src="https://github.com/lbernick.png"> | Lee Bernick       | Google  | [lbernick](https://github.com/lbernick) |
 
 ## Pipeline
 
 This is the working group for [`tektoncd/pipeline`](https://github.com/tektoncd/pipeline).
 Connecting to the Meeting VC requires a Zoom account.
 
-| Artifact | Link                                                              |
-|----------|-------------------------------------------------------------------|
-| Forum    | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Meeting Notes              | [Notes](https://docs.google.com/document/d/1AfJfdyd1JN2P4haBdYOxEn6SMENMgvQF9ps7iF2QSG0/edit) |
-| Slack Channel              | [#pipeline-dev](https://tektoncd.slack.com/messages/pipeline-dev) |
-| Community Meeting VC       | [https://zoom.us/j/98272582734?pwd=OTBVMWJIbVJZcUU3WnlodTEvVS9PUT09](https://zoom.us/j/98272582734?pwd=OTBVMWJIbVJZcUU3WnlodTEvVS9PUT09) |
+| Artifact                   | Link                                                                                                                                                                                                                                                                                                                |
+|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                                                                                                   |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1AfJfdyd1JN2P4haBdYOxEn6SMENMgvQF9ps7iF2QSG0/edit)                                                                                                                                                                                                                       |
+| Slack Channel              | [#pipeline-dev](https://tektoncd.slack.com/messages/pipeline-dev)                                                                                                                                                                                                                                                   |
+| Community Meeting VC       | [https://zoom.us/j/98272582734?pwd=OTBVMWJIbVJZcUU3WnlodTEvVS9PUT09](https://zoom.us/j/98272582734?pwd=OTBVMWJIbVJZcUU3WnlodTEvVS9PUT09)                                                                                                                                                                            |
 | Community Meeting Calendar | Tuesday every other week, 09:30a-10:00a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NG5jdWV0ZTFxaGo0MHNpYzVnODlrYXZucGhfMjAyMTExMDJUMTYzMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 
 | &nbsp;                                                     | Facilitators      | Company | Profile                                     |
@@ -342,12 +341,12 @@ Connecting to the Meeting VC requires a Zoom account.
 This is the sync meeting for [the Tekton governing board](https://github.com/tektoncd/community/blob/main/governance.md#tekton-governance-committee)
 and a place to discuss community operations and process.
 
-| Artifact | Link                                                              |
-|----------|-------------------------------------------------------------------|
-| Forum    | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Meeting Notes              | [Notes](https://docs.google.com/document/d/1g2HQk_4ypYEWPX2WjOFa6vOMpwYoRNprph_P09TS1UM/edit) |
-| Slack Channel              | [#governance](https://tektoncd.slack.com/messages/governance) |
-| Community Meeting VC       | [Zoom](https://zoom.us/j/96566024785?pwd=WjRKQkNzK1ZDQm9URitaV0w5eVBldz09) |
+| Artifact                   | Link                                                                                                                                                                                                                                                                                                                |
+|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                                                                                                   |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1g2HQk_4ypYEWPX2WjOFa6vOMpwYoRNprph_P09TS1UM/edit)                                                                                                                                                                                                                       |
+| Slack Channel              | [#governance](https://tektoncd.slack.com/messages/governance)                                                                                                                                                                                                                                                       |
+| Community Meeting VC       | [Zoom](https://zoom.us/j/96566024785?pwd=WjRKQkNzK1ZDQm9URitaV0w5eVBldz09)                                                                                                                                                                                                                                          |
 | Community Meeting Calendar | Tuesday every other week, 09:00a-09:30a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NjFvcHNib2E2cjNwcGc2dGhnMmY2OGU4YTFfMjAyMjAxMThUMTcwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 
 | &nbsp;                                                      | Facilitators      | Company    | Profile                                       |
@@ -365,12 +364,12 @@ and a place to discuss community operations and process.
 The goal of this working group is to discuss supply chain security initiatives across Tekton (exact scope
 TBD [community#629](https://github.com/tektoncd/community/issues/629)).
 
-| Artifact | Link                                                              |
-|----------|-------------------------------------------------------------------|
-| Forum    | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev) |
-| Meeting Notes              | [HackMD Notes](https://hackmd.io/gFcAZMFMRwuTaZ1i7Y3fSg) |
-| Slack Channel              | [#s3c-working-group](https://tektoncd.slack.com/messages/s3c-working-group) |
-| Community Meeting VC       | [https://zoom.us/j/96593435267?pwd=TTNVYUJEQlNzMXlKYjFXcUwzOUZEdz09](https://zoom.us/j/96593435267?pwd=TTNVYUJEQlNzMXlKYjFXcUwzOUZEdz09) |
+| Artifact                   | Link                                                                                                                                                                                                                                                       |
+|----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                                          |
+| Meeting Notes              | [HackMD Notes](https://hackmd.io/gFcAZMFMRwuTaZ1i7Y3fSg)                                                                                                                                                                                                   |
+| Slack Channel              | [#s3c-working-group](https://tektoncd.slack.com/messages/s3c-working-group)                                                                                                                                                                                |
+| Community Meeting VC       | [https://zoom.us/j/96593435267?pwd=TTNVYUJEQlNzMXlKYjFXcUwzOUZEdz09](https://zoom.us/j/96593435267?pwd=TTNVYUJEQlNzMXlKYjFXcUwzOUZEdz09)                                                                                                                   |
 | Community Meeting Calendar | Tuesday every other week, 09:00a-09:30a PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=NDFuMjg2OTloYTJrYm1jNGM1dWZiZ3JzdGZfMjAyMjAyMjJUMTcwMDAwWiBjaHJpc3RpZXdpbHNvbkBnb29nbGUuY29t&tmsrc=christiewilson%40google.com&scp=ALL) |
 
 * [**Facilitator list in agenda notes**](https://hackmd.io/gFcAZMFMRwuTaZ1i7Y3fSg?view#Facilitator-instructions)
@@ -384,7 +383,7 @@ in Tekton. The problem space is scoped in this [document](https://docs.google.co
 |----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                     |
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/1z2ME1o_XHvqv6cVEeElljvqVqHV8-XwtXdTkNklFU_8/edit)                                                                                         |
-| Slack Channel              | [#tekton-data-interface](https://tektoncd.slack.com/messages/tekton-data-interface)                                                                                                                             |
+| Slack Channel              | [#tekton-data-interface](https://tektoncd.slack.com/messages/tekton-data-interface)                                                                                                   |
 | Community Meeting VC       | [https://zoom.us/j/94243917326?pwd=MThrUVVDSnlEU2FNWG10Yk1CcnRlZz09](https://zoom.us/j/94243917326?pwd=MThrUVVDSnlEU2FNWG10Yk1CcnRlZz09)                                              |
 | Community Meeting Calendar | Wednesday every week, 04:00p-04:30p UTC <br>[Calendar](https://calendar.google.com/calendar?cid=Z29vZ2xlLmNvbV9kM292Y3ZvMXAzMjE5aDk4OTU3M3Y5OGZuc0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t) |
 
@@ -392,16 +391,16 @@ in Tekton. The problem space is scoped in this [document](https://docs.google.co
 
 This is the working group for [tektoncd/results](https://github.com/tektoncd/results).
 
-| Artifact      | Link                                                                                                      |
-|---------------|---------------------------------------------------------------------------------|
-| Forum         | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)               |
-| Meeting Notes | [Notes](https://docs.google.com/document/d/1GXKq-tc4oJUHdjIe-usHclugVU06sljo4i8BT2OaHbY/edit?usp=sharing) |
-| Slack Channel              | [#results](https://tektoncd.slack.com/messages/results)            |
-| Community Meeting VC       | [Zoom link](https://zoom.us/j/99187487778?pwd=UGZhOHd3cWJlVFhMTDNTVGxQeG1ndz09#success) |
+| Artifact                   | Link                                                                                                                                                                                                                                          |
+|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                             |
+| Meeting Notes              | [Notes](https://docs.google.com/document/d/1GXKq-tc4oJUHdjIe-usHclugVU06sljo4i8BT2OaHbY/edit?usp=sharing)                                                                                                                                     |
+| Slack Channel              | [#results](https://tektoncd.slack.com/messages/results)                                                                                                                                                                                       |
+| Community Meeting VC       | [Zoom link](https://zoom.us/j/99187487778?pwd=UGZhOHd3cWJlVFhMTDNTVGxQeG1ndz09#success)                                                                                                                                                       |
 | Community Meeting Calendar | Thursday every week, 5:30-6:00a PST <br>[Calendar](https://calendar.google.com/calendar/event?action=TEMPLATE&tmeid=Nmk2cG5jZ2QyYjJuaWFvdDBjYmxhamlhNzRfMjAyMzAyMDJUMTMzMDAwWiBhZGthcGxhbkByZWRoYXQuY29t&tmsrc=adkaplan%40redhat.com&scp=ALL) |
 
 | &nbsp;                                                        | Facilitators    | Company | Profile                                           |
-|-------------------------------------------------------------- |-----------------|---------|---------------------------------------------------|
+|---------------------------------------------------------------|-----------------|---------|---------------------------------------------------|
 | <img width="30px" src="https://github.com/enarha.png">        | Emil Natan      | Red Hat | [enarha](https://github.com/enarha)               |
 | <img width="30px" src="https://github.com/avinal.png">        | Avinal Kumar    | Red Hat | [avinal](https://github.com/avinal)               |
 | <img width="30px" src="https://github.com/sayan-biswas.png">  | Sayan Biswas    | Red Hat | [sayan-biswas](https://github.com/sayan-biswas)   |

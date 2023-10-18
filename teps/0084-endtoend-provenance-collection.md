@@ -560,11 +560,11 @@ information.
 New configuration options will be introduced to control the behavior for producing and storing
 pipelinerun attestations. These should behave as similar as possible to their taskrun counterparts.
 
-| Key | Description | Supported Values | Default |
-| --- | ----------- | ---------------- | ------- |
-| `artifacts.pipelinerun.format`  | The format to store TaskRun payloads in. | tekton, in-toto | tekton |
-| `artifacts.pipelinerun.storage` | The storage backend to store PipelineRun signatures and attestations in. Multiple backends can be specified with comma-separated list (“tekton,oci”). To disable the PipelineRun artifact input an empty string (""). | tekton, oci, gcs, docdb, grafeas | tekton |
-| `artifacts.pipelinerun.signer`  | The signature backend to sign Taskrun payloads with. | x509, kms | x509 |
+| Key                             | Description                                                                                                                                                                                                           | Supported Values                 | Default |
+|---------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------|---------|
+| `artifacts.pipelinerun.format`  | The format to store TaskRun payloads in.                                                                                                                                                                              | tekton, in-toto                  | tekton  |
+| `artifacts.pipelinerun.storage` | The storage backend to store PipelineRun signatures and attestations in. Multiple backends can be specified with comma-separated list (“tekton,oci”). To disable the PipelineRun artifact input an empty string (""). | tekton, oci, gcs, docdb, grafeas | tekton  |
+| `artifacts.pipelinerun.signer`  | The signature backend to sign Taskrun payloads with.                                                                                                                                                                  | x509, kms                        | x509    |
 
 It is expected that storage has an ever changing set of supported values, just like it is for
 taksruns. There should be parity between the storages supported by both taskrun and pipelinerun

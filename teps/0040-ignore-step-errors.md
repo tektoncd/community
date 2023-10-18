@@ -24,7 +24,7 @@ authors:
   - [Advantages](#advantages)
     - [Single Source of Truth](#single-source-of-truth)
 - [Alternatives](#alternatives)
-  - [A <code>bool</code> flag](#a--flag)
+  - [A <code>bool</code> flag](#a-bool-flag)
   - [exitCode set to 0 through 255](#exitcode-set-to-0-through-255)
 - [Future Work](#future-work)
     - [Step exit code as a task result](#step-exit-code-as-a-task-result)

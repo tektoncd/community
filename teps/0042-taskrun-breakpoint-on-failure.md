@@ -113,7 +113,7 @@ To exit a step which has been paused upon failure, the step would wait on a file
 would unpause and exit the step container. eg: Step 0 fails and is paused. Writing `0.breakpointexit` in `/tekton/tools`
 would unpause and exit the step container.
 
-### Debug Environment Additions 
+### Debug Environment Additions
 
 #### Mounts
 

@@ -265,7 +265,7 @@ This struct, and `ChildStatusReferences.ConditionChecks`, will be removed once
 references for the `conditions`' statuses, because `ConditionCheckStatus`, the only thing
 in `PipelineRunConditionCheckStatus` other than the `ConditionName`, isn't replicated
 anywhere else, and contains a fairly minimal amount of data - the pod name, start and
-completion times, and a `corev1.ContainerState`. See [the issue for deprecating `Conditions`](issue-3377)
+completion times, and a `corev1.ContainerState`. See [the issue for deprecating `Conditions`][issue-3377]
 for more information on the planned removal of `Conditions`.
 
 ```go
@@ -790,6 +790,7 @@ support this expansion.
 [tep-0096]: https://github.com/tektoncd/community/blob/main/teps/0096-pipelines-v1-api.md
 [issue-3140]: https://github.com/tektoncd/pipeline/issues/3140
 [issue-3792]: https://github.com/tektoncd/pipeline/issues/3792
+[issue-3377]: https://github.com/tektoncd/pipeline/issues/3377
 [issue-82]: https://github.com/tektoncd/results/issues/82
 [api-wg]: https://docs.google.com/document/d/17PodAxG8hV351fBhSu7Y_OIPhGTVgj6OJ2lPphYYRpU/edit#heading=h.esbaqjpyouim
 [pipelinerunstatus]: https://github.com/tektoncd/pipeline/blob/411d033c5e4bf3409f01b175531cbc1a0a75fadb/pkg/apis/pipeline/v1beta1/pipelinerun_types.go#L290-L296

@@ -146,10 +146,10 @@ No impact on performance.
 
 In this proposal the list of statuses users can set in `spec.status` is extended to:
 
-&nbsp; | don't run finally tasks  | run finally tasks
------- | ------------------------ | -----------------------------
-cancel | Cancelled                | CancelledRunFinally
-stop   |                          | StoppedRunFinally
+| &nbsp; | don't run finally tasks | run finally tasks   |
+|--------|-------------------------|---------------------|
+| cancel | Cancelled               | CancelledRunFinally |
+| stop   |                         | StoppedRunFinally   |
 
 The existing state "PipelineRunCancelled" is deprecated and replaced by "Cancelled".
 

@@ -150,6 +150,6 @@ At high level below are few implementation details
 * Using thirdparty solutions like service mesh.
 * Writing simple sidecar which inject tls certs into the eventlistener pod. 
 
-## References 
+## References
 1. GitHub issue: https://github.com/tektoncd/triggers/issues/650
 2. Implementation: https://github.com/tektoncd/triggers/pull/819

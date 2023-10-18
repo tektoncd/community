@@ -36,7 +36,7 @@ authors:
     - [Cons](#cons-2)
   - [Loosely-Coupled Metadata](#loosely-coupled-metadata)
     - [Pros](#pros-2)
-  - [Syntactic Alternatives to <code>workspaces</code>](#syntactic-alternatives-to-)
+  - [Syntactic Alternatives to <code>workspaces</code>](#syntactic-alternatives-to-workspaces)
     - [Pros](#pros-3)
     - [Cons](#cons-3)
 - [Infrastructure Needed (optional)](#infrastructure-needed-optional)

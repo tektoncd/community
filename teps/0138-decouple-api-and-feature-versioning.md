@@ -25,7 +25,8 @@ authors:
   - [Per feature flag for new api-driven features](#per-feature-flag-for-new-api-driven-features)
   - [Sunset `enable-api-fields` after existing features stabilize](#sunset-`enable-api-fields`-after-existing-features-stabilize)
 - [Design Evaluation](#design-evaluation)
-  - [Pros and cons](#pros-and-cons)
+  - [Pros](#pros)
+  - [Cons](#cons)
 - [Alternatives](#alternatives)
   - [Per feature flag with new value for `enable-api-fields` `none`](#per-feature-flag-with-new-value-for-`enable-api-fields`-none) 
   - [New `legacy-enable-beta-features-by-default` flag](#new-legacy-enable-beta-features-by-default-flag)
@@ -165,11 +166,11 @@ See [implementation plan](#implementation-plan) for more details on the PerFeatu
 
 All **new** features can only be enabled via per-feature flags. When they first get introduced as `alpha`, they will be disabled by default. When new features get promoted to `stable`, they will be enabled by default according to the following table:
 
-| Feature stability level | Default  |
-| ----------------------- | -------- |
-| Stable                  | Enabled; Cannot be disabled  |
-| Beta                    | Disabled |
-| Alpha                   | Disabled |
+| Feature stability level | Default                     |
+|-------------------------|-----------------------------|
+| Stable                  | Enabled; Cannot be disabled |
+| Beta                    | Disabled                    |
+| Alpha                   | Disabled                    |
 
 Note that per-feature flags that have stabilized cannot be disabled. We will deprecate the per-feature flag after it has become stable and then remove it eventually after the deprecation period according to the API compatibility policy. We will give deprecation and later removel notice of the per-feature flags via release notes after their promotion to `stable`. Cluster operators who do not want such opt-in features would have enough notice to implement admission controllers on their own to disable the feature.
 For example, when a new future feature `pipeline-in-pipeline` becomes stable in v0.55, it would be enabled by default and cannot be disabled after the release. We would need to include in the release note of v0.55 that we are enabling the `pipeline-in-pipeline` feature by default and deprecating its feature flag. And after the deprecation period, we would remove the feature flag.
@@ -272,21 +273,21 @@ This alternative proposes introducing a new flag `legacy-enable-beta-features-by
 
 This chart would apply to the existing `beta` features (array results, array indexing, object params and results, and remote resolution):
 
-| enable-api-fields |	legacy-enable-beta-features-by-default | enabled in `v1beta1`? | enabled in `v1`? |
-| ------ | ------ | --- | --- |
-| beta   |	true  |	yes |	yes |
-| beta   |	false |	yes	| yes |
-| stable |	true  |	yes	| no  |
-| stable |	false |	no	| no  |
+| enable-api-fields | 	legacy-enable-beta-features-by-default | enabled in `v1beta1`? | enabled in `v1`? |
+|-------------------|-----------------------------------------|-----------------------|------------------|
+| beta              | 	true                                   | 	yes                  | 	yes             |
+| beta              | 	false                                  | 	yes	                 | yes              |
+| stable            | 	true                                   | 	yes	                 | no               |
+| stable            | 	false                                  | 	no	                  | no               |
 
 For new `beta` features(e.g. matrix in the future):
 
-| enable-api-fields |	legacy-enable-beta-features-by-default | enabled in `v1beta1`? | enabled in `v1`? |
-| ------ | ------ | --- | --- |
-| beta   |	true  |	yes |	yes |
-| beta   |	false |	yes |	yes |
-| stable |	true  |	no  |	no  |
-| stable |	false |	no  |	no  |
+| enable-api-fields | 	legacy-enable-beta-features-by-default | enabled in `v1beta1`? | enabled in `v1`? |
+|-------------------|-----------------------------------------|-----------------------|------------------|
+| beta              | 	true                                   | 	yes                  | 	yes             |
+| beta              | 	false                                  | 	yes                  | 	yes             |
+| stable            | 	true                                   | 	no                   | 	no              |
+| stable            | 	false                                  | 	no                   | 	no              |
 
 Once all existing `beta` features become `stable`, `legacy-enable-beta-features-by-default` can be removed. We will deprecate and then remove `legacy-enable-beta-features-by-default` and use `stable` `enable-api-fields`. We would default true for the new flag. After 9 months, we would default `enable-api-fields` to `stable` to preserve the existing behavior.
 
@@ -341,11 +342,11 @@ type FeatureFlag struct {
 We plan to retain the existing testing matrix for fields at `alpha`, `beta` and `stable`. With the addition of per-feature flags for new features, it would look as follows:
 
 
-| |enable-api-fields|Per feature flags|Integration tests|
-| -- | -- | -- | -- |
-|Opt-in stable| stable|Turn OFF all per feature flags|Run all stable e2e tests.|
-|Opt-in beta| beta|Turn ON all beta per-feature flags|Run all beta e2e tests.|
-|Opt-in alpha| alpha|Turn ON all per-feature flags (alpha and beta)|Run all alpha e2e tests.|
+|               | enable-api-fields | Per feature flags                              | Integration tests         |
+|---------------|-------------------|------------------------------------------------|---------------------------|
+| Opt-in stable | stable            | Turn OFF all per feature flags                 | Run all stable e2e tests. |
+| Opt-in beta   | beta              | Turn ON all beta per-feature flags             | Run all beta e2e tests.   |
+| Opt-in alpha  | alpha             | Turn ON all per-feature flags (alpha and beta) | Run all alpha e2e tests.  |
 
 
 ## Additional CI tests
@@ -358,11 +359,11 @@ We cannot test 2\*\*N combinations of per-feature flags, since that would be too
 
 
 
-||enable-api-fields|Per feature flags|Integration tests|
-| :- | :- | :- | :- |
-|Opt-in stable|Set to stable|<p>All feature flags are OFF by default.</p><p>Turn ON one feature flag at a time. </p>|Run a small number of e2e tests against N combinations. It is not feasible to run the entire e2e test suite against N combinations.|
-|Opt-in beta|Set to beta|Turn ON all beta per-feature flags by default.<br><br>Turn ON one per-feature (flag at an alpha stability level) at a time.|Run a small number of e2e tests against M combinations (where M <= N)|
-|Opt-in alpha|Set to alpha|Turn ON all per-feature flags by default.<br><br>TURN OFF one feature flag at a time.|Run a small number of e2e tests against N combinations.|
+|               | enable-api-fields | Per feature flags                                                                                                           | Integration tests                                                                                                                   |
+|:--------------|:------------------|:----------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------|
+| Opt-in stable | Set to stable     | <p>All feature flags are OFF by default.</p><p>Turn ON one feature flag at a time. </p>                                     | Run a small number of e2e tests against N combinations. It is not feasible to run the entire e2e test suite against N combinations. |
+| Opt-in beta   | Set to beta       | Turn ON all beta per-feature flags by default.<br><br>Turn ON one per-feature (flag at an alpha stability level) at a time. | Run a small number of e2e tests against M combinations (where M <= N)                                                               |
+| Opt-in alpha  | Set to alpha      | Turn ON all per-feature flags by default.<br><br>TURN OFF one feature flag at a time.                                       | Run a small number of e2e tests against N combinations.                                                                             |
 
 ### <a name="_tcstxie74non"></a>How many tests can we run in a reasonable amount of time?
 Based on a [recent PR](https://github.com/tektoncd/pipeline/pull/7032), our integration tests take between 26 mins (stable) → 33 mins (alpha). We don’t want to go beyond that. Based on [Feature flags testing matrix](https://docs.google.com/document/d/1r_MX9-mzRtdbfNQq5VC4guHb-tphA0WxWhlQIsusEEA/edit?resourcekey=0-RALry7-GaKn9i19UEaRnYg) benchmarking, the approximate time is:
@@ -377,10 +378,10 @@ N<sub>features</sub> = 20 (currently we have 17 api features; lets assume that a
 N<sub>tasks</sub> = 2 (two tasks per pipeline)
 
 
-|Scenario|N<sub>pipelines</sub>|N<sub>features</sub>|N<sub>tasks/pipeline</sub>|T (mins)|
-| :- | :- | :- | :- | :- |
-|How many pipelines can we afford to run in 30 mins?|**7**|20|2|30|
-|How long would it take to run a single (same) pipeline for all the features?|1|20|2|**4**|
+| Scenario                                                                     | N<sub>pipelines</sub> | N<sub>features</sub> | N<sub>tasks/pipeline</sub> | T (mins) |
+|:-----------------------------------------------------------------------------|:----------------------|:---------------------|:---------------------------|:---------|
+| How many pipelines can we afford to run in 30 mins?                          | **7**                 | 20                   | 2                          | 30       |
+| How long would it take to run a single (same) pipeline for all the features? | 1                     | 20                   | 2                          | **4**    |
 
 
 ### How many tests should we run against the additional tests?

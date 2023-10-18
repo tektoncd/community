@@ -706,11 +706,11 @@ So a `keyref` is needed when signing the pipeline. The signing cli doesn't need 
 
 ### Options for integrating with remote resolution
 
-| Method | Pros | Cons |
-| -------- | ----------- | ----------- |
-| Fetch remote resources in validating Webhook | Verification fail fast in webhook | Duplicate work for Resolution, may introduce latency, and one extreme case is that the resource verified may not the the same in reconciler's resolved resource
-| Verify in Controller after resolving resources| No duplicate work for Resolution | The verification cannot fail fast in webhook. The resources may have been stored in etcd and used by other components
-| Verify in Remote Resolution | No duplicate work for Resolution | Verification coupled with Resolution
+| Method                                         | Pros                              | Cons                                                                                                                                                            |
+|------------------------------------------------|-----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Fetch remote resources in validating Webhook   | Verification fail fast in webhook | Duplicate work for Resolution, may introduce latency, and one extreme case is that the resource verified may not the the same in reconciler's resolved resource |
+| Verify in Controller after resolving resources | No duplicate work for Resolution  | The verification cannot fail fast in webhook. The resources may have been stored in etcd and used by other components                                           |
+| Verify in Remote Resolution                    | No duplicate work for Resolution  | Verification coupled with Resolution                                                                                                                            |
 
 In this TEP we propose to proceed with option 2 to do verification in reconciler after remote resolution is done considering the latency of doing remote resolution at admission webhook.
 
@@ -735,11 +735,11 @@ Use Kyverno for verifying YAML files: This can be used to verify local resources
 
 There are several options:
 
-| Method | Pros | Cons |
-| -------- | ----------- | ----------- |
-| Update the annotation | Easy to implement | Easy to be mutated by other components
-| Add a new field `TrustedResourcesVerified` into `status` | A dedicated field to reflect the verification | Need api change
-| Add a new condition into the status condition list | Easy to implement, hard to be mutated |Need a custom condition type and make sure it is not overwritten
+| Method                                                   | Pros                                          | Cons                                                             |
+|----------------------------------------------------------|-----------------------------------------------|------------------------------------------------------------------|
+| Update the annotation                                    | Easy to implement                             | Easy to be mutated by other components                           |
+| Add a new field `TrustedResourcesVerified` into `status` | A dedicated field to reflect the verification | Need api change                                                  |
+| Add a new condition into the status condition list       | Easy to implement, hard to be mutated         | Need a custom condition type and make sure it is not overwritten |
 
 In this TEP we propose to add a new condition into the status condition list.
 

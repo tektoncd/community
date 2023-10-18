@@ -98,14 +98,14 @@ This currently holds just a single bool, but could be expanded in the future.
 See [this rationale](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#primitive-types) in the k8s API style guide for why we introduce a new type.
 
 
-| Object | Field | Description |
-| --- | --- | --- |
-| Task |  spec.steps[*].ExecutionMode | Whether or not Steps of this Task should happen hermetically. This can be overridden on the TaskRun |
-| Task |  spec.ExecutionMode | Whether or not TaskRuns of this Task should happen hermetically. This can be overridden on the TaskRun |
-| TaskRun | spec.ExecutionMode | Whether or not this TaskRun will be run hermetically. This can be used to override the value on the Task |
-| Pipeline | spec.ExecutionMode |Whether or not the **entire** pipeline should run hermetically. This can be overridden on the PipelineRun |
-| PipelineRun | spec.ExecutionMode | Whether or not the **entire** PipelineRun will be run hermetically. This can be used to override the default value on the Pipeline, but can be overridden for a specific TaskRun below.
-| PipelineRun | spec.TaskRunSpecs.ExecutionMode | Whether or not this specific TaskRrun should be run hermetically during a PipelineRun. This overrides the Task, Pipeline and PipelineRun defaults. |
+| Object      | Field                           | Description                                                                                                                                                                             |
+|-------------|---------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Task        | spec.steps[*].ExecutionMode     | Whether or not Steps of this Task should happen hermetically. This can be overridden on the TaskRun                                                                                     |
+| Task        | spec.ExecutionMode              | Whether or not TaskRuns of this Task should happen hermetically. This can be overridden on the TaskRun                                                                                  |
+| TaskRun     | spec.ExecutionMode              | Whether or not this TaskRun will be run hermetically. This can be used to override the value on the Task                                                                                |
+| Pipeline    | spec.ExecutionMode              | Whether or not the **entire** pipeline should run hermetically. This can be overridden on the PipelineRun                                                                               |
+| PipelineRun | spec.ExecutionMode              | Whether or not the **entire** PipelineRun will be run hermetically. This can be used to override the default value on the Pipeline, but can be overridden for a specific TaskRun below. |
+| PipelineRun | spec.TaskRunSpecs.ExecutionMode | Whether or not this specific TaskRun should be run hermetically during a PipelineRun. This overrides the Task, Pipeline and PipelineRun defaults.                                       |
 
 This execution mode will be applied to all **user-specified** containers, including Steps and Sidecars. Tekton-injected ones (init containers, resource containers) will not run with this policy.
 

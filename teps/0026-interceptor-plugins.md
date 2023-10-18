@@ -406,7 +406,7 @@ data:
 
 * Extensibility: Having a CRD allows us to add new features to Interceptors down the line. For instance, we might want to support a `tlsClientConfig` field that allows the listener to communicate with the interceptor over TLS (similar to admission webhook's [client config](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#webhookclientconfig-v1-admissionregistration-k8s-io)). It also leaves open the possibility in the future of support alternate transports (e.g. GRPC instead of HTTP).
 
-### Use go-plugin for built-in interceptors 
+### Use go-plugin for built-in interceptors
 
 We'd leverage a library like HashiCorp's go-plugin for built-in interceptors while keeping the existing webhhok interface for extensibility. In this model, the interceptor will run as separate processes but within the same pod. They will communicate with the listener over RPC. So, in many ways this is similar to the proposal but the key difference is that everything runs in the same pod. This is a reasonable alternative. But it does lead us to having to maintain two different interceptor models - one for plugin one for webhooks. The main implications are:    
 *   We can keep using the same service account model as before.
@@ -420,7 +420,7 @@ We'd leverage a library like HashiCorp's go-plugin for built-in interceptors whi
 
 We'll package in built-in interceptors as we do now, but an operator can turn some of the interceptors "off" using a flag or a config map. This is similar to Kubernetes where some admission controllers are [compiled in](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/) and can only be [enabled ](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#how-do-i-turn-on-an-admission-controller)or disabled. Uses can extend by writing and registering their own [dynamic admission webhooks](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/) (similar to webhook interceptors).
 
-### Implement built-in interceptors using the current webhook interface 
+### Implement built-in interceptors using the current webhook interface
 
 In this model, the built-in interceptors will still be implemented as separate services but they will use the existing Webhook Interface. 
 * Passing interceptors params (e.g. the CEL filter expression) would be much more verbose. We'd have to invent extra headers to pass this information through. As an example, this is what an CEL interceptor usage would look like:

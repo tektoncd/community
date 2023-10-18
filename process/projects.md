@@ -5,7 +5,7 @@ Tekton is made up of multiple projects!
 New projects can be created in three ways:
 
 1. **Experimental repo**: Incubating projects may start off in the [experimental repo](https://github.com/tektoncd/experimental)
-so community members can collaborate before [promoting the project to a top level repo](#promotion-from-experimental-to-top-level-repo).
+so community members can collaborate before [promoting the project to a top level repo](#promoting-a-project-from-experimental-to-top-level-repo).
 
 2. **Adoption into tektoncd org**: Projects hosted outside of [the `tektoncd` org](https://github.com/tektoncd)
 may be [moved into the org](#proposing-adoption-of-an-existing-project) and adopted by the tekton community.
@@ -18,12 +18,12 @@ Projects can be added to the experimental repo when the
 [governing committee members](https://github.com/tektoncd/community/blob/main/governance.md)
 consider them to be potential candidates to be Tekton top level projects, but
 would like to see more design and discussion around before
-[promoting to offical tekton projects](#promotion-from-experimental-to-top-level-repo).
+[promoting to offical tekton projects](#promoting-a-project-from-experimental-to-top-level-repo).
 
 Don't feel obligated to add a project to the experimental repo if it is not
 immediately accepted as a top level project: another completely valid path to
 being a top level project is to iterate on the project in a completely different
-repo and org, while [discussing with the Tekton community](contact.md).
+repo and org, while [discussing with the Tekton community](../contact.md).
 
 ## Project requirements
 
@@ -34,7 +34,7 @@ must:
 
 1. Use the `Apache license 2.0`.
 1. Contain and keep up to date the following documentation:
-   - The [tekton community code of conduct](code-of-conduct.md)
+   - The [tekton community code of conduct](../code-of-conduct.md)
    - A `README.md` which introduces the project and points folks to additional
      docs
    - A `DEVELOPMENT.md` which explains to new contributors how to ramp up and
@@ -45,7 +45,7 @@ must:
      - Contains any project specific guidelines
      - Links contributors to the project's DEVELOPMENT.md
 1. Use [GitHub templates](https://help.github.com/en/articles/about-issue-and-pull-request-templates) for [Issues](https://help.github.com/en/articles/about-issue-and-pull-request-templates#issue-templates) and [Pull requests](https://help.github.com/en/articles/about-issue-and-pull-request-templates#pull-request-templates).
-1. Have its own set of [OWNERS](#owners) who are reponsible for maintaining that
+1. Have its own set of [OWNERS](../OWNERS) who are reponsible for maintaining that
    project.
 1. Use the same standard of automation (e.g. continuous integration on PRs), via [the plumbing repo](https://github.com/tektoncd/plumbing).
    It is the governing board's responsibility to set up infrastructure in the plumbing repo for new projects.

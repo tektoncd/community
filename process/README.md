@@ -68,13 +68,13 @@ In general, you should follow the
 [Tekton Enhancement Proposals (`TEP`) process](./tep-process.md). A Tekton Enhancement
 Proposal (TEP) is a way to propose, communicate and coordinate on new efforts
 for the Tekton project. You can read the full details of the project in
-[TEP-1](./teps/0001-tekton-enhancement-proposal-process.md).
+[TEP-1](../teps/0001-tekton-enhancement-proposal-process.md).
 
 Some suggestions for how to do this:
 
 1. Write up a design doc and share it with
-   [the mailing list](contact.md#mailing-list).
-2. Bring your design/ideas to [our working group meetings](working-groups.md)
+   [the mailing list](../contact.md#mailing-list).
+2. Bring your design/ideas to [our working group meetings](../working-groups.md)
    for discussion.
 3. Write a [`TEP`](./tep-process.md) from the initial design doc and working group
    feedback.
@@ -87,7 +87,7 @@ A great proposal will include:
   yourself to brainstorm a couple more approaches may give you new ideas or make
   clear that your initial proposal is the best one
 
-Also feel free to reach out to us on [slack](contact.md#slack) if you want any
+Also feel free to reach out to us on [slack](../contact.md#slack) if you want any
 help/guidance.
 
 Thanks so much!!
@@ -110,7 +110,7 @@ See our [contributor ladder](./contributor-ladder.md) for more information.
 ## Reviews
 
 Reviewers will be auto-assigned by [Prow](#pull-request-process) from the
-[OWNERS](#OWNERS), which acts as suggestions for which `OWNERS` should review
+[OWNERS](../OWNERS), which acts as suggestions for which `OWNERS` should review
 the PR. (OWNERS, your review requests can be viewed at
 [https://github.com/pulls/review-requested](https://github.com/pulls/review-requested)).
 
@@ -146,7 +146,7 @@ Before a PR can be merged, it must have both `/lgtm` AND `/approve`:
 - `/lgtm` can be added by
   ["Reviewers"](https://github.com/tektoncd/community/blob/main/process.md#reviewer), aka anyone in
   Reviewer team specific to the repo
-- `/approve` can be added only by [OWNERS](#owners)
+- `/approve` can be added only by [OWNERS](../OWNERS)
 
 The merge will happen automatically once the PR has both `/lgtm` and `/approve`,
 and all tests pass. If you don't want this to happen you should
@@ -199,7 +199,7 @@ individual CLA or indicate your affilation with a company that has signed it
 part of the company, for example often this is managed via the domain your email
 address).
 
-Members of [the governing board](governance.md) are authorized to administer the
+Members of [the governing board](../governance.md) are authorized to administer the
 CDF CLA via the website and can control which repos it is applied to.
 
 ## Postmortems

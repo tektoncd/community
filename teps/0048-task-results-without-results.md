@@ -19,12 +19,12 @@ status: implementable
 - [Requirements](#requirements)
 - [Use Cases](#use-cases)
   - [Consuming task results from the conditional tasks](#consuming-task-results-from-the-conditional-tasks)
-  - [<code>Pipeline Results</code> from the conditional tasks](#-from-the-conditional-tasks)
-  - [Task claiming to produce <code>Results</code> fails if it doesn't produces](#task-claiming-to-produce--fails-if-it-doesnt-produces)
+  - [<code>Pipeline Results</code> from the conditional tasks](#pipeline-results-from-the-conditional-tasks)
+  - [Task claiming to produce <code>Results</code> fails if it doesn't produces](#task-claiming-to-produce-results-fails-if-it-doesnt-produces)
 - [Proposal](#proposal)
-  - [Consuming <code>Task</code> <code>Result</code> from the conditional tasks](#consuming---from-the-conditional-tasks)
-  - [<code>Pipeline Results</code> from the conditional tasks](#-from-the-conditional-tasks-1)
-  - [<code>Task</code> claiming to produce <code>Result</code> fails if it doesn't produces](#-claiming-to-produce--fails-if-it-doesnt-produces)
+  - [Consuming <code>Task</code> <code>Result</code> from the conditional tasks](#consuming-task-results-from-the-conditional-tasks)
+  - [<code>Pipeline Results</code> from the conditional tasks](#pipeline-results-from-the-conditional-tasks-1)
+  - [<code>Task</code> claiming to produce <code>Result</code> fails if it doesn't produces](#task-claiming-to-produce-result-fails-if-it-doesnt-produces)
 - [Test Plan](#test-plan)
 - [Alternatives](#alternatives)
   - [Declaring Results as Optional](#declaring-results-as-optional)
@@ -708,7 +708,7 @@ produce `Results` as discussed in [tektoncd/pipeline#3497](https://github.com/te
 It does not address the use cases for providing default `Results` that can be consumed in subsequent `Tasks`.
 
 
-## Future Work 
+## Future Work
 
 Determine if we need default `Results` declared at runtime in the future, and how we can support that.
 

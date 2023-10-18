@@ -30,7 +30,7 @@ authors:
     - [Advantages](#advantages-2)
     - [Disadvantages](#disadvantages-2)
 - [Implementation Decision](#implementation-decision)
-  - [Example <code>triggerGroup</code> Configuration](#example--configuration)
+  - [Example <code>triggerGroup</code> Configuration](#example-triggerGroup-configuration)
 - [Implementation PRs](#implementation-prs)
 - [References](#references)
 <!-- /toc -->

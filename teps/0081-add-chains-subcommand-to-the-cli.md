@@ -143,7 +143,7 @@ instead of:
 ## Requirements
 
 There may not be any specific requirements, depending on the commands being
-implemented. See the [Notes/Caveats (optional)](notes-caveats-optional) for more
+implemented. See the [Notes/Caveats (optional)](#notescaveats-optional) for more
 details.
 
 ## Proposal
@@ -216,7 +216,7 @@ Why should this TEP _not_ be implemented?
 The alternative is to use a combination of shell tools and to know which exact
 annotation or key to query/update. It was ruled out since it complicates the
 operations for no good reason. See the
-[Use Cases (optional)](use-cases-optional) section for some examples.
+[Use Cases (optional)](#other-use-case-ideas) section for some examples.
 
 One other alternative would be that chains provides a `tkn-chains` binary, and
 with the "execution model" we have in `tkn`, it would appear as a subcommand.One

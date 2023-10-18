@@ -18,7 +18,7 @@ are a member of the tektoncd org or not!
 
 If you are regularly contributing to repos in tektoncd, then you can become a
 member of the Tekton GitHub organization in order to have tests run against your
-pull requests without requiring [`ok-to-test`](process.md#prow-commands).
+pull requests without requiring [`ok-to-test`](../process/README.md#prow-commands).
 Being part of the org also makes it possible to have issues assigned.
 
 To be eligible to become a member of the org you must (note that this is at the

@@ -223,7 +223,7 @@ Some functionality required to run multiple Tasks in a pod could be supported wi
 some functionality would require changes to this code, and some functionality may not be possible at all.
 
 * Functionality that could be supported with current pod logic (e.g. by
-  [translating a Pipeline directly to a TaskRun](#pipeline-executed-as-taskrun)):
+  [translating a Pipeline directly to a TaskRun](#pipeline-executed-as-a-taskrun)):
   * Sequential tasks (specified using [`runAfter`](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#using-the-runafter-parameter))
   * [Parallel tasks](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#configuring-the-task-execution-order)
   * [String params](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#specifying-parameters)
@@ -259,7 +259,7 @@ some functionality would require changes to this code, and some functionality ma
   * [Custom tasks](https://github.com/tektoncd/pipeline/blob/main/docs/pipelines.md#using-custom-tasks) - the pod would
     need to be able to create and watch Custom Tasks, or somehow lean on the Pipelines controller to do this
 * Functionality that might not be possible (i.e. constrained by pods themselves):
-  * Any dynamically created TaskRuns. This is discussed in more detail [below](#dynamically-created-tasks-in-pipelines).
+  * Any dynamically created TaskRuns. This is discussed in more detail [below](#dynamically-created-taskruns-in-pipelines).
   * Running each Task with a different `ServiceAccount` - the pod has one ServiceAccount as a whole
 
 (See also [functionality supported by experimental Pipeline to TaskRun](https://github.com/tektoncd/experimental/tree/main/pipeline-to-taskrun#supported-pipeline-features))
@@ -800,7 +800,7 @@ but lends itself less well to adding authoring time configuration later.
 ### Controller option to execute Pipelines in a pod
 
 In this option, the Tekton controller can be configured to always execute Pipelines inside one pod.
-This would require similar functionality to the [pipeline in a pod](#pipeline-in-a-pod-plus-pipelines-in-pipelines),
+This would require similar functionality to the [pipeline in a pod](#pipeline-functionality-supported-in-pods),
 but provide less flexibility to Task and Pipeline authors, as only cluster administrators will be able to control scheduling.
 
 ### TaskRun controller allows Tasks to contain other Tasks
@@ -915,7 +915,7 @@ TaskRuns in the same pod. The controller would be responsible for reconciling bo
 created from the TaskGroup.
 
 The controller would need to determine how many TaskRuns are needed when the TaskGroup is first reconciled, due to
-[limitations associated with dynamically creating Tasks](#dynamically-created-tasks-in-pipelines).
+[limitations associated with dynamically creating Tasks](#dynamically-created-taskruns-in-pipelines).
 When the TaskGroup is first reconciled, it would create all TaskRuns needed, with those that are not ready to execute marked as "pending",
 and a pod with one container per TaskRun. The TaskGroup would store references to any TaskRuns created, and Task statuses would be stored on the TaskRuns.
 

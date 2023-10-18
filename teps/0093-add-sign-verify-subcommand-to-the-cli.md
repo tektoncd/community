@@ -120,11 +120,11 @@ tkn task sign examples/example-task.yaml  -K=cosign.key -f=signed.yaml
 ```
 Flags:
 
-|  Flag | ShortFlag  |  Description  |
-|---|---|---|
-| keyFile  | K   |  private key file path |
-| kmsKey  | m   | kms key path  |
-| targetFile  |  f | Filename of the signed file  |
+| Flag       | ShortFlag | Description                 |
+|------------|-----------|-----------------------------|
+| keyFile    | K         | private key file path       |
+| kmsKey     | m         | kms key path                |
+| targetFile | f         | Filename of the signed file |
 
 This will read private and unmarshal yaml files to get Tekton CRD (Task/Pipeline), signing function should sign the hashed bytes of the CRD, attach the base64 encoded signature to annotation with key as `tekton.dev/signature`.
 
@@ -136,10 +136,10 @@ To verify a file:
 tkn task verify signed.yaml -K=cosign.pub -d=Task
 ```
 
-|  Flag | ShortFlag  |  Description  |
-|---|---|---|
-| keyFile  | K   |  public key file path |
-| kmsKey  | m   | kms key path  |
+| Flag    | ShortFlag | Description          |
+|---------|-----------|----------------------|
+| keyFile | K         | public key file path |
+| kmsKey  | m         | kms key path         |
 
 Logs in terminal should tell users whether verification succeed or not.
 

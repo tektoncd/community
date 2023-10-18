@@ -526,11 +526,11 @@ We add the condition type `SignedResultVerified` as a way for the tekton-pipelin
 
 For the condition: `SignedResultVerified`, it has the following the behavior:
 
-`status`|`reason`|`completionTime` is set|Description
-:-------|:-------|:---------------------:|--------------:
-True|TaskRunResultsVerified|Yes|The `TaskRun` results have been verified through validation of its signatures
-False|TaskRunResultsVerificationFailed|Yes|The `TaskRun` results' signatures failed to verify
-Unknown|AwaitingTaskRunResults|No|Waiting upon `TaskRun` results and signatures to verify
+| `status` | `reason`                         | `completionTime` is set |                                                                   Description |
+|:---------|:---------------------------------|:-----------------------:|------------------------------------------------------------------------------:|
+| True     | TaskRunResultsVerified           |           Yes           | The `TaskRun` results have been verified through validation of its signatures |
+| False    | TaskRunResultsVerificationFailed |           Yes           |                            The `TaskRun` results' signatures failed to verify |
+| Unknown  | AwaitingTaskRunResults           |           No            |                       Waiting upon `TaskRun` results and signatures to verify |
 
 ### Storing verification data
 
@@ -677,7 +677,7 @@ Potential mitigations:
 
 ## Alternatives
 
-### Kubernertes Service Account Token Volume Projection 
+### Kubernertes Service Account Token Volume Projection
 Instead of SPIRE, we could potentially use [Kubernertes Service Account Token Volume Projection](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection) for signing. 
 This is a form of keyless signing, which is described in detail in [Zero-friction “keyless signing” with Kubernetes](https://chainguard.dev/posts/2021-11-03-zero-friction-keyless-signing) by mattmoor@.
 

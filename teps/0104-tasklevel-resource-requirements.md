@@ -291,7 +291,7 @@ spec:
 ```
 
 | Step name | CPU request | CPU limit |
-| --------- | ----------- | --------- |
+|-----------|-------------|-----------|
 | step-1    | 0.5         | N/A       |
 | step-2    | 0.5         | N/A       |
 | step-3    | 0.5         | N/A       |
@@ -323,7 +323,7 @@ spec:
 ```
 
 | Step name | CPU request | CPU limit |
-| --------- | ----------- | --------- |
+|-----------|-------------|-----------|
 | step-1    | 1           | 3         |
 | step-2    | 1           | 3         |
 | step-3    | 1           | 3         |
@@ -358,7 +358,7 @@ spec:
 ```
 
 | Step name | CPU request | CPU limit |
-| --------- | ----------- | --------- |
+|-----------|-------------|-----------|
 | step-1    | 0.5         | 2         |
 | step-2    | 0.5         | 2         |
 | step-3    | 0.5         | 2         |
@@ -400,7 +400,7 @@ spec:
 The resulting pod would have the following containers:
 
 | Step/Sidecar name | CPU request | CPU limit |
-| ----------------- | ----------- | --------- |
+|-------------------|-------------|-----------|
 | step-1            | 750m        | N/A       |
 | step-2            | 750m        | N/A       |
 | sidecar-1         | 800m        | 1         |
@@ -449,7 +449,7 @@ spec:
 The resulting pod would have the following containers:
 
 | Step name | CPU request | CPU limit |
-| --------- | ----------- | --------- |
+|-----------|-------------|-----------|
 | step-1    | 500m        | 750m      |
 | step-2    | 500m        | 750m      |
 | step-3    | 500m        | 750m      |
@@ -501,7 +501,7 @@ spec:
 The resulting pod would have the following containers:
 
 | Step name | CPU request | CPU limit |
-| --------- | ----------- | --------- |
+|-----------|-------------|-----------|
 | step-1    | 600m        | 750m      |
 | step-2    | 600m        | 750m      |
 | step-3    | 600m        | 750m      |
@@ -541,7 +541,7 @@ spec:
 The resulting pod would have the following containers:
 
 | Step name | CPU request | CPU limit |
-| --------- | ----------- | --------- |
+|-----------|-------------|-----------|
 | step-1    | 750m        | N/A       |
 | step-2    | 750m        | N/A       |
 
@@ -580,7 +580,7 @@ spec:
 The resulting pod would have the following containers:
 
 | Step name | CPU request | CPU limit |
-| --------- | ----------- | --------- |
+|-----------|-------------|-----------|
 | step-1    | 1           | N/A       |
 | step-2    | 1           | N/A       |
 
@@ -649,7 +649,7 @@ spec:
 The resulting pod would have the following containers:
 
 | Step name | CPU request | CPU limit | Memory request | Memory limit |
-| --------- | ----------- | --------- | -------------- | ------------ |
+|-----------|-------------|-----------|----------------|--------------|
 | step-1    | 750m        | N/A       | 250Mi          | 1Gi          |
 | step-2    | 750m        | N/A       | 250Mi          | 1Gi          |
 

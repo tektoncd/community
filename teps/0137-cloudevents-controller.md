@@ -151,15 +151,15 @@ The external controllers may only rely on the information available in the statu
 and the list of events in the cache, so the events sent will have to be slightly adapted
 accordingly:
 
-| Resource      | Condition | Reason    | Current Event  | New Event | CDEvent  | Notes |
-|---------------|-----------|-----------|----------------|-----------|----------|-------|
-| Any           | None      | None      | None           | `queued`  | `queued` | When the resource has no status, we know that it has been queued, but we don't know when the main controller will pick it up|
-| Any           | `Unknown` | `Started` | `started`      | `started` | `started` | The `Started` reason will only be visible by the controller is the main controller was not able to start running its resources in the same reconcile cycle |
-| `TaskRun`, `PipelineRun` | `Unknown` | `Running` | `running` | `started`, `running` or None | `started` or None | If the `started` event was not sent yet, it is sent. If the `running` event was not sent yet, it is sent. If both events were sent already, the `running` event is sent only if there was a change in the `Condition` compared to the last `running` event sent |
-| `TaskRun`, `PipelineRun` | `Unknown` | Any but `Running` | `unknown` | `started`, `unknown` or None | `started` or None | If the `started` event was not sent yet, it is sent. If the `unknown` event was not sent yet, it is sent. If both events were sent already, the `unknown` event is sent only if there was a change in the `Condition` compared to the last `unknown` event sent |
-| `CustomRun` | `Unknown` | Any | `running` | `started`, `running` | `started` or None | If the `started` event was not sent yet, it is sent. We cannot make assumptions about how `Reason` and `Message` are used by the custom run controller, so always send a `running` event |
-| Any         | `Succeed` | Any | `successful` | `successful` | `finished` | The `finished` CDEvent include the `Condition` in the `outcome` field |
-| Any         | `Failed` | Any | `failed` | `failed` | `finished` | The `finished` CDEvent include the `Condition` in the `outcome` field |
+| Resource                 | Condition | Reason            | Current Event | New Event                    | CDEvent           | Notes                                                                                                                                                                                                                                                           |
+|--------------------------|-----------|-------------------|---------------|------------------------------|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Any                      | None      | None              | None          | `queued`                     | `queued`          | When the resource has no status, we know that it has been queued, but we don't know when the main controller will pick it up                                                                                                                                    |
+| Any                      | `Unknown` | `Started`         | `started`     | `started`                    | `started`         | The `Started` reason will only be visible by the controller is the main controller was not able to start running its resources in the same reconcile cycle                                                                                                      |
+| `TaskRun`, `PipelineRun` | `Unknown` | `Running`         | `running`     | `started`, `running` or None | `started` or None | If the `started` event was not sent yet, it is sent. If the `running` event was not sent yet, it is sent. If both events were sent already, the `running` event is sent only if there was a change in the `Condition` compared to the last `running` event sent |
+| `TaskRun`, `PipelineRun` | `Unknown` | Any but `Running` | `unknown`     | `started`, `unknown` or None | `started` or None | If the `started` event was not sent yet, it is sent. If the `unknown` event was not sent yet, it is sent. If both events were sent already, the `unknown` event is sent only if there was a change in the `Condition` compared to the last `unknown` event sent |
+| `CustomRun`              | `Unknown` | Any               | `running`     | `started`, `running`         | `started` or None | If the `started` event was not sent yet, it is sent. We cannot make assumptions about how `Reason` and `Message` are used by the custom run controller, so always send a `running` event                                                                        |
+| Any                      | `Succeed` | Any               | `successful`  | `successful`                 | `finished`        | The `finished` CDEvent include the `Condition` in the `outcome` field                                                                                                                                                                                           |
+| Any                      | `Failed`  | Any               | `failed`      | `failed`                     | `finished`        | The `finished` CDEvent include the `Condition` in the `outcome` field                                                                                                                                                                                           |
 
 Since the logic for sending events depends on the content of the cache, it's important
 for the cache to be updated **in order**.
@@ -505,14 +505,14 @@ interface to let users specify the data required and let Tekton send the events.
 Alternatively, events can be sent by the user directly, which is possible today. It gives
 users maximum flexibility but it also leaves the heavy-lifting of sending events to them.
 
-| `TaskRun`/`CustomRun` | Controlled by | Trigger | Data Available | Example Events |
-|:----------------------|:-------------:|:-------:|:--------------:|:--------------:|
-| Before Start | User | Dedicated resource in the Pipeline | Used defined | Any |
-| Start | Tekton | Resource Created | Annotations, Parameters | Build Started, TestSuiteRun Started |
-| Running | Tekton | Condition Changed, Unknown | Annotations, Parameters | |
-| Running | User | Event requested by user | Any data available in the step context | Any |
-| End | Tekton | Condition Changed, True or False | Annotations, Parameters, Results | Build Finished, Artifact Packaged, Service Deployed |
-| After End | User | Dedicated resource in the Pipeline | Any available in the context, results from previous Tasks| Any |
+| `TaskRun`/`CustomRun` | Controlled by |              Trigger               |                      Data Available                       |                   Example Events                    |
+|:----------------------|:-------------:|:----------------------------------:|:---------------------------------------------------------:|:---------------------------------------------------:|
+| Before Start          |     User      | Dedicated resource in the Pipeline |                       Used defined                        |                         Any                         |
+| Start                 |    Tekton     |          Resource Created          |                  Annotations, Parameters                  |         Build Started, TestSuiteRun Started         |
+| Running               |    Tekton     |     Condition Changed, Unknown     |                  Annotations, Parameters                  |                                                     |
+| Running               |     User      |      Event requested by user       |          Any data available in the step context           |                         Any                         |
+| End                   |    Tekton     |  Condition Changed, True or False  |             Annotations, Parameters, Results              | Build Finished, Artifact Packaged, Service Deployed |
+| After End             |     User      | Dedicated resource in the Pipeline | Any available in the context, results from previous Tasks |                         Any                         |
 
 #### User Interface
 

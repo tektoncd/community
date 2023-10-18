@@ -19,7 +19,7 @@ status: implemented
   - [Contract](#contract)
   - [API](#api)
   - [User Stories (optional)](#user-stories-optional)
-    - [Versioned <code>Task</code>s and <code>Pipeline</code>s and Pipeline-as-code](#versioned-s-and-s-and-pipeline-as-code)
+    - [Versioned <code>Task</code>s and <code>Pipeline</code>s and Pipeline-as-code](#versioned-tasks-and-pipelines-and-pipeline-as-code)
     - [Shipping catalog resources as OCI images](#shipping-catalog-resources-as-oci-images)
     - [Tooling](#tooling)
   - [Risks and Mitigations](#risks-and-mitigations)

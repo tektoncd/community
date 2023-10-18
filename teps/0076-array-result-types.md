@@ -172,7 +172,7 @@ This TEP proposes expanding support for arrays in Tasks and Pipelines by adding:
 
 1. **Use case for array indexing: Tasks that wrap CLIs**
    Array indexing would make it possible for Tasks that wrap generic CLIs to provide
-   (short - see [size limits](#size-limit)) stdout output as array results which could be indexed by consuming tasks.
+   (short - see [size limits](#size-limits)) stdout output as array results which could be indexed by consuming tasks.
    For example [the gcloud CLI task](https://github.com/tektoncd/catalog/tree/main/task/gcloud/0.1): the CLI could be
    doing all kinds of different things depending on the arguments (e.g. `gcloud projects list` vs
    `gcloud container clusters list`). In order to consume the output in downstream tasks (with minimal effort), you

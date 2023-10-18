@@ -21,7 +21,7 @@ authors:
 ## Summary
 
 This TEP proposes a clear schedule for the removal of Pipeline's deprecated
-`v1alpha1` API. As we [move towards the stable V1 API](./0096-pipelines-v1-api.md),
+`v1alpha1` API. As we [move towards the stable V1 API](./0096-pipelines-v1.md),
 removing the long-deprecated `v1alpha1` API will help clarify migration paths for
 users and simplify implementation of the `v1` API.
 

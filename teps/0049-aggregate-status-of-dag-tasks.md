@@ -104,12 +104,12 @@ finally:
             values: ["Failed"]
 ```
 
-| State | Description |
-| ----- | ----------- |
-| `Succeeded` | All `dag` tasks have succeeded. |
-| `Failed` | Any one of the `dag` task failed. |
-| `Completed` | All `dag` tasks completed successfully including one or more skipped tasks. |
-| `None` | No aggregate execution status available (i.e. none of the above) because some of the tasks are still pending or running or cancelled or timed out. |
+| State       | Description                                                                                                                                        |
+|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Succeeded` | All `dag` tasks have succeeded.                                                                                                                    |
+| `Failed`    | Any one of the `dag` task failed.                                                                                                                  |
+| `Completed` | All `dag` tasks completed successfully including one or more skipped tasks.                                                                        |
+| `None`      | No aggregate execution status available (i.e. none of the above) because some of the tasks are still pending or running or cancelled or timed out. |
 
 `$(tasks.status)` is not accessible in any `dag` task but only accessible in a `finally` task. The `pipeline` creation
 will fail with the validation error if `$(tasks.status)` is used in any `dag` task.

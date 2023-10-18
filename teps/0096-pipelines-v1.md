@@ -93,7 +93,7 @@ replaced by a version that is at least as stable (for example, v1beta1 can be co
 A deprecated API version must continue to be supported for a length of time based on the following chart.
 
 | API Version | Kubernetes Deprecation Policy | Tekton Deprecation Policy |
-|:----------- |:----------------------------- |:------------------------- |
+|:------------|:------------------------------|:--------------------------|
 | Alpha       | 0 releases                    | 0 months                  |
 | Beta        | 9 months or 3 releases        | 9 months                  |
 
@@ -135,7 +135,7 @@ must be supported for 12 months from when a new stable API version is created. B
 must be accompanied by deprecation warnings and migration instructions from the previous version.
 
 | API Version | Kubernetes Deprecation Policy | Tekton Deprecation Policy |
-|:----------- |:----------------------------- |:------------------------- |
+|:------------|:------------------------------|:--------------------------|
 | Alpha       | 0 releases                    | 0 months                  |
 | Beta        | 9 months or 3 releases        | 9 months                  |
 | V1          | 12 months or 3 releases       | 12 months                 |
@@ -250,7 +250,7 @@ This policy should be updated to include Tekton metrics as part of the API. No o
   See [Where should we take ClusterTasks next?](https://github.com/tektoncd/pipeline/issues/4476) for more info.
 
 | CRD         | Current level | Proposed level |
-| ----------- | ------------- | -------------- |
+|-------------|---------------|----------------|
 | Task        | beta          | stable         |
 | TaskRun     | beta          | stable         |
 | Pipeline    | beta          | stable         |
@@ -316,15 +316,15 @@ Existing feature flags can be found [here](https://github.com/tektoncd/pipeline/
 The feature flag "scope-when-expressions-to-task" is not present in this table,
 as its deprecation has already [been announced](https://github.com/tektoncd/pipeline/blob/main/docs/deprecations.md#deprecation-table).
 
-| Flag                                          | Current Default | Proposed State                                       |
-| --------------------------------------------- | --------------- | -----------------------------------------------------|
-| disable-affinity-assistant                    | false           | default to true                                      |
-| disable-creds-init                            | false           | no change                                            |
-| running-in-environment-with-injected-sidecars | true            | no change                                            |
-| require-git-ssh-secret-known-hosts            | false           | no change                                            |
-| enable-tekton-oci-bundles                     | false           | mark as deprecated and remove in v1                  |
-| enable-custom-tasks                           | false           | collapsed under enable-api-fields, requires "beta"   |
-| enable-api-fields                             | stable          | default to stable, "beta" option added               |
+| Flag                                          | Current Default | Proposed State                                     |
+|-----------------------------------------------|-----------------|----------------------------------------------------|
+| disable-affinity-assistant                    | false           | default to true                                    |
+| disable-creds-init                            | false           | no change                                          |
+| running-in-environment-with-injected-sidecars | true            | no change                                          |
+| require-git-ssh-secret-known-hosts            | false           | no change                                          |
+| enable-tekton-oci-bundles                     | false           | mark as deprecated and remove in v1                |
+| enable-custom-tasks                           | false           | collapsed under enable-api-fields, requires "beta" |
+| enable-api-fields                             | stable          | default to stable, "beta" option added             |
 
 ### Feature Completeness
 

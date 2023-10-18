@@ -31,7 +31,7 @@ What this vision looks like differs across different [users](user-profiles.md):
   because building on top of Tekton means they don't have to re-invent the wheel and out
   of the box they get scalable, serverless cloud native execution
 * **Engineers who need CI/CD**: (aka all software engineers!) These users
-  (including [Pipeline and Task authors](user-profiles.md#2-pipeline-and-task-authors)
+  (including [Pipeline and Task authors](user-profiles.md#1-pipeline-and-task-authors)
   and [Pipeline and Task users](user-profiles.md#2-pipeline-and-task-users)
   will benefit from the rich high quality catalog of reusable components:
 

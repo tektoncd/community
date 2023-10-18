@@ -105,5 +105,5 @@ At high level below are few implementation details
 
 - [Add changes to run clusterinterceptor as HTTPS](https://github.com/tektoncd/triggers/pull/1333)
 
-## References 
+## References
 1. GitHub issue: [#871](https://github.com/tektoncd/triggers/issues/871)

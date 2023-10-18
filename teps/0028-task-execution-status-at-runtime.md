@@ -80,11 +80,11 @@ This variable is instantiated and available at the runtime. In the following exa
               fi
 ```
 
-| State | Description |
-| ----- | ----------- |
-| `Succeeded` | The `pipelineTask` was successful i.e. a respective pod was created and completed successfully. The `pipelineTask` had a `taskRun` with `Succeeded` `ConditionType` and  `True` `ConditionStatus`. |
-| `Failed` | The `pipelineTask` failed i.e. a respective pod was created but exited with error. The `pipelineTask` has a `taskRun` with `Succeeded` `ConditionType`,  `False` `ConditionStatus` and have exhausted all the retries. |
-| `None` | no execution state available either (1) the `pipeline` stopped executing `dag` tasks before it could get to this task i.e. this task was not started/executed  or (2) the `pipelineTask` is `skipped` because of `when expression` or one of the parent tasks was `skipped`. It is part of `pipelineRun.Status.SkippedTasks`. |
+| State       | Description                                                                                                                                                                                                                                                                                                                   |
+|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Succeeded` | The `pipelineTask` was successful i.e. a respective pod was created and completed successfully. The `pipelineTask` had a `taskRun` with `Succeeded` `ConditionType` and  `True` `ConditionStatus`.                                                                                                                            |
+| `Failed`    | The `pipelineTask` failed i.e. a respective pod was created but exited with error. The `pipelineTask` has a `taskRun` with `Succeeded` `ConditionType`,  `False` `ConditionStatus` and have exhausted all the retries.                                                                                                        |
+| `None`      | no execution state available either (1) the `pipeline` stopped executing `dag` tasks before it could get to this task i.e. this task was not started/executed  or (2) the `pipelineTask` is `skipped` because of `when expression` or one of the parent tasks was `skipped`. It is part of `pipelineRun.Status.SkippedTasks`. |
 
 ### User Stories
 

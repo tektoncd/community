@@ -154,7 +154,7 @@ env:
 The secret key reference is the trigger to detect an environment variable that contains a secret
 and that needs to be redacted.
 
-### Secrets mounted as Files 
+### Secrets mounted as Files
 
 Secrets can also be mounted into pods via files in different ways. The following pod
 syntax should be supported in the secret detection logic.

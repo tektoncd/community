@@ -29,7 +29,7 @@ see-also:
       - [References and Specifications](#references-and-specifications)
       - [Remove Pod Template](#remove-pod-template)
       - [Feature Gates](#feature-gates)
-      - [New Feature Flag <code>custom-task-version</code>](#new-feature-flag-)
+      - [New Feature Flag <code>custom-task-version</code>](#new-feature-flag-custom-task-version)
       - [Existing Feature Gates](#existing-feature-gates)
     - [Cancellation](#cancellation)
     - [Documentation](#documentation)
@@ -358,7 +358,7 @@ For further details, see [tektoncd/community#523][523], [tektoncd/community#667]
 
 [tep-0002]: 0002-custom-tasks.md
 [tep-0105]: 0105-remove-pipeline-v1alpha1-api.md
-[tep-0096]: 0096-pipelines-v1-api.md
+[tep-0096]: 0096-pipelines-v1.md
 [tep-0071]: 0071-custom-task-sdk.md
 [tep-0061]: 0061-allow-custom-task-to-be-embedded-in-pipeline.md
 [tep-0069]: 0069-support-retries-for-custom-task-in-a-pipeline.md
@@ -375,7 +375,7 @@ For further details, see [tektoncd/community#523][523], [tektoncd/community#667]
 [pipelines-in-pipelines]: https://github.com/tektoncd/experimental/tree/f60e1cd8ce22ed745e335f6f547bb9a44580dc7c/pipelines-in-pipelines
 [pipeline-in-pod]: https://github.com/tektoncd/experimental/tree/f60e1cd8ce22ed745e335f6f547bb9a44580dc7c/pipeline-in-pod
 [config]: https://github.com/tektoncd/hub/blob/0ba02511db7a06aef54e2257bf2540be85b53f45/config.yaml
-[hub-cli0]: https://github.com/tektoncd/cli/blob/d826e7a2a17a5f3d3f5b3fe8ac9cff95856627d7/docs/cmd/tkn_hub.md
+[hub-cli]: https://github.com/tektoncd/cli/blob/d826e7a2a17a5f3d3f5b3fe8ac9cff95856627d7/docs/cmd/tkn_hub.md
 [4313]: https://github.com/tektoncd/pipeline/issues/4313
 [523]: https://github.com/tektoncd/community/pull/523
 [667]: https://github.com/tektoncd/community/discussions/667

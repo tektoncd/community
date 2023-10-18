@@ -82,7 +82,7 @@ including making it easier to separate notifications and other infrastructure ou
   * For example, their CI/CD configuration could live in their repo and could be changed just by editing a file.
   * Ops teams or cluster operators will still need to interact with the cluster, and we should provide a way for app engineers
     to modify E2E CI/CD configuration directly on the cluster for those who want to.
-  * See [User Experience](#user-experience) for more information.
+  * See [User Experience](#user-experience-goals) for more information.
 
 ### Future Work
 
@@ -381,7 +381,7 @@ some pain points have since been addressed by new Triggers features:
     - May be addressed by CustomInterceptors, but more investigation is needed.
 
 Building a successful Workflows project may involve addressing some of these gaps in Triggers, and adding new
-features such as [scheduled and polling runs](./0083-scheduled-and-polling-runs-in-tekton.md).
+features such as [scheduled and polling runs](./0083-polling-runs-in-tekton.md).
 
 ## Prior Art
 
@@ -397,7 +397,7 @@ from a connected git repository.
 Whenever this configuration changes, Flux will automatically bring the state of their Kubernetes cluster in sync
 with the state of the configuration defined in their repository.
   - A [POC of Workflows based on FluxCD](https://github.com/tektoncd/experimental/pull/921) found that the `GitRepository` CRD is a close analogue of the repo polling functionality
-  described in [TEP-0083](./0083-scheduled-and-polling-runs-in-tekton.md), and is
+  described in [TEP-0083](./0083-polling-runs-in-tekton.md), and is
   well suited for CD use cases.
   - The Flux `GitHub` receiver can be used to trigger reconciliation between a repo
   and a cluster when an event is received from a webhook, but the event body is not
@@ -653,7 +653,7 @@ rewriting all of your Tekton Workflows.
 It's possible that the biggest barriers to adoption and easy setup are that there just aren't enough
 docs for how to set up Tekton end-to-end and enough catalog Tasks that interact with commonly used platforms.
 We could also add more features to Triggers, such as polling and scheduled runs, as proposed in
-[TEP-0083](./0083-scheduled-and-polling-runs-in-tekton.md), and fix [existing pain points](#use-of-triggers)
+[TEP-0083](./0083-polling-runs-in-tekton.md), and fix [existing pain points](#use-of-triggers)
 that are preventing some platform builders from building on top of Triggers.
 
 These improvements are useful even outside the context of Workflows. However, we would still need to address the

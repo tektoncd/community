@@ -29,7 +29,7 @@ who have stopped being anonymous and started being active in project
 discussions.
 
 - Responsibilities:
-  - Must follow the [Tekton CoC](code-of-conduct.md)
+  - Must follow the [Tekton CoC](../code-of-conduct.md)
 - How users can get involved with the community:
   - Participating in community discussions
     ([GitHub, Slack, mailing list, etc](/contact.md))
@@ -42,11 +42,11 @@ discussions.
 ## Contributor
 
 Description: A Contributor makes direct contributions to the project and adds
-value to it. [Contributions need not be code](#contributions). People at the
+value to it. [Contributions need not be code](./README.md#contributions). People at the
 Contributor level may be new contributors, and they can contribute occasionally.
 
 Contributors may be eligible to vote and run in elections. See
-[Elections](./governance.md#elections) for more details.
+[Elections](../governance.md#elections) for more details.
 
 A Contributor must meet the responsibilities of a
 [Community Participant](#community-participant), plus:
@@ -58,7 +58,7 @@ A Contributor must meet the responsibilities of a
   - Report and sometimes resolve issues
   - Occasionally submit PRs
   - Contribute to the documentation
-  - Participate in [meetings](working-groups.md)
+  - Participate in [meetings](../working-groups.md)
   - Answer questions from other community members
   - Submit feedback on issues and PRs
   - Test, review, and verify releases and patches
@@ -121,7 +121,7 @@ Reviewers have all the rights and responsibilities of an
 - Responsibilities include:
   - Proactively help triage and respond to incoming issues (GitHub, Slack,
     mailing list)
-  - Following the [reviewing guide](./standards.md)
+  - Following the [reviewing guide](../standards.md)
   - Reviewing most Pull Requests against their specific areas of responsibility
   - Reviewing at least 10 PRs per year
   - Helping other contributors become reviewers
@@ -136,8 +136,8 @@ Reviewers have all the rights and responsibilities of an
   - Is supportive of new and occasional contributors and helps get useful PRs in
     shape to commit
 - Additional privileges:
-  - May [`/lgtm`](#prow-commands) pull requests.
-  - Can be allowed to [`/approve`](#prow-commands) pull requests in specific
+  - May [`/lgtm`](./README.md#prow-commands) pull requests.
+  - Can be allowed to [`/approve`](./README.md#prow-commands) pull requests in specific
     sub-directories of a project (by maintainer discretion)
   - Can recommend and review other contributors to become Reviewers
 
@@ -167,7 +167,7 @@ The process of becoming a Reviewer is:
    [OWNERS alias](https://www.kubernetes.dev/docs/guide/owners/#owners_aliases)).
 2. At least two Reviewers/[Maintainers](#maintainer) of the team that owns that
    repository or directory approve the PR.
-3. Update [org.yaml](./org/org.yaml) to add the new Reviewer to the
+3. Update [org.yaml](../org/org.yaml) to add the new Reviewer to the
    corresponding
    [GitHub team(s)](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams).
 
@@ -238,11 +238,11 @@ Process of becoming an Maintainer:
 2. The nominee will add a comment to the PR testifying that they agree to all
    requirements of becoming a Maintainer.
 3. A majority of the current Maintainers must then approve the PR.
-4. Update [org.yaml](./org/org.yaml) to add the new maintainer to the
+4. Update [org.yaml](../org/org.yaml) to add the new maintainer to the
    corresponding
    [GitHub team(s)](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams).
 
-- Each project has a `<repo>.maintainers` entry in [`org.yaml`](./org/org.yaml),
+- Each project has a `<repo>.maintainers` entry in [`org.yaml`](../org/org.yaml),
   where `<repo>` is the name of the GitHub repository. The only exception is
   `pipeline` whose maintainer team is name `core.maintainers`.
 
@@ -252,7 +252,7 @@ Description: The Tekton Governance committee is the governing body of the Tekton
 open source project. It's an elected group that represents the contributors to
 the project, and has an oversight on governance and technical matters.
 
-See [governance.md](governance.md) for requirements, responsibilities, and
+See [governance.md](../governance.md) for requirements, responsibilities, and
 election process.
 
 - Additional privileges:
@@ -268,7 +268,7 @@ project.
 
 - Inactivity is measured by:
   - Failing to meet role requirements.
-  - Periods of no [contributions](#contributions) for longer than 4 months
+  - Periods of no [contributions](./README.md#contributions) for longer than 4 months
   - Periods of no communication for longer than 2 months
 - Consequences of being inactive include:
   - Involuntary removal or demotion
@@ -284,7 +284,7 @@ because it protects the community and its deliverables while also opens up
 opportunities for new contributors to step in.
 
 Involuntary removal or demotion is handled through a vote by a majority of the
-[Tekton Governing Board](governance.md).
+[Tekton Governing Board](../governance.md).
 
 ### Stepping Down/Emeritus Process
 

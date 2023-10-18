@@ -33,7 +33,7 @@ authors:
   - [Conformance](#conformance)
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
-  - [Allow <code>TaskRun</code>s to patch arbitrary fields of <code>Task</code>s](#allow-s-to-patch-arbitrary-fields-of-s)
+  - [Allow <code>TaskRun</code>s to patch arbitrary fields of <code>Task</code>s](#allow-taskruns-to-patch-arbitrary-fields-of-tasks)
     - [Syntax Option 1: Overriding via TaskSpec](#syntax-option-1-overriding-via-taskspec)
     - [Syntax Option 2: JSONPath](#syntax-option-2-jsonpath)
   - [Allow resource requirements to be parameterized](#allow-resource-requirements-to-be-parameterized)

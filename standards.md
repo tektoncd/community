@@ -16,7 +16,7 @@ Each Pull Request is expected to meet the following expectations around:
 
 * [Pull Request Description](#pull-request-description)
 * [Release Notes](#release-notes)
-* [Commit Messages](#commits)
+* [Commit Messages](#commit-messages)
   * [Example Commit Message](#example-commit-message)
 * [Small Pull Requests](#small-pull-requests)
 * [Incremental Feature Development](#incremental-feature-development)

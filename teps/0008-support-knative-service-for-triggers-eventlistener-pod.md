@@ -25,7 +25,7 @@ status: implemented
   - [Usage examples](#usage-examples)
     - [Default EventListener yaml](#default-eventlistener-yaml)
     - [Kubernetes Based](#kubernetes-based)
-    - [Knative Service <code>OR any CRD</code>](#knative-service-)
+    - [Knative Service <code>OR any CRD</code>](#knative-service-or-any-crd)
 - [Design Details](#design-details)
   - [Contract](#contract)
     - [Spec](#spec)
@@ -142,7 +142,7 @@ spec:
        name: pipeline-template
 ``` 
 
-#### Kubernetes Based 
+#### Kubernetes Based
 This is exactly the same whatever we have right now with default.
 The reason to move `serviceAccountName`, `podTemplate`, 
 to `kubernetesResource` field is because those are part of [WithPodSpec{}](https://github.com/knative/pkg/blob/master/apis/duck/v1/podspec_types.go#L49) duck type

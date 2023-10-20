@@ -16,6 +16,7 @@ authors:
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
 - [Proposal](#proposal)
+- [References](#references)
 <!-- /toc -->
 
 ## Summary

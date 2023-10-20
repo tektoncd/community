@@ -38,7 +38,7 @@ collaborators: []
   - [Pipeline-level Sidecar](#pipeline-level-sidecar)
     - [Open questions](#open-questions)
     - [Notes: Reusable sidecars](#notes-reusable-sidecars)
-  - [First-class docker support](#first-class-docker-support)
+  - [First-class Docker support](#first-class-docker-support)
   - [Docker daemon Custom Task](#docker-daemon-custom-task)
   - [Allow Pipeline Tasks to be run as daemons](#allow-pipeline-tasks-to-be-run-as-daemons)
 - [Implementation Plan](#implementation-plan)

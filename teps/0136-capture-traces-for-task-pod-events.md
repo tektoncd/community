@@ -24,6 +24,7 @@ collaborators: []
 - [Design Evaluation](#design-evaluation)
   - [Reusability](#reusability)
   - [Simplicity](#simplicity)
+  - [Flexibility](#flexibility)
   - [Conformance](#conformance)
   - [Performance](#performance)
   - [Drawbacks](#drawbacks)

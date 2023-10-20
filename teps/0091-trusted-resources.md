@@ -25,6 +25,8 @@ authors:
   - [Sign the Resources](#sign-the-resources)
   - [Verify the Resources](#verify-the-resources)
   - [Configuration](#configuration)
+  - [Condition Update](#condition-update)
+  - [How feature flag and Verification Policy update the status](#how-feature-flag-and-verification-policy-update-the-status)
   - [Integrate with Remote Resource Resolution](#integrate-with-remote-resource-resolution)
 - [Threat Models](#threat-models)
 - [Test Plan](#test-plan)
@@ -41,6 +43,7 @@ authors:
   - [Options for integrating with remote resolution](#options-for-integrating-with-remote-resolution)
   - [Options for exposing the public keys](#options-for-exposing-the-public-keys)
   - [Alternatives for trusted resources](#alternatives-for-trusted-resources)
+  - [Options to update taskrun/pipelinerun to reflect the verification success/failure](#options-to-update-taskrunpipelinerun-to-reflect-the-verification-successfailure)
 - [Implementation Pull request(s)](#implementation-pull-requests)
 - [References (optional)](#references-optional)
 <!-- /toc -->

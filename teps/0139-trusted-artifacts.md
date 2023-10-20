@@ -44,7 +44,7 @@ contributors:
     - [Digest](#digest)
     - [Upload](#upload)
     - [Download](#download)
-    - [Verification](#verification)
+    - [Verify](#verify)
   - [Artifact Workspace](#artifact-workspace)
   - [Notes and Caveats](#notes-and-caveats)
 - [Design Details](#design-details)
@@ -140,8 +140,9 @@ This works aims to overcome these limitations.
 
 - Provide a set of upload and download steps for different storages. The proposal only considers the `workspace` storage as a default implementation managed by Tekton
 - Provide a mechanism for Tekton to inject user-defined digest, verify, upload and download steps, when the artifact API is used. Users can still benefit from the step interface and adopt user-defined steps when not using the artifact API to declare artifacts upfront
-- This proposal does not discuss how to expose artifacts outside of a pipeline, even though it sets foundations that could be used to achieve that
-- This proposal does not discuss how to inject artifact as inputs to a pipeline, even though it sets foundations that could be used to achieve that. For instance, one could use a workspace pre-provisioned with artifacts and use artifact type params as inputs for a pipeline
+- This proposal does not discuss how to inject or expose artifacts as inputs/outputs of a standalone `TaskRun` and for a `PipelineRun`, even though it sets foundations that could be used to achieve that.
+
+> Note: workspaces are often ephemeral and not necessarily good candidates for standalone `TaskRun` and `PipelineRun` inputs or outputs. Using [CSI workspaces](https://tekton.dev/docs/pipelines/workspaces/#csi) users may be able to fetch and publish artifacts from/to non-ephemeral locations, however we envision that in future users may benefit want to benefit from custom steps to fetch and publish artifacts from/to different kinds of storages.
 
 ### Use Cases
 
@@ -457,6 +458,8 @@ flowchart LR
 
 - when the `provenance.json` file is not provided, the `digest` step considers any file or folder in the `$ARTIFACT_OUTPUTS` folder as an artifact. This enables use cases where the list of artifact is not known upfront.
 
+> Note: when the [artifact API](#artifacts-api) is not used, the list of artifacts is not know upfront and the default step implementation is **not** injected. Users may still chose to use the default step implementation in that case, which is why this scenario is supported.
+
 ```mermaid
 flowchart LR
   start(( start )) --> loop
@@ -507,8 +510,6 @@ When more than one `Workspace` is defined by the `Pipeline`, the only one that i
 To make the user experience as seamless as possible in many use cases, the `Workspace` used to share artifact should be transparent to users.
 Ideally `Tasks` and `Pipelines` shall not define a `Workspace` for the sole purpose of sharing artifacts and the Tekton controller could define be responsible for provisioning and attaching the volume. This feature needs to be designed so that auto-provisioning is only used when workspace based steps are used.
 
-Auto-provisioning of the artifact workspace will require careful design and is considered out-of-scope for this TEP.
-
 ### Notes and Caveats
 
 Some questions raised during the initial presentation:
@@ -536,8 +537,6 @@ Some questions raised during the initial presentation:
 
 * Q: What happens if the artifacts do not fit the local file system?
 * A: The space available depends very much on the node and cluster setup of the infrastructure where Tekton is running. For use cases where very large amounts of data are required, enough that would not fit in the space available to the Pod `emptyDir`, this solution is not suitable. Such use cases will require a different solution that may involve content addressable storage or storage with strict access control rules in place.
-
-
 
 
 ## Design Details

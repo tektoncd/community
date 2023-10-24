@@ -1,8 +1,8 @@
 ---
-status: 'implementable'
+status: 'implemented'
 title: Producing Results in Matrix
 creation-date: '2023-07-31'
-last-updated: '2023-08-21'
+last-updated: '2023-10-24'
 authors:
   - '@emmamunley'
   - '@pritidesai'

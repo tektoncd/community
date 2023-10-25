@@ -129,9 +129,10 @@ The configuration for this automation is in
 _More on the Prow process in general
 [is available in the k8s docs](https://github.com/kubernetes/community/blob/master/contributors/guide/owners.md#the-code-review-process)._
 
-The Tekton community promotes company diversity as a best practice for pull request.
+The Tekton community promotes company diversity as a best practice for pull requests.
 This means that, where possible, one of the reviewers of a pull request and the author
-should be affiliated to different organizations.
+should be affiliated to different organizations. Exceptions to this guidance may be made
+at the discretion of maintainers after careful review of the changes.
 
 This best practice may not be applicable by all Tekton projects, please check the
 guidelines on a project specific details for more details.

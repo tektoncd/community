@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: CEL in WhenExpression
 creation-date: '2023-09-21'
-last-updated: '2023-10-01'
+last-updated: '2023-10-22'
 authors:
 - '@jerop'
 - '@chitrangpatel'
@@ -355,7 +355,12 @@ When the feature is promoted to stable, the dedicated feature flag will be remov
 
 ### Implementation Pull Requests
 
-TODO
+The work is tracked by https://github.com/tektoncd/pipeline/issues/7244:
+
+ - https://github.com/tektoncd/pipeline/pull/7245
+ - https://github.com/tektoncd/pipeline/pull/7247
+ - https://github.com/tektoncd/pipeline/pull/7251
+ - https://github.com/tektoncd/pipeline/pull/7255
 
 ## References
 - [Tekon Trigger][Trigger]

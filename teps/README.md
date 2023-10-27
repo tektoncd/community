@@ -132,4 +132,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0141](0141-platform-context-variables.md) | Platform Context Variables | proposed | 2023-08-21 |
 |[TEP-0142](0142-enable-step-reusability.md) | Enable Step Reusability | implementable | 2023-09-14 |
 |[TEP-0144](0144-param-enum.md) | Param Enum | implementable | 2023-09-20 |
-|[TEP-0145](0145-cel-in-whenexpression.md) | CEL in WhenExpression | implementable | 2023-10-01 |
+|[TEP-0145](0145-cel-in-whenexpression.md) | CEL in WhenExpression | implemented | 2023-10-22 |

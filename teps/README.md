@@ -141,3 +141,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0149](0149-tekton-cli-local-data-upload.md) | Tekton CLI Local Data Upload | proposed | 2023-10-31 |
 |[TEP-0150](0150-displayname-in-matrix.md) | displayName in Matrix | implementable | 2024-02-08 |
 |[TEP-0151](0151-error-attribution-via-condition-status.md) | Error Attribution via Conditions Status | proposed | 2024-01-26 |
+|[TEP-0153](0153-v1-migration-for-tekton-results.md) | Migration of Tekton Results to V1 APIs of Pipelines | proposed | 2023-08-14 |

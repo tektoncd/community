@@ -2,7 +2,7 @@
 status: implementable
 title: Param Enum
 creation-date: '2023-09-20'
-last-updated: '2023-09-20'
+last-updated: '2023-11-10'
 authors:
 - '@chuangw6'
 - '@quanzhang-william'
@@ -34,6 +34,8 @@ collaborators: []
   - [Risks and Mitigations](#risks-and-mitigations)
   - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
+  - [New Param Type](#new-param-type)
+  - [Validate Intersections of Pipeline-level and Pipeline-Task Level Enum](#validate-intersection-of-pipeline-level-and-pipelinetask-leve-enums)
 - [Potential Future Work](#potential-future-work)
 <!-- /toc -->
 
@@ -212,8 +214,7 @@ While we haven't identified any `enum` use case in this scenario at the time wri
 ### Pipelines
 `Pipeline` author can also define a `string` `param` with the `enum` keyword in the `PipelineSpec` `Param` and pass this `string` `param` to the referenced `Task`.
 
-> :warning: Tekton validates the **intersection** of enum set specified in a PipelineTask and the enum set specified in the Pipeline (Params without
- enums specified refer to implicit enum sets with all possible values).
+> :warning: If both the `Pipeline` and `PipelineTasks`(embedded or referenced) specify an enum, the `enum` in the `Pipeline` must be a **subset** of the corresponding `enum` in the `PipelineTask`.
 
 #### PipelineTasks with TaskRef or Remote Solution
 The pipeline example references the above `golang-build` Task. The `pipeline-revision` `param` is passed as the value of `task-version` `param` in the `PipelineTask`. In this case, the `Pipeline` user can only pass in the versions specified in the `golang-build` `Tasks` `enum` list (`v1.21`, `v1.20` and `v1.19`) to run the `pipeline` successfully.
@@ -237,9 +238,13 @@ spec:
         name: golang-build
 ```
 
-The `Pipeline` author can specify `enum` in `spec.params` to put extra restrictions on top of the `enum` specified in the referenced `Task`. Tekton will validate the **intersection** of `enum` specified in the referenced `Task` and the `enum` specified in the `Pipeline` `spec.params`.
+The `Pipeline` author can specify `enum` in `spec.params` to put extra restrictions on top of the `enum` specified in the referenced `Task`. The Pipeline-level `enum` is required to be a **subset** of the referenced PipelineTask-level `enum`. Tekton will validate user-provided value in a `PipelineRun` against the `enum` specified in the `PipelineSpec.params`.
 
-For example, the `Pipeline` Author can further restrict the allowed versions to `v1.21` and `v1.20`: 
+With the Pipeline-level enum required to be a subset of the PipelineTask-level `enum`, users are not burdened with finding the `enums'` intersections to run the `Pipeline` successfully. If the subset requirement is not met, the `Pipeline` is treated as invalid, and the execution of such `Pipeline` should consistently fail.
+
+If a `Param` is used in multiple `PipelineTasks`, the `Pipeline` can only specify an `enum` that is a subset of all `enums` from all `Tasks` using the `param`
+
+For example, the `Pipeline` Author can further restrict the allowed versions to a subset (v1.21 and v1.20) of the golang-build `Task` enum list (v1.21, v1.20 and v1.19). If the `Pipeline` level enum is NOT a subset of the `PipelineTask`, Tekton will fail the validation.
 
 ``` yaml
 apiVersion: tekton.dev/v1
@@ -258,7 +263,7 @@ spec:
 ```
 
 #### Pipelines with Embedded PipelineTasks
-`Pipeline` authors are also allowed to specify `enum` for `params` in the `PipelineTask`'s `TaskSpec`. Similarly, Tekton validates the **intersection** of the 2 `enum` sets (i.e. only `v1` is allowed for param `message` in the below example).
+`Pipeline` authors are also allowed to specify `enum` for `params` in the `PipelineTask`'s `TaskSpec`. Similarly, the Pipeline-level `enum` is required to be a subset of the PipelineTask-level `enum`.
 
 While there is no use case identified to specify `enum` in 2 places in this case, it is considered as a valid syntax for `TaskSpec` API compatibility concerns.
 
@@ -321,9 +326,13 @@ N/A
 N/A
 
 ## Alternatives
+### New Param Type
 We could introduce the `enum` field as a new `param` type. However, this is not the idiomatic way to use `enum` in yaml syntax.
 
-## Potential future work
+### Validate Intersections of Pipeline-level and PipelineTask-level Enums
+We could lift the validation that the Pipeline-level `enum` is required to be a subset of the corresponding PipelineTask-leve `enums`, and Tekton only validates the intersection of Pipeline-level and PipelineTask-leve `enums`. The main problem of the approach is that the `Pipeline` users are required to iterate through all the `PipelineTasks` to calculate the valid `enums` for the overall `Pipeline`. In addition, `Pipelines` not following the `param enum` subset requirement should technically be treated as invalid, and running such `Pipelines` should consistently fail to minimize user confusion.
+
+## Potential Futre Work
 - In the future, we could expand the current feature to support CEL or Regular Expression to validate param input value.
 - We could consider supporting `enum` for the `object` type in future since it can be thought of as a struct of strings. There is also discussions to support nested `array`/`object` types in the future ([#7069](https://github.com/tektoncd/pipeline/issues/7069)). However, It might be less useful to support `enum` for `array` type in the sense that it might be an `array of array`, but this can also be explored later.
 

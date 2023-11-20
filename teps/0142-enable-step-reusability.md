@@ -2,7 +2,7 @@
 status: implementable
 title: Enable Step Reusability 
 creation-date: '2023-09-07'
-last-updated: '2023-09-14'
+last-updated: '2023-11-20'
 authors:
 - '@chitrangpatel'
 - '@jerop'
@@ -669,6 +669,7 @@ If multiple `StepActions` produce the different `Results` under the same name th
 `Task` authors should be able to:
 1. fetch results from underlying `Steps` using `$(step.stepName.results.resultName)` as the `Value` of the `Task Result`. This will help resolve name conflicts in cases where multiple `StepActions` produce results that may have the same name.
 2. For backwards compatibility, we will surface all results by default to the `Task` like we do today via the `entryPointer`. It is the responsibility of the `Task` authors to resolve name conflicts by using the `Value` field proposed in the previous point.
+3. also use `$(step.results.resultName.path)` when inlining the `Steps` for [consistency with `StepActions`](#stepresults-in-inlined-steps). 
 
 Consider the following scenario, explained in the example below:
 
@@ -838,6 +839,67 @@ spec:
   script:
     echo "$p1"
 
+```
+</td>
+</tr>
+</table>
+
+##### StepResults in Inlined-Steps
+
+To enable consistency of `results` usage in `StepActions`, we introduce a `Results` field to the `Step` struct which will be identical to the `Results` field in `StepActions`. `Task` authors cannot use this field at the same time as referencing a `StepAction` since in that case, the `results` from `StepActions` will fill it in. Using it simultaneously with `ref` will result in a validation error.
+
+However, if the `Task` author decides to produce `Step Results` for their inlined steps, they need do declare `Results` in `Steps`. Since this capability for inlined `Steps` is being introduced for consistency with `StepActions`, we gate it behind `enable-step-actions`.
+
+For fully, inlined `Tasks` (i.e. where all the `Steps` are inlined), the use of `Step Results` is not too useful. There have been occasional requests from users to provide the ability to pass `results` as `params` between `Steps`. Until now, we have asked the users to load the results from the files themselves in the `Steps` as a workaround. However, with `StepActions`, the need to pass `results` between `Steps` is necessary since there is no workaround for it. We already plan to do this to support `StepActions` so declaring the `Step Results` and making use of this ability even for `inlined Steps` is something `Task` authors can leverage. 
+
+<table>
+<tr>
+<td>
+
+```yaml
+apiVersion: tekton.dev/v1alpha1
+kind: StepAction
+metadata:
+  name: myStep
+spec:
+  params:
+    - name: p1
+  image: ...
+  env:
+    - name: p1
+      value: $(params.p1)
+  script:
+    echo "$p1"
+
+```
+</td>
+<td>
+
+```yaml
+# This is how a task author would 
+# use the Step results from an inlined step 
+# into subsequent Steps/StepActions.
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: ci-t
+spec:
+  results:
+    - name: res1
+      value: $(steps.step1.results.foo)
+  steps:
+    - name: an-inline-step
+      results:
+        - name: inline-step-result
+      image: ubuntu
+      script: |
+        echo "hello" >> $(step.results.inline-step-result.path)
+    - name: step2
+      ref:
+        name: myStep
+      params:
+        - name: p1
+          value:  $(steps.step1.results.inline-step-result)
 ```
 </td>
 </tr>

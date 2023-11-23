@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Param Enum
 creation-date: '2023-09-20'
-last-updated: '2023-11-10'
+last-updated: '2023-11-23'
 authors:
 - '@chuangw6'
 - '@quanzhang-william'
@@ -37,6 +37,7 @@ collaborators: []
   - [New Param Type](#new-param-type)
   - [Validate Intersections of Pipeline-level and Pipeline-Task Level Enum](#validate-intersection-of-pipeline-level-and-pipelinetask-leve-enums)
 - [Potential Future Work](#potential-future-work)
+- [Implementation Pull Requests](#implementation-pull-requests)
 <!-- /toc -->
 
 ## Summary
@@ -336,3 +337,5 @@ We could lift the validation that the Pipeline-level `enum` is required to be a 
 - In the future, we could expand the current feature to support CEL or Regular Expression to validate param input value.
 - We could consider supporting `enum` for the `object` type in future since it can be thought of as a struct of strings. There is also discussions to support nested `array`/`object` types in the future ([#7069](https://github.com/tektoncd/pipeline/issues/7069)). However, It might be less useful to support `enum` for `array` type in the sense that it might be an `array of array`, but this can also be explored later.
 
+## Implementation Pull Requests
+The implementation PRs are in [#7270](https://github.com/tektoncd/pipeline/issues/7270)

@@ -144,3 +144,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0152](0152-tekton-conformance-verification.md) | Tekton Conformance Verification | implementable | 2024-02-12 |
 |[TEP-0153](0153-v1-migration-for-tekton-results.md) | Migration of Tekton Results to V1 APIs of Pipelines | proposed | 2023-08-14 |
 |[TEP-0154](0154-concise-remote-resolver-syntax.md) | Concise Remote Resolver Syntax | implementable | 2024-03-21 |
+|[TEP-0155](0155-store-pipeline-events-in-db.md) | Store Pipeline Events in Tekton Results | proposed | 2024-04-19 |

@@ -8,63 +8,7 @@ authors:
 collaborators: []
 ---
 
-# TEP-0150: Tekton Results: Store Pipeline Events in Tekton Results DB 
-
-<!--
-**Note:** Please remove comment blocks for sections you've filled in.
-When your TEP is complete, all of these comment blocks should be removed.
-
-To get started with this template:
-
-- [ ] **Fill out this file as best you can.**
-  At minimum, you should fill in the "Summary", and "Motivation" sections.
-  These should be easy if you've preflighted the idea of the TEP with the
-  appropriate Working Group.
-- [ ] **Create a PR for this TEP.**
-  Assign it to people in the Working Group that are sponsoring this process.
-- [ ] **Merge early and iterate.**
-  Avoid getting hung up on specific details and instead aim to get the goals of
-  the TEP clarified and merged quickly. The best way to do this is to just
-  start with the high-level sections and fill out details incrementally in
-  subsequent PRs.
-
-Just because a TEP is merged does not mean it is complete or approved. Any TEP
-marked as a `proposed` is a working document and subject to change. You can
-denote sections that are under active debate as follows:
-
-```
-<<[UNRESOLVED optional short context or usernames ]>>
-Stuff that is being argued.
-<<[/UNRESOLVED]>>
-```
-
-When editing TEPS, aim for tightly-scoped, single-topic PRs to keep discussions
-focused. If you disagree with what is already in a document, open a new PR
-with suggested changes.
-
-If there are new details that belong in the TEP, edit the TEP. Once a
-feature has become "implemented", major changes should get new TEPs.
-
-The canonical place for the latest set of instructions (and the likely source
-of this file) is [here](/teps/tools/tep-template.md.template).
-
--->
-
-<!--
-This is the title of your TEP. Keep it short, simple, and descriptive. A good
-title can help communicate what the TEP is and should be considered as part of
-any review.
--->
-
-<!--
-A table of contents is helpful for quickly jumping to sections of a TEP and for
-highlighting any additional information provided beyond the standard TEP
-template.
-
-Ensure the TOC is wrapped with
-  <code>&lt;!-- toc --&rt;&lt;!-- /toc --&rt;</code>
-tags, and then generate with `hack/update-toc.sh`.
--->
+# TEP-0150: Tekton Results: Store Pipeline Events in Tekton Results DB
 
 <!-- toc -->
 - [Summary](#summary)
@@ -97,33 +41,8 @@ tags, and then generate with `hack/update-toc.sh`.
 Tekton Results stores so far PipelineRuns, TaskRuns and Logs. 
 This TEP proposes to store Pipeline Events as well to have all historical data from a PipelineRun in Tekton Results.
 
-<!--
-This section is incredibly important for producing high quality user-focused
-documentation such as release notes or a development roadmap. It should be
-possible to collect this information before implementation begins in order to
-avoid requiring implementors to split their attention between writing release
-notes and implementing the feature itself.
-
-A good summary is probably at least a paragraph in length.
-
-Both in this section and below, follow the guidelines of the [documentation
-style guide]. In particular, wrap lines to a reasonable length, to make it
-easier for reviewers to cite specific portions, and to minimize diff churn on
-updates.
-
-[documentation style guide]: https://github.com/kubernetes/community/blob/master/contributors/guide/style-guide.md
--->
 
 ## Motivation
-
-<!--
-This section is for explicitly listing the motivation, goals and non-goals of
-this TEP. Describe why the change is important and the benefits to users. The
-motivation section can optionally provide links to [experience reports][experience reports]
-to demonstrate the interest in a TEP within the wider Tekton community.
-
-[experience reports]: https://github.com/golang/go/wiki/ExperienceReports
--->
 Sometimes a pipeline couldn't be executed successfully. In this case, the user would like to know what happened.
 With some settings, the TaskRun Pods get evicted within minutes. In case of an error the user can't see the events anymore.
 Sometimes there aren't even logs produced and in this case, it helps the user to have the event to have an idea what happened.
@@ -131,12 +50,6 @@ The Events should be stored in the same table as the TaskRunLogs. Alternatively 
 
 
 ### Goals
-
-<!--
-List the specific goals of the TEP.
-- What is it trying to achieve?
-- How will we know that this has succeeded?
--->
 - Storing all the Events which relate to a PipelineRun in Tekton Results (Pod, TaskRun, PipelineRun). 
 - Each event will be stored as a Record in the Tekton Results DB.
 - The stored event can be stripped down to the relevant information like the cause of the event.
@@ -157,17 +70,6 @@ Listing non-goals helps to focus discussion and make progress.
 
 It should be possible to query the history of Events of a PipelineRun or TaskRun.
 
-<!--
-Describe the concrete improvement specific groups of users will see if the
-Motivations in this doc result in a fix or feature.
-
-Consider the user's:
-- [role][role] - are they a Task author? Catalog Task user? Cluster Admin? e.t.c.
-- experience - what workflows or actions are enhanced if this problem is solved?
-
-[role]: https://github.com/tektoncd/community/blob/main/user-profiles.md
--->
-
 ### Requirements
 
 Following fields need to be available in the Event Object stored in the DB:
@@ -180,12 +82,6 @@ Following fields need to be available in the Event Object stored in the DB:
 
 Also it should be possible to query the Events of a PipelineRun or TaskRun to group them.
 
-<!--
-Describe constraints on the solution that must be met, such as:
-- which performance characteristics that must be met?
-- which specific edge cases that must be handled?
-- which user scenarios that will be affected and must be accommodated?
--->
 
 ## Proposal
 

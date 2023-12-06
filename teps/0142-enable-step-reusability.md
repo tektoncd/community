@@ -2,7 +2,7 @@
 status: implementable
 title: Enable Step Reusability 
 creation-date: '2023-09-07'
-last-updated: '2023-11-20'
+last-updated: '2023-12-06'
 authors:
 - '@chitrangpatel'
 - '@jerop'
@@ -310,8 +310,7 @@ The `Step` object can be split into “actionable” (aka. “work”) and “or
 |Env|EnvFrom|
 |SecurityContext|SecurityContext|
 |VolumeMounts|StdoutConfig|
-||WorkingDir|
-||OnError|
+|WorkingDir|OnError|
 ||StderrConfig|
 
 A `StepAction` should be able to declare the `Parameters` it expects and the `Results` it produces. The Task author should be able to provide the context via supported fields listed below.
@@ -985,9 +984,24 @@ spec:
 While this a perfectly valid view point from the `Step` author’s perspective, the users using these `Steps` to construct `Tasks` and `Pipelines` will need to better understand how a path is used in the `Step` to provide an appropriate `Workspace`. We think that it’s better to start without `Workspaces` and see if this is causing major friction to users before introducing it in the `StepActions's` API spec.
 
 #### WorkingDir
-We have a separate dedicated effort to improve the workflow by providing a default `workingDir`. Most tool images do not really need a special `workingDir` to work correctly. For cases where an image needs a special `workingDir` to function, we need to provide an option for `StepAction` authors to opt-out from the `Task` set `workingDir`. However, that is actively being scoped out in a parallel effort. For now, we keep `workingDir` as an orchestration component of the `Step`. The Task will have control over the context to provide to the `StepAction` to function correctly. We expect `StepAction` authors to provide supporting documentation to the users of the `StepActions` with examples of how best to use it in a `Task`.
 
-If we assess that users are having more friction without `workingDir` in `StepActions`, we can make them a part of `StepActions`.
+After length discussions, we make `workingDir` an actionable component of the `Step` and as such, add it to `StepActions`. This is because of the following reasons:
+
+1. The `StepAction` has the most insight into the needs of the image it is using and whether it needs a special `workingDir` to function. The `Task` is mainly an orchestration component here and has little insight into the details of the `StepAction` and as such, it is not a good user experience for the `Task` authors to be able to understand the internal details of the `StepAction` since they did not compose it. 
+2. From an orchestration concept, the `Task` has more context on the workflow and therefore, it needs to be able to update the `workingDir` based on how it is orchestrating the steps. The `StepAction` can provide flexibility to the `Task` to update the `workingDir` by parametrizing it as shown below. Here, the `StepAction` author can request a path as a `parameter` and work relative to it. This is better than introducing `workingDir` as both an actionable and orchestration field and resolving the precedence since the parameter based approach can achieve the same thing with less complexity.
+
+```yaml
+apiVersion: tekton.dev/v1alpha1
+kind: StepAction
+metadata:
+  name: myStep
+spec:
+  params:
+    - name: path
+      description: “Path to the test folder”
+  image: ...
+  workingDir: $(params.path)
+```
 
 #### VolumeMounts
 In many cases, depending on the image used or the work that the `Step` is performing, a `VolumeMount` is extremely necessary. This is evident from the number of [catalog Tasks](https://github.com/search?q=repo%3Atektoncd%2Fcatalog%20volumeMounts&type=code) that use it. For standalone `StepActions`, it is challenging for authors to convey that such a `VolumeMount` is required for the `StepAction` to run successfully. Failure to provide this ability would make using the `StepAction` prone to errors and degrade user experience. 

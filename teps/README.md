@@ -50,7 +50,7 @@ This is the complete list of Tekton TEPs:
 |[TEP-0047](0047-pipeline-task-display-name.md) | Pipeline Task Display Name | implemented | 2023-03-30 |
 |[TEP-0048](0048-task-results-without-results.md) | Task Results without Results | implementable | 2022-08-09 |
 |[TEP-0049](0049-aggregate-status-of-dag-tasks.md) | Aggregate Status of DAG Tasks | implemented | 2021-06-03 |
-|[TEP-0050](0050-ignore-task-failures.md) | Ignore Task Failures | implementable | 2023-09-28 |
+|[TEP-0050](0050-ignore-task-failures.md) | Ignore Task Failures | implemented | 2023-12-07 |
 |[TEP-0051](0051-ppc64le-architecture-support.md) | ppc64le Support | proposed | 2021-01-28 |
 |[TEP-0052](0052-tekton-results-automated-run-resource-cleanup.md) | Tekton Results: Automated Run Resource Cleanup | implementable | 2021-03-22 |
 |[TEP-0053](0053-nested-triggers.md) | Nested Triggers | implemented | 2023-03-21 |

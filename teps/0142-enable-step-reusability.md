@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Enable Step Reusability 
 creation-date: '2023-09-07'
-last-updated: '2023-12-06'
+last-updated: '2024-01-24'
 authors:
 - '@chitrangpatel'
 - '@jerop'

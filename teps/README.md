@@ -136,4 +136,5 @@ This is the complete list of Tekton TEPs:
 |[TEP-0144](0144-param-enum.md) | Param Enum | implemented | 2023-11-23 |
 |[TEP-0145](0145-cel-in-whenexpression.md) | CEL in WhenExpression | implemented | 2023-10-22 |
 |[TEP-0146](0146-parameters-in-script.md) | Parameters in Script | proposed | 2023-10-02 |
+|[TEP-0147](0147-tekton-artifacts-phase1.md) | Tekton Artifacts phase 1 | implementable | 2024-02-15 |
 |[TEP-0148](0148-summaryaggregation-api-for-tekton-results.md) | Summary/Aggregation API for Tekton Results | proposed | 2023-10-11 |

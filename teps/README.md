@@ -139,3 +139,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0148](0148-summaryaggregation-api-for-tekton-results.md) | Summary/Aggregation API for Tekton Results | proposed | 2023-10-11 |
 |[TEP-0149](0149-tekton-cli-local-data-upload.md) | Tekton CLI Local Data Upload | proposed | 2023-10-31 |
 |[TEP-0150](0150-displayname-in-matrix.md) | displayName in Matrix | implementable | 2024-02-08 |
+|[TEP-0151](0151-error-attribution-via-condition-status.md) | Error Attribution via Conditions Status | proposed | 2024-01-26 |

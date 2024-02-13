@@ -17,18 +17,13 @@ orgs:
     has_repository_projects: true
     location: ''
     members:
-    - aaron-prindle
-    - abayer
-    - adambkaplan
-    - ak1394
-    - avinal
-    - Basavaraju-G
     - 16yuki0702
     - AlanGreene
-    - alhuizenga
     - Arhell
+    - Basavaraju-G
     - CarolynMabbott
     - EliZucker
+    - EmmaMunley
     - FogDong
     - GijsvanDulmen
     - GregDritschler
@@ -39,28 +34,41 @@ orgs:
     - NavidZ
     - Peaorl
     - PuneetPunamiya
+    - QuanZhang-William
     - R2wenD2
+    - RafaeLeal
     - Tmoss11
     - YolandaDu1997
     - Yongxuanzhang
     - a-roberts
+    - aaron-prindle
+    - abayer
+    - adambkaplan
+    - ak1394
     - akihikokuroda
+    - alan-ghelardi
+    - aleromerog
+    - alhuizenga
     - ameyer-pivotal
     - arilivigni
+    - austinzhao-go
+    - avinal
     - barthy1
     - bendory
     - bigkevmcd
+    - bobcatfish
     - briandealwis
     - briangleeson
     - caniszczyk
     - carlos-logro
     - chanseokoh
+    - chengjoey
     - chetan-rns
+    - chitrangpatel
     - chmouel
     - chuangw6
-    - chitrangpatel
-    - crshnburn
     - concaf
+    - crshnburn
     - danielhelfand
     - dibbles
     - divyansh42
@@ -70,8 +78,8 @@ orgs:
     - dwnusbaum
     - eddycharly
     - ekcasey
-    - EmmaMunley
     - enarha
+    - ericzzzzzzz
     - fenglixa
     - fhopfensperger
     - font
@@ -103,8 +111,8 @@ orgs:
     - khrm
     - kimholmes
     - kimsterv
-    - lcarva
     - lbernick
+    - lcarva
     - lukehinds
     - maneeshmehra
     - marcelmue
@@ -122,6 +130,7 @@ orgs:
     - nebhale
     - neilcar
     - nikhil-thomas
+    - otaviof
     - othomann
     - pierretasci
     - piyush-garg
@@ -132,8 +141,10 @@ orgs:
     - pritidesai
     - priyawadhwa
     - psschwei
+    - pxp928
     - rafamqrs
     - raffamendes
+    - ramessesii2
     - rhuss
     - rudeigerc
     - rupalibehera
@@ -151,10 +162,11 @@ orgs:
     - sm43
     - spikeburton
     - squakez
-    - startxfr
     - startx-lab
+    - startxfr
     - steveodonovan
     - sthaha
+    - sudhishmk
     - theofpa
     - vaikas
     - vinamra28
@@ -170,17 +182,6 @@ orgs:
     - ywluogg
     - zhangtbj
     - ziheng
-    - austinzhao-go
-    - aleromerog
-    - QuanZhang-William
-    - RafaeLeal
-    - alan-ghelardi
-    - pxp928
-    - chengjoey
-    - bobcatfish
-    - ericzzzzzzz
-    - sudhishmk
-    - ramessesii2	
     # alumni:
     # sbwsg
     teams:

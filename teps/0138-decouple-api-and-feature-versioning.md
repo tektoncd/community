@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Decouple API and feature versioning
 creation-date: '2023-07-07'
-last-updated: '2023-08-23'
+last-updated: '2024-02-20'
 authors:
 - '@JeromeJu'
 - '@chitrangpatel'
@@ -53,6 +53,7 @@ authors:
   - [<a name="_tcstxie74non"></a>How many tests can we run in a reasonable amount of time?](#how-many-tests-can-we-run-in-a-reasonable-amount-of-time)
   - [How many tests should we run against the additional tests?](#how-many-tests-should-we-run-against-the-additional-tests)
 - [Future Work](#future-work)
+- [Implementation Pull Requests](#implementation-pull-requests)
 - [References](#references)
 <!-- /toc -->
 
@@ -434,6 +435,18 @@ For testing out individual per-feature flags, we will use unit tests for each si
   - If `enable-api-fields` is set to `none`, you can also enable them with per-feature flags. These are off by default.
   - When promoting an `alpha` feature to `beta`, it can be enabled with `enable-api-fields` set to `alpha`, `beta`, or `none`.
    Disallowing it when `enable-api-fields` is set to `beta` wouldn’t help us phase out the flag more quickly, as we’d still need to wait until the feature is stabilized or removed.
+
+### Implementation Pull Requests
+The complete work of TEP0138 is tracked by: https://github.com/tektoncd/pipeline/issues/7177
+
+- https://github.com/tektoncd/pipeline/pull/6941
+- https://github.com/tektoncd/pipeline/pull/7076
+- https://github.com/tektoncd/pipeline/pull/7090
+- https://github.com/tektoncd/pipeline/pull/7627
+- https://github.com/tektoncd/pipeline/pull/7633
+- https://github.com/tektoncd/plumbing/pull/1803
+- https://github.com/tektoncd/pipeline/pull/7657
+- https://github.com/tektoncd/pipeline/pull/7662
 
 ## References
 

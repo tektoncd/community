@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implemented
 title: Summary/Aggregation API for Tekton Results
 creation-date: '2023-10-11'
-last-updated: '2023-10-11'
+last-updated: '2024-02-28'
 authors:
   - '@avinal'
   - '@khrm'

@@ -8,7 +8,7 @@ This is the complete list of Tekton TEPs:
 |------|--------|----------|---------------|
 |[TEP-0001](0001-tekton-enhancement-proposal-process.md) | Tekton Enhancement Proposal Process | implemented | 2020-06-11 |
 |[TEP-0002](0002-custom-tasks.md) | Custom Tasks | implemented | 2021-12-15 |
-|[TEP-0003](0003-tekton-catalog-organization.md) | Tekton Catalog Organization | implemented | 2021-02-09 |
+|[TEP-0003](0003-tekton-catalog-organization.md) | Tekton Catalog Organization | implemented | 2024-03-04 |
 |[TEP-0004](0004-task-results-in-final-tasks.md) | Task Results in Final Tasks | implemented | 2021-06-03 |
 |[TEP-0005](0005-tekton-oci-bundles.md) | Tekton OCI Bundles | implemented | 2022-01-04 |
 |[TEP-0006](0006-tekton-metrics.md) | Tekton Metrics | proposed | 2020-07-13 |
@@ -105,7 +105,7 @@ This is the complete list of Tekton TEPs:
 |[TEP-0111](0111-propagating-workspaces.md) | Propagating Workspaces | implemented | 2022-09-16 |
 |[TEP-0112](0112-replace-volumes-with-workspaces.md) | Replace Volumes with Workspaces | proposed | 2022-07-20 |
 |[TEP-0114](0114-custom-tasks-beta.md) | Custom Tasks Beta | implemented | 2022-12-12 |
-|[TEP-0115](0115-tekton-catalog-git-based-versioning.md) | Tekton Catalog Git-Based Versioning | implemented | 2022-12-14 |
+|[TEP-0115](0115-tekton-catalog-git-based-versioning.md) | Tekton Catalog Git-Based Versioning | implemented | 2024-03-04 |
 |[TEP-0116](0116-referencing-finally-task-results-in-pipeline-results.md) | Referencing Finally Task Results in Pipeline Results | implemented | 2022-08-11 |
 |[TEP-0117](0117-tekton-results-logs.md) | Tekton Results Logs | implemented | 2023-03-22 |
 |[TEP-0118](0118-matrix-with-explicit-combinations-of-parameters.md) | Matrix with Explicit Combinations of Parameters | implemented | 2022-08-08 |

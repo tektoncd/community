@@ -2,13 +2,15 @@
 status: implemented
 title: Tekton Catalog Git-Based Versioning
 creation-date: '2022-07-12'
-last-updated: '2022-12-14'
+last-updated: '2024-03-04'
 authors:
 - "@jerop"
 - "@vdemeester"
 - "@vinamra28"
 - "@QuanZhang-William"
 - "@wlynch"
+contributors:
+- "@chitrangpatel"
 see-also:
 - TEP-0003
 - TEP-0079
@@ -83,9 +85,42 @@ The Catalog organization contract with directory-based versioning is:
 ./{resource-type}/{resource-name}/{version}/samples/...
 ```
 
-For example, the a Tekton Catalog with multiple `Tasks` and `Pipelines` is organized as such:
+For example, the a Tekton Catalog with multiple `StepActions`, `Tasks` and `Pipelines` is organized as such:
 
 ```bash
+./stepaction/
+  /argocd
+    /0.1
+      /README.md
+      /argocd.yaml
+      /samples
+      /tests
+    /0.2
+      /README.md
+      /argocd.yaml
+      /samples
+      /tests
+    /OWNERS
+  /golang-build
+    /0.1
+      /README.md
+      /golang-build.yaml
+      /samples
+      /tests
+    /0.2
+      /README.md
+      /golang-build.yaml
+      /samples
+      /tests
+    /OWNERS
+  /foo-stepaction
+    /0.1
+    /0.2 
+  /bar-stepaction
+    /0.1
+    /0.2
+    /0.3
+  /...
 ./task/
   /argocd
     /0.1
@@ -172,7 +207,7 @@ TEP. A repository may be a Catalog.
 is defined in [TEP-0003: Tekton Catalog Organization][tep-0003-org] and the [git-based contract](#organization-contract)
 is defined in this TEP. A Catalog may contain one or more resources.
 
-* **Resource**: Item shared in a Catalog e.g. `Task` or `Pipeline`.
+* **Resource**: Item shared in a Catalog e.g. `StepAction`, `Task` or `Pipeline`.
 
 * **Hub**: User interface for one or more Catalogs.
     * **Artifact Hub (https://artifacthub.io/)**: The primary and suggested user interface for Tekton Catalogs. Catalogs with git-based versioning will **ONLY** be discussed in the Artifact Hub in the first iteration of this TEP.
@@ -510,7 +545,7 @@ TEP-0115 is `implemented`.
 ##### Getting Started with Git-Based Versioning
 
 To make it easy for the community to create Catalogs, we will provide a template Catalog in the `tektoncd-catalog`
-GitHub organization - https://github.com/tektoncd-catalog. This template will contain `Tasks` and `Pipelines`, and
+GitHub organization - https://github.com/tektoncd-catalog. This template will contain `StepActions`, `Tasks` and `Pipelines`, and
 will include the testing setup that users can use to get started in validating the functionality of their resources.
 Note that we are planning to update the testing setup to be Tekton-based in [TEP-0079][tep-0079]; the updated testing
 set up will be provided in the template Catalog.

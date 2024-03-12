@@ -143,3 +143,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0151](0151-error-attribution-via-condition-status.md) | Error Attribution via Conditions Status | proposed | 2024-01-26 |
 |[TEP-0152](0152-tekton-conformance-verification.md) | Tekton Conformance Verification | implementable | 2024-02-12 |
 |[TEP-0153](0153-v1-migration-for-tekton-results.md) | Migration of Tekton Results to V1 APIs of Pipelines | proposed | 2023-08-14 |
+|[TEP-0154](0154-concise-remote-resolver-syntax.md) | Concise Remote Resolver Syntax | implementable | 2024-03-21 |

@@ -21,6 +21,10 @@ authors:
   - [Conformance verification Test coverage](#conformance-verification-test-coverage)
   - [Test Sutie Design Details](#test-sutie-design-details)
   - [Tekton Conformance Verification Versioned](#tekton-conformance-verification-versioned)
+- [Design Evaluation](#design-evaluation)
+  - [Reliatbility](#reliability)
+  - [Reusability](#reusability)
+  - [Simplicity](#simplicity)
 - [Future Work](#future-work)
 
 ## Summary
@@ -36,17 +40,51 @@ With the release of [v1 Tekton conformance API spec](https://github.com/tektoncd
 - Establishes a clear versioning policy for the Conformance Policy, including its verification process, to streamline future updates.
 
 ## Proposal
+To establish Tekton conformance offerings for Pipelines from a community perspective, we need to develop a suite of Pipeline YAML test cases and implement a process for verifying the results.
+
+### Conformance Verification Process
+The verification process encompasses both vendor preparation for the conformance certification and community-led verification of conformance results.
+
+#### Pipeline Conformance Offering
+We will develop our own Tekton Pipeline Conformance offering and actively share it within the community once we establish the Task suite for vendor result verification. In order to promote understanding, we need to provide the following:
+1) A clear overview of Conformance ertification benefits.
+2) Step-by-step guidance on the certification process.
+3) A list of certified vendor products.
+
+*Whether the offical release for V1 API is a prerequisite for the intial Tekton Conformance Offering remains to be decided as a community*
+
+The complete conformance verification process for vendors:
+
+1) Prepare:
+
+   Vendors learn about the conformance requirements and the [Conformance Tekton Pipelines API Specification](https://github.com/tektoncd/pipeline/blob/main/docs/api-spec.md).
+
+2) Test:
+
+   Vendors integrate their serivce with the Conformance test suite available in Tekton OSS. Run the tests following the instructions provided.
+
+3) Results Submission:
+   
+   Prepare a PR to submit your results to the Conformance repo on GitHub.
+
+4) Tekton Verification:
+   
+   A maintainer from Tekton will review and approve the PR Conformance for verificaiton once all the requirements are met.
+
+#### Vendor Outputs Verification
+
+Vendor output verification will take place within a dedicated 'conformance' repository under the TektonCD organization. We will utilize a combination of the existing dogfooding infrastructure for automation and reviewer judgment to ensure a thorough and precise verification process. Results verification could be automated via a script triggered by vendor output submissions through a Pull Request. The script would analyze the output for keywords indicating test passes, providing vendors with clear feedback on any missing or non-compliant conformance fields. More specifically, the deliverables for vendor test output verification include:
+- A results verification script that analyzes test results, determines pass/fail status, and generates a summary of missing conformance fields.
+- Establitsh a dedicated 'conformance' repository with comprehensive documentations for guidance.
+- Define an up-to-date reviewer guide for evaluating and communicating vendor conformance test results.
 
 ### Verification Testing Strategy
 
 The Tekton conformance test utilizes black box testing strategy to verify if a vendor services supports the required Tekton conformant APIs. For interoperability and portability, the conformance test suite should not rely on any vendor-specific implementation details.
 
-Tekton OSS repository will house the versioned conformance test suite. This suite will provide input Tekton Primitive YAMLs for the vendor service and then verify the corresponding outputs. Tekton vendors will be able to pull the test suite from the OSS repository and integrate it with their own implementations of the required `ProcessAndSendToTekton` function. However, the internal workings of their services will remain a "black box" to the test suite, as it will only evaluate the outputs.
-
+Tekton OSS repository will house the versioned conformance test suite. This suite will provide input Tekton Primitive YAMLs for the vendor service and then verify the corresponding outputs. Tekton vendors will be able to pull the test suite from the OSS repository and integrate it with their own implementations of the required `ProcessAndSendToTekton` function(see [vendor integration](#vendor-integration) for more details). However, the internal workings of their services will remain a "black box" to the test suite, as it will only evaluate the outputs.
 
 ![conformance verification](images/0152-conformance-verification.png)
-
-
 
 More specifically for the verification process:
 - The test suite provides Tekton Primitives YAMLs as inputs for the vendor service to process. The YAMLs are vanilla Tekton-native PipelineRuns and TaskRuns that are vendor-agnostic. Each field/feature will be isolated in separate tests as much as possible to simplify failure attribution.
@@ -55,7 +93,11 @@ More specifically for the verification process:
 
 - For verifying results, upon receiving [Tekton client](https://github.com/tektoncd/pipeline/blob/main/test/clients.go#L56-L71) readable YAML outputs,  the test suite will leverage the parse pkg for validating whether all the required conformant API fields are populated and the behaviors are honored.
 
-Tekton vendors will have the responsibility of integrating the conformance verification test suite with their respective services. To deliver conformance validation results to the test suite, vendors must implement the ProcessAndSendToTekton function. This function transforms vanilla Tekton Pipeline YAMLs into Tekton-parsable YAMLs for results verification.
+#### Vendor integration
+
+Tekton vendors will have the responsibility of integrating the conformance verification test suite with their respective services. To deliver conformance validation results, vendors must implement the `ProcessAndSendToTekton` function. On a higher level, it is a wrapper of all the vendor service detail, intaking and outputing Tekton YAML for Tekton conformance fields to get verified.
+
+This function transforms vanilla Tekton Pipeline YAMLs into Tekton-parsable YAMLs for results verification. For more details:
 
 ```go
 // ProcessAndSendToTekton accepts vanilla Tekton PipelineRun and TaskRun YAMLs, waits for the object to complete and outputs the completed PipelineRun and TaskRun along with the status.
@@ -66,17 +108,18 @@ Tekton vendors will have the responsibility of integrating the conformance verif
 func ProcessAndSendToTekton(inputYAML, type string, customInputs …interface{}) (string, error)
 ```
 
-#### Alternatives Considered
+#### **Alternatives Considered**
 As an alternative, Tekton vendors could expose endpoints for Tekton to call, allowing for  consumption and output of results according to HTTP API conformance (out-of-scope for the existing Tekton Conformance policy). In this scenario, Tekton Pipeline could trigger the testing process autonomously.
 
 ##### Cons:
--  This would require HTTP API conformance which is not currently in-scope with [v1 Tekton conformance API spec](https://github.com/tektoncd/pipeline/blob/main/docs/api-spec.md).
+- This would require HTTP API conformance which is not currently in-scope with [v1 Tekton conformance API spec](https://github.com/tektoncd/pipeline/blob/main/docs/api-spec.md).
+- This increases complexity and maintenance costs for the Tekton OSS project. Vendors seeking conformance should be responsible for managing these costs.
 
 ### Vendor Requirements
-- Vendor service should handle conformant vanilla PipelineRun and TaskRun YAMLs successfully, ensuring all the REQUIRED fields are accepted.
+- Vendor service should handle conformant vanilla PipelineRun and TaskRun (with referenced Task, Pipeline) YAMLs successfully, ensuring all the `REQUIRED` fields are accepted.
 - Vendor service should be able to generate PipelineRun and TaskRun output YAMLs that are also conformant. This ensures that all `REQUIRED` fields are populated, demonstrating the expected functionality.
-- To claim conformance for a certain Tekton version, vendors would need to provide artifacts to prove the success of all the conformance tests.
-
+- For certain behaviours and functionalities, vendors are also required to provide verifiable outcome via specific Run Status fields. For example, to verify Pipeline Workspaces functionalities, we will need the PipelineRunStatus fields to be populated to show the successful support of WorkspaceBinding in each Task.
+- To claim conformance for a certain Tekton version, vendors would need to provide artifacts and the way to reproduce to prove the success of all the conformance tests.
 
 ### Conformance verification Test coverage
 The conformance verification test suite focuses only on the GA, non-optional API fields and features, which includes the `REQUIRED` fields from the Tekton conformant API spec policy. More specifically, the Tekton conformance verification test suite:
@@ -147,6 +190,17 @@ Fields may exhibit behaviors beyond mere population or modification. To assess t
 
 ### Proof of concept
 To create a proof-of-concept conformance verification process, we initially utilized Tekton Pipeline's end-to-end test infrastructure, mocking the vendor service to confirm conformance. It implements the proposed black-box testing strategy for all three conformance verification test types. Please refer to the [POC conformance test suite](https://github.com/JeromeJu/pipeline/pull/140) for more information.
+
+## Design Evaluation
+### Reliability
+#### How are we confident the test suite will work in theory?
+Test outputs will be compared against the Tekton Pipeline server's results to guarantee interoperability and portability for users of vendor services.
+
+### Reusability
+Because conformance test suites are versioned, they should remain reusable as long as the conformance policy/API avoids major version bumps.
+
+### Simplicity
+The tests are granular for simplicity and to clearly pinpoint non-conformant fields for vendors.
 
 ### Tekton Conformance Verification Versioned
 This document proposes that the conformance policy/test suite should honor the same versioning strategy as the [Pipeline releases versioning](https://github.com/tektoncd/pipeline/blob/main/releases.md#release-frequency) to minimize user confusion. In other words, each Tekton Pipeline release will have a corresponding, versioned Tekton conformance test suite. For example, the version of conformance API specification policy/test suite for Pipeline release **v1.29.0** should be consistently versioned as **v1.29.0**.

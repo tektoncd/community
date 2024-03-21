@@ -23,8 +23,8 @@ one year: every year either two or three of the seats are up for election.
 
 | Full Name         |  Company   | GitHub                                      | Slack                                                         | Elected On | Until    |
 |-------------------|:----------:|---------------------------------------------|---------------------------------------------------------------|------------|----------|
-| Andrea Frittoli   |    IBM     | [afrittoli](https://github.com/afrittoli)   | [@Andrea Frittoli](https://tektoncd.slack.com/team/UJ411P2CC) | Feb 2022   | Feb 2024 |
-| Billy Lynch       | Chainguard | [wlynch](https://github.com/wlynch)         | [@Billy Lynch](https://tektoncd.slack.com/team/UJ7BLGSB0) .   | Feb 2023   | Feb 2024 |
+| Andrea Frittoli   |    IBM     | [afrittoli](https://github.com/afrittoli)   | [@Andrea Frittoli](https://tektoncd.slack.com/team/UJ411P2CC) | Feb 2024   | Feb 2026 |
+| Billy Lynch       | Chainguard | [wlynch](https://github.com/wlynch)         | [@Billy Lynch](https://tektoncd.slack.com/team/UJ7BLGSB0) .   | Feb 2024   | Feb 2026 |
 | Dibyo Mukherjee   |   Google   | [dibyom](https://github.com/dibyom)         | [@Dibyo Mukherjee](https://tektoncd.slack.com/team/UJ73HM7PZ) | Feb 2023   | Feb 2025 |
 | Jerop Kipruto     |   Google   | [jerop](https://github.com/jerop)           | [@Jerop Kipruto](https://tektoncd.slack.com/team/U011DPQSP0V) | Feb 2023   | Feb 2025 |
 | Vincent Demeester |  Red Hat   | [vdemeester](https://github.com/vdemeester) | [@vdemeester](https://tektoncd.slack.com/team/UHSQGV1L3)      | Feb 2023   | Feb 2025 |

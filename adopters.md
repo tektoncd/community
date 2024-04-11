@@ -41,6 +41,7 @@ Tell us about, we welcome [pull requests](https://github.com/tektoncd/community/
 | Nubank | Tekton is the basis of the Nubank's primary CI/CD platform, supporting millions of builds per month | | Yes |
 | OneStock | Tekton is central to OneStock's CI/CD operations, managing 35+ different pipelines for 500+ repositories | | Yes |
 | AllianzDirect | Tekton is the main CI Engine for Allianz Direct Software Release stack | | Yes |
+| Kadaster | Tekton is used as the main CICD solution on ARO (Azure Redhat OpenShift) after a migration from Jenkins. | | Yes |
 
 ## Tekton Friends
 

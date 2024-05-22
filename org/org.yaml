@@ -7,7 +7,7 @@ orgs:
     - thelinuxfoundation
     - vdemeester
     - afrittoli
-    - dibyom
+    - chitrangpatel
     billing_email: info@cd.foundation
     company: ''
     default_repository_permission: none
@@ -59,11 +59,11 @@ orgs:
     - chetan-rns
     - chmouel
     - chuangw6
-    - chitrangpatel
     - crshnburn
     - concaf
     - danielhelfand
     - dibbles
+    - dibyom
     - divyansh42
     - dlbewley
     - dlorenc
@@ -197,7 +197,7 @@ orgs:
         - jerop
         - vdemeester
         - afrittoli
-        - dibyom
+        - chitrangpatel
         privacy: closed
       catalog.maintainers:
         description: the catalog maintainers

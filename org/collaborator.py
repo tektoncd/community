@@ -36,7 +36,7 @@ from ruamel.yaml import YAML
 
 
 ORG_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'org.yaml')
-GOVERNANCE_TEAM = ['afrittoli', 'dibyom', 'jerop', 'vdemeester', 'wlynch']
+GOVERNANCE_TEAM = ['afrittoli', 'chitrangpatel', 'jerop', 'vdemeester', 'wlynch']
 
 def get_contributors_maintainers(github_token):
     g = github.Github(github_token)

@@ -203,7 +203,6 @@ orgs:
       catalog.maintainers:
         description: the catalog maintainers
         members:
-        - bobcatfish
         - chmouel
         - vdemeester
         - vinamra28
@@ -259,13 +258,11 @@ orgs:
         maintainers:
         - vdemeester
         - ImJasonH
-        - bobcatfish
         - afrittoli
         members:
         - pritidesai
         - dibyom
         - jerop
-        - lbernick
         - abayer
         - wlynch
         - yongxuanzhang
@@ -277,10 +274,9 @@ orgs:
       dashboard.maintainers:
         description: the dashboard maintainers
         maintainers:
-        - bobcatfish
         - skaegi
-        members:
         - AlanGreene
+        members:
         - briangleeson
         - LyndseyBu
         privacy: closed
@@ -290,7 +286,6 @@ orgs:
         description: the experimental maintainers
         maintainers:
         - abayer
-        - bobcatfish
         members:
         - skaegi
         - dlorenc
@@ -342,14 +337,10 @@ orgs:
         maintainers:
         - vdemeester
         - abayer
-        - bobcatfish
         - afrittoli
         members:
         - dibyom
-        - dlorenc
         - jerop
-        - kimsterv
-        - nikhil-thomas
         - savitaashture
         - wlynch
         privacy: closed
@@ -362,7 +353,6 @@ orgs:
         - abayer
         - adambkaplan
         - afrittoli
-        - bobcatfish
         - vdemeester
         members:
         - alan-ghelardi
@@ -381,7 +371,6 @@ orgs:
         maintainers:
         - abayer
         - alan-ghelardi
-        - bobcatfish
         - vdemeester
         - afrittoli
         members:
@@ -400,13 +389,13 @@ orgs:
       triggers.maintainers:
         description: the triggers maintainers
         maintainers:
-        - bobcatfish
+        - vdemeester
         members:
         - iancoffey
         - dlorenc
-        - khrm
         - wlynch
         - dibyom
+        - khrm
         - ncskier
         - vtereso
         - savitaashture
@@ -416,13 +405,10 @@ orgs:
       website.maintainers:
         description: the website maintainers
         maintainers:
-        - bobcatfish
-        members:
-        - dlorenc
-        - vdemeester
-        - kimsterv
-        - abayer
         - afrittoli
+        members:
+        - vdemeester
+        - abayer
         - skaegi
         - AlanGreene
         - jjasghar
@@ -434,28 +420,22 @@ orgs:
       core.collaborators:
         description: The core collaborators
         maintainers:
-        - bobcatfish
+        - vdemeester
         members:
         - abayer
         - afrittoli
         - chitrangpatel
         - chuangw6
-        - danielhelfand
-        - dibbles
         - dibyom
-        - dlorenc
         - hrishin
         - ImJasonH
         - JeromeJu
         - jerop
-        - lbernick
-        - mattmoor
         - piyush-garg
         - pritidesai
         - psschwei
         - QuanZhang-William
         - skaegi
-        - vdemeester
         - waveywaves
         - withlin
         - wlynch
@@ -481,6 +461,10 @@ orgs:
         # shashwathi
         # sthaha
         # vincent-pli
+        # danielhelfand
+        # dibbles
+        # dlorenc
+        # mattmoor
         privacy: closed
         repos:
           pipeline: read
@@ -494,11 +478,9 @@ orgs:
         - AlanGreene
         - popcor255
         - afrittoli
-        - bobcatfish
         - vdemeester
         - skaegi
         - alhuizenga
-        - lbernick
         - bendory
         privacy: closed
         repos:
@@ -506,7 +488,6 @@ orgs:
       community.maintainers:
         description: The community maintainers, Tekton GB and others
         members:
-        - bobcatfish
         - jerop
         - vdemeester
         - dibyom
@@ -519,7 +500,7 @@ orgs:
       community.collaborators:
         description: The community collaborators
         maintainers:
-        - bobcatfish
+        - vdemeester
         members:
         - savitaashture
         - abayer
@@ -553,7 +534,6 @@ orgs:
         - font
         - ncskier
         - ImJasonH
-        - vdemeester
         - hrishin
         - lukehinds
         - PuneetPunamiya
@@ -564,7 +544,6 @@ orgs:
         - vinamra28
         - pierretasci
         - priyawadhwa
-        - lbernick
         - lcarva
         - adambkaplan
         - chitrangpatel
@@ -582,7 +561,6 @@ orgs:
         maintainers:
         - abayer
         - afrittoli
-        - bobcatfish
         - ImJasonH
         members:
         - steveodonovan
@@ -609,7 +587,6 @@ orgs:
         maintainers:
         - abayer
         - afrittoli
-        - bobcatfish
         members:
         - carlos-logro
         - chuangw6
@@ -640,7 +617,6 @@ orgs:
         - waveywaves
         - khrm
         - savitaashture
-        - lbernick
         - RafaeLeal
         - alan-ghelardi
         # alumni:
@@ -663,9 +639,7 @@ orgs:
         - dlorenc
         - savitaashture
         - SM43
-        - bobcatfish
         - afrittoli
-        - lbernick
         - lcarva
         - vinamra28
         - JeromeJu
@@ -720,7 +694,6 @@ orgs:
         - PuneetPunamiya
         - garethr
         - vincent-pli
-        - bobcatfish
         - spikeburton
         # alumni:
         # sbwsg
@@ -746,7 +719,6 @@ orgs:
         - bigkevmcd
         - vincent-pli
         - akihikokuroda
-        - bobcatfish
         - dorismeixing
         - afrittoli
         - gabemontero
@@ -761,7 +733,6 @@ orgs:
         maintainers:
         - abayer
         - afrittoli
-        - bobcatfish
         - ImJasonH
         - vdemeester
         members:
@@ -778,7 +749,6 @@ orgs:
         maintainers:
         - abayer
         - afrittoli
-        - bobcatfish
         - ImJasonH
         - vdemeester
         members: []
@@ -790,7 +760,6 @@ orgs:
         maintainers:
         - abayer
         - afrittoli
-        - bobcatfish
         - ImJasonH
         - vdemeester
         members:
@@ -803,7 +772,6 @@ orgs:
         maintainers:
         - abayer
         - afrittoli
-        - bobcatfish
         - ImJasonH
         - vdemeester
         members:
@@ -832,7 +800,6 @@ orgs:
         members:
         - abayer
         - afrittoli
-        - bobcatfish
         - chuangw6
         - chitrangpatel
         - dlorenc
@@ -850,7 +817,6 @@ orgs:
         description: Doc reviewers across repos
         maintainers:
         - abayer
-        - bobcatfish
         - dibyom
         - vdemeester
         members:
@@ -861,7 +827,6 @@ orgs:
         maintainers:
         - abayer
         - afrittoli
-        - bobcatfish
         - dibyom
         - vdemeester
         members:
@@ -874,7 +839,6 @@ orgs:
   tektoncd-catalog:
     admins:
     - wlynch
-    - bobcatfish
     - tekton-robot
     - thelinuxfoundation
     - vdemeester

@@ -2,7 +2,7 @@
 status: implementable
 title: Tekton Artifacts phase 1
 creation-date: '2024-01-24'
-last-updated: '2024-02-15'
+last-updated: '2024-07-08'
 authors:
 - '@chitrangpatel'
 contributors:
@@ -236,8 +236,56 @@ status:
 
 The Tekton Chains formatter would access the artifact information from the `StepState`. 
 - All `inputs` will be inserted in the `resolvedDependency` section of the `SLSA provenance`.
-- All `outputs` will be placed as `subjects`.
-  - That's because with just information about the `uri` and `digest`, Tekton Chains does not have enough information to distinguish `subjects` from `byProducts`. Infact, even the `StepAction`/`Task`(for inlined-steps) author does not have the context of how an artifact is used (`byProduct` or `subject` of the build). Without some user input, it is not possible for Chains to determine where to store this information so we propose to fit all `output` artifacts as `subjects` in the `SLSA` provenance.
+- All `outputs` will be placed as either `subjects` or `byProducts`.
+  - At the risk of poluting the subjects field with all types of artifacts, the Chains WG had converged on the [following approach](https://github.com/tektoncd/chains/issues/1065):
+  - We propose adding an optional boolean `isBuildArtifact` field in addition to the `name` and `values` list to each artifact category as shown below.
+```yaml!
+status:
+  steps:
+    - container: step-2
+      outputs:
+        - name: release-file
+          isBuildArtifact: true
+          value:
+            - uri: pkg:generic/release-file
+              digest: sha256:33a06c928729e52d1991a2c55765a7c30ef72b098533f220f3f1d6f352fd32e8
+```
+  - The default of this value will be `false` meaning that Tekton Chains will treat it as a `byProduct`, not a `subject`. Users only need to take some action if they want the result as a SLSA subject. By default, it will be captured as a `byProduct` of the build in the provenance.
+  - `StepAction` and `Task` authors can also parametrize this value (as shown below) and get user input for this information as users would be best suited to know what the particular `StepAction` and `Task` was used to upload (i.e. whether it was a build artifact or a by product). In turn, the `StepAction`/`Task` could also provide it appropriate default value (e.g. a "gcs-upload" task could set it to `false` by default because users would generally use this to upload things like coverage reports etc. On the other hand, a "kaniko" could set the default to `true` since it is uploading images to container registries which are likely build products anyway. Parametrizing it gives users enough control to do what they desire.
+
+```yaml
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: produce-step-artifacts
+spec:
+  params:
+    - name: isBuildArtifact
+      default: true
+  steps:
+    - name: artifacts-producer
+      image: docker.io/library/bash:latest
+      script: |
+        cat > $(step.artifacts.path) << EOF
+        {
+           "outputs":[
+             {
+               "name":"image",
+               "isBuildArtifact": $(params.isBuildArtifact),
+               "values":[
+                 {
+                   "uri":"pkg:github/package-url/purl-spec@244fd47e07d1004f0aed9c",
+                  "digest":{
+                    "sha256":"df85b9e3983fe2ce20ef76ad675ecf435cc99fc9350adc54fa230bae8c32ce48",
+                    "sha1":"95588b8f34c31eb7d62c92aaa4e6506639b06ef2"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        EOF
+```
 
 ### Transferring Artifacts
 Until we have an Artifact API, when a `Task` or a `StepAction` needs to consume `Artifacts`, it can only do so via `params`. The user of the `Task`/`StepAction` needs to provide it the artifact provenance data. The `Task`/`StepAction` consuming the artifacts will only get the associated metadata which they need to use to fetch the raw data. When passing artifacts between `Tasks/Steps`, only output artifacts of a previous `Task/Step` can be passed as inputs to the consuming `Task/Step`. Because of the structure of [artifact provenance data](#values), we propose passing the artifact provenance data as a json string. **Note** that for large number of artifacts, this string has the potential of getting large enough to cause the `TaskRun` to exceed the `etcd` limit. However, that is true for `artifacts` in general and in the future, we will require some sort of `larger artifacts` mechanism. For, now, this is out of scope.

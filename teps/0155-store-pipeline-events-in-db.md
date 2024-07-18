@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: implemented
 title: Store Pipeline Events in Tekton Results
 creation-date: '2023-11-30'
 last-updated: '2024-04-19'
@@ -227,6 +227,7 @@ behavior or add a feature that may replace and deprecate a current one.
 ### Implementation Pull Requests
 
 POC PR: https://github.com/tektoncd/results/pull/745
+Implementation PR: https://github.com/tektoncd/results/pull/748
 
 ## References
 

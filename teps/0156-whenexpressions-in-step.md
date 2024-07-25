@@ -1,8 +1,8 @@
 ---
-status: proposed
+status: implemented
 title: WhenExpressions in Steps
 creation-date: '2024-04-15'
-last-updated: '2024-04-15'
+last-updated: '2024-07-25'
 authors:
 - '@ericzzzzzzz'
 ---
@@ -235,3 +235,7 @@ An alternative approach would be to evaluate When Expressions before creating th
    - **Resource Efficiency**: This approach can save time and resources by avoiding unnecessary image pulls and container creation for steps that won't be executed.
  - **Cons**:
    - **Limited Context**: When Expressions evaluated at this stage cannot access results from previous steps. This restricts the ability to create conditional workflows based on dynamic runtime data.
+
+## Implementation PRs
+
+https://github.com/tektoncd/pipeline/pull/7746

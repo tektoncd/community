@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Tekton Artifacts phase 1
 creation-date: '2024-01-24'
-last-updated: '2024-07-08'
+last-updated: '2024-07-25'
 authors:
 - '@chitrangpatel'
 contributors:
@@ -452,6 +452,9 @@ We could document the demo pipeline and let users apply that approach explicitly
 ### Upgrade and Migration Strategy
 
 ### Implementation Pull Requests
+
+https://github.com/tektoncd/pipeline/pulls?q=is%3Apr+Artifacts+is%3Aclosed+author%3Aericzzzzzzz
+https://github.com/tektoncd/pipeline/pull/8103
 
 ### References
 

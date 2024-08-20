@@ -39,10 +39,7 @@ one year: every year either two or three of the seats are up for election.
 | Chitrang Patel (while Dibyo is on leave)   |   Google   | [chitrangpatel](https://github.com/chitrangpatel)         | [@Chitrang](https://tektoncd.slack.com/team/U03BUB3KJ3B) | May 2024   | Feb 2025 |
 | Jerop Kipruto     |   Google   | [jerop](https://github.com/jerop)           | [@Jerop Kipruto](https://tektoncd.slack.com/team/U011DPQSP0V) | Feb 2023   | Feb 2025 |
 | Vincent Demeester |  Red Hat   | [vdemeester](https://github.com/vdemeester) | [@vdemeester](https://tektoncd.slack.com/team/UHSQGV1L3)      | Feb 2023   | Feb 2025 |
-
-
-On leave till Feb 2025:
-| Dibyo Mukherjee   |   Adobe   | [dibyom](https://github.com/dibyom)         | [@Dibyo Mukherjee](https://tektoncd.slack.com/team/UJ73HM7PZ) | Feb 2023   | Feb 2025 |
+| On leave till Feb 2025:<br />Dibyo Mukherjee |   Adobe   | [dibyom](https://github.com/dibyom) | [@Dibyo Mukherjee](https://tektoncd.slack.com/team/UJ73HM7PZ) | Feb 2023 | Feb 2025 |
 
 There is no designated facilitator at the moment, the responsibility is
 distributed across the five members of the committee.

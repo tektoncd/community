@@ -42,6 +42,7 @@ Tell us about, we welcome [pull requests](https://github.com/tektoncd/community/
 | OneStock | Tekton is central to OneStock's CI/CD operations, managing 35+ different pipelines for 500+ repositories | | Yes |
 | AllianzDirect | Tekton is the main CI Engine for Allianz Direct Software Release stack | | Yes |
 | Kadaster | Tekton is used as the main CICD solution on ARO (Azure Redhat OpenShift) after a migration from Jenkins. | | Yes |
+| Giant Swarm | Tekton is used as our CI/CD solution for testing of Kubernetes cluster and app releases across multiple supported cloud and on-prem providers and for automation of OS image building. | | Yes |
 
 ## Tekton Friends
 

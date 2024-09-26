@@ -290,7 +290,7 @@ This is the working group for [`tektoncd/chains`](https://github.com/tektoncd/ch
 |----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Forum                      | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                                                                                                                                                                                                                                                   |
 | Community Meeting VC       | [Zoom](https://zoom.us/j/92605590091?pwd=dk50d0VGSVRZMU9OTlRRdDV6UjRRQT09)                                                                                                                                                                                                                                          |
-| Community Meeting Calendar | Thursdays every other week, 9am -9:30am PST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=Nzc3N2VjZjk3amZnZzc5MDQwODYxNzRrZHVfMjAyMTA4MTlUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
+| Community Meeting Calendar | Thursdays every other week, 8:45am-9:15am EST <br>[Calendar](https://calendar.google.com/event?action=TEMPLATE&tmeid=Nzc3N2VjZjk3amZnZzc5MDQwODYxNzRrZHVfMjAyMTA4MTlUMTYwMDAwWiBnb29nbGUuY29tX2Qzb3Zjdm8xcDMyMTloOTg5NTczdjk4Zm5zQGc&tmsrc=google.com_d3ovcvo1p3219h989573v98fns%40group.calendar.google.com&scp=ALL) |
 | Meeting Notes              | [Notes](https://docs.google.com/document/d/1UVPSCDyNO-TzEFSv8jrqrEOF_FmV8NFuXncFm1gwmeY/edit)                                                                                                                                                                                                                       |
 | Slack Channels             | [#chains](https://tektoncd.slack.com/messages/chains)                                                                                                                                                                                                                                                               |
 
@@ -376,7 +376,7 @@ TBD [community#629](https://github.com/tektoncd/community/issues/629)).
 
 ## Data Interface
 
-The goal of this working group is to discuss changes to the data interface: how users consume, pass and produce data 
+The goal of this working group is to discuss changes to the data interface: how users consume, pass and produce data
 in Tekton. The problem space is scoped in this [document](https://docs.google.com/document/d/1XbeI-_4bFaBize3adQmSL6Czo8MXVvoYn6dJgFZJ_So/edit?usp=sharing).
 
 | Artifact                   | Link                                                                                                                                                                                  |

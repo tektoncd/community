@@ -29,6 +29,7 @@ Tell us about, we welcome [pull requests](https://github.com/tektoncd/community/
 | IBM     | IBM offers Tekton as a Service through IBM Cloud Continuous Delivery Pipelines                                                                                                                                                                                                                                              | [IBM Cloud Continuous Delivery](https://www.ibm.com/cloud/continuous-delivery) | Yes                                                    |
 | Google  | Tekton is designed to work well with Google Cloud-specific Kubernetes tooling. This includes deployments to Google Kubernetes Engine as well as artifact storage and scanning using Container Registry. You can also build, test, and deploy across multiple environments such as VMs, serverless, Kubernetes, or Firebase. | [Tekton on Google Cloud](https://cloud.google.com/tekton)                      | Yes                                                    |
 | CloudBees | CloudBees Cloud Native DevSecOps Platform is built on Tekton | [CloudBees Platform](https://www.cloudbees.com/products/saas-platform)                      | Yes                                                    |
+| Alauda  | Tekton is used internally as the pipeline engine that drives our CI/CD systems. Our product also integrates Tekton Pipelines to offer complex CI/CD functionality to our customers. | [Alauda Container Platform](https://www.alauda.io/platform) | Yes |
 
 
 
@@ -43,6 +44,7 @@ Tell us about, we welcome [pull requests](https://github.com/tektoncd/community/
 | AllianzDirect | Tekton is the main CI Engine for Allianz Direct Software Release stack | | Yes |
 | Kadaster | Tekton is used as the main CICD solution on ARO (Azure Redhat OpenShift) after a migration from Jenkins. | | Yes |
 | Giant Swarm | Tekton is used as our CI/CD solution for testing of Kubernetes cluster and app releases across multiple supported cloud and on-prem providers and for automation of OS image building. | | Yes |
+| [Alauda](https://www.alauda.io/) | Tekton is used internally as the pipeline engine that drives our CI/CD systems. Currently, we manage 750+ repositories and have 1,000+ automated build and test pipelines. | | Yes |
 
 ## Tekton Friends
 

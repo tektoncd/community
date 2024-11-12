@@ -20,6 +20,7 @@ Tell us about, we welcome [pull requests](https://github.com/tektoncd/community/
 | Automatiko Approval task                                               | Brings approval tasks into Tekton pipeline with various strategies (single approval, multiple approvals, four eye based approval).                                                                                                                    | [github.com/automatiko-io/automatiko-approval-task](https://github.com/automatiko-io/automatiko-approval-task) |
 | [EPAM Delivery Platform (EDP)](https://epam.github.io/edp-install/)    | Cloud-agnostic SaaS/PaaS solution for software development with a pre-defined set of CI/CD pipelines and tools, enabling to kickstart development quickly with established processes for code review, release, versioning, branching, and deployment. | [github.com/epam/edp-tekton](https://github.com/epam/edp-tekton)                                               |
 | tekton-s3-log-reader                                                   | Releases important Kubernetes resources by storing long term Tekton Dashboard logs into S3. It improves performance and End Users experience. | [github.com/allianz-direct/tekton-s3-log-reader](https://github.com/allianz-direct/tekton-s3-log-reader) |
+| [Konflux](https://konflux-ci.dev/)                              | Konflux is an open source, cloud-native software factory focused on software supply chain security. | [github.com/konflux-ci](https://github.com/konflux-ci) |
 
 
 ## Vendors

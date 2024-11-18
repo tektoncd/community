@@ -146,3 +146,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0154](0154-concise-remote-resolver-syntax.md) | Concise Remote Resolver Syntax | implementable | 2024-03-21 |
 |[TEP-0155](0155-store-pipeline-events-in-db.md) | Store Pipeline Events in Tekton Results | proposed | 2024-04-19 |
 |[TEP-0156](0156-whenexpressions-in-step.md) | WhenExpressions in Steps | implemented | 2024-07-22 |
+|[TEP-0157](0157-pipelinerun-displayname.md) | PipelineRun Display Name | proposed | 2024-11-18 |

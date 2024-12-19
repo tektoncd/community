@@ -135,6 +135,7 @@ orgs:
     - pritidesai
     - priyawadhwa
     - psschwei
+    - PuneetPunamiya
     - rafamqrs
     - raffamendes
     - rhuss
@@ -226,6 +227,7 @@ orgs:
         members:
           - lcarva
           - priyawadhwa
+          - PuneetPunamiya
           - wlynch
         privacy: closed
         repos:
@@ -237,6 +239,7 @@ orgs:
         - chuangw6
         - lcarva
         - priyawadhwa
+        - PuneetPunamiya
         - wlynch
         privacy: closed
         repos:
@@ -813,6 +816,7 @@ orgs:
         - mattmoor
         - pritidesai
         - priyawadhwa
+        - PuneetPunamiya
         - vdemeester
         - wlynch
         privacy: closed

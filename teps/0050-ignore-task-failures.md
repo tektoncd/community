@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: 'Ignore Task Failures'
 creation-date: '2021-02-05'
-last-updated: '2023-09-28'
+last-updated: '2023-12-07'
 authors:
 - '@pritidesai'
 - '@skaegi'
@@ -27,6 +27,7 @@ authors:
   - [A list of ignorable fail tasks in PipelineSpec](#a-list-of-ignorable-fail-tasks-in-pipelinespec)
 - [Future Work](#future-work)
   - [Support parameterization for task.OnError](#support-parameterization-for-taskonerror)
+- [Implementation](#implementation)
 - [References](#references)
 <!-- /toc -->
 
@@ -515,6 +516,9 @@ type PipelineSpec struct {
 ## Future Work
 ### Support parameterization for task.OnError
 The failure strategy proposed in this TEP supports only static constant values (```continue``` and ```stopAndFail```) for ```onError```. We could further extend the support to let users specify values as task parameters (for example ```onError: $(params.CONTINUE)```)
+
+## Implementation
+The implementation PRs are tracked in [#7165](https://github.com/tektoncd/pipeline/issues/7165)
 
 ## References
 

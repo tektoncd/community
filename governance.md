@@ -4,14 +4,25 @@ The Tekton Governance committee is the governing body of the Tekton open source
 project. It's an elected group that represents the contributors to the project,
 and has an oversight on governance and technical matters.
 
-- [Tekton Governance Committee](#tekton-governance-committee)
-- [Governance Facilitator Role (optional)](#governance-facilitator-role-optional)
-- [Maximum Representation](#maximum-representation)
-- [Committee Responsibilities and Deliverables](#committee-responsibilities-and-deliverables)
-- [Governance Meetings and Decision-Making Process](#governance-meetings-and-decision-making-process)
-- [Elections](#elections)
-- [Permissions and access](#permissions-and-access)
-- [Governing board leave policy](#governing-board-leave-policy)
+- [Tekton Governance](#tekton-governance)
+  - [Tekton Governance Committee](#tekton-governance-committee)
+    - [Current members](#current-members)
+      - [Former members ❤️](#former-members-️)
+  - [Governance Facilitator Role (optional)](#governance-facilitator-role-optional)
+  - [Maximum Representation](#maximum-representation)
+  - [Committee Responsibilities and Deliverables](#committee-responsibilities-and-deliverables)
+  - [Governance Meetings and Decision-Making Process](#governance-meetings-and-decision-making-process)
+  - [Elections](#elections)
+    - [Voter Eligibility](#voter-eligibility)
+    - [Candidate Eligibility](#candidate-eligibility)
+    - [Nominations Process](#nominations-process)
+    - [Election Process](#election-process)
+    - [Election Officers](#election-officers)
+    - [Vacancies](#vacancies)
+    - [Email templates](#email-templates)
+    - [Changes to governing board](#changes-to-governing-board)
+  - [Permissions and access](#permissions-and-access)
+  - [Governing board leave policy](#governing-board-leave-policy)
 
 ## Tekton Governance Committee
 
@@ -23,11 +34,12 @@ one year: every year either two or three of the seats are up for election.
 
 | Full Name         |  Company   | GitHub                                      | Slack                                                         | Elected On | Until    |
 |-------------------|:----------:|---------------------------------------------|---------------------------------------------------------------|------------|----------|
-| Andrea Frittoli   |    IBM     | [afrittoli](https://github.com/afrittoli)   | [@Andrea Frittoli](https://tektoncd.slack.com/team/UJ411P2CC) | Feb 2022   | Feb 2024 |
-| Billy Lynch       | Chainguard | [wlynch](https://github.com/wlynch)         | [@Billy Lynch](https://tektoncd.slack.com/team/UJ7BLGSB0) .   | Feb 2023   | Feb 2024 |
-| Dibyo Mukherjee   |   Google   | [dibyom](https://github.com/dibyom)         | [@Dibyo Mukherjee](https://tektoncd.slack.com/team/UJ73HM7PZ) | Feb 2023   | Feb 2025 |
+| Andrea Frittoli   |    IBM     | [afrittoli](https://github.com/afrittoli)   | [@Andrea Frittoli](https://tektoncd.slack.com/team/UJ411P2CC) | Feb 2024   | Feb 2026 |
+| Billy Lynch       | Chainguard | [wlynch](https://github.com/wlynch)         | [@Billy Lynch](https://tektoncd.slack.com/team/UJ7BLGSB0) .   | Feb 2024   | Feb 2026 |
+| Chitrang Patel (while Dibyo is on leave)   |   Google   | [chitrangpatel](https://github.com/chitrangpatel)         | [@Chitrang](https://tektoncd.slack.com/team/U03BUB3KJ3B) | May 2024   | Feb 2025 |
 | Jerop Kipruto     |   Google   | [jerop](https://github.com/jerop)           | [@Jerop Kipruto](https://tektoncd.slack.com/team/U011DPQSP0V) | Feb 2023   | Feb 2025 |
 | Vincent Demeester |  Red Hat   | [vdemeester](https://github.com/vdemeester) | [@vdemeester](https://tektoncd.slack.com/team/UHSQGV1L3)      | Feb 2023   | Feb 2025 |
+| On leave till Feb 2025:<br />Dibyo Mukherjee |   Adobe   | [dibyom](https://github.com/dibyom) | [@Dibyo Mukherjee](https://tektoncd.slack.com/team/UJ73HM7PZ) | Feb 2023 | Feb 2025 |
 
 There is no designated facilitator at the moment, the responsibility is
 distributed across the five members of the committee.

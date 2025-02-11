@@ -4,8 +4,10 @@ authors:
   - "@vdemeester"
   - "@sthaha"
   - "@bobcatfish"
+contributors:
+  - "@chitrangpatel"
 creation-date: 2020-06-11
-last-updated: 2021-02-09
+last-updated: 2024-03-04
 status: implemented
 ---
 
@@ -148,7 +150,7 @@ this](https://docs.google.com/document/d/1-czjvjfpuIqYKsfkvZ5RxIbtoFNLTEtOxaZB71
 3. If an update change the behavior of an already published task, the updated
    task should be a released as a new version.
 
-4. Users of the catalog can reference Tasks in the catalog in their
+4. Users of the catalog can reference StepActions/Tasks in the catalog in their
    TaskRuns and Pipelines including the version they would like to use
 
 5. Users should be able to define their own catalogs as well, and use
@@ -191,7 +193,7 @@ this](https://docs.google.com/document/d/1-czjvjfpuIqYKsfkvZ5RxIbtoFNLTEtOxaZB71
 * Tekton resources : The word "resource" in this doc refers to any
   resource that could be featured in the Tekton Catalog, a.k.a.:
 
-    * Task, Condition, Pipeline, TriggerBinding, TriggerTemplate
+    * Task, Condition, Pipeline, TriggerBinding, TriggerTemplate, StepAction
 
 ### Support Tiers
 
@@ -248,13 +250,13 @@ should guarantee as much *stability* as possible for its user.
   their tasks in an automated way, and [Cool URIs don't
   change](https://www.w3.org/Provider/Style/URI).
 
-* Users may use (and install) a Task automatically, with the
+* Users may use (and install) a StepAction/Task automatically, with the
   assumption that the behavior doesn’t change. If a parameter is
   removed or a behavior changes, it could break the user
-  tasks/pipelines.
+  stepactions/tasks/pipelines.
 
 A version is an identifiable information of a resource along with its
-kind (Task, Pipeline) and name, and it should be present in the
+kind (StepAction, Task, Pipeline) and name, and it should be present in the
 definition of the resource. The location of a resource in the catalog
 should be computable given its Kind, Name and the
 Version. e.g. /{kind}/{name}/{version}/{name}.yaml -
@@ -328,7 +330,7 @@ also provide a folder in tektoncd/experimental for this.
 ### Compatibility
 
 Right now the only indication of what versions of Tekton Pipelines a
-Task works with is the apiVersion, currently with possible values of
+StepAction/Task works with is the apiVersion, currently with possible values of
 v1alpha1 and v1beta1. But additive changes can be made between
 releases.
 
@@ -390,9 +392,23 @@ following organization is proposed.
 ./{resource-type}/{resource-name}/{version}/samples/… |
 ```
 
-For example (with Task and Pipelines):
+For example (with StepActions, Task and Pipelines):
 
 ```
+./stepaction/
+  /argocd
+    /0.1
+      /README.md
+      /argocd.yaml
+      /samples/deploy-to-k8s.yaml
+    /0.2/...
+    /OWNERS
+    /README.md
+  /golang-build
+    /0.1
+      /README.md
+      /golang-build.yaml
+      /samples/golang-build.yaml
 ./task/
   /argocd
     /0.1

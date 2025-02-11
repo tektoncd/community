@@ -8,7 +8,7 @@ This is the complete list of Tekton TEPs:
 |------|--------|----------|---------------|
 |[TEP-0001](0001-tekton-enhancement-proposal-process.md) | Tekton Enhancement Proposal Process | implemented | 2020-06-11 |
 |[TEP-0002](0002-custom-tasks.md) | Custom Tasks | implemented | 2021-12-15 |
-|[TEP-0003](0003-tekton-catalog-organization.md) | Tekton Catalog Organization | implemented | 2021-02-09 |
+|[TEP-0003](0003-tekton-catalog-organization.md) | Tekton Catalog Organization | implemented | 2024-03-04 |
 |[TEP-0004](0004-task-results-in-final-tasks.md) | Task Results in Final Tasks | implemented | 2021-06-03 |
 |[TEP-0005](0005-tekton-oci-bundles.md) | Tekton OCI Bundles | implemented | 2022-01-04 |
 |[TEP-0006](0006-tekton-metrics.md) | Tekton Metrics | proposed | 2020-07-13 |
@@ -50,7 +50,7 @@ This is the complete list of Tekton TEPs:
 |[TEP-0047](0047-pipeline-task-display-name.md) | Pipeline Task Display Name | implemented | 2023-03-30 |
 |[TEP-0048](0048-task-results-without-results.md) | Task Results without Results | implementable | 2022-08-09 |
 |[TEP-0049](0049-aggregate-status-of-dag-tasks.md) | Aggregate Status of DAG Tasks | implemented | 2021-06-03 |
-|[TEP-0050](0050-ignore-task-failures.md) | Ignore Task Failures | implementable | 2023-09-28 |
+|[TEP-0050](0050-ignore-task-failures.md) | Ignore Task Failures | implemented | 2023-12-07 |
 |[TEP-0051](0051-ppc64le-architecture-support.md) | ppc64le Support | proposed | 2021-01-28 |
 |[TEP-0052](0052-tekton-results-automated-run-resource-cleanup.md) | Tekton Results: Automated Run Resource Cleanup | implementable | 2021-03-22 |
 |[TEP-0053](0053-nested-triggers.md) | Nested Triggers | implemented | 2023-03-21 |
@@ -105,7 +105,7 @@ This is the complete list of Tekton TEPs:
 |[TEP-0111](0111-propagating-workspaces.md) | Propagating Workspaces | implemented | 2022-09-16 |
 |[TEP-0112](0112-replace-volumes-with-workspaces.md) | Replace Volumes with Workspaces | proposed | 2022-07-20 |
 |[TEP-0114](0114-custom-tasks-beta.md) | Custom Tasks Beta | implemented | 2022-12-12 |
-|[TEP-0115](0115-tekton-catalog-git-based-versioning.md) | Tekton Catalog Git-Based Versioning | implemented | 2022-12-14 |
+|[TEP-0115](0115-tekton-catalog-git-based-versioning.md) | Tekton Catalog Git-Based Versioning | implemented | 2024-03-04 |
 |[TEP-0116](0116-referencing-finally-task-results-in-pipeline-results.md) | Referencing Finally Task Results in Pipeline Results | implemented | 2022-08-11 |
 |[TEP-0117](0117-tekton-results-logs.md) | Tekton Results Logs | implemented | 2023-03-22 |
 |[TEP-0118](0118-matrix-with-explicit-combinations-of-parameters.md) | Matrix with Explicit Combinations of Parameters | implemented | 2022-08-08 |
@@ -127,12 +127,22 @@ This is the complete list of Tekton TEPs:
 |[TEP-0135](0135-coscheduling-pipelinerun-pods.md) | Coscheduling PipelineRun pods | implemented | 2023-07-27 |
 |[TEP-0136](0136-capture-traces-for-task-pod-events.md) | Capture traces for task pod events | implementable | 2023-07-23 |
 |[TEP-0137](0137-cloudevents-controller.md) | CloudEvents controller | implementable | 2023-07-31 |
-|[TEP-0138](0138-decouple-api-and-feature-versioning.md) | Decouple API and feature versioning | implementable | 2023-08-23 |
+|[TEP-0138](0138-decouple-api-and-feature-versioning.md) | Decouple API and feature versioning | implemented | 2024-02-20 |
 |[TEP-0139](0139-trusted-artifacts.md) | Trusted Artifacts | proposed | 2023-07-27 |
 |[TEP-0140](0140-producing-results-in-matrix.md) | Producing Results in Matrix | implemented | 2023-10-24 |
 |[TEP-0141](0141-platform-context-variables.md) | Platform Context Variables | proposed | 2023-08-21 |
-|[TEP-0142](0142-enable-step-reusability.md) | Enable Step Reusability | implementable | 2023-11-20 |
+|[TEP-0142](0142-enable-step-reusability.md) | Enable Step Reusability | implemented | 2024-01-24 |
 |[TEP-0143](0143-concise-parameters-results.md) | Concise Parameters and Results | proposed | 2023-10-01 |
-|[TEP-0144](0144-param-enum.md) | Param Enum | implementable | 2023-11-10 |
+|[TEP-0144](0144-param-enum.md) | Param Enum | implemented | 2023-11-23 |
 |[TEP-0145](0145-cel-in-whenexpression.md) | CEL in WhenExpression | implemented | 2023-10-22 |
 |[TEP-0146](0146-parameters-in-script.md) | Parameters in Script | proposed | 2023-10-02 |
+|[TEP-0147](0147-tekton-artifacts-phase1.md) | Tekton Artifacts phase 1 | implemented | 2024-07-25 |
+|[TEP-0148](0148-summaryaggregation-api-for-tekton-results.md) | Summary/Aggregation API for Tekton Results | implemented | 2024-02-28 |
+|[TEP-0149](0149-tekton-cli-local-data-upload.md) | Tekton CLI Local Data Upload | proposed | 2023-10-31 |
+|[TEP-0150](0150-displayname-in-matrix.md) | displayName in Matrix | implementable | 2024-02-08 |
+|[TEP-0151](0151-error-attribution-via-condition-status.md) | Error Attribution via Conditions Status | proposed | 2024-01-26 |
+|[TEP-0152](0152-tekton-conformance-verification.md) | Tekton Conformance Verification | implementable | 2024-02-12 |
+|[TEP-0153](0153-v1-migration-for-tekton-results.md) | Migration of Tekton Results to V1 APIs of Pipelines | proposed | 2023-08-14 |
+|[TEP-0154](0154-concise-remote-resolver-syntax.md) | Concise Remote Resolver Syntax | implementable | 2024-03-21 |
+|[TEP-0155](0155-store-pipeline-events-in-db.md) | Store Pipeline Events in Tekton Results | proposed | 2024-04-19 |
+|[TEP-0156](0156-whenexpressions-in-step.md) | WhenExpressions in Steps | implemented | 2024-07-22 |

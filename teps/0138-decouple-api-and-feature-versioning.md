@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: implemented
 title: Decouple API and feature versioning
 creation-date: '2023-07-07'
-last-updated: '2023-08-23'
+last-updated: '2024-02-20'
 authors:
 - '@JeromeJu'
 - '@chitrangpatel'
@@ -53,6 +53,7 @@ authors:
   - [<a name="_tcstxie74non"></a>How many tests can we run in a reasonable amount of time?](#how-many-tests-can-we-run-in-a-reasonable-amount-of-time)
   - [How many tests should we run against the additional tests?](#how-many-tests-should-we-run-against-the-additional-tests)
 - [Future Work](#future-work)
+- [Implementation Pull Requests](#implementation-pull-requests)
 - [References](#references)
 <!-- /toc -->
 
@@ -181,11 +182,11 @@ See [implementation plan](#implementation-plan) for more details on the PerFeatu
 
 All **new** features can only be enabled via per-feature flags. When they first get introduced as `alpha`, they will be disabled by default. When new features get promoted to `stable`, they will be enabled by default according to the following table:
 
-| Feature stability level | Default                     |
-|-------------------------|-----------------------------|
-| Stable                  | Enabled; Cannot be disabled |
-| Beta                    | Disabled                    |
-| Alpha                   | Disabled                    |
+| Feature stability level | Default  |
+| ----------------------- | -------- |
+| Stable                  | Enabled; Cannot be disabled once the flag is removed (after deprecation)  |
+| Beta                    | Disabled |
+| Alpha                   | Disabled |
 
 Note that per-feature flags that have stabilized cannot be disabled. We will deprecate the per-feature flag after it has become stable and then remove it eventually after the deprecation period according to the API compatibility policy. We will give deprecation and later removel notice of the per-feature flags via release notes after their promotion to `stable`. Cluster operators who do not want such opt-in features would have enough notice to implement admission controllers on their own to disable the feature.
 For example, when a new future feature `pipeline-in-pipeline` becomes stable in v0.55, it would be enabled by default and cannot be disabled after the release. We would need to include in the release note of v0.55 that we are enabling the `pipeline-in-pipeline` feature by default and deprecating its feature flag. And after the deprecation period, we would remove the feature flag.
@@ -203,25 +204,20 @@ The behaviour of existing `enable-api-fields` flag with per-feature flag:
 ### Sunset `enable-api-fields` after existing features stabilize
 When all existing `alpha` and `beta` features have either been stabilized or removed, we will be able to remove the `enable-api-fields` flag.
 
-Snapshot of existent `beta` and `alpha` features as of today:
+Snapshot of existent `beta` and `alpha` features validated by `enable-api-fields` as of today:
 | Feature                                                                                               | Stability level | Individual flag                                 |
 | ----------------------------------------------------------------------------------------------------- | --------------- | ----------------------------------------------- |
-| [Array Results and Array Indexing](pipelineruns.md#specifying-parameters)                             | beta            |                                                 |
-| [Object Parameters and Results](pipelineruns.md#specifying-parameters)                                | beta            |                                                 |
-| [Remote Tasks](./taskruns.md#remote-tasks) and [Remote Pipelines](./pipelineruns.md#remote-pipelines) | beta            |                                                 |
-| [`Provenance` field in Status](pipeline-api.md#provenance)                                            | beta            | `enable-provenance-in-status`                   |
-| [Isolated `Step` & `Sidecar` `Workspaces`](./workspaces.md#isolated-workspaces)                       | beta            |                                                 |
-| [Bundles ](./pipelineruns.md#tekton-bundles)                                                          | alpha           | `enable-tekton-oci-bundles`                     |
-| [Hermetic Execution Mode](./hermetic.md)                                                              | alpha           |                                                 |
-| [Windows Scripts](./tasks.md#windows-scripts)                                                         | alpha           |                                                 |
-| [Debug](./debug.md)                                                                                   | alpha           |                                                 |
-| [Step and Sidecar Overrides](./taskruns.md#overriding-task-steps-and-sidecars)                        | alpha           |                                                 |
-| [Matrix](./matrix.md)                                                                                 | alpha           |                                                 |
-| [Task-level Resource Requirements](compute-resources.md#task-level-compute-resources-configuration)   | alpha           |                                                 |
-| [Trusted Resources](./trusted-resources.md)                                                           | alpha           | `trusted-resources-verification-no-match-policy`|
-| [Larger Results via Sidecar Logs](#enabling-larger-results-using-sidecar-logs)                        | alpha           | `results-from`                                  |
-| [Configure Default Resolver](./resolution.md#configuring-built-in-resolvers)                          | alpha           |                                                 |
-| [Coschedule](./affinityassistants.md)                                                                 | alpha           | `coschedule`                                    |
+| [Array Results and Array Indexing](https://github.com/tektoncd/pipeline/blob/f78bcff9665f717fcc96644e04ba17375d0bd9a8/docs/pipelineruns.md#specifying-parameters)                             | beta            |                                                 |
+| [Object Parameters and Results](https://github.com/tektoncd/pipeline/blob/f78bcff9665f717fcc96644e04ba17375d0bd9a8/docs/pipelineruns.md#specifying-parameters)                                | beta            |                                                 |
+| [Remote Tasks](https://github.com/tektoncd/pipeline/blob/f78bcff9665f717fcc96644e04ba17375d0bd9a8/docs/taskruns.md#remote-tasks) and [Remote Pipelines](https://github.com/tektoncd/pipeline/blob/f78bcff9665f717fcc96644e04ba17375d0bd9a8/docs/pipelineruns.md#remote-pipelines) | beta            |                                                 |
+| [Isolated `Step` & `Sidecar` `Workspaces`](https://github.com/tektoncd/pipeline/blob/f78bcff9665f717fcc96644e04ba17375d0bd9a8/docs/workspaces.md#isolated-workspaces)                       | beta            |                                                 |
+| [Matrix](https://github.com/tektoncd/pipeline/blob/f78bcff9665f717fcc96644e04ba17375d0bd9a8/docs//matrix.md)                                                                                 | beta           |                                                 |
+| [Task-level Resource Requirements](https://github.com/tektoncd/pipeline/blob/f78bcff9665f717fcc96644e04ba17375d0bd9a8/docs/compute-resources.md#task-level-compute-resources-configuration)                                                          | beta            |                                                 |
+| [Hermetic Execution Mode](https://github.com/tektoncd/pipeline/blob/f78bcff9665f717fcc96644e04ba17375d0bd9a8/docs/hermetic.md)                                                              | alpha           |                                                 |
+| [Windows Scripts](https://github.com/tektoncd/pipeline/blob/f78bcff9665f717fcc96644e04ba17375d0bd9a8/docs/tasks.md#windows-scripts)                                                         | alpha           |                                                 |
+| [Debug](https://github.com/tektoncd/pipeline/blob/f78bcff9665f717fcc96644e04ba17375d0bd9a8/docs/debug.md)                                                                                   | alpha           |                                                 |
+| [Step and Sidecar Overrides](https://github.com/tektoncd/pipeline/blob/f78bcff9665f717fcc96644e04ba17375d0bd9a8/docs/taskruns.md#overriding-task-steps-and-sidecars)                        | alpha           |                                                 |
+| [Configure Default Resolver](https://github.com/tektoncd/pipeline/blob/f78bcff9665f717fcc96644e04ba17375d0bd9a8/docs/resolution.md#configuring-built-in-resolvers)                          | alpha           |                                                 |
 
 ### Example of introducing new features:
 **i.** A single feature "pipeline-in-pipeline" is introduced in `v1`: 
@@ -439,6 +435,18 @@ For testing out individual per-feature flags, we will use unit tests for each si
   - If `enable-api-fields` is set to `none`, you can also enable them with per-feature flags. These are off by default.
   - When promoting an `alpha` feature to `beta`, it can be enabled with `enable-api-fields` set to `alpha`, `beta`, or `none`.
    Disallowing it when `enable-api-fields` is set to `beta` wouldn’t help us phase out the flag more quickly, as we’d still need to wait until the feature is stabilized or removed.
+
+### Implementation Pull Requests
+The complete work of TEP0138 is tracked by: https://github.com/tektoncd/pipeline/issues/7177
+
+- https://github.com/tektoncd/pipeline/pull/6941
+- https://github.com/tektoncd/pipeline/pull/7076
+- https://github.com/tektoncd/pipeline/pull/7090
+- https://github.com/tektoncd/pipeline/pull/7627
+- https://github.com/tektoncd/pipeline/pull/7633
+- https://github.com/tektoncd/plumbing/pull/1803
+- https://github.com/tektoncd/pipeline/pull/7657
+- https://github.com/tektoncd/pipeline/pull/7662
 
 ## References
 

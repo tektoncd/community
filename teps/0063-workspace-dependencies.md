@@ -1,11 +1,14 @@
 ---
-status: proposed
+status: withdrawn
 title: Workspace Dependencies
 creation-date: '2021-04-23'
-last-updated: '2021-04-23'
+last-updated: '2025-02-24'
 authors:
 - '@jerop'
 ---
+
+*This TEP is marked as `withdrawn` as it doesn't really had too much on
+top of using `runAfter` and workspaces.*
 
 # TEP-0063: Workspace Dependencies
 

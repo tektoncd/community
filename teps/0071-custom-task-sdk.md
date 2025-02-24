@@ -1,11 +1,17 @@
 ---
-status: proposed
+status: deferred
 title: Custom Task SDK
 creation-date: '2021-06-15'
-last-updated: '2021-06-15'
+last-updated: '2025-02-24'
 authors:
 - '@ScrapCodes'
 ---
+
+*This TEP is marked as `deferred`, meaning that it is not currently
+being worked on. If you are interested in working on this TEP, please
+reach out to the Tekton Maintainers via the
+[tektoncd-dev](https://groups.google.com/g/tekton-dev) mailing list or
+a GitHub Discussion in the repository.*
 
 # TEP-0071: Custom Task SDK
 

@@ -66,7 +66,7 @@ This is the complete list of Tekton TEPs:
 |[TEP-0067](0067-tekton-catalog-pipeline-organization.md) | Tekton Catalog Pipeline Organization | implemented | 2023-03-21 |
 |[TEP-0069](0069-support-retries-for-custom-task-in-a-pipeline.md) | Support retries for custom task in a pipeline. | implemented | 2021-12-15 |
 |[TEP-0070](0070-tekton-catalog-task-platform-support.md) | Platform support in Tekton catalog | implemented | 2022-08-16 |
-|[TEP-0071](0071-custom-task-sdk.md) | Custom Task SDK | proposed | 2021-06-15 |
+|[TEP-0071](0071-custom-task-sdk.md) | Custom Task SDK | deferred | 2025-02-24 |
 |[TEP-0072](0072-results-json-serialized-records.md) | Results: JSON Serialized Records | implemented | 2023-03-22 |
 |[TEP-0073](0073-simplify-metrics.md) | Simplify metrics | implemented | 2022-02-28 |
 |[TEP-0074](0074-deprecate-pipelineresources.md) | Deprecate PipelineResources | implemented | 2023-03-21 |

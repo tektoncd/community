@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: withdrawn
 title: Data Locality and Pod Overhead in Pipelines
 creation-date: '2021-01-22'
 last-updated: '2025-02-24'

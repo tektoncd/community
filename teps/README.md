@@ -39,7 +39,7 @@ This is the complete list of Tekton TEPs:
 |[TEP-0035](0035-document-tekton-position-around-policy-authentication-authorization.md) | document-tekton-position-around-policy-authentication-authorization | implementable | 2020-12-09 |
 |[TEP-0036](0036-start-measuring-tekton-pipelines-performance.md) | Start Measuring Tekton Pipelines Performance | proposed | 2020-11-20 |
 |[TEP-0037](0037-remove-gcs-fetcher.md) | Remove `gcs-fetcher` image | implementing | 2021-01-27 |
-|[TEP-0038](0038-generic-workspaces.md) | Generic Workspaces | proposed | 2020-12-11 |
+|[TEP-0038](0038-generic-workspaces.md) | Generic Workspaces | withdrawn | 2025-02-24 |
 |[TEP-0039](0039-add-variable-retries-and-retrycount.md) | Add Variable `retries` and `retry-count` | implemented | 2021-01-31 |
 |[TEP-0040](0040-ignore-step-errors.md) | Ignore Step Errors | implemented | 2021-08-11 |
 |[TEP-0041](0041-tekton-component-versioning.md) | Tekton Component Versioning | implemented | 2023-03-21 |

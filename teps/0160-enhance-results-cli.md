@@ -35,7 +35,7 @@ last-updated: "2025-03-05"
 
 ## Summary
 
-`Tekton Results` provides a mechanism to store and query the execution history of `PipelineRuns` and `TaskRuns`. However, the [existing CLI](https://github.com/tektoncd/results/tree/main/pkg/cli) for interacting with Results was not user-friendly. This proposal introduces a dedicated `CLI tool` that simplifies querying and managing Tekton Results, allowing users to retrieve, inspect, and analyze results efficiently. Additionally, this new CLI can be used as a standalone tool or as a plugin to the `tkn` CLI, ensuring seamless integration with existing Tekton workflows.
+`Tekton Results` provides a mechanism to store and query the execution history of `PipelineRuns` and `TaskRuns`. However, the [existing CLI](https://github.com/tektoncd/results/tree/main/pkg/cli) for interacting with Results is not user-friendly. This proposal introduces a dedicated `CLI tool` that simplifies querying and managing Tekton Results, allowing users to retrieve, inspect, and analyze results efficiently. Additionally, this new CLI can be used as a standalone tool or as a plugin to the `tkn` CLI, ensuring seamless integration with existing Tekton workflows.
 
 ## Motivation
 
@@ -51,7 +51,8 @@ Currently, Tekton users lack a streamlined way to interact with `PipelineRun` an
 
 ### Non-Goals
 
-This proposal is not intended to modify the archived PipelineRuns and TaskRuns
+- This proposal is not intended to modify the archived PipelineRuns and TaskRuns.
+- This proposal doesn't explore possible deep integration with tkn (e.g. transparently query results when doing a `tkn pr list`), it would be another proposal later once we are happy with this CLI.
 
 ### Use Cases
 

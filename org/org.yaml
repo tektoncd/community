@@ -21,6 +21,7 @@ orgs:
     - abayer
     - adambkaplan
     - ak1394
+    - anithapriyanatarajan
     - avinal
     - Basavaraju-G
     - dhaus67
@@ -112,6 +113,7 @@ orgs:
     - maneeshmehra
     - marcelmue
     - mattmoor
+    - mbpavan
     - mchmarny
     - mnuttall
     - mooyeg
@@ -750,6 +752,8 @@ orgs:
         - jkandasa
         - jkhelil
         - PuneetPunamiya
+        - anithapriyanatarajan
+        - mbpavan
         privacy: closed
         repos:
           operator: read

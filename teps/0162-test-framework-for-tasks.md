@@ -1,7 +1,7 @@
 
 ---
 status: proposed
-title: TestRuns for Tasks
+title: Test Framework for Tasks
 creation-date: '2025-03-21'
 last-updated: '2025-03-21'
 authors:

@@ -63,7 +63,8 @@ updated and sends out a notice if any of the tests fail.
 
 ### Goals
 
-- Enable the definition of a test case for a specific task.
+- Enable the definition of a test case for a specific task with a limited set of
+  factors, which can be defined as expected outcomes of a Test.
 - Enable the automated creation of workspaces as inputs for Tasks
 - Enable the population of these workspaces with text files and the text files
   with content, as declared in the test manifests
@@ -76,6 +77,9 @@ manifest and verifying the outcomes of the test execution.
 
 ### Non-Goals
 
+- Enable the definition of a test case for a specific task with the option of
+  defining the expected outcomes of a Test in a full expression language like
+  CEL (this might become a follow-up proposal).
 - Enable the automated population of workspaces which are used as inputs for
   test with binary files
 - Enable the definition or execution of test cases for whole Pipelines (this

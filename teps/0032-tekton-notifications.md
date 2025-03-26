@@ -1,11 +1,17 @@
 ---
-status: proposed
+status: deferred
 title: Tekton Notifications
 creation-date: '2020-11-18'
-last-updated: '2020-11-18'
+last-updated: '2025-02-24'
 authors:
 - '@afrittoli'
 ---
+
+*This TEP is marked as `deferred`, meaning that it is not currently
+being worked on. If you are interested in working on this TEP, please
+reach out to the Tekton Maintainers via the
+[tektoncd-dev](https://groups.google.com/g/tekton-dev) mailing list or
+a GitHub Discussion in the repository.*
 
 # TEP-0032: Tekton Notifications
 

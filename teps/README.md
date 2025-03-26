@@ -34,17 +34,17 @@ This is the complete list of Tekton TEPs:
 |[TEP-0029](0029-step-workspaces.md) | step-and-sidecar-workspaces | implemented | 2022-07-22 |
 |[TEP-0030](0030-workspace-paths.md) | workspace-paths | proposed | 2020-10-18 |
 |[TEP-0031](0031-tekton-bundles-cli.md) | tekton-bundles-cli | implemented | 2021-03-26 |
-|[TEP-0032](0032-tekton-notifications.md) | Tekton Notifications | proposed | 2020-11-18 |
+|[TEP-0032](0032-tekton-notifications.md) | Tekton Notifications | deferred | 2025-02-24 |
 |[TEP-0033](0033-tekton-feature-gates.md) | Tekton Feature Gates | implemented | 2021-12-16 |
 |[TEP-0035](0035-document-tekton-position-around-policy-authentication-authorization.md) | document-tekton-position-around-policy-authentication-authorization | implementable | 2020-12-09 |
 |[TEP-0036](0036-start-measuring-tekton-pipelines-performance.md) | Start Measuring Tekton Pipelines Performance | proposed | 2020-11-20 |
 |[TEP-0037](0037-remove-gcs-fetcher.md) | Remove `gcs-fetcher` image | implementing | 2021-01-27 |
-|[TEP-0038](0038-generic-workspaces.md) | Generic Workspaces | proposed | 2020-12-11 |
+|[TEP-0038](0038-generic-workspaces.md) | Generic Workspaces | withdrawn | 2025-02-24 |
 |[TEP-0039](0039-add-variable-retries-and-retrycount.md) | Add Variable `retries` and `retry-count` | implemented | 2021-01-31 |
 |[TEP-0040](0040-ignore-step-errors.md) | Ignore Step Errors | implemented | 2021-08-11 |
 |[TEP-0041](0041-tekton-component-versioning.md) | Tekton Component Versioning | implemented | 2023-03-21 |
 |[TEP-0042](0042-taskrun-breakpoint-on-failure.md) | taskrun-breakpoint-on-failure | implemented | 2021-12-10 |
-|[TEP-0044](0044-data-locality-and-pod-overhead-in-pipelines.md) | Data Locality and Pod Overhead in Pipelines | proposed | 2022-05-26 |
+|[TEP-0044](0044-data-locality-and-pod-overhead-in-pipelines.md) | Data Locality and Pod Overhead in Pipelines | withdrawn | 2025-02-24 |
 |[TEP-0045](0045-whenexpressions-in-finally-tasks.md) | WhenExpressions in Finally Tasks | implemented | 2021-06-03 |
 |[TEP-0046](0046-finallytask-execution-post-timeout.md) | Finally tasks execution post pipelinerun timeout | implemented | 2021-12-14 |
 |[TEP-0047](0047-pipeline-task-display-name.md) | Pipeline Task Display Name | implemented | 2023-03-30 |
@@ -61,12 +61,12 @@ This is the complete list of Tekton TEPs:
 |[TEP-0060](0060-remote-resource-resolution.md) | Remote Resource Resolution | implemented | 2022-10-24 |
 |[TEP-0061](0061-allow-custom-task-to-be-embedded-in-pipeline.md) | Allow custom task to be embedded in pipeline | implemented | 2021-05-26 |
 |[TEP-0062](0062-catalog-tags-and-hub-categories-management.md) | Catalog Tags and Hub Categories Management | implemented | 2021-12-15 |
-|[TEP-0063](0063-workspace-dependencies.md) | Workspace Dependencies | proposed | 2021-04-23 |
+|[TEP-0063](0063-workspace-dependencies.md) | Workspace Dependencies | withdrawn | 2025-02-24 |
 |[TEP-0066](0066-dogfooding-tekton.md) | Dogfooding Tekton | proposed | 2021-05-16 |
 |[TEP-0067](0067-tekton-catalog-pipeline-organization.md) | Tekton Catalog Pipeline Organization | implemented | 2023-03-21 |
 |[TEP-0069](0069-support-retries-for-custom-task-in-a-pipeline.md) | Support retries for custom task in a pipeline. | implemented | 2021-12-15 |
 |[TEP-0070](0070-tekton-catalog-task-platform-support.md) | Platform support in Tekton catalog | implemented | 2022-08-16 |
-|[TEP-0071](0071-custom-task-sdk.md) | Custom Task SDK | proposed | 2021-06-15 |
+|[TEP-0071](0071-custom-task-sdk.md) | Custom Task SDK | deferred | 2025-02-24 |
 |[TEP-0072](0072-results-json-serialized-records.md) | Results: JSON Serialized Records | implemented | 2023-03-22 |
 |[TEP-0073](0073-simplify-metrics.md) | Simplify metrics | implemented | 2022-02-28 |
 |[TEP-0074](0074-deprecate-pipelineresources.md) | Deprecate PipelineResources | implemented | 2023-03-21 |
@@ -147,3 +147,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0155](0155-store-pipeline-events-in-db.md) | Store Pipeline Events in Tekton Results | proposed | 2024-04-19 |
 |[TEP-0156](0156-whenexpressions-in-step.md) | WhenExpressions in Steps | implemented | 2024-07-22 |
 |[TEP-0157](0157-pipelinerun-displayname.md) | PipelineRun Display Name | proposed | 2024-11-18 |
+|[TEP-0160](0160-enhance-results-cli.md) | Enhance Tekton Results CLI | proposed | 2025-03-13 |

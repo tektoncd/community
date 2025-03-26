@@ -3,9 +3,13 @@ title: Generic Workspaces
 authors:
   - "@sbwsg"
 creation-date: 2020-12-11
-last-updated: 2020-12-11
-status: proposed
+last-updated: '2025-02-24'
+status: withdrawn
 ---
+
+*This TEP is marked as `withdrawn` as most of what it proposes is
+doable today. It precedes some changes in the workspace that make this
+TEP not relevant anymore.*
 
 # TEP-0038: Generic Workspaces
 

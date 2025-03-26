@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM python:3.8-slim
+FROM python:3.12-slim-bookworm
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-COPY requirements.txt .
+RUN --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project
 
-RUN pip3 install --no-cache -r requirements.txt
 COPY ./teps.py .
 COPY ./tep-template.md.template .
 
-ENTRYPOINT [ "/teps.py" ]
+ENTRYPOINT [ "uv", "run", "/teps.py" ]
 CMD [ "--help" ]

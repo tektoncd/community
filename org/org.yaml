@@ -21,6 +21,7 @@ orgs:
     - abayer
     - adambkaplan
     - ak1394
+    - anithapriyanatarajan
     - avinal
     - Basavaraju-G
     - dhaus67
@@ -112,6 +113,7 @@ orgs:
     - maneeshmehra
     - marcelmue
     - mattmoor
+    - mbpavan
     - mchmarny
     - mnuttall
     - mooyeg
@@ -135,6 +137,7 @@ orgs:
     - pritidesai
     - priyawadhwa
     - psschwei
+    - PuneetPunamiya
     - rafamqrs
     - raffamendes
     - rhuss
@@ -189,6 +192,7 @@ orgs:
     - rhybrillou
     - renzodavid9
     - cugykw
+    - l-qing
     # alumni:
     # sbwsg
     teams:
@@ -226,6 +230,7 @@ orgs:
         members:
           - lcarva
           - priyawadhwa
+          - PuneetPunamiya
           - wlynch
         privacy: closed
         repos:
@@ -237,6 +242,7 @@ orgs:
         - chuangw6
         - lcarva
         - priyawadhwa
+        - PuneetPunamiya
         - wlynch
         privacy: closed
         repos:
@@ -746,6 +752,8 @@ orgs:
         - jkandasa
         - jkhelil
         - PuneetPunamiya
+        - anithapriyanatarajan
+        - mbpavan
         privacy: closed
         repos:
           operator: read
@@ -813,6 +821,7 @@ orgs:
         - mattmoor
         - pritidesai
         - priyawadhwa
+        - PuneetPunamiya
         - vdemeester
         - wlynch
         privacy: closed

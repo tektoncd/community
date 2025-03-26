@@ -1,12 +1,16 @@
 ---
-status: proposed
+status: withdrawn
 title: Data Locality and Pod Overhead in Pipelines
 creation-date: '2021-01-22'
-last-updated: '2022-05-26'
+last-updated: '2025-02-24'
 authors:
 - '@bobcatfish'
 - '@lbernick'
 ---
+
+*This TEP is marked as `withdrawn` as most of what it proposes is
+doable today. [`StepActions`](https://tekton.dev/docs/pipelines/stepactions/)
+are fixing most of the use cases.*
 
 # TEP-0044: Data Locality and Pod Overhead in Pipelines
 

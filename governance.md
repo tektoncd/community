@@ -45,15 +45,16 @@ distributed across the five members of the committee.
 
 #### Former members ❤️
 
-| Full Name       | GitHub                                        | Slack                                                         | Elected On          | Until    |
-|-----------------|-----------------------------------------------|---------------------------------------------------------------|---------------------|----------|
-| Jerop Kipruto   |  [jerop](https://github.com/jerop)            | [@Jerop Kipruto](https://tektoncd.slack.com/team/U011DPQSP0V) | Feb 2023            | Feb 2025 |
-| Priya Wadhwa    | [priyawadhwa](https://github.com/priyawadhwa) | [@Priya Wadhwa](https://tektoncd.slack.com/team/U02T0CS9PN0)  | Feb 2022            | Feb 2023 |
-| Christie Wilson | [bobcatfish](https://github.com/bobcatfish)   | [@Christie Wilson](https://tektoncd.slack.com/team/UJ6DECY78) | Bootstrap committee | Feb 2023 |
-| Andrew Bayer    | [abayer](https://github.com/abayer)           | [@Andrew Bayer](https://tektoncd.slack.com/team/UJ6DJ4MSS)    | Feb 2020            | Feb 2022 |
-| Jason Hall      | [ImJasonH](https://github.com/ImJasonH)       | [@Jason Hall](https://tektoncd.slack.com/team/UJ3MCRRRA)      | Feb 2020            | Feb 2022 |
-| Dan Lorenc      | [dlorenc](https://github.com/dlorenc)         | [@Dan Lorenc](https://tektoncd.slack.com/team/UJ636MN15)      | Bootstrap committee | Feb 2020 |
-| Kim Lewandowski | [kimsterv](https://github.com/kimsterv)       | [@Kim Lewandowski](https://tektoncd.slack.com/team/UJ480G6KS) | Bootstrap committee | Feb 2020 |
+| Full Name       | GitHub                                            | Slack                                                         | Elected On          | Until    |
+|-----------------|---------------------------------------------------|---------------------------------------------------------------|---------------------|----------|
+| Jerop Kipruto   |  [jerop](https://github.com/jerop)                | [@Jerop Kipruto](https://tektoncd.slack.com/team/U011DPQSP0V) | Feb 2023            | Feb 2025 |
+| Chitrang Patel  | [chitrangpatel](https://github.com/chitrangpatel) | [@Chitrang](https://tektoncd.slack.com/team/U03BUB3KJ3B)      | May 2024            | Feb 2025 |
+| Priya Wadhwa    | [priyawadhwa](https://github.com/priyawadhwa)     | [@Priya Wadhwa](https://tektoncd.slack.com/team/U02T0CS9PN0)  | Feb 2022            | Feb 2023 |
+| Christie Wilson | [bobcatfish](https://github.com/bobcatfish)       | [@Christie Wilson](https://tektoncd.slack.com/team/UJ6DECY78) | Bootstrap committee | Feb 2023 |
+| Andrew Bayer    | [abayer](https://github.com/abayer)               | [@Andrew Bayer](https://tektoncd.slack.com/team/UJ6DJ4MSS)    | Feb 2020            | Feb 2022 |
+| Jason Hall      | [ImJasonH](https://github.com/ImJasonH)           | [@Jason Hall](https://tektoncd.slack.com/team/UJ3MCRRRA)      | Feb 2020            | Feb 2022 |
+| Dan Lorenc      | [dlorenc](https://github.com/dlorenc)             | [@Dan Lorenc](https://tektoncd.slack.com/team/UJ636MN15)      | Bootstrap committee | Feb 2020 |
+| Kim Lewandowski | [kimsterv](https://github.com/kimsterv)           | [@Kim Lewandowski](https://tektoncd.slack.com/team/UJ480G6KS) | Bootstrap committee | Feb 2020 |
 
 ## Governance Facilitator Role (optional)
 

@@ -3,9 +3,10 @@
 status: proposed
 title: Test Framework for Tasks
 creation-date: '2025-03-21'
-last-updated: '2025-03-24'
+last-updated: '2025-05-13'
 authors:
 - '@jlux98'
+collaborators:
 ---
 
 # TEP-0162: Test Framework for Tasks
@@ -231,7 +232,7 @@ spec:
   taskRef:
     name: "Task1"
     # optional, if the following field is empty then the Task is searched in the
-    # namespace the TaskTest object inhabits
+    # namespace where the TaskTest object was created
     namespace: "tekton-system"
   inputs:
     params:
@@ -248,20 +249,19 @@ spec:
       ...
     workspaces:
     - name: "shared-data"
-      files:
+      objects:
         # the leading slash here denotes the root of the workspace
       - path: "/build/misc/latest_version.txt"
-        filetype: "ASCII text"
+        type: "TextFile"
         content: >-
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod
           tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim
           veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ...
-  taskRunTemplate:
-    # A user should be able to configure anything here that they can configure
-    # in a regular TaskRun spec, possibly with the exception of Task parameter
-    # value pairings (or they should only be able to configure them here but not
-    # in spec.inputs, but I'm sure being able to configure them in two places
-    # will only lead to chaos)
+      - path: "/build/misc/bin"
+        type: "EmptyDir"
+        # if the type is not "TextFile" then no "content" field is allowed
+      # For filling workspaces the possible values for the "type" field would be 
+      # "TextFile" and "EmptyDir"
   outcomes:
     results:
     - name: <Result1>
@@ -269,27 +269,38 @@ spec:
     - name: <Result2>
       value: <expectedValue2>
     ...
-    # The following field could also be implemented to only accept values from
+    # The following field would be implemented to only accept values from
     # a predefined set like {"successful", "failed"}
-    taskRunStatusExpected: "successful"
+    taskRunStatusExpected: "Successful"
     workspaces:
     - name: "shared-data"
-      files:
+      objects:
       - path: "/build/misc/latest_version.txt" # this field is necessary
         # the following field is optional
-        filetype: "ASCII text"
+        type: "TextFile"
         # the following field is optional
         content: >-
           The expected content of the file after the task in question is done
           running goes here
-        # If an entry in 'files' only has the path field set then the
-        # expectation is, that at this path any file exists.
-        # if its filetype or content field (or both) are set, then it is
-        # expected for the content/filetype of that filet at path to match.
-        # Since entries in 'files' are identified by their 'path' fields I'd
+      - path: "/build/misc/bin/executable_file"
+        type: "BinaryFile"
+        # For expected workspace objects the possible values for the "type"
+        # field would be "TextFile", "BinaryFile" and "EmptyDir"
+        # If an entry in 'objects' only has the path field set then the
+        # expectation is, that at this path any object (file or folder) exists.
+        # If its type is set, then it is expected for the type of the object at
+        # path to match.
+        # If the type is set to "TextFile" and the "content" field is set, then
+        # it is expected for the content of the file at path to match the value
+        # specified in the manifest.
+        # If the type is set to any other value than "TextFile", the "content"
+        # field must be left empty.
+        # Since entries in 'objects' are identified by their 'path' fields I'd
         # propose enforcing the uniqueness of a 'path' field's value, e.g. in a
         # webhook
 ```
+
+
 
 ### TaskTestRun
 
@@ -298,7 +309,7 @@ which watches TaskTestRun objects.
 If a new TaskTestRun is created, the controller triggers the preparation (i.e.
 provisioning and filling) of volumes for all workspaces defined in the
 referenced task.
-Once the preparation are done, then the controller executes the referenced Task
+Once the preparations are done, then the controller executes the referenced Task
 using the prepared volumes.
 Whether this will be achieved by creating TaskRun API objects and letting the
 TaskRun controller do its thing or by importing the code from the TaskRun
@@ -317,14 +328,13 @@ the status of the TaskTestRun.
 Sidenote: I'm not really happy with naming the object type TaskTestRun, as it is
 a mouthful and doesn't flow very well in my opinion. But I wanted to follow the
 established Tekton convention of naming the executing object after the defining
-object and appending `Run` to it.
+object and appending `Run` to it (like Task and TaskRun or Pipeline and
+PipelineRun).
 I also thought about whether there is a better name for the defining resource,
 but `TaskTest` was the best I could come up with, as I wanted to keep the design
 space open for maybe implementing a `PipelineTest` type down the line.
 
-#### API
-
-##### Spec
+#### Spec
 
 The proposed spec for a TaskTestRun resource looks like this:
 
@@ -332,12 +342,10 @@ The proposed spec for a TaskTestRun resource looks like this:
 spec:
   taskTestRef:
     name: "TaskTest1"
-    # optional, if namespace is empty then the controller will search in the
-    # namespace where the TaskTestRun is deployed
+    # optional, if "namespace" is empty then the controller will search in the
+    # namespace where the TaskTestRun was created
     namespace: "tekton-system"
-  # The field timeout is optional. If the task hasn't finished executing on its
-  # own when the timeout is reached, then the execution is stopped and the
-  # TaskTestRun is marked as failed.
+  # the field "workspaces" here will work like the one in a regular TaskRun
   workspaces:
   - name: shared-data
     volumeClaimTemplate:
@@ -347,6 +355,9 @@ spec:
         resources:
           requests:
             storage: 16Mi
+  # The field "timeout" is optional. If the task hasn't finished executing on
+  # its own when the timeout is reached, then the execution is stopped and the
+  # TaskTestRun is marked as failed.
   timeout: 10m
   # optional
   retries: 3
@@ -355,13 +366,19 @@ spec:
   # But if the field allTriesMustSucceed is set to true then the TaskTestRun
   # is marked as successful if and only if all of its tries come up successful.
   allTriesMustSucceed: true
-  # I tried to keep the configuration options for the referenced TaskTests as
-  # light as possible, since I wanted different executions of a specific
-  # generation of the same TaskTest to be as similar as possible
-
+  serviceAccountName: "tekton-acc"
+  # The "status" and "statusMessage" fields are for cancelling a running
+  # TaskTestRun and work like the spec.Status/spec.StatusMessage fields in a 
+  # regular TaskRun
+  status: "TaskRunCancelled"
+  statusMessage: ""
+  # The "computeResources" field works like the one in a regular TaskRun
+  computeResources: 
+    requests:
+      cpu: 1
 ```
 
-##### Status
+#### Status
 
 Proposed status of a finished TaskTestRun:
 
@@ -379,11 +396,11 @@ status:
       - expectedContent: >-
           The expected content of the file after the task in question is done
           running goes here
-        expectedFiletype: ASCII text
+        expectedType: TextFile
         gotContent: >-
           The expected content of the file after the task in question is done
           running goes here
-        gotFiletype: ASCII text
+        gotType: TextFile
         path: /build/misc/latest_version.txt
     results:
       - expectedValue: <expectedValue1>
@@ -412,32 +429,39 @@ Proposed spec for a TaskTestSuite object:
 
 ```yaml
 spec:
-  # The field executionMode can either be set to "parallel" or "sequentially"
-  # "parallel" creates all the TaskTestRuns for the TaskTests in the suite
-  # together while "sequential" waits for one TaskTestRun to finish before
+  # The field executionMode can either be set to "Parallel" or "Sequential"
+  # "Parallel" creates all the TaskTestRuns for the TaskTests in the suite
+  # together while "Sequential" waits for one TaskTestRun to finish before
   # starting the next one
-  executionMode: "parallel"
+  # Maybe a "Staggered" mode would also be interesting, where a waiting time can
+  # be defined by the user and then the controller always waits for that fixed
+  # amount of time before starting the next test - this way not all tests are
+  # started at the same time but some parallel computing will still take place,
+  # potentially saving time over strictly sequential execution. But for now it's
+  # not part of the proposal.
+  executionMode: "Parallel"
   taskTests:
   - name: "TaskTest1"
     taskTestRef:
       name: "TaskTest1"
-      # The field namespace is optional, if not set then TaskTest will be
+      # The field "namespace" is optional, if not set then TaskTest will be
       # searched in the namespace of the TaskTestSuite
       namespace: "test-namespace"
-    # The field onError can be set to either "continue" or "stopAndFail" and
+    # The field "onError" can be set to either "Continue" or "StopAndFail" and
     # dictates how a run of this TaskTestSuite deals with a failure of this
     # specific TaskTest's execution.
-    # If it is set to "continue" then the failure is ignored and all other tasks
+    # If it is set to "Continue" then the failure is ignored and all other tasks
     # are executed as usual. The TastTestSuiteRun is not marked as failed.
-    # If it is set to "stopAndFail" then the TaskTestSuiteRun controller cancels
-    # all ongoing TastTestRuns and the TaskTestSuiteRun is marked as failed.
-    # The field is optional and if unset it defaults to "stopAndFail".
-    onError: "continue"
+    # If it is set to "StopAndFail" then a failure of this task will result in
+    # the TaskTestSuiteRun controller cancelling all ongoing TastTestRuns and
+    # marking the TaskTestSuiteRun as failed.
+    # The field is optional and if unset it defaults to "StopAndFail".
+    onError: "Continue"
   - name: "TaskTest2"
     taskTestRef:
       name: "TaskTest2"
       namespace: "test-namespace"
-    onError: "stopAndFail"
+    onError: "StopAndFail"
   # I tried to keep the configuration options for the referenced TaskTests as
   # light as possible, since I wanted different executions of a specific
   # generation of the same TaskTest to be as similar as possible
@@ -449,21 +473,21 @@ This TEP proposes the implementation of a dedicated TaskTestSuiteRun controller,
 which watches TaskTestSuiteRun objects.
 If a new TaskTestSuiteRun is created, the controller checks the executionMode
 field of the TaskTestSuite referenced by the run. If the executionMode is set to
-"parallel", then the controller creates a TaskTestRun for every TaskTest
+"Parallel", then the controller creates a TaskTestRun for every TaskTest
 referenced in the TaskTestSuite and sets the owner references in these
 TaskTestRuns to the TaskTestSuiteRun that triggered its creation.
-If the executionMode is set to "sequential", then a TaskTestRun for the first
+If the executionMode is set to "Sequential", then a TaskTestRun for the first
 TaskTest referenced in the taskTests field of the TaskTestSuite is created with
 its owner reference set to the triggering TaskTestSuiteRun.
 After that TaskTestRun has finished, the controller creates a TaskTestRun for
 the next TaskTest.
 This continues until all TaskTasts have been run once or a TaskTestRun without
-the onError field in the TaskTestSuite reference set to "continue" is marked as
+the onError field in the TaskTestSuite reference set to "Continue" is marked as
 failed.
 
 After the execution of all TaskTestRuns has ended, the controller checks the
 state of all the TaskTestRuns.
-If no TastTestRun except for ones with the onError field set to "continue" are
+If no TastTestRun except for ones with the onError field set to "Continue" are
 marked as failed then the TaskTestSuiteRun is marked as successful, otherwise it
 is marked as failed.
 The controller also stores information about the state of the TaskTestRuns in
@@ -491,15 +515,23 @@ spec:
     namespace: "tekton-system"
   taskTestRunSpecs:
   - suiteTaskTestName: "TaskTest1"
-    workspaces:
-    - name: shared-data
-      volumeClaimTemplate:
-        spec:
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: 16Mi
+    # optional
+    retries: 3
+    # The default behavior is that if out of all the tries at least one
+    # succeeds then the TaskTestRun is marked as successful.
+    # But if the field allTriesMustSucceed is set to true then the TaskTestRun
+    # is marked as successful if and only if all of its tries come up successful.
+    allTriesMustSucceed: true
+    serviceAccountName: "tekton-acc"
+    # The "status" and "statusMessage" fields are for cancelling a running
+    # TaskTestRun and work like the spec.Status/spec.StatusMessage fields in a 
+    # regular TaskRun
+    status: "TaskRunCancelled"
+    statusMessage: ""
+    # The "computeResources" field works like the one in a regular TaskRun
+    computeResources: 
+      requests:
+        cpu: 1
     # The field timeout is optional. If this test hasn't finished executing on
     # its own when the timeout is reached, then its execution is stopped and its
     # TaskTestRun is marked as failed.
@@ -523,7 +555,6 @@ spec:
           resources:
             requests:
               storage: 16Mi
-
   # The field timeout is optional. If any of the tests haven't finished
   # executing on its own when the timeout is reached, then their execution is
   # stopped and their TaskTestRuns are marked as failed.
@@ -548,8 +579,8 @@ status:
     taskTestRunRef:
       name: <Name of the generated TaskTestRun object>
       namespace: <Namespace of the generated TaskTestRun object>
-    # The field state can have the values "success", "failure" or "unknown"
-    state: "success"
+    # The field state can have the values "Success", "Failure" or "Unknown"
+    state: "Success"
     # In the interest of keeping the status from completely blowing up for runs
     # of larger TaskTestSuites I propose keeping the data on the TaskTests and
     # TaskTestRuns in the status of the TaskTestSuiteRun object brisk - a
@@ -600,12 +631,20 @@ This is already a risk with having a TaskTestRun created for every TaskTest
 referenced in the TaskTestSuite, but creating a TaskRun for every TaskTestRun
 adds onto that and doubles the potential stress on the API server.
 
-An alternative would be to import the code from the TaskRun controller that is
-responsible for executing the TaskRun into the TaskTestRun controller and
-triggering it there.
-A counterpoint is, that doing this arguably hurts the design doctrine of
-preferring a simple solution that solves most use cases to a complex solution
-that solves all use cases
+I have run a test on an EKS cluster using t3a.medium instances as nodes, where I
+applied 1000 TaskRuns for a simple task at the same time and it took ~45 minutes
+to finish (amounting to an average of about 2.7 seconds per TaskRun).
+In order to gauge, whether this impacts or is impacted by other workloads
+running in the cluster at the same time I'd have to do another round of testing,
+as during my initial test the cluster was not otherwise being utilized.
+
+An alternative to creating a TaskRun for every TaskTestRun would be to import
+the code from the TaskRun controller responsible for executing the TaskRun into
+the TaskTestRun controller and triggering it there.
+
+A counterpoint to this alternative is, that doing it that way arguably hurts the
+design doctrine of preferring a simple solution that solves most use cases to a
+complex solution that solves all use cases
 
 #### Authoring Time Concern or Runtime Concern
 
@@ -644,7 +683,7 @@ The user experience with the proposed feature will be that a Task author can
 create a TaskTest for their Task with a set of inputs and their expectations as
 to how the task will behave with these inputs written down in a codified way.
 Then whenever they want to know whether their task behaves in the expected way
-the can apply a TaskTestRun for that test case and get clarity in the form of an
+they can apply a TaskTestRun for that test case and get clarity in the form of an
 automatically produced condition on their TaskTestRun object.
 
 This also persists, whether the outcomes of the execution met expectations
@@ -659,6 +698,11 @@ want to test their Task with multiple different cases.
 Each of these TaskRuns need to be manually monitored and the outcomes need to
 manually be checked against the expectations of the tester.
 At scale this becomes cumbersome and time-consuming.
+Also if the task to be tested is resource intensive and the testing hardware not
+powerful enough to run the task multiple times in parallel, then the user needs
+to stand by, wait for a TaskRun to finish and start the next TaskRun or start
+all of them at the same time regardless and deal with significant slowdowns in
+the execution of the tasks.
 
 With the proposed feature a user still needs to create multiple TaskTests
 in order to capture the different test cases, but now they can collect them in a
@@ -683,8 +727,9 @@ I am however of the opinion, that TaskTestSuites and TaskTestSuiteRuns are
 necessary in terms of user experience, in order to allow users to work with
 TaskTests and TaskTestRuns at scale.
 A GitOps driven CI/CD system using Tekton can accumulate a great number of Tasks
-and any Task might have multiple test cases associated with it, so I see a lot
-of value in users being able to group TaskTests together into a logical unit.
+and any Task might have multiple test cases associated with it. So I see a lot
+of value in users being able to group TaskTests together into a logical unit,
+run them all at once and get the results bundled together.
 
 ### Flexibility
 
@@ -799,24 +844,28 @@ The order of these milestones is roughly the order I would implement them in,
 but I'm open to suggestions for changing that order.
 
 - Validation for TaskTests is working
+- TaskTestRuns can create TaskRuns for Tasks without workspaces with fields like
+  timeout being patched through to the TaskRun
+- The outcomes of a TaskRun without a workspace can be extracted for checking
+- The extracted outcomes of a TaskRun without a workspace can be accurately
+  checked against the expected outcomes in defined in the TaskTests spec
 - Workspace preparation for TaskTestRuns is working
-- TaskTestRuns can create TaskRuns and bind them to the correct Workspaces with
-  fields like timeout being patched through to the TaskRun
-- The outcomes of a TaskRun can be extracted for checking
-- The extracted outcomes of a TaskRun can be accurately checked against the
-  expected outcomes in defined in the TaskTests spec
+- Prepared workspaces are bound correctly to the TaskRuns created by the
+  TaskTeskRuns 
+- The extracted outcomes of a TaskRun with a workspace can be accurately checked
+  against the expected outcomes defined in the TaskTests spec
 - A TaskTestRun can test a Task multiple times and verify, that all tries were
   successful (retries field set and allTriesMustSucceed is true)
 - Validation for TaskTestSuites is working
 - TaskTestSuiteRuns can create TaskTestRuns and patch the necessary values
   through to them
 - The TaskTestSuiteRun controller can determine the result of a TaskTestSuiteRun
-  by checking, whether all TaskTests with onError set to "stopAndFail" have
+  by checking, whether all TaskTests with onError set to "StopAndFail" have
   finished successfully
 - TaskTestSuiteRuns can create TaskTestRuns sequentially instead of all of them
   at once
-- TaskTestSuiteRuns can enforce the global timeout of their suite without relying on the
-  timeout mechanism present in TaskRuns
+- TaskTestSuiteRuns can enforce the global timeout of their suite without
+  relying on the timeout mechanism present in TaskRuns
 
 ### Test Plan
 

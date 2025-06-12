@@ -431,6 +431,17 @@ orgs:
         privacy: closed
         repos:
           website: maintain
+      mcp-server.maintainers:
+        description: The mcp-server maintainers
+        maintainers:
+        - vdemeester
+        members:
+        - chmouel
+        - waveywaves
+        - jkhelil
+        privacy: closed
+        repos:
+          mcp-server: maintain
       core.collaborators:
         description: The core collaborators
         maintainers:
@@ -833,6 +844,19 @@ orgs:
         privacy: closed
         repos:
           chains: read
+      mcp-server.collaborators:
+        description: The mcp-server collaborators
+        maintainers:
+        - vdemeester
+        members:
+        - chmouel
+        - waveywaves
+        - jkhelil
+        - savitaashture
+        - anithapriyanatarajan
+        privacy: closed
+        repos:
+          mcp-server: read
       docs.reviewers:
         description: Doc reviewers across repos
         maintainers:

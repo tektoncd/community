@@ -147,3 +147,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0155](0155-store-pipeline-events-in-db.md) | Store Pipeline Events in Tekton Results | proposed | 2024-04-19 |
 |[TEP-0156](0156-whenexpressions-in-step.md) | WhenExpressions in Steps | implemented | 2024-07-22 |
 |[TEP-0160](0160-enhance-results-cli.md) | Enhance Tekton Results CLI | proposed | 2025-03-13 |
+|[TEP-0161](0161-resolver-caching.md) | Resolver Caching for Task and Pipeline Resolution | proposed | 2024-06-15 |

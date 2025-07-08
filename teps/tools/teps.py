@@ -21,6 +21,7 @@
 # This scripts provide automation for the TEPs
 
 from datetime import date
+import fnmatch
 import json
 import logging
 import os
@@ -58,6 +59,77 @@ REQUIRED_FIELDS = ['title', 'authors', 'creation-date', 'status']
 EXCLUDED_FILENAMES = set(['README.md',
                           'README.md.mustache',
                           'OWNERS'])
+
+
+def load_gitignore_patterns(repo_root):
+    """Load gitignore patterns from .gitignore file."""
+    gitignore_path = os.path.join(repo_root, '.gitignore')
+    patterns = []
+    
+    if os.path.exists(gitignore_path):
+        try:
+            with open(gitignore_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    # Skip empty lines and comments
+                    if line and not line.startswith('#'):
+                        patterns.append(line)
+        except (IOError, UnicodeDecodeError) as e:
+            logging.warning(f'Could not read .gitignore file: {e}')
+    
+    return patterns
+
+
+def get_excluded_filenames(teps_folder):
+    """Get all excluded filenames including gitignore patterns."""
+    # Start with hardcoded excluded filenames
+    excluded = set(EXCLUDED_FILENAMES)
+    
+    # Find repository root (go up from teps_folder to find .gitignore)
+    repo_root = os.path.dirname(teps_folder)
+    while repo_root and repo_root != os.path.dirname(repo_root):
+        if os.path.exists(os.path.join(repo_root, '.gitignore')):
+            break
+        repo_root = os.path.dirname(repo_root)
+    
+    # Load gitignore patterns
+    gitignore_patterns = load_gitignore_patterns(repo_root)
+    
+    # Check all files in the teps folder against gitignore patterns
+    if os.path.exists(teps_folder):
+        for filename in os.listdir(teps_folder):
+            filepath = os.path.join(teps_folder, filename)
+            
+            # Skip directories
+            if not os.path.isfile(filepath):
+                continue
+                
+            # Check if file matches any gitignore pattern
+            for pattern in gitignore_patterns:
+                # Handle different gitignore pattern formats
+                if pattern.startswith('**/'):
+                    # Pattern like **/.DS_Store
+                    if fnmatch.fnmatch(filename, pattern[3:]):
+                        excluded.add(filename)
+                        break
+                elif pattern.startswith('./'):
+                    # Pattern like ./filename
+                    if fnmatch.fnmatch(filename, pattern[2:]):
+                        excluded.add(filename)
+                        break
+                elif '/' not in pattern:
+                    # Simple pattern like .DS_Store
+                    if fnmatch.fnmatch(filename, pattern):
+                        excluded.add(filename)
+                        break
+                else:
+                    # Pattern with path - check if the file matches
+                    if fnmatch.fnmatch(filename, os.path.basename(pattern)):
+                        excluded.add(filename)
+                        break
+    
+    return excluded
+
 
 class InvalidTep(Exception):
     pass
@@ -195,8 +267,9 @@ def safe_tep_from_file(tep_filename):
 
 
 def teps_in_folder(teps_folder):
+    excluded_filenames = get_excluded_filenames(teps_folder)
     return [f for f in os.listdir(teps_folder) if os.path.isfile(
-        os.path.join(teps_folder, f)) and f not in EXCLUDED_FILENAMES]
+        os.path.join(teps_folder, f)) and f not in excluded_filenames]
 
 
 def next_tep_number(teps_folder):

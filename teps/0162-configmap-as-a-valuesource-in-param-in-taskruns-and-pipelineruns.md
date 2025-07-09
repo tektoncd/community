@@ -93,7 +93,7 @@ None
 ## Proposal
 
 - The user will be able to define one or more `Param`s in a PipelineRun or a TaskRun with `spec.params[*].valueFrom.configMapKeyRef.name` and `spec.params[*].valueFrom.configMapKeyRef.key` instead of the usual hardcoded `spec.params[*].value` 
-    - `valueFrom.configMapKeyRef.name` is the name of the CongiMap that should already exist in the same namespace where this PipelineRun will be executed
+    - `valueFrom.configMapKeyRef.name` is the name of the ConfigMap that should already exist in the same namespace where this PipelineRun will be executed
     - `valueFrom.configMapKeyRef.key` is the key storing the value in the configmap.
 Example:
 ```yaml
@@ -112,7 +112,7 @@ spec:
             key: KEY_IN_CONFIGMAP
 ```
 
-- At validation time (in the webhook), there will be a check that `valueFrom` was used only if the corresponding feature flag is enabled and another check that exactly one of `value` or `valueFrom` is passed by the user.
+- At validation time (in the webhook), there will be a check that `valueFrom` was used only if the corresponding feature flag is enabled and another check that at least one of `value` or `valueFrom` is passed by the user.
 
 - At the start of the first reconcile, the value will be obtained from the configmap (the PipelineRun will fail if the value fetching fails).
 
@@ -122,7 +122,7 @@ spec:
 
 Although it is usually not a good idea to update the PipelineRun k8s resource once the PipelineRun started, the patching of the resource is needed to avoid fetching the configmap at every reconcile run (+ being exposed to failures if the configmap gets deleted).
 This also ensures a clear understanding and consistency of when the values are fetched.
-The fact that the k8s resource contains the resolved value allows this obkect to be "standalone" at auditing time and not relying on guessing what the configmap held at execution time.
+The fact that the k8s resource contains the resolved value allows this object to be "standalone" at auditing time and not relying on guessing what the configmap held at execution time.
 
 
 ## Design Details
@@ -131,7 +131,7 @@ The fact that the k8s resource contains the resolved value allows this obkect to
 Per [feature-versioning.md](https://github.com/tektoncd/pipeline/blob/5b082b1106753e093593d12152c82e1c4b0f37e5/docs/developers/feature-versioning.md) , the new feature will be guarded behind a feature flag with an alpha stability (turned off by default)
 
 ### CRD API Version
-Per the [API compatibility policy(https://github.com/tektoncd/pipeline/blob/5b082b1106753e093593d12152c82e1c4b0f37e5/api_compatibility_policy.md#crd-api-versions), the feature will be implemented only in the v1 CRD as `[v1beta1 is] deprecated. New features will not be added, but they will receive bug fixes`
+Per the [API compatibility policy](https://github.com/tektoncd/pipeline/blob/5b082b1106753e093593d12152c82e1c4b0f37e5/api_compatibility_policy.md#crd-api-versions), the feature will be implemented only in the v1 CRD as `[v1beta1 is] deprecated. New features will not be added, but they will receive bug fixes`
 
 ### API specs
 - A new type `ValueSource`
@@ -150,58 +150,60 @@ type ValueSource struct {
 type Param struct {
   Name string `json:"name"`
   Value ParamValue `json:"value"`
-  ValueFrom *ValueSource `json:"valueFrom,omitempty"`
+  ValueFrom ValueSource `json:"valueFrom,omitzero"`
 }
 ```
-    The `ValueFrom` field is a pointer with an `omitempty` during encoding. This will ensure that there will be no "visual"/json changes for users who continue to use `Value` instead of `ValueFrom`
-    The `Value` field is not a pointer so `omitempty` cannot be used. There is a new feature `omitzero` starting from [go1.24](https://tip.golang.org/doc/go1.24#encodingjsonpkgencodingjson) (released in Feburary 2025) that can be used for non-pointer fields that are not defined. This option will not be used to minimize changes to the existing api and as the [go version used for the pipeline component](https://github.com/tektoncd/pipeline/blob/5b082b1106753e093593d12152c82e1c4b0f37e5/go.mod#L3) is 1.22.7 at the time of writing of this TEP.
 
 
 ### New API Object's validation
 - Changes to the [implementation](https://github.com/tektoncd/pipeline/blob/5b082b1106753e093593d12152c82e1c4b0f37e5/pkg/apis/pipeline/v1/param_types.go#L493) of the custom methods `*ParamValue.UnmarshalJSON` and `ParamValue.MarshalJSON` to allow empty `ParamValue` fields
-    - There is a [roundTripPatch](https://github.com/tektoncd/pipeline/blob/5b082b1106753e093593d12152c82e1c4b0f37e5/vendor/knative.dev/pkg/webhook/resourcesemantics/defaulting/defaulting.go#L324) which occurs before the validation (i.e the yaml is deseliazed into an object, then serialized, then desrialized again then the validation occurs). So the change in the implementation of these custom methods is needed (there is no workaround).
+    - There is a [roundTripPatch](https://github.com/tektoncd/pipeline/blob/5b082b1106753e093593d12152c82e1c4b0f37e5/vendor/knative.dev/pkg/webhook/resourcesemantics/defaulting/defaulting.go#L324) which occurs before the validation (i.e the yaml is deserialized into an object, then serialized, then desrialized again then the validation occurs). So the change in the implementation of these custom methods is needed (there is no workaround).
     - The ParamValue type is not composed of pointer fields so the "emptiness" of `ParamValue` is by checking that `ParamValue.Type` is an empty string
 - A new check (function) inside the `ValidateParameters` [function](https://github.com/tektoncd/pipeline/blob/5b082b1106753e093593d12152c82e1c4b0f37e5/pkg/apis/pipeline/v1/taskrun_validation.go#L289`). This function is called (via other intermediary calls) in the `*PipelineRun.Validate` and `*TaskRun.Validate` methods called by the tekton webhook to validate the object.
     - For each param, all the following checks are done:
-        - Validation failure if `valueFrom` is not nil and the feature flag is disabled
-        - Validation failure if both the `valueFrom` and `value` fields are defined or none of these 2 fields is defined (i.e. only one of them has to be defined).
+        - Validation failure if `valueFrom` is not empty and the feature flag is disabled
+        - Validation failure if none of the `valueFrom` and `value` fields is defined.
         - Validation failure if `valueFrom` does not have a ConfigMapKeySelector
     - The webhook cannot poll for the configmap existence so this check will be done by the reconciler later (in the controller).
 
 ### Fetching values from the configmap
-This value resolution will be done one time only (See next section on how the k8s resource object will be updated to ensure that the resolution does not run at subsequent reconciler runs)
+This value resolution will be done one time only (if param.ValueFrom is defined and param.Value is empty).
 For each of the PipelineRun and TaskRun reconcilers, a new reconciler method will be created.
 - It will be called from inside the reconcile function, before the [validation calls](https://github.com/tektoncd/pipeline/blob/5b082b1106753e093593d12152c82e1c4b0f37e5/pkg/reconciler/pipelinerun/pipelinerun.go#L500). Example: the resolution must be done before `ValidateParamTypesMatching` as the latter function relies on ParamValue
 - For each of the params, if the param has a non-nil `valueFrom` field:
     - look for the configmap with name `Param.ValueFrom.ConfigMapKeyRef.Name` inside the same k8s namespace of the PipelineRun/TaskRun. PipelineRun to fail if the configmap is not found
     - inside the configmap, look for the key `Param.ValueFrom.ConfigMapKeyRef.Key`. PipelineRun to fail if the key is not found and if `Param.ValueFrom.ConfigMapKeyRef.Optional` is false (this is the default value of this bool)
     - Marshal the value obtained from the configmap into a byte array then convert it into a `ParamValue` object via the `*ParamValue.UnmarshalJSON` custom method
-    - Create a deep copy of the param then set `Param.ValueFrom` to nil and `Param.Value` to the unmarshalled object from the step above
+    - Create a deep copy of the param then set `Param.Value` to the unmarshalled object from the step above
 
 This will lead to the Param behaving "as expected" (i.e. `Param.Value` is populated with a proper value) for the rest of the reconcile method. All validations and apply/replaceParameters will run without issue.
 Even if the PipelineRun k8s resource object is not updated and the value source resolution occurs in subsequent reconcile runs, the `PipelineTask`s and resulting `TaskRun`s will not be affected as they are already created and the passed param value to them will remain the resolution from the first run (so no need to worry if the value chages inside the configmap). However, this could expose the PipelineRun to needless failure (if the configmap is later deleted then subsequent reconcile runs try to fetch from it).
 
 ### Updating the k8s resource object
-A new reconciler method to be called from inside `ReconcileKind` after teh `c.reconcile` [call](https://github.com/tektoncd/pipeline/blob/5b082b1106753e093593d12152c82e1c4b0f37e5/pkg/reconciler/pipelinerun/pipelinerun.go#L266)
+A new reconciler method to be called from inside `ReconcileKind` after the `c.reconcile` [call](https://github.com/tektoncd/pipeline/blob/5b082b1106753e093593d12152c82e1c4b0f37e5/pkg/reconciler/pipelinerun/pipelinerun.go#L266)
 - Check that the Params in the desired PipelineRun (the go instance used in the method) and the Params in the "baseline" PipelineRun (new go instance deserialized from the k8s resource object) differ "only by value source resolution".
-   - The check is as follows:
 ```go
 func IsDifferentOnlyByValueSourceResolution(newParams Params, baselineParams Params) bool {
   if len(newParams) != len(baselineParams) {
     return false
   }
-  var valueSourceResolved bool
   for i := range len(baselineParams) {
     baselineParam := baselineParams[i]
     newParam := newParams[i]
-    if baselineParam.ValueFrom != nil && newParam.Value.Type != "" && newParam.Name == baselineParam.Name {
-      valueSourceResolved = true
-    } else if !reflect.DeepEqual(baselineParam, newParam) {
-      return false
+    if !reflect.ValueOf(baselineParam.ValueFrom).IsZero() && reflect.DeepEqual(baselineParam.ValueFrom, newParam.ValueFrom) {
+      if newParam.Value.Type == "" {
+        // we could return an error here as it suggests the reconciler somehow failed to fetch the value from configmap then populate param.Value
+      } else if !reflect.DeepEqual(baselineParam.Value, newParam.Value)  {
+        if baselineParam.Value.Type == "" {
+          // we could return an error here as it suggests the user passed both param.Value and param.ValueFrom in the PipelineRun definition
+        } else {
+          return true
+        }
+      }
     }
   }
 
-  return valueSourceResolved
+  return false
 }
 ```
 - If the check is false, do nothing
@@ -265,7 +267,13 @@ The value resolution from the ConfigMap and the k8s resource patch are expcted t
 
 ### Risks and Mitigations
 
-None that comes to mind.
+- There is no validation against the user paasing both `param.Value` and `param.ValueFrom` in the PipelineRun defintion. The absence of this check is due to:
+    - We want to conserve `param.ValueFrom` for "bookkeeping" puproses instead of unsetting it after the first reconcile run.
+    - There is no out-of-the-box way to have a check only before the first reconcile run as opposed to before/after every reconcile run.
+  This will result in the reconciler ignoring param.ValueFrom as param.Value is already populated (as our goal is to fetch the value from the configmap only once). The only mitigation is to add a log in the reconciler that fetching the value from the configmap has not occured because param.Value is already populated.
+
+- When patching the PipelineRun k8s object after the first reconcile run with the resolved run: if patching the entire array of Params (one patch on the Params array) is too risky, we could consider having multiple targeted patches (one patch per param) for each of the params which had a value resolution.
+
 
 ### Drawbacks
 

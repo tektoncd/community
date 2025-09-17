@@ -341,11 +341,10 @@ orgs:
         - vdemeester
         members:
         - savitaashture
-        - sm43
-        - concaf
         - piyush-garg
-        - jkandasa
         - jkhelil
+        - anithapriyanatarajan
+        - mbpavan
         privacy: closed
         repos:
           operator: maintain
@@ -776,6 +775,7 @@ orgs:
         - PuneetPunamiya
         - anithapriyanatarajan
         - mbpavan
+        - pratap0007
         privacy: closed
         repos:
           operator: read

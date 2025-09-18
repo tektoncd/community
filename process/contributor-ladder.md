@@ -10,7 +10,7 @@ advance up it as their involvement in the project grows. Our project members are
 happy to help you advance along the contributor ladder.
 
 Each of the contributor roles below is organized into lists of three types of
-things. "Responsibilities" are things that contributor is expected to do.
+things. "Responsibilities" are things that a contributor is expected to do.
 "Requirements" are qualifications a person needs to meet to be in that role, and
 "Privileges" are things contributors on that level are entitled to.
 
@@ -173,7 +173,7 @@ The process of becoming a Reviewer is:
 
 - Each project has a `<repo>.Reviewers` entry in `org.yaml`, where `<repo>` is
   the name of the GitHub repository. The only exception is `pipeline` whose
-  maintainer team is name `core.Reviewers`.
+  maintainer team is named `core.Reviewers`.
 
 ## Maintainer
 
@@ -244,7 +244,7 @@ Process of becoming an Maintainer:
 
 - Each project has a `<repo>.maintainers` entry in [`org.yaml`](../org/org.yaml),
   where `<repo>` is the name of the GitHub repository. The only exception is
-  `pipeline` whose maintainer team is name `core.maintainers`.
+  `pipeline` whose maintainer team is named `core.maintainers`.
 
 ## Governance Committee Member
 
@@ -263,7 +263,7 @@ election process.
 
 It is important for contributors to be and stay active to set an example and
 show commitment to the project. Inactivity is harmful to the project as it may
-lead to unexpected delays, contributor attrition, and a lost of trust in the
+lead to unexpected delays, contributor attrition, and a loss of trust in the
 project.
 
 - Inactivity is measured by:

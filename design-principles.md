@@ -5,7 +5,7 @@
    [Kubernetes API Conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#api-conventions).
 
 ## Reusability
-1. Existing features should be reused when possible instead of adding new ones. Before proposing a feature, try solving the problem with existing features first.
+1. Existing features should be reused when possible instead of adding new ones. Before proposing a feature, try solving the problem using existing features first.
 1. Prefer providing a solution in the Catalog when possible to adding a feature.
 1. At authoring time (i.e. when authoring Pipelines and Tasks), authors should be able to include anything that is required for every execution of the Task or Pipeline. At run time (i.e. when invoking a Pipeline or Task via  PipelineRun or TaskRun), users should be able to control execution as needed by their context without having to modify Tasks and Pipelines. 
 1. In TEPs, discuss how a new feature affects the reusability of Tasks and Pipelines.
@@ -34,7 +34,7 @@ In general, TEPs should make Tekton more platform-agnostic, not more platform-sp
 While the "main" implementation of the Tekton API is built on Kubernetes, there is also (for example) a [buildkit implementation](https://github.com/vdemeester/buildkit-tekton)
 of Tekton, and platform builders may choose to implement the Tekton API in other ways that don't rely on Kubernetes.
 When Kubernetes-specific features have to be added, they should be explicitly called out in the design docs, and consider shunting them together into a section of the API, such as `podTemplate`.
-The Tekton API currently contains some Kubernetes-isms. These should be treated as potentential long-term opportunities for improvement of our abstractions.
+The Tekton API currently contains some Kubernetes-isms. These should be treated as potential long-term opportunities for improvement of our abstractions.
 1. In TEPs, discuss how the proposal affects [conformance](https://github.com/tektoncd/community/blob/main/teps/0012-api-spec.md).
 As mentioned in the conformance document, newly added API fields shouldn't be required for Tekton conformance, but can
 transition to becoming required over time.

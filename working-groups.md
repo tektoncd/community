@@ -44,7 +44,7 @@ We altenate between two meeting times, a time that is friendly for Europe + Nort
 |---------------|-----------------------------------------------------------------------------------------------|
 | Forum         | [tekton-dev@](https://groups.google.com/forum/#!forum/tekton-dev)                             |
 | Slack Channel | [#pipeline](https://tektoncd.slack.com/messages/pipeline)                                     |
-| Meeting Notes | [Notes](https://docs.google.com/document/d/1h6dcP2VgQvr8yRZenKhLgK37v9hSDM8S8Ky24BI8WM8/edit) |
+| Meeting Notes | [Notes](https://docs.google.com/document/d/1rjWM9JN5vLytfIS6vXbIuRMrrdpy28MHvKFELm5-9yQ/edit) |
 
 ### Europe + North America
 

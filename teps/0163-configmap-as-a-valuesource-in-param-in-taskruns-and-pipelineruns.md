@@ -95,7 +95,7 @@ None
 - The user will be able to define one or more `Param`s in a PipelineRun or a TaskRun with `spec.params[*].valueFrom.configMapKeyRef.name` and `spec.params[*].valueFrom.configMapKeyRef.key` instead of the usual hardcoded `spec.params[*].value` 
     - `valueFrom.configMapKeyRef.name` is the name of the ConfigMap that should already exist in the same namespace where this PipelineRun will be executed
     - `valueFrom.configMapKeyRef.key` is the key storing the value in the configmap.
-    - Given that this feature is only for v1 (and not v1beta1), there is no need to add support for variable substituion in configMapKeyRef as v1 does not have Trigger bindings.
+    - Later on (not in the inital iteration), there will be support for variable substitution in configMapKeyRef (implemented in both v1 and v1beta1). For context, v1 does not have Trigger bindings (but v1beta1 has Trigger bindings) .
 Example:
 ```yaml
 apiVersion: tekton.dev/v1
@@ -130,7 +130,8 @@ None
 Per [feature-versioning.md](https://github.com/tektoncd/pipeline/blob/5b082b1106753e093593d12152c82e1c4b0f37e5/docs/developers/feature-versioning.md) , the new feature will be guarded behind a feature flag with an alpha stability (turned off by default)
 
 ### CRD API Version
-Per the [API compatibility policy](https://github.com/tektoncd/pipeline/blob/5b082b1106753e093593d12152c82e1c4b0f37e5/api_compatibility_policy.md#crd-api-versions), the feature will be implemented only in the v1 CRD as `[v1beta1 is] deprecated. New features will not be added, but they will receive bug fixes`
+~Per the [API compatibility policy](https://github.com/tektoncd/pipeline/blob/5b082b1106753e093593d12152c82e1c4b0f37e5/api_compatibility_policy.md#crd-api-versions), the feature will be implemented only in the v1 CRD as `[v1beta1 is] deprecated. New features will not be added, but they will receive bug fixes`~
+After discussion with the project maintainers, this feature will be added to both v1 and v1beta1.
 
 ### API specs
 - A new type `ValueSource`

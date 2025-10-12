@@ -149,3 +149,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0160](0160-enhance-results-cli.md) | Enhance Tekton Results CLI | proposed | 2025-03-13 |
 |[TEP-0161](0161-resolver-caching.md) | Resolver Caching for Task and Pipeline Resolution | proposed | 2024-06-15 |
 |[TEP-0162](0162-event-based-pruning-of-tekton-resources.md) | event based pruning of tekton resources | proposed | 2025-06-18 |
+|[TEP-0163](0163-configmap-as-a-valuesource-in-param-in-taskruns-and-pipelineruns.md) | ConfigMap as a ValueSource in Param in TaskRuns and PipelineRuns | implementable | 2025-07-24 |

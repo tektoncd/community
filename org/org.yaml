@@ -201,6 +201,9 @@ orgs:
     - brianwcook
     - bkhizgiy
     - mangelajo
+    - zakisk
+    - gbenhaim
+    - mathur07
     # alumni:
     # sbwsg
     teams:
@@ -366,6 +369,23 @@ orgs:
         repos:
           plumbing: maintain
           infra: maintain
+      pipelines-as-code.maintainers:
+        description: the pipelines-as-code maintainers
+        maintainers:
+        - vdemeester
+        - chmouel
+        members:
+        - zakisk
+        - sm43
+      pruner.maintainers:
+        description: the pruner maintainers
+        maintainers:
+        - vdemeester
+        members:
+        - anithapriyanatarajan
+        - pramodbindal
+        - savitaashture
+        - waveywaves
       results.maintainers:
         description: the results maintainers
         maintainers:
@@ -685,6 +705,30 @@ orgs:
         repos:
           plumbing: read
           infra: read
+      pipelines-as-code.collaborators:
+        description: The pipelines-as-code collaborators
+        maintainers:
+        - vdemeester
+        - chmouel
+        members:
+        - waveywaves
+        - gbenhaim
+        - mathur07
+        - sm43
+        - infernus01
+        - zakisk
+      pruner.collaborators:
+        description: The pruner collaborators
+        maintainers:
+        - vdemeester
+        members:
+        - anithapriyanatarajan
+        - divyansh42
+        - jkhelil
+        - jkandasa
+        - pramodbindal
+        - savitaashture
+        - waveywaves
       cli.collaborators:
         description: The cli collaborators
         maintainers:

@@ -366,6 +366,19 @@ orgs:
         repos:
           plumbing: maintain
           infra: maintain
+      pruner.maintainers:
+        description: the pruner maintainers
+        maintainers:
+        - vdemeester
+        members:
+        - anithapriyanatarajan
+        - infernus01
+        - pramodbindal
+        - savitaashture
+        - waveywaves
+        privacy: closed
+        repos:
+          pruner: maintain
       results.maintainers:
         description: the results maintainers
         maintainers:
@@ -685,6 +698,20 @@ orgs:
         repos:
           plumbing: read
           infra: read
+      pruner.collaborators:
+        description: the pruner collaborators
+        maintainers:
+        - vdemeester
+        members:
+        - anithapriyanatarajan
+        - infernus01
+        - jkandasa
+        - pramodbindal
+        - savitaashture
+        - waveywaves
+        privacy: closed
+        repos:
+          pruner: read
       cli.collaborators:
         description: The cli collaborators
         maintainers:

@@ -377,6 +377,9 @@ orgs:
         members:
         - zakisk
         - sm43
+        privacy: closed
+        repos:
+          pipelines-as-code: maintain
       pruner.maintainers:
         description: the pruner maintainers
         maintainers:
@@ -386,6 +389,9 @@ orgs:
         - pramodbindal
         - savitaashture
         - waveywaves
+        privacy: closed
+        repos:
+          pruner: maintain
       results.maintainers:
         description: the results maintainers
         maintainers:
@@ -717,6 +723,9 @@ orgs:
         - sm43
         - infernus01
         - zakisk
+        privacy: closed
+        repos:
+          pipelines-as-code: read
       pruner.collaborators:
         description: The pruner collaborators
         maintainers:
@@ -724,11 +733,15 @@ orgs:
         members:
         - anithapriyanatarajan
         - divyansh42
+        - infernus01
         - jkhelil
         - jkandasa
         - pramodbindal
         - savitaashture
         - waveywaves
+        privacy: closed
+        repos:
+          pruner: read
       cli.collaborators:
         description: The cli collaborators
         maintainers:

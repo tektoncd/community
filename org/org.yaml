@@ -248,6 +248,7 @@ orgs:
       chains.maintainers:
         description: the chains maintainers
         members:
+        - anithapriyanatarajan
         - chitrangpatel
         - chuangw6
         - jkhelil
@@ -892,12 +893,14 @@ orgs:
       chains.collaborators:
         description: The chains collaborators
         members:
+        - anithapriyanatarajan
         - abayer
         - afrittoli
         - chuangw6
         - chitrangpatel
         - dlorenc
         - ImJasonH
+        - jkhelil
         - lcarva
         - mattmoor
         - pritidesai

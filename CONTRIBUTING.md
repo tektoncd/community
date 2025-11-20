@@ -7,7 +7,8 @@ contribute to tektoncd projects in general, see [the overview in our README](REA
 and the individual `CONTRIBUTING.md` files in each respective project.
 
 **All contributors must comply with
-[the code of conduct](./code-of-conduct.md).**
+[the code of conduct](./code-of-conduct.md) and
+[the AI contribution policy](./ai-contribution-policy.md).**
 
 This repo contains documentation about interacting with the community as well as standard
 and processes that apply to all repos in `tektoncd`. PRs are welcome and should follow

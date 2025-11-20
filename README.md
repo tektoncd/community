@@ -21,6 +21,7 @@ Tekton community.
 See our standards regarding:
 
 - [Code of conduct](code-of-conduct.md)
+- [AI contribution policy](ai-contribution-policy.md)
 - [Design principles](design-principles.md)
 - [Commits](standards.md#commit-messages)
 - [Code](standards.md#code)

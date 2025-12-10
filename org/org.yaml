@@ -350,6 +350,7 @@ orgs:
         - jkhelil
         - anithapriyanatarajan
         - mbpavan
+        - pramodbindal
         privacy: closed
         repos:
           operator: maintain

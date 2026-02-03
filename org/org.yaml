@@ -210,10 +210,20 @@ orgs:
         description: Tekton Governing Board members
         members:
         - wlynch
-        - jerop
         - vdemeester
         - afrittoli
-        - chitrangpatel
+        - dibyom
+        - abayer
+        privacy: closed
+      tekton-vmt:
+        description: Tekton Vulnerability Mgmt members
+        members:
+        - wlynch
+        - vdemeester
+        - afrittoli
+        - dibyom
+        - AlanGreene
+        - abayer
         privacy: closed
       catalog.maintainers:
         description: the catalog maintainers

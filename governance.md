@@ -164,12 +164,12 @@ tekton-dev@googlegroups.com mailing list.
 
 Example timeline:
 
-1. Before or during nominations, send an email to all elgible voters to notify
-   them that they are eligble (allowing people time to reach out if they believe
-   they are eligble but are not on our list) (we have used
+1. Before or during nominations, send an email to all eligible voters to notify
+   them that they are eligible (allowing people time to reach out if they believe
+   they are eligible but are not on our list) (we have used
    [this script](https://github.com/tektoncd/community/tree/main/election) in
    the past)
-1. Prompt eligble voters to opt into CIVS at
+1. Prompt eligible voters to opt into CIVS at
    https://civs1.civs.us/cgi-bin/opt_in.pl so they will be able to vote
 1. 1 week for nominations (previously, starting on a Thursday until midnight PST
    the next Wednesday)
@@ -210,7 +210,7 @@ regardless of the length of that remainder.
 For handy reference in future elections, here are some starter templates to send
 out to announce phases in the election.
 
-To announce opening up nomintations:
+To announce opening up nominations:
 
 ```
 Hello Tekton contributors!
@@ -222,7 +222,7 @@ This section of our bylaws describes the entire process: [1].
 If you would like to be nominated, please send an email to tekton-nominations@googlegroups.com. The email should contain:
 
 * Your email address, github handle, the company you represent, and tektoncd project(s) you contribute to
-* An explanation of how you meet the "15 contributions" criteria, with links to related artifacts if required (e.g. design docs). (Note the easiest way to meet this criteria is to be present on this devstats dashboard [3], however this only shows folks with GitHub based contributions. Please include a description of your non-GitHub contributions if applicable.)
+* An explanation of how you meet the "15 contributions" criteria, with links to related artifacts if required (e.g. design docs). (Note the easiest way to meet this criteria is to be present on this devstats dashboard [2], however this only shows folks with GitHub based contributions. Please include a description of your non-GitHub contributions if applicable.)
 * For each of two contributors nominating you:
   * The company they work for
   * Their github handles

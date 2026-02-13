@@ -57,6 +57,7 @@ see-also:
   - [Standalone External Results (Original TEP-0164)](#standalone-external-results-original-tep-0164)
   - [ConfigMaps per TaskRun](#configmaps-per-taskrun)
   - [Workspaces Only](#workspaces-only)
+- [Future Work: Convergence of Results, Params, and Artifacts](#future-work-convergence-of-results-params-and-artifacts)
 - [Implementation Plan](#implementation-plan)
   - [Test Plan](#test-plan)
   - [Infrastructure Needed](#infrastructure-needed)
@@ -1270,6 +1271,110 @@ TEP-0147 artifacts.
 - Requires Task modifications
 - No provenance/trust chain
 - Incompatible with no-code/low-code abstractions
+
+## Future Work: Convergence of Results, Params, and Artifacts
+
+This TEP introduces `spec.artifacts.inputs/outputs` alongside the existing
+`spec.params` and `spec.results` fields. While this is the right incremental
+step (params and results are stable/GA, artifacts are alpha), the long-term
+direction is convergence into a unified inputs/outputs model.
+
+### Mid-term: Results as Syntactic Sugar for Inline Artifacts
+
+Results are fundamentally artifacts with `storage: inline` and no provenance
+tracking. Once the artifact system matures to beta/stable, results could be
+compiled down to inline artifacts internally:
+
+```yaml
+# These would become equivalent:
+results:
+  - name: digest
+    type: string
+
+artifacts:
+  outputs:
+    - name: digest
+      storage: inline
+```
+
+This would:
+- Unify the status format in TaskRun (one field instead of `results` +
+  `artifacts`)
+- Unify the resolution path in the controller
+- Allow `$(tasks.x.results.y)` and `$(tasks.x.outputs.y)` to resolve
+  identically
+- Remove the results size limit naturally (inline threshold configurable,
+  external storage for overflow)
+
+The `spec.results` field would remain for backward compatibility and
+ergonomics — most Tasks produce small metadata values where the full
+artifact declaration is unnecessary overhead.
+
+### Long-term: Unified Inputs and Outputs (API v2)
+
+The natural end state is that Tasks declare **inputs** and **outputs**,
+with the `type` field distinguishing values from artifacts:
+
+```yaml
+apiVersion: tekton.dev/v2  # future
+kind: Task
+metadata:
+  name: build
+spec:
+  inputs:
+    # Values (today's params)
+    - name: repo-url
+      type: string
+    # Content with provenance (today's artifact inputs)
+    - name: source
+      type: artifact
+
+  outputs:
+    # Small values (today's results)
+    - name: commit
+      type: string
+    # Content with provenance (today's artifact outputs)
+    - name: images
+      type: artifact
+      buildOutput: true
+      storage: external
+```
+
+Pipelines would connect them uniformly:
+
+```yaml
+tasks:
+  - name: build
+    taskRef: build
+    inputs:
+      - name: repo-url
+        value: "https://github.com/..."
+      - name: source
+        from: tasks.clone.outputs.source
+  - name: sign
+    inputs:
+      - name: images
+        from: tasks.build.outputs.images
+```
+
+This convergence path is:
+
+| Current | Mid-term | Long-term (v2) |
+|---------|----------|----------------|
+| `spec.params` | Unchanged | → `spec.inputs` (type: string/array/object) |
+| `spec.results` | Sugar for inline artifacts | → `spec.outputs` (type: string/array/object) |
+| `spec.artifacts.inputs` | Unchanged | → `spec.inputs` (type: artifact) |
+| `spec.artifacts.outputs` | Unchanged | → `spec.outputs` (type: artifact) |
+| `$(params.x)` | Unchanged | → `$(inputs.x)` or `$(inputs.x.value)` |
+| `$(results.x.path)` | Unchanged | → `$(outputs.x.path)` |
+| `$(tasks.x.results.y)` | Also `$(tasks.x.outputs.y)` | → `$(tasks.x.outputs.y)` |
+| `$(step.artifacts.path)` | Backward compat | Deprecated |
+
+This TEP does not propose these changes — they require a broader API
+versioning discussion with the Tekton community. However, the design
+choices in this TEP (declarative inputs/outputs, path-based variables,
+storage modes) are intentionally aligned with this convergence direction
+to avoid future breaking changes.
 
 ## Implementation Plan
 

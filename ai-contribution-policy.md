@@ -1,12 +1,14 @@
 # AI Contribution Policy
 
+Tekton welcomes contributions that use AI tools. This policy ensures transparency and quality so that AI-assisted work meets the same standards as any other contribution.
+
 ## Core Rules
 
-**All AI usage must be disclosed.** You must state the tool you used (e.g., Claude, Copilot, ChatGPT) along with the extent that the work was AI-assisted.
+**All AI usage must be disclosed.** You should state the extent that the work was AI-assisted. Mentioning the specific tool (e.g., Claude, Copilot, ChatGPT) is encouraged, as it can help reviewers understand the generated code and some tools support `Co-authored-by` trailers natively.
 
-**If AI isn't disclosed but a maintainer suspects its use, the PR or issue may be closed.** Maintainers have discretion to request clarification before taking action.
+**If a maintainer suspects undisclosed AI usage, they may ask for clarification.** Transparency helps maintain trust — if AI use is confirmed but wasn't disclosed, the contributor will be asked to update their submission accordingly.
 
-**Contributors are fully responsible for all AI-assisted contributions.** You must review, understand, and test all AI-generated content before submitting. Fully AI-generated contributions with minimal human review are not acceptable.
+**Contributors are responsible for all AI-assisted contributions.** Please review, understand, and test all AI-generated content before submitting. Contributions that are fully AI-generated with minimal human review are not acceptable.
 
 ## When Disclosure is Required
 
@@ -70,4 +72,4 @@ This policy was informed by:
 
 ---
 
-*Last updated: 2025-11-20*
+*Last updated: 2026-02-23*

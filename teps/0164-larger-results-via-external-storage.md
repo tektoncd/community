@@ -3,7 +3,7 @@ title: "Tekton Artifacts Phase 2: External Storage for Artifacts and Results"
 authors:
   - "@vdemeester"
 creation-date: 2026-02-04
-last-updated: 2026-02-13
+last-updated: 2026-02-26
 status: proposed
 supersedes:
 see-also:
@@ -31,7 +31,7 @@ see-also:
   - [Artifact Declaration in Task Spec](#artifact-declaration-in-task-spec)
   - [Storage Modes](#storage-modes)
   - [Storage Backend Configuration](#storage-backend-configuration)
-  - [Namespace-Level and Per-PipelineRun Configuration](#namespace-level-and-per-pipelinerun-configuration)
+  - [Repository Configuration: Global, Namespace, and Per-PipelineRun](#repository-configuration-global-namespace-and-per-pipelinerun)
   - [TaskRun Status with Storage References](#taskrun-status-with-storage-references)
   - [Transparent Resolution for Downstream Tasks](#transparent-resolution-for-downstream-tasks)
   - [Init Container Injection for External Artifacts](#init-container-injection-for-external-artifacts)
@@ -41,6 +41,7 @@ see-also:
   - [Integration with Tekton Results and UIs](#integration-with-tekton-results-and-uis)
   - [Storage Provider Interface](#storage-provider-interface)
   - [Supported Backends](#supported-backends)
+  - [OCI Artifact Format Specification](#oci-artifact-format-specification)
   - [Garbage Collection](#garbage-collection)
 - [Design Evaluation](#design-evaluation)
   - [Reusability](#reusability)
@@ -142,8 +143,8 @@ trusted artifacts with arbitrary size support and a declarative API**.
    TEP-0147 Phase 1 artifact reporting.
 6. Support **transparent resolution** so downstream Tasks consume artifacts
    without special handling.
-7. Align with **production patterns** from Konflux CI's OCI-based trusted
-   artifacts.
+7. Align with **production patterns** from [Konflux CI](https://github.com/konflux-ci)'s
+   OCI-based trusted artifacts ([ADR-0036](https://github.com/konflux-ci/architecture/blob/main/ADR/0036-trusted-artifacts.md)).
 
 ### Non-Goals
 
@@ -157,7 +158,7 @@ trusted artifacts with arbitrary size support and a declarative API**.
 
 ### Use Cases
 
-**Use Case 1: Multi-Image Build Pipeline (Konflux)**
+**Use Case 1: Multi-Image Build Pipeline ([Konflux](https://github.com/konflux-ci))**
 
 A Task builds multiple container images and needs to pass the list of all
 image references (with digests) to a signing Task. With 20+ images, the
@@ -628,9 +629,37 @@ data:
   pvc.basePath: "/artifacts"
 ```
 
-### Namespace-Level and Per-PipelineRun Configuration
+### Repository Configuration: Global, Namespace, and Per-PipelineRun
 
-**Namespace-level** configuration overrides follow [TEP-0085](https://github.com/tektoncd/community/blob/main/teps/0085-per-namespace-controller-configuration.md):
+The OCI repository where artifacts are stored can be configured at three
+levels, allowing operators and users to control artifact isolation and
+access. The repository path is an **operational concern** (where to store),
+not a Pipeline design concern (what to do), so it is not configured on
+Pipeline specs.
+
+**Level 1: Global (cluster-level ConfigMap)**
+
+The cluster-wide default, set by the platform operator. All namespaces use
+this repository unless overridden.
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-artifact-storage
+  namespace: tekton-pipelines
+data:
+  enabled: "true"
+  backend: "oci"
+  oci.repository: "registry.example.com/tekton/artifacts"
+```
+
+**Level 2: Per-namespace (namespace-level ConfigMap)**
+
+Follows [TEP-0085](https://github.com/tektoncd/community/blob/main/teps/0085-per-namespace-controller-configuration.md)
+for per-namespace controller configuration. Teams can use different
+registries, enforce isolation, or store artifacts closer to their
+workloads.
 
 ```yaml
 apiVersion: v1
@@ -642,12 +671,52 @@ metadata:
     tekton.dev/config-type: artifact-storage
 data:
   backend: "oci"
+  # Team-specific registry — artifacts isolated per team
   oci.repository: "team-a-registry.example.com/artifacts"
   oci.credentialsSecret: "team-a-registry-creds"
 ```
 
-**Per-PipelineRun** configuration via annotations, allowing credentials to be
-derived from the ServiceAccount bound to the PipelineRun:
+This is the natural level for multi-tenant clusters where teams have their
+own registries or namespaces. In [Konflux CI](https://github.com/konflux-ci),
+each application namespace could point to a different repository for
+artifact isolation.
+
+**Level 3: Per-Pipeline (annotations)**
+
+Pipeline authors or platform teams can annotate a Pipeline to set a default
+repository for all runs of that Pipeline. This is an operational hint, not
+a spec field — the Pipeline's behavior is unchanged, only the storage
+location is guided.
+
+```yaml
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: build-and-sign
+  annotations:
+    # Default repository for all runs of this Pipeline
+    tekton.dev/artifact-storage-oci-repository: "registry.example.com/team-a/build-artifacts"
+spec:
+  tasks:
+    - name: build
+      taskRef:
+        name: build-images
+    # ...
+```
+
+Use cases for per-Pipeline configuration:
+- Platform teams enforce that a Pipeline's artifacts go to a specific
+  registry (e.g., compliance-scanned registry for release pipelines)
+- Pipeline author sets a sensible default that callers can override
+- Different Pipelines in the same namespace store artifacts in different
+  repositories (e.g., build artifacts vs test artifacts)
+
+**Level 4: Per-PipelineRun (annotations)**
+
+The most granular level. The caller (trigger, CI system, user) decides
+where artifacts are stored for a specific run, overriding all other
+levels. Credentials are derived from the ServiceAccount bound to the
+PipelineRun.
 
 ```yaml
 apiVersion: tekton.dev/v1
@@ -655,19 +724,46 @@ kind: PipelineRun
 metadata:
   name: my-pipeline-run
   annotations:
-    tekton.dev/artifact-storage-backend: "oci"
-    tekton.dev/artifact-storage-oci-repository: "my-registry.example.com/artifacts"
+    # Override repository for this specific run
+    tekton.dev/artifact-storage-oci-repository: "my-registry.example.com/my-app/artifacts"
 spec:
-  serviceAccountName: my-sa  # SA credentials used for OCI auth
+  serviceAccountName: my-sa  # SA imagePullSecrets used for OCI auth
   pipelineRef:
     name: build-and-sign
 ```
 
-Resolution order:
-1. PipelineRun annotations (if set)
-2. Namespace-level ConfigMap (if exists)
-3. Cluster-level ConfigMap in `tekton-pipelines` namespace
-4. Built-in defaults (external storage disabled)
+Use cases for per-PipelineRun configuration:
+- Platform assigns per-application registries (each app's artifacts in its
+  own repository)
+- CI triggers from different source repositories storing artifacts alongside
+  their images
+- Testing against a staging registry before promoting to production
+
+**Resolution order:**
+
+| Priority | Source | Use Case |
+|----------|--------|----------|
+| 1 (highest) | PipelineRun annotations | Caller-controlled, per-invocation |
+| 2 | Pipeline annotations | Pipeline author default |
+| 3 | Namespace ConfigMap | Team/project isolation |
+| 4 | Cluster ConfigMap (`tekton-pipelines`) | Cluster default |
+| 5 (lowest) | Built-in defaults | External storage disabled |
+
+Each level inherits unset fields from the level below. For example, a
+Pipeline annotation can override just `oci-repository` while inheriting
+`inline-threshold` and `backend` from the namespace or cluster ConfigMap.
+
+**Authentication at each level:**
+
+The ServiceAccount bound to the PipelineRun/TaskRun must have push/pull
+access to the resolved repository. This means:
+- **Global/namespace**: The default SA (or SA configured in the namespace)
+  must have imagePullSecrets for the configured registry
+- **Per-PipelineRun**: The SA specified in `spec.serviceAccountName` must
+  have access to the overridden repository
+
+This follows the existing Tekton pattern where SA credentials determine
+what images can be pulled and pushed.
 
 ### TaskRun Status with Storage References
 
@@ -917,8 +1013,8 @@ This enables:
 - **Cache-friendliness**: Content-addressable layers enable OCI cache hits
 - **Cleanup**: Deleting the root artifact cascades to all related artifacts
 
-This feature is **optional** and only active when using the OCI backend with
-`oci.groupByPipelineRun: "true"` in the configuration.
+This grouping is **enabled by default** when using the OCI backend. It can
+be disabled with `oci.groupByPipelineRun: "false"` in the configuration.
 
 ### Integration with Tekton Chains
 
@@ -1052,30 +1148,226 @@ type SecretKeySelector struct {
 
 ### Supported Backends
 
-**Phase 1 (Alpha):**
-- **OCI Registry** (via `oras.land/oras-go/v2`) — primary backend, compatible
-  with Konflux CI's OCI-based trusted artifacts pattern
+**Phase 1 (Alpha) — OCI Only:**
+- **OCI Registry** (via `oras.land/oras-go/v2`) — the only backend in the
+  initial implementation. OCI is the natural first choice because:
+  - Every Kubernetes cluster already has access to an OCI registry (for
+    container images)
+  - [Konflux CI](https://github.com/konflux-ci) uses OCI registries for trusted artifacts in production
+    ([ADR-0036](https://github.com/konflux-ci/architecture/blob/main/ADR/0036-trusted-artifacts.md))
+  - Tekton Chains already stores attestations in OCI registries
+  - Content-addressable storage provides native deduplication and caching
+  - OCI referrers API enables natural artifact grouping per PipelineRun
+  - Auth reuses existing imagePullSecrets and ServiceAccount credentials —
+    no new credential infrastructure needed
+  - Cross-cluster artifact sharing works out of the box (registries are
+    network-accessible)
+
+**Phase 2 (Beta) — Additional Backends:**
 - **S3** (via `gocloud.dev/blob/s3blob`) — compatible with MinIO for
   on-premises deployments
-- **PVC** — no external infrastructure needed, suitable for single-cluster
-  development
-
-**Phase 2 (Beta):**
 - **GCS** (via `gocloud.dev/blob/gcsblob`)
+- **PVC** — no external infrastructure needed, suitable for single-cluster
+  development and air-gapped environments
 - **Azure Blob** (via `gocloud.dev/blob/azureblob`)
 
-**OCI Backend Details:**
+The `Provider` interface (defined above) ensures additional backends can be
+added without API changes. Phase 2 backends are documented in the interface
+but not implemented until the OCI backend is proven in production.
 
-The OCI backend is the recommended default, as it aligns with:
-- Konflux CI's production trusted artifacts ([ADR-0036](https://github.com/konflux-ci/architecture/blob/main/ADR/0036-trusted-artifacts.md))
-  using `create-trusted-artifact` / `use-trusted-artifact` steps
-- Tekton Chains' existing OCI storage for attestations
-- Container image registries already present in Kubernetes clusters
+### OCI Artifact Format Specification
 
-Artifacts are stored as OCI artifacts with:
-- Content as a single layer (content-addressable by digest)
-- Artifact metadata as annotations
-- Tags following the configured `tagPattern`
+This section defines the concrete OCI artifact format used by the OCI
+backend. The format follows [OCI Image Manifest Specification
+v1.1](https://github.com/opencontainers/image-spec/blob/main/manifest.md)
+and [ORAS Artifact conventions](https://oras.land/).
+
+**Single Artifact Manifest:**
+
+Each output artifact produced by a TaskRun is stored as an OCI manifest
+with a single content layer:
+
+```json
+{
+  "schemaVersion": 2,
+  "mediaType": "application/vnd.oci.image.manifest.v1+json",
+  "config": {
+    "mediaType": "application/vnd.tekton.artifact.config.v1+json",
+    "digest": "sha256:<config-digest>",
+    "size": 233
+  },
+  "layers": [
+    {
+      "mediaType": "application/octet-stream",
+      "digest": "sha256:<content-digest>",
+      "size": 45678,
+      "annotations": {
+        "org.opencontainers.image.title": "images"
+      }
+    }
+  ],
+  "annotations": {
+    "dev.tekton.artifact/name": "images",
+    "dev.tekton.artifact/taskrun": "build-images-run-abc123",
+    "dev.tekton.artifact/pipelinerun": "my-pipeline-run",
+    "dev.tekton.artifact/namespace": "default",
+    "dev.tekton.artifact/build-output": "true",
+    "dev.tekton.artifact/created": "2026-02-26T12:00:00Z"
+  }
+}
+```
+
+**Config Blob:**
+
+The config blob contains artifact metadata (not container config):
+
+```json
+{
+  "created": "2026-02-26T12:00:00Z",
+  "artifact": {
+    "name": "images",
+    "taskrun": "build-images-run-abc123",
+    "pipelinerun": "my-pipeline-run",
+    "namespace": "default",
+    "buildOutput": true,
+    "contentType": "application/json"
+  }
+}
+```
+
+**Media Types:**
+
+| Media Type | Usage |
+|------------|-------|
+| `application/vnd.tekton.artifact.config.v1+json` | Config blob for artifact metadata |
+| `application/octet-stream` | Default content layer (binary) |
+| `application/json` | Content layer when detected as JSON |
+| `application/spdx+json` | Content layer for SPDX SBOMs |
+| `application/vnd.cyclonedx+json` | Content layer for CycloneDX SBOMs |
+
+The entrypoint detects content type by inspecting the first bytes of the
+artifact content. If detection fails, `application/octet-stream` is used.
+Task authors can override via the `contentType` field on artifact
+declarations.
+
+**Multi-file Artifacts:**
+
+When a Step writes multiple files to `$(outputs.name.path)/`, the entrypoint
+creates a tar archive before uploading:
+
+```json
+{
+  "layers": [
+    {
+      "mediaType": "application/vnd.tekton.artifact.tar+gzip",
+      "digest": "sha256:<tar-digest>",
+      "size": 102400,
+      "annotations": {
+        "org.opencontainers.image.title": "test-results",
+        "dev.tekton.artifact/archive": "tar+gzip"
+      }
+    }
+  ]
+}
+```
+
+The init container (fetch side) detects the archive annotation and extracts
+the tar to the input path, preserving the directory structure.
+
+**PipelineRun Grouping via OCI Referrers:**
+
+When a PipelineRun uses the OCI backend, artifacts are grouped using the
+[OCI Referrers API](https://github.com/opencontainers/distribution-spec/blob/main/spec.md#listing-referrers):
+
+```
+PipelineRun root manifest (OCI Index)
+│
+├── refers-to → TaskRun "build" artifact: images
+├── refers-to → TaskRun "build" artifact: build-log
+├── refers-to → TaskRun "sign" artifact: signatures
+└── refers-to → TaskRun "attest" artifact: attestation
+```
+
+The root manifest is created when the PipelineRun starts. Each TaskRun
+artifact manifest includes a `subject` field pointing to the root:
+
+```json
+{
+  "subject": {
+    "mediaType": "application/vnd.oci.image.index.v1+json",
+    "digest": "sha256:<pipelinerun-root-digest>",
+    "size": 512
+  },
+  ...
+}
+```
+
+This enables:
+
+- **Discovery**: List all artifacts for a PipelineRun via
+  `GET /v2/<repo>/referrers/<root-digest>`
+- **Browsability**: OCI-aware UIs (Harbor, Zot, ghcr.io) display the
+  referrer tree
+- **Bulk cleanup**: Deleting the root manifest + referrers removes all
+  artifacts for a PipelineRun
+
+**Tagging Convention:**
+
+Artifacts are pushed to the configured `oci.repository` with tags following
+the `oci.tagPattern`:
+
+```
+registry.example.com/tekton/artifacts:<tag>
+```
+
+Default tag pattern: `{{namespace}}.{{pipelinerun}}.{{taskrun}}.{{artifact}}`
+
+Examples:
+```
+registry.example.com/tekton/artifacts:default.my-build-run.build-images-abc.images
+registry.example.com/tekton/artifacts:default.my-build-run.build-images-abc.sbom
+registry.example.com/tekton/artifacts:default.my-build-run.sign-def.signatures
+```
+
+Tags are mutable references for human convenience. The canonical reference
+is always by digest (`@sha256:...`), which is what gets recorded in
+`StorageRef.Digest` and used for verification.
+
+**Authentication:**
+
+The OCI backend reuses Kubernetes-native image registry authentication:
+
+1. **ServiceAccount imagePullSecrets** (default) — the TaskRun's SA
+   credentials are used for push/pull. No additional configuration needed
+   if the SA already has access to the registry.
+2. **Dedicated Secret** — `oci.credentialsSecret` in config points to a
+   `kubernetes.io/dockerconfigjson` Secret for registries that need separate
+   artifact credentials.
+3. **Workload Identity** — on GKE (Workload Identity) and AWS (IRSA), the
+   Pod's identity grants registry access automatically.
+
+This means clusters that already pull images from a private registry can
+store artifacts there with **zero additional credential configuration**.
+
+**[Konflux CI](https://github.com/konflux-ci) Compatibility:**
+
+[Konflux CI](https://github.com/konflux-ci)'s trusted artifacts
+([ADR-0036](https://github.com/konflux-ci/architecture/blob/main/ADR/0036-trusted-artifacts.md))
+use ORAS to push/pull content from OCI registries via the
+[`build-trusted-artifacts`](https://github.com/konflux-ci/build-trusted-artifacts)
+repository. The format is compatible:
+
+- Konflux uses [`create-trusted-artifact`](https://github.com/konflux-ci/build-trusted-artifacts/blob/main/task/create-trusted-artifact/0.1/create-trusted-artifact.yaml)
+  to push content as an OCI artifact layer with a digest
+- Konflux uses [`use-trusted-artifact`](https://github.com/konflux-ci/build-trusted-artifacts/blob/main/task/use-trusted-artifact/0.1/use-trusted-artifact.yaml)
+  to pull and verify by digest
+- This TEP's OCI format uses the same ORAS primitives with additional
+  Tekton-specific annotations
+
+Tasks using [Konflux](https://github.com/konflux-ci)'s existing `*-trusted-artifact` StepActions can
+coexist with Tekton-managed artifacts. Over time, the declarative
+`spec.artifacts` API replaces the need for explicit StepActions, as Tekton
+handles upload/download/verify transparently.
 
 ### Garbage Collection
 
@@ -1109,8 +1401,11 @@ creating a new system. The artifact provenance structure, API paths, and
 variable substitution syntax are all reused directly. The storage provider
 interface can be reused by Tekton Chains and Tekton Results.
 
-The OCI backend aligns with Konflux CI's production pattern, enabling
-compatibility with existing `create-trusted-artifact` / `use-trusted-artifact`
+The OCI backend aligns with [Konflux CI](https://github.com/konflux-ci)'s
+production pattern ([ADR-0036](https://github.com/konflux-ci/architecture/blob/main/ADR/0036-trusted-artifacts.md)),
+enabling compatibility with existing
+[`create-trusted-artifact`](https://github.com/konflux-ci/build-trusted-artifacts) /
+[`use-trusted-artifact`](https://github.com/konflux-ci/build-trusted-artifacts)
 StepActions.
 
 ### Simplicity
@@ -1378,49 +1673,61 @@ to avoid future breaking changes.
 
 ## Implementation Plan
 
-### Phase 1: Core Infrastructure (Alpha)
+### Phase 1: OCI Backend (Alpha)
 
-1. **Declarative Artifact API**: Add `spec.artifacts.inputs/outputs` to
-   Task spec with validation
-2. **Artifact path variables**: Implement `$(inputs.name.path)`,
-   `$(outputs.name.path)`, `$(inputs.name.uri)`, `$(inputs.name.digest)`
-3. Extend `ArtifactValue` and `Artifact` types with `StorageRef`, `Size`,
+This phase focuses exclusively on the OCI registry backend, delivering
+end-to-end artifact storage with the most natural Kubernetes-native
+backend.
+
+1. Extend `ArtifactValue` and `Artifact` types with `StorageRef`, `Size`,
    `Inline` fields
-4. Define `Provider` interface
-5. Implement OCI provider using ORAS (Konflux-compatible)
-6. Implement S3 provider using `gocloud.dev/blob`
-7. Implement PVC provider
-8. Add `config-artifact-storage` ConfigMap handling
-9. Modify entrypoint to upload artifacts from `$(outputs.name.path)` with
-   automatic digest computation
-10. Init container injection for downloading artifacts to
-    `$(inputs.name.path)` with digest verification
-11. Feature flag: `enable-artifact-storage: "true"` (extends existing
+2. Define `Provider` interface
+3. **Implement OCI provider** using ORAS (`oras.land/oras-go/v2`):
+   - OCI artifact format with Tekton-specific annotations and media types
+   - Content-type detection for layers
+   - Multi-file tar+gzip archiving
+   - Digest computation and verification on push/pull
+   - Authentication via ServiceAccount imagePullSecrets
+4. **Declarative Artifact API**: Add `spec.artifacts.inputs/outputs` to
+   Task spec with validation
+5. **Artifact path variables**: Implement `$(inputs.name.path)`,
+   `$(outputs.name.path)`, `$(inputs.name.uri)`, `$(inputs.name.digest)`
+6. Add `config-artifact-storage` ConfigMap handling:
+   - Cluster-level ConfigMap (global default)
+   - Namespace-level ConfigMap overrides (TEP-0085 pattern)
+   - Per-PipelineRun annotations for repository override
+7. Modify entrypoint to upload artifacts from `$(outputs.name.path)` with
+   automatic digest computation to OCI registry
+8. Init container injection for downloading artifacts to
+   `$(inputs.name.path)` with digest verification from OCI registry
+9. **OCI PipelineRun grouping** via referrers API (enabled by default)
+10. Feature flag: `enable-artifact-storage: "true"` (extends existing
     `enable-artifacts`)
-12. E2E tests with OCI and S3 backends
-13. Document storage lifecycle policies for cleanup
+11. E2E tests with OCI registry (Zot or distribution/registry in CI)
+12. Document OCI registry requirements and storage lifecycle policies
+13. Validate [Konflux CI](https://github.com/konflux-ci) interoperability (format compatibility with [`build-trusted-artifacts`](https://github.com/konflux-ci/build-trusted-artifacts))
 
-### Phase 2: Extended Features (Beta)
+### Phase 2: Pipeline Binding and Additional Backends (Beta)
 
 1. **Pipeline-level artifact binding**: `artifacts.inputs[].from` syntax
    with implicit DAG edges
 2. **Pipeline-level artifact declarations**: Pipeline `spec.artifacts`
    inputs/outputs
-3. GCS and Azure Blob providers
-4. Namespace-level configuration overrides
-5. Per-PipelineRun configuration via annotations
-6. OCI artifact grouping per PipelineRun
-7. Garbage collection via finalizers
-8. Tekton Chains integration (reference-based attestations)
-9. Promote to beta
+3. **S3 provider** (via `gocloud.dev/blob/s3blob`) — MinIO for on-premises
+6. **GCS provider** (via `gocloud.dev/blob/gcsblob`)
+7. **PVC provider** — for air-gapped and single-cluster development
+8. Garbage collection via finalizers
+9. Tekton Chains integration (reference-based attestations)
+10. Promote to beta
 
 ### Phase 3: Production Ready (Stable)
 
-1. Caching layer for OCI artifacts
-2. Metrics and observability (upload/download latency, storage usage)
-3. Integration with Tekton Results project
-4. Background garbage collector for orphaned artifacts
-5. Promote to stable
+1. Azure Blob provider
+2. Caching layer for OCI artifacts
+3. Metrics and observability (upload/download latency, storage usage)
+4. Integration with Tekton Results project
+5. Background garbage collector for orphaned artifacts
+6. Promote to stable
 
 ### Test Plan
 

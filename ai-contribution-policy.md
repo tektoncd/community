@@ -1,6 +1,6 @@
 # AI Contribution Policy
 
-Tekton welcomes contributions that use AI tools. This policy ensures transparency and quality so that AI-assisted work meets the same standards as any other contribution.
+Tekton welcomes contributions that use AI tools, as long as the contributor takes accountability for the content and respects the policy in this document.
 
 ## Core Rules
 
@@ -40,6 +40,7 @@ This PR was developed with assistance from GitHub Copilot.
 
 All AI-assisted contributions must:
 - Align with Tekton's [design principles](./design-principles.md), [standards](./standards.md), and [code of conduct](./code-of-conduct.md)
+- Be fully reviewed by the contributor before opening for maintainer review
 - Be reviewed for security vulnerabilities (injection attacks, credential exposure, OWASP Top 10)
 - Meet the same quality standards as any other contribution
 - Include appropriate test coverage

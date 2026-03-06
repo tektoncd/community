@@ -2,12 +2,10 @@ orgs:
   tektoncd:
     admins:
     - wlynch
-    - jerop
     - tekton-robot
     - thelinuxfoundation
     - vdemeester
     - afrittoli
-    - chitrangpatel
     billing_email: info@cd.foundation
     company: ''
     default_repository_permission: none
@@ -20,6 +18,9 @@ orgs:
     - aaron-prindle
     - ab-ghosh
     - abayer
+    # former admins, moved to members:
+    - chitrangpatel
+    - jerop
     - adambkaplan
     - ak1394
     - anithapriyanatarajan
@@ -260,14 +261,15 @@ orgs:
         description: the chains maintainers
         members:
         - anithapriyanatarajan
-        - chitrangpatel
-        - chuangw6
         - jkhelil
         - lcarva
-        - priyawadhwa
         - PuneetPunamiya
         - vdemeester
         - wlynch
+        # alumni:
+        # - chitrangpatel
+        # - chuangw6
+        # - priyawadhwa
         privacy: closed
         repos:
           chains: maintain
@@ -277,10 +279,11 @@ orgs:
         - vdemeester
         - chmouel
         members:
-        - piyush-garg
         - pradeepitm12
         - vinamra28
         - pratap0007
+        # alumni:
+        # - piyush-garg
         privacy: closed
         repos:
           cli: maintain
@@ -289,30 +292,32 @@ orgs:
         description: the core maintainers team (pipeline)
         maintainers:
         - vdemeester
-        - ImJasonH
         - afrittoli
         members:
         - pritidesai
         - dibyom
-        - jerop
         - abayer
         - wlynch
-        - yongxuanzhang
-        - chitrangpatel
-        - JeromeJu
         - waveywaves
         - twoGiants
+        # alumni:
+        # - ImJasonH
+        # - jerop
+        # - yongxuanzhang
+        # - chitrangpatel
+        # - JeromeJu
         privacy: closed
         repos:
           pipeline: maintain
       dashboard.maintainers:
         description: the dashboard maintainers
         maintainers:
-        - skaegi
         - AlanGreene
         members:
         - briangleeson
         - LyndseyBu
+        # alumni:
+        # - skaegi
         privacy: closed
         repos:
           dashboard: maintain
@@ -359,11 +364,14 @@ orgs:
         - vdemeester
         members:
         - savitaashture
-        - piyush-garg
         - jkhelil
         - anithapriyanatarajan
         - mbpavan
         - pramodbindal
+        # alumni:
+        # - piyush-garg
+        # - concaf
+        # - jkandasa
         privacy: closed
         repos:
           operator: maintain
@@ -371,15 +379,19 @@ orgs:
         description: the plumbing maintainers
         maintainers:
         - vdemeester
-        - abayer
         - afrittoli
         members:
         - anithapriyanatarajan
-        - dibyom
-        - jerop
         - savitaashture
-        - wlynch
         - AlanGreene
+        # alumni:
+        # - abayer
+        # - dibyom
+        # - jerop
+        # - wlynch
+        # - bobcatfish
+        # - chitrangpatel
+        # - jeromeJu
         privacy: closed
         repos:
           plumbing: maintain
@@ -402,48 +414,50 @@ orgs:
         members:
         - anithapriyanatarajan
         - pramodbindal
-        - savitaashture
-        - waveywaves
         - infernus01
+        # alumni:
+        # - savitaashture
+        # - waveywaves
         privacy: closed
         repos:
           pruner: maintain
       results.maintainers:
         description: the results maintainers
         maintainers:
-        - abayer
-        - adambkaplan
-        - afrittoli
         - vdemeester
         members:
-        - alan-ghelardi
-        - dibyom
-        - ImJasonH
         - khrm
-        - sayan-biswas
         - enarha
-        - wlynch
-        - avinal
+        # alumni:
+        # - abayer
+        # - adambkaplan
+        # - afrittoli
+        # - alan-ghelardi
+        # - dibyom
+        # - ImJasonH
+        # - sayan-biswas
+        # - wlynch
+        # - avinal
         privacy: closed
         repos:
           results: maintain
       results.collaborators:
         description: The results collaborators
         maintainers:
-        - abayer
-        - alan-ghelardi
         - vdemeester
-        - afrittoli
         members:
         - enarha
         - khrm
-        - wlynch
-        - sayan-biswas
-        - ImJasonH
-        - XinruZhang
-        - avinal
         # alumni:
         # sbwsg
+        # - abayer
+        # - alan-ghelardi
+        # - afrittoli
+        # - wlynch
+        # - sayan-biswas
+        # - ImJasonH
+        # - XinruZhang
+        # - avinal
         privacy: closed
         repos:
           results: read
@@ -452,14 +466,16 @@ orgs:
         maintainers:
         - vdemeester
         members:
-        - iancoffey
-        - dlorenc
-        - wlynch
-        - dibyom
         - khrm
-        - ncskier
-        - vtereso
         - savitaashture
+        # alumni:
+        # - iancoffey
+        # - dlorenc
+        # - wlynch
+        # - dibyom
+        # - ncskier
+        # - vtereso
+        # - bobcatfish
         privacy: closed
         repos:
           triggers: maintain
@@ -469,12 +485,15 @@ orgs:
         - afrittoli
         members:
         - vdemeester
-        - abayer
-        - skaegi
         - AlanGreene
-        - jjasghar
-        - popcor255
-        - geriom
+        - twoGiants
+        # alumni:
+        # - abayer
+        # - skaegi
+        # - jjasghar
+        # - popcor255
+        # - geriom
+        # - dibyom
         privacy: closed
         repos:
           website: maintain

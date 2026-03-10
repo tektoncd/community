@@ -34,8 +34,8 @@ one year: every year either two or three of the seats are up for election.
 
 | Full Name         |  Company   | GitHub                                      | Slack                                                         | Elected On | Until    |
 |-------------------|:----------:|---------------------------------------------|---------------------------------------------------------------|------------|----------|
-| Andrea Frittoli   |    IBM     | [afrittoli](https://github.com/afrittoli)   | [@Andrea Frittoli](https://tektoncd.slack.com/team/UJ411P2CC) | Feb 2024   | Feb 2026 |
-| Billy Lynch       | Chainguard | [wlynch](https://github.com/wlynch)         | [@Billy Lynch](https://tektoncd.slack.com/team/UJ7BLGSB0) .   | Feb 2024   | Feb 2026 |
+| Andrea Frittoli   |    IBM     | [afrittoli](https://github.com/afrittoli)   | [@Andrea Frittoli](https://tektoncd.slack.com/team/UJ411P2CC) | Feb 2026   | Feb 2028 |
+| Emil Natan        |  Red Hat   | [enarha](https://github.com/enarha)         | [@Emil Natan](https://tektoncd.slack.com)                      | Feb 2026   | Feb 2028 |
 | Dibyo Mukherjee   |   Adobe    | [dibyom](https://github.com/dibyom)         | [@Dibyo Mukherjee](https://tektoncd.slack.com/team/UJ73HM7PZ) | Feb 2025   | Feb 2027 |
 | Vincent Demeester |  Red Hat   | [vdemeester](https://github.com/vdemeester) | [@vdemeester](https://tektoncd.slack.com/team/UHSQGV1L3)      | Feb 2025   | Feb 2027 |
 | Andrew Bayer      |   DataDog  | [abayer](https://github.com/abayer)           | [@Andrew Bayer](https://tektoncd.slack.com/team/UJ6DJ4MSS)  | Feb 2025   | Feb 2027 |
@@ -47,6 +47,7 @@ distributed across the five members of the committee.
 
 | Full Name       | GitHub                                            | Slack                                                         | Elected On          | Until    |
 |-----------------|---------------------------------------------------|---------------------------------------------------------------|---------------------|----------|
+| Billy Lynch     | [wlynch](https://github.com/wlynch)               | [@Billy Lynch](https://tektoncd.slack.com/team/UJ7BLGSB0)     | Feb 2024            | Feb 2026 |
 | Jerop Kipruto   |  [jerop](https://github.com/jerop)                | [@Jerop Kipruto](https://tektoncd.slack.com/team/U011DPQSP0V) | Feb 2023            | Feb 2025 |
 | Chitrang Patel  | [chitrangpatel](https://github.com/chitrangpatel) | [@Chitrang](https://tektoncd.slack.com/team/U03BUB3KJ3B)      | May 2024            | Feb 2025 |
 | Priya Wadhwa    | [priyawadhwa](https://github.com/priyawadhwa)     | [@Priya Wadhwa](https://tektoncd.slack.com/team/U02T0CS9PN0)  | Feb 2022            | Feb 2023 |
@@ -331,16 +332,10 @@ When someone leaves the governing board:
 
 Members of the governing board will be given access to these resources:
 
-- [The GCP project `tekton-releases`](https://console.cloud.google.com/home/dashboard?project=tekton-releases)
-  which is used for
+- The Oracle Cloud Infrastructure (OCI) tenancy used for
   [test and release infrastructure](https://github.com/tektoncd/plumbing)
-- [The GCP project `tekton-nightly`](https://console.cloud.google.com/home/dashboard?project=tekton-nightly)
-  which is used for publishing nightly releases for Tekton projects
-- [The GCP projects used by boskos](https://github.com/tektoncd/plumbing/blob/main/boskos/boskos-config.yaml)
-  which are used to test against
-
-They have the permissions added through a
-[script](https://github.com/tektoncd/plumbing/blob/main/adjustpermissions.py).
+- The Oracle Cloud Infrastructure (OCI) tenancy used for publishing nightly
+  releases for Tekton projects
 
 ## Governing board leave policy
 

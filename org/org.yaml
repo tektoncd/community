@@ -1,7 +1,7 @@
 orgs:
   tektoncd:
     admins:
-    - wlynch
+    - enarha
     - tekton-robot
     - thelinuxfoundation
     - vdemeester
@@ -21,6 +21,7 @@ orgs:
     # former admins, moved to members:
     - chitrangpatel
     - jerop
+    - wlynch
     - adambkaplan
     - ak1394
     - anithapriyanatarajan
@@ -76,7 +77,6 @@ orgs:
     - eddycharly
     - ekcasey
     - EmmaMunley
-    - enarha
     - fenglixa
     - fhopfensperger
     - font
@@ -212,7 +212,7 @@ orgs:
       governing-board:
         description: Tekton Governing Board members
         members:
-        - wlynch
+        - enarha
         - vdemeester
         - afrittoli
         - dibyom
@@ -221,7 +221,7 @@ orgs:
       tekton-vmt:
         description: Tekton Vulnerability Mgmt members
         members:
-        - wlynch
+        - enarha
         - vdemeester
         - afrittoli
         - dibyom

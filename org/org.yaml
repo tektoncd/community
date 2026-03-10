@@ -279,11 +279,12 @@ orgs:
         - vdemeester
         - chmouel
         members:
-        - pradeepitm12
+        - divyansh42
         - vinamra28
         - pratap0007
         # alumni:
         # - piyush-garg
+        # - pradeepitm12
         privacy: closed
         repos:
           cli: maintain
@@ -294,8 +295,10 @@ orgs:
         - vdemeester
         - afrittoli
         members:
+        - aThorp96
         - pritidesai
         - dibyom
+        - khrm
         - abayer
         - wlynch
         - waveywaves
@@ -321,20 +324,6 @@ orgs:
         privacy: closed
         repos:
           dashboard: maintain
-      experimental.maintainers:
-        description: the experimental maintainers
-        maintainers:
-        - abayer
-        members:
-        - skaegi
-        - dlorenc
-        - afrittoli
-        - vdemeester
-        - dibyom
-        - priyawadhwa
-        privacy: closed
-        repos:
-          experimental: maintain
       homebrew.maintainers:
         description: the homebrew-tools maintainers
         maintainers:
@@ -363,11 +352,13 @@ orgs:
         maintainers:
         - vdemeester
         members:
-        - savitaashture
-        - jkhelil
         - anithapriyanatarajan
+        - jkhelil
         - mbpavan
         - pramodbindal
+        - pratap0007
+        - PuneetPunamiya
+        - savitaashture
         # alumni:
         # - piyush-garg
         # - concaf
@@ -677,48 +668,6 @@ orgs:
         privacy: closed
         repos:
           dashboard: read
-      experimental.collaborators:
-        description: The experimental collaborators
-        maintainers:
-        - abayer
-        - afrittoli
-        members:
-        - carlos-logro
-        - chuangw6
-        - chitrangpatel
-        - sthaha
-        - iancoffey
-        - a-roberts
-        - yuege01
-        - pratap0007
-        - Megan-Wright
-        - wlynch
-        - dibbles
-        - SM43
-        - mnuttall
-        - YolandaDu1997
-        - Yongxuanzhang
-        - ncskier
-        - XinruZhang
-        - akihikokuroda
-        - ImJasonH
-        - vdemeester
-        - jessm12
-        - PuneetPunamiya
-        - dibyom
-        - pritidesai
-        - jerop
-        - bigkevmcd
-        - waveywaves
-        - khrm
-        - savitaashture
-        - RafaeLeal
-        - alan-ghelardi
-        # alumni:
-        # sbwsg
-        privacy: closed
-        repos:
-          experimental: read
       plumbing.collaborators:
         description: The plumbing collaborators
         maintainers:
@@ -969,20 +918,6 @@ orgs:
         members:
         - afrittoli
         privacy: closed
-      resolution.maintainers:
-        description: The resolution maintainers
-        maintainers:
-        - abayer
-        - afrittoli
-        - dibyom
-        - vdemeester
-        members:
-        - chitrangpatel
-        # alumni:
-        # sbwsg
-        privacy: closed
-        repos:
-          resolution: maintain
   tektoncd-catalog:
     admins:
     - wlynch

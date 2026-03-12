@@ -164,6 +164,7 @@ orgs:
     - squakez
     - startxfr
     - steveodonovan
+    - theakshaypant
     - sthaha
     - theofpa
     - vaikas
@@ -395,6 +396,7 @@ orgs:
         members:
         - zakisk
         - sm43
+        - theakshaypant
         privacy: closed
         repos:
           pipelines-as-code: maintain
@@ -706,6 +708,7 @@ orgs:
         - sm43
         - infernus01
         - zakisk
+        - theakshaypant
         privacy: closed
         repos:
           pipelines-as-code: read

@@ -1,6 +1,8 @@
 orgs:
   tektoncd:
     admins:
+    - abayer
+    - dibyom
     - enarha
     - tekton-robot
     - thelinuxfoundation
@@ -17,7 +19,6 @@ orgs:
     members:
     - aaron-prindle
     - ab-ghosh
-    - abayer
     # former admins, moved to members:
     - chitrangpatel
     - jerop
@@ -68,7 +69,6 @@ orgs:
     - concaf
     - danielhelfand
     - dibbles
-    - dibyom
     - divyansh42
     - dlbewley
     - dlorenc

@@ -44,6 +44,7 @@ All AI-assisted contributions must:
 - Be reviewed for security vulnerabilities (injection attacks, credential exposure, OWASP Top 10)
 - Meet the same quality standards as any other contribution
 - Include appropriate test coverage
+- Keep pull requests small and focused — AI tools make it easy to generate large changes, but the review burden remains on maintainers
 
 **You must not submit code that you do not understand.**
 

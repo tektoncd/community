@@ -2,7 +2,7 @@
 status: implementable
 title: CloudEvents controller
 creation-date: '2023-06-19'
-last-updated: '2023-07-31'
+last-updated: '2026-03-26'
 authors:
 - '@afrittoli'
 collaborators: []
@@ -179,7 +179,23 @@ for the cache to be updated **in order**.
 
 ### Notes and Caveats
 
-N/A
+#### Transparent removal of CloudEvents from core reconcilers
+
+When migrating `TaskRun` and `PipelineRun` to the external events controller, the core
+reconcilers stop emitting CloudEvents without any changes to their `events.Emit` call sites.
+
+The mechanism relies on the existing context-based client injection pattern:
+- `events.Emit` delegates to `EmitCloudEventsWhenConditionChange`, which guards on the
+  CloudEvents client being present in the context
+- Today the core reconcilers inject the client via
+  `ctx = cloudevent.ToContext(ctx, c.cloudEventClient)` at the start of `ReconcileKind`
+- Removing that injection (and the `cloudEventClient` field and its wiring in
+  `controller.go`) is sufficient to disable CloudEvent emission — `EmitCloudEventsWhenConditionChange`
+  silently skips sending when the client is absent from context
+- All `events.Emit(...)` call sites remain unchanged; Kubernetes event emission is unaffected
+
+This approach keeps the core reconciler diff minimal and avoids introducing a parallel
+`EmitK8sEvents`-only call path.
 
 ## Design Details
 
@@ -724,13 +740,49 @@ resources started right away.
 
 ### Upgrade and Migration Strategy
 
-<!--
-(optional)
+#### `status.cloudEvents` migration
 
-Use this section to detail whether this feature needs an upgrade or
-migration strategy. This is especially useful when we modify a
-behavior or add a feature that may replace and deprecate a current one.
--->
+The `status.cloudEvents` field on `TaskRun` and `PipelineRun` records CloudEvent delivery
+state (event type, sink URL, send count, outcome). This field is populated by the core
+reconcilers today, but only on `v1beta1` and not on `v1`.
+
+The external events controller is by-design **read-only** with respect to `TaskRun` and
+`PipelineRun` resources. As a consequence `status.cloudEvents` will be deprecated and
+it **stops being populated** when the core reconcilers are migrated.
+
+Operators relying on `status.cloudEvents` for delivery visibility should migrate to the
+mechanisms described below before upgrading past the `TaskRun`/`PipelineRun` migration
+releases.
+
+#### Delivery visibility after migration
+
+Two mechanisms replace `status.cloudEvents` for CloudEvent delivery observability:
+
+**Kubernetes Events (primary)**
+
+The notifications controller emits a `core/v1/Event` associated with the `TaskRun` or
+`PipelineRun` after each CloudEvent send attempt:
+
+- `Reason: CloudEventSent` — `Message: Sent <event-type> to <sink-url>`
+- `Reason: CloudEventFailed` — `Message: Failed to send <event-type> to <sink-url>: <error>`
+
+These are visible via `kubectl describe taskrun` / `kubectl describe pipelinerun` and
+integrate naturally with existing Kubernetes observability tooling.
+
+The notifications controller's `ClusterRole` includes `create` on `events` (core API group).
+This is a deliberate, scoped exception to the read-only principle: the constraint targets
+`TaskRun`/`PipelineRun` resources specifically, to avoid dual-writer contention with the
+core reconcilers. Kubernetes `Event` objects are a separate, append-only, ephemeral resource;
+the notifications controller is their sole writer.
+
+Note: Kubernetes Events are ephemeral (default TTL ~1 hour) and do not survive cluster
+restarts. They are suitable for real-time debugging but not for long-term audit trails.
+
+**Prometheus metrics (complement)**
+
+The notifications controller exposes a counter `tekton_events_sent_total` with labels
+`{kind, namespace, name, event_type, result}`. This provides aggregate delivery
+observability and integrates with existing Prometheus/Grafana monitoring stacks.
 
 ### Implementation Pull Requests
 

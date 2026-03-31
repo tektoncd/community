@@ -145,6 +145,9 @@ trusted artifacts with arbitrary size support and a declarative API**.
    without special handling.
 7. Align with **production patterns** from [Konflux CI](https://github.com/konflux-ci)'s
    OCI-based trusted artifacts ([ADR-0036](https://github.com/konflux-ci/architecture/blob/main/ADR/0036-trusted-artifacts.md)).
+8. Support **any OCI artifact as build output** — container images, binary
+   tarballs, RPMs, Helm charts, ML models — as referrer subjects for
+   artifact attachment.
 
 ### Non-Goals
 
@@ -497,6 +500,7 @@ spec:
         description: Built container image references
         buildOutput: true    # Chains treats as SLSA subject (not byProduct)
         storage: external    # hint: use external storage
+        mediaType: application/vnd.tekton.artifact.images.v1+json  # OCI layer media type
       - name: build-log
         description: Build summary log
         storage: inline      # hint: keep inline (small)
@@ -985,36 +989,56 @@ When the referenced Task artifacts have storage references, the Pipeline
 output artifacts carry the same references (no re-upload). The PipelineRun
 status includes the full artifact provenance chain.
 
-### OCI Artifact Grouping per PipelineRun
+### OCI Referrers as Primary Artifact Attachment Model
 
-When using an OCI registry backend, individual artifacts from a PipelineRun
-can be difficult to browse. This section describes an optional grouping
-strategy using OCI referrers (subject/refers-to relationships).
+Artifacts produced by a PipelineRun are attached as **OCI referrers** to
+the build output (the artifact with `buildOutput: true`) using the OCI 1.1
+[`subject` field](https://github.com/opencontainers/image-spec/blob/main/manifest.md#image-manifest-property-descriptions).
+This is the same mechanism used by cosign signatures, SBOM attachments,
+and SLSA attestations — build artifacts join the existing supply chain
+graph rather than creating a parallel convention.
 
-**Proposed structure:**
+**Referrer tree** (validated in [PoC on ghcr.io](https://github.com/vdemeester/tekton-experiments)):
 
 ```
-PipelineRun reference artifact (index)
-├── TaskRun "build" reference artifact
-│   ├── artifact: images (content layer)
-│   └── artifact: build-log (content layer)
-├── TaskRun "sign" reference artifact
-│   └── artifact: signatures (content layer)
-└── TaskRun "attest" reference artifact
-    └── artifact: attestation (content layer)
+ghcr.io/vdemeester/tekton-experiments:latest
+├── 🔐 Attestations (Tekton Chains SLSA provenance)
+├── 🔐 Signatures (Tekton Chains cosign)
+├── 🔐 SBOMs (ko-generated or syft)
+├── 📦 images-manifest.json   (from build-image task)
+├── 📦 junit-results.xml      (from run-tests task)
+└── 📦 coverage.out           (from run-tests task)
 ```
 
-The PipelineRun controller creates a root OCI artifact on PipelineRun
-initialization. Each TaskRun's artifacts are attached as referring artifacts.
+Each referrer manifest includes:
+- `artifactType`: media type identifying the artifact kind
+- `subject`: digest of the build output this artifact relates to
+- `annotations`: task name, PipelineRun name, git SHA for traceability
+
 This enables:
 
-- **Browsability**: Users can discover all artifacts from a PipelineRun
-  starting from a single reference
-- **Cache-friendliness**: Content-addressable layers enable OCI cache hits
-- **Cleanup**: Deleting the root artifact cascades to all related artifacts
+- **Discovery**: `oras discover <image>` or `cosign tree <image>` shows
+  the full supply chain graph — signatures, attestations, SBOMs, and build
+  artifacts in one view
+- **Ecosystem native**: same API as cosign, Chains, and SBOM tooling
+- **Non-container subjects**: the `subject` can be any OCI artifact —
+  container images, tarballs, RPMs, Helm charts, ML models (validated
+  in PoC with Go binary tarballs)
+- **History**: referrers accumulate per image digest, filterable by
+  `dev.tekton.artifact/pipelinerun` annotation
+- **Cleanup**: registry-level garbage collection of referrers
 
-This grouping is **enabled by default** when using the OCI backend. It can
-be disabled with `oci.groupByPipelineRun: "false"` in the configuration.
+The controller attaches artifacts as referrers **by default** when using
+the OCI backend. This can be disabled with
+`oci.attachReferrers: "false"` in the configuration.
+
+**Alternative: OCI Index grouping per PipelineRun**
+
+For use cases requiring a single entry point per PipelineRun (rather than
+per build output), the controller can optionally create a root OCI Index
+manifest and attach all artifacts as referrers to it. This is useful when
+there is no `buildOutput` artifact or when grouping across multiple build
+outputs is desired. Enabled with `oci.groupByPipelineRun: "true"`.
 
 ### Integration with Tekton Chains
 
@@ -1055,6 +1079,22 @@ fetch and verify the full content from external storage independently.
 2. Chains records `Uri` + `Digest` (already does this for TEP-0147 artifacts)
 3. Chains does NOT fetch and inline full content for externally stored artifacts
 4. Chains MAY include `StorageRef.Location` as an annotation for discoverability
+
+**Eliminating type hinting:**
+
+Today, Chains relies on `IMAGE_URL` and `IMAGE_DIGEST` result names (type
+hinting) to identify the build subject for SLSA attestations. This is
+fragile and requires Task authors to use specific result names.
+
+With TEP-0164, artifacts with `buildOutput: true` are explicitly marked
+as build outputs. The controller can provide this metadata directly to
+Chains, eliminating the need for type hinting. Chains would read the
+artifact declarations from the TaskRun status rather than scanning result
+names.
+
+This was validated in the [PoC](https://github.com/vdemeester/tekton-experiments):
+today, manual `IMAGE_URL`/`IMAGE_DIGEST` results are needed; with TEP-0164,
+the controller handles it.
 
 ### Integration with Tekton Results and UIs
 
@@ -1760,6 +1800,27 @@ backend.
 
 <!-- To be filled as implementation progresses -->
 
+### Proof of Concept
+
+A working proof-of-concept validating the design direction is available at
+[`vdemeester/tekton-experiments`](https://github.com/vdemeester/tekton-experiments).
+The PoC implements the OCI artifact transport pattern using existing Tekton
+primitives (StepActions with `oras`, `emptyDir` volumes) and demonstrates:
+
+- **OCI referrers**: artifacts attached to built images via OCI 1.1
+  `subject` field, visible in `cosign tree` alongside Chains attestations
+- **Non-container subjects**: binary tarballs as referrer subjects (proving
+  the pattern works for RPMs, JARs, Helm charts, etc.)
+- **SBOM generation**: syft scan with `application/spdx+json` referrer
+- **Chains integration**: SLSA attestations pushed alongside artifacts on
+  ghcr.io, with cosign signature verification
+- **Full supply chain graph**: all artifact types visible in a single
+  `oras discover` or `cosign tree` output
+
+The PoC also includes a [`future-with-tep-0164/`](https://github.com/vdemeester/tekton-experiments/tree/main/future-with-tep-0164)
+directory showing the same pipelines rewritten with the proposed
+declarative API, demonstrating ~60% fewer lines of YAML.
+
 ## References
 
 - [TEP-0147: Tekton Artifacts Phase 1](https://github.com/tektoncd/community/blob/main/teps/0147-tekton-artifacts-phase1.md) — Foundation this TEP extends
@@ -1776,3 +1837,4 @@ backend.
 - [go-cloud/blob: Multi-cloud storage abstraction](https://github.com/google/go-cloud/tree/master/blob)
 - [Tekton Results Project](https://github.com/tektoncd/results)
 - [Tekton Chains](https://github.com/tektoncd/chains)
+- [Proof of Concept: `vdemeester/tekton-experiments`](https://github.com/vdemeester/tekton-experiments) — Working PoC validating the OCI referrers pattern

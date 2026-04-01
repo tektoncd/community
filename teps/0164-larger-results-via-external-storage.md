@@ -598,10 +598,20 @@ data:
   inline-threshold: "1024"
 
   # OCI Registry configuration
+  # This repository is used for intermediate artifact staging (task-to-task
+  # passing). When oci.attachReferrers is enabled and a pipeline has a
+  # buildOutput artifact, referrers are pushed to the BUILD OUTPUT's
+  # repository (not this one) — see "Same-repository constraint" in the
+  # OCI Referrers section.
   oci.repository: "registry.example.com/tekton/artifacts"
   oci.credentialsSecret: "tekton-artifact-oci-creds"
 
-  # Tag pattern for storing artifacts
+  # Attach output artifacts as OCI referrers to buildOutput artifacts.
+  # Referrers are pushed to the build output's repository (same-repo
+  # requirement per OCI Distribution Spec). Default: "true".
+  oci.attachReferrers: "true"
+
+  # Tag pattern for storing artifacts in oci.repository
   # Available variables: {{namespace}}, {{pipelinerun}}, {{taskrun}}, {{artifact}}
   oci.tagPattern: "{{namespace}}-{{taskrun}}-{{artifact}}"
 ```
@@ -1032,6 +1042,63 @@ The controller attaches artifacts as referrers **by default** when using
 the OCI backend. This can be disabled with
 `oci.attachReferrers: "false"` in the configuration.
 
+**Same-repository constraint**
+
+The [OCI Distribution Spec](https://github.com/opencontainers/distribution-spec/blob/main/spec.md#listing-referrers)
+requires that referrers live in the **same repository** as their subject:
+
+> Each descriptor is of an image manifest or index **in the same `<name>`
+> namespace** with a `subject` field that specifies the value of `<digest>`.
+
+This has a critical implication: **artifact staging and referrer attachment
+are two distinct operations with potentially different destination
+repositories.**
+
+| Operation | When | Destination | Purpose |
+|-----------|------|-------------|----------|
+| Artifact staging | During the run | `oci.repository` (ConfigMap) | Task-to-task data passing |
+| Referrer attachment | After the run | Build output's repository | Supply chain graph |
+
+When a pipeline builds a container image and pushes it to
+`ghcr.io/org/project`, the staging repository (e.g.
+`ghcr.io/org/project/artifacts`) is used for intermediate artifact
+passing. But when attaching referrers, the controller must push the
+referrer manifests into `ghcr.io/org/project` — the **image's repository**
+— not the staging repository.
+
+```
+# Image build: two repos involved
+ghcr.io/org/project/artifacts   ← staging (task-to-task passing)
+ghcr.io/org/project             ← referrers live here (same repo as image)
+
+# Non-image build (binary tarball, RPM, etc.): one repo
+ghcr.io/org/project/artifacts   ← both staging AND referrer subject
+```
+
+The controller handles this by:
+1. **During the run**: uploading output artifacts to `oci.repository` for
+   downstream task consumption.
+2. **After the PipelineRun**: for each output artifact with a
+   `buildOutput: true` subject, pushing a referrer manifest into the
+   **subject's repository** with a `subject` descriptor pointing to the
+   build output's digest. Artifact blobs are cross-mounted (if the
+   registries support it) or re-uploaded.
+
+**Cross-registry considerations**: If the build output lives in a
+different registry than the artifact staging repo (e.g. image in
+`quay.io/org/project`, artifacts in `ghcr.io/org/artifacts`), the
+controller must have push credentials for the build output's registry.
+The ServiceAccount bound to the PipelineRun must have imagePullSecrets
+for both registries. If the controller cannot push referrers (missing
+credentials, registry doesn't support referrers), it should emit a
+warning condition on the PipelineRun rather than failing the run —
+referrer attachment is a post-run enhancement, not a pipeline-critical
+operation.
+
+For pipelines **without** a `buildOutput` artifact (e.g. binary tarball
+builds where the artifact store is the final location), referrers are
+attached within `oci.repository` itself since the subject lives there.
+
 **Alternative: OCI Index grouping per PipelineRun**
 
 For use cases requiring a single entry point per PipelineRun (rather than
@@ -1039,6 +1106,11 @@ per build output), the controller can optionally create a root OCI Index
 manifest and attach all artifacts as referrers to it. This is useful when
 there is no `buildOutput` artifact or when grouping across multiple build
 outputs is desired. Enabled with `oci.groupByPipelineRun: "true"`.
+
+The root manifest and all its referrers must reside in the **same
+repository**. When used with `buildOutput: true`, the root manifest is
+created in the build output's repository. When used without a build
+output, the root manifest is created in `oci.repository`.
 
 ### Integration with Tekton Chains
 
@@ -1317,7 +1389,9 @@ the tar to the input path, preserving the directory structure.
 **PipelineRun Grouping via OCI Referrers:**
 
 When a PipelineRun uses the OCI backend, artifacts are grouped using the
-[OCI Referrers API](https://github.com/opencontainers/distribution-spec/blob/main/spec.md#listing-referrers):
+[OCI Referrers API](https://github.com/opencontainers/distribution-spec/blob/main/spec.md#listing-referrers).
+All manifests in the group (root and referrers) must reside in the
+**same repository** (see [same-repository constraint](#oci-referrers-as-primary-artifact-attachment-model)).
 
 ```
 PipelineRun root manifest (OCI Index)
@@ -1520,6 +1594,7 @@ the storage backend. Familiar pattern from Tekton Chains configuration.
 | Storage backend unavailable | Clear error messages; retry with backoff; inline fallback for small content |
 | Credential management complexity | Support workload identity (IRSA, GKE WI); per-SA configuration |
 | Orphaned artifacts | Storage lifecycle policies (MVP); finalizer cleanup (Phase 2) |
+| Cross-registry referrer attachment | SA must have push credentials for build output's registry; controller emits warning (not failure) if attachment fails |
 | Provenance explosion in Chains | Reference-based design: Chains records URI + digest, not content |
 | Breaking TEP-0147 Phase 1 | All additions are optional fields; existing behavior unchanged |
 

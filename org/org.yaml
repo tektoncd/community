@@ -227,6 +227,10 @@ orgs:
         - dibyom
         - AlanGreene
         - abayer
+        - khrm
+        - waveywaves
+        - theakshaypant
+        - infernus01
         privacy: closed
       catalog.maintainers:
         description: the catalog maintainers

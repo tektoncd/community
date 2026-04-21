@@ -4,56 +4,93 @@ This doc describes Tekton's mission and roadmap.
 
 - [Mission and Vision](#mission-and-vision)
 - [Roadmap](#roadmap)
-  - [2023 Goals](#2023-goals)
-  - [2021 Roadmap](#2021-roadmap)
-- Tekton Project Roadmaps
-  - [Pipeline](https://github.com/tektoncd/pipeline/blob/main/roadmap.md)
-  - [Triggers](https://github.com/tektoncd/triggers/blob/main/roadmap.md)
-  - [Catalog](https://github.com/tektoncd/catalog/blob/main/roadmap.md)
-  - [Dashboard](https://github.com/tektoncd/dashboard/blob/main/roadmap.md)
-  - [CLI](https://github.com/tektoncd/cli/blob/main/ROADMAP.md)
+- [Tekton Project Roadmaps](#tekton-project-roadmaps)
+- [Past Goals (Archive)](#past-goals-archive)
 
 ## Mission and Vision
 
 Tekton's mission:
 
-  Be the industry-standard, cloud-native CI/CD platform components and ecosystem.
+  Be the industry-standard, cloud-native framework for CI/CD, supply chain
+  security, and workflow automation.
 
 The vision for this is:
 
-* Tekton API conformance across as many CI/CD platforms as possible
-* A rich catalog of high quality, reusable `Tasks` which work with Tekton conformant systems
+* A powerful, flexible framework for building CI/CD systems on Kubernetes
+* Secure software supply chains with built-in provenance and attestation
+* Seamless developer workflows from source to production
+* A rich ecosystem of reusable components and integrations
 
 What this vision looks like differs across different [users](user-profiles.md):
 
 * **Engineers building CI/CD systems**: [These users](user-profiles.md#3-platform-builder)
   will be motivated to use Tekton and integrate it into the CI/CD systems they are using
   because building on top of Tekton means they don't have to re-invent the wheel and out
-  of the box they get scalable, serverless cloud native execution
+  of the box they get scalable, serverless cloud native execution. Tekton provides
+  the building blocks — Pipelines, Triggers, Chains, and more — to compose
+  production-grade CI/CD platforms.
 * **Engineers who need CI/CD**: (aka all software engineers!) These users
   (including [Pipeline and Task authors](user-profiles.md#1-pipeline-and-task-authors)
-  and [Pipeline and Task users](user-profiles.md#2-pipeline-and-task-users)
-  will benefit from the rich high quality catalog of reusable components:
+  and [Pipeline and Task users](user-profiles.md#2-pipeline-and-task-users))
+  will benefit from:
 
   * Quickly build and interact with sophisticated `Pipelines`
-  * Be able to port `Pipelines` to any Tekton conformant system
-  * Be able to use multiple Tekton conformant systems instead of being locked into one
-    or being forced to build glue between multiple completely different systems
-  * Use an ecosystem of tools that know how to interact with Tekton components, e.g.
-    IDE integrations, linting, CLIs, security and policy systems
+  * Event-driven and SCM-integrated workflows via Triggers and Pipelines as Code
+  * Supply chain security out of the box — signed provenance, SLSA compliance,
+    and trusted artifacts via Tekton Chains
+  * Support for modern workloads including AI/ML pipelines and general-purpose
+    workflows
+  * An ecosystem of tools that know how to interact with Tekton components, e.g.
+    IDE integrations, linting, CLIs, dashboards, and policy systems
 
 ## Roadmap
 
-A project view of community roadmap items can be found
-[here](https://github.com/orgs/tektoncd/projects/26/views/16).
-This project automatically includes issues and PRs with label `area/roadmap`.
+**Project Board:** https://github.com/orgs/tektoncd/projects/34
 
-### 2023 Goals
+The Tekton Community Roadmap project board tracks the cross-project development
+roadmap for the Tekton ecosystem. It provides visibility into planned features,
+ongoing work, and completed items including:
+
+- Cross-project initiatives and community goals
+- TEPs (Tekton Enhancement Proposals)
+- Epics and their sub-issues
+- Infrastructure improvements
+
+### How Items Get Added
+
+#### Automatic Addition (Recommended)
+
+Add the `area/roadmap` label to any open issue or PR in a `tektoncd` repository.
+The automation will:
+1. Add the item to the project board
+2. Set its status to **Todo**
+
+Sub-issues of items already on the board are automatically added as well.
+
+#### Manual Addition
+
+Maintainers can manually add items via the project board interface for items
+that don't have the `area/roadmap` label.
+
+## Tekton Project Roadmaps
+
+Individual Tekton projects maintain their own roadmaps:
+
+- [Pipeline](https://github.com/tektoncd/pipeline/blob/main/roadmap.md)
+- [Triggers](https://github.com/tektoncd/triggers/blob/main/roadmap.md)
+- [Catalog](https://github.com/tektoncd/catalog/blob/main/roadmap.md)
+- [Dashboard](https://github.com/tektoncd/dashboard/blob/main/roadmap.md)
+- [CLI](https://github.com/tektoncd/cli/blob/main/ROADMAP.md)
+
+## Past Goals (Archive)
+
+<details>
+<summary>2023 Goals</summary>
 
 *This roadmap is based on the community-sourced draft at
 http://bit.ly/tekton-2023.*
 
-#### Goal: Cultivate a Healthy OSS Community
+### Goal: Cultivate a Healthy OSS Community
 
 * Abide by clear and consistent community guidelines and standards
 * Encourage participation from multiple companies that include Tekton
@@ -63,12 +100,12 @@ http://bit.ly/tekton-2023.*
   * Ease onboarding for new contributors
   * Improve Tekton developer workflows for contributors
 
-#### Goal: Enable and Encourage Adoption
+### Goal: Enable and Encourage Adoption
 
-Increase Tekton adoption and usage in alignment with our mission to provide “a
+Increase Tekton adoption and usage in alignment with our mission to provide "a
 powerful and flexible open-source framework for creating CI/CD systems, allowing
 developers to build, test, and deploy across cloud providers and on-premise
-systems.”
+systems."
 
 * Identify and define critical user journeys.
 * Diversify available integrations with both OSS tools and vendor tools to
@@ -76,7 +113,7 @@ systems.”
 * Investigate collection of Tekton usage metrics -- downloads, installations,
   usage patterns -- based on website stats and/or CDF community collaboration
   * Create new venues for user engagement (in addition to existing Slack)
-* Consider metric collection via CDF-owned Tekton user surveys 
+* Consider metric collection via CDF-owned Tekton user surveys
 * Running Tekton at scale
   * Performance benchmarking
   * Documented production guidance
@@ -90,7 +127,7 @@ systems.”
   * Running Tekton at scale
   * Optimizing resource usage / cost optimization
 
-#### Goal: Develop new features and advance maturity of Tekton
+### Goal: Develop new features and advance maturity of Tekton
 
 * Pipelines LTS promotions
   * CSI volumes
@@ -144,7 +181,7 @@ systems.”
 * Security
   * Advance our secure-by-default story
   * Hermetic builds Alpha
-  * Improve Tekton’s security posture to enable achievement of SLSA L3 and L4.
+  * Improve Tekton's security posture to enable achievement of SLSA L3 and L4.
 	* Attestation of SLSA level of build environment --
 	  [SLSA Verification Summary Attestation](https://slsa.dev/verification_summary/v0.2) (VSA)
   * SPIRE integrations
@@ -154,27 +191,30 @@ systems.”
   * Progress on public key discovery -- potentially in SigStore
   * [Common OIDC claims for CI systems](https://github.com/sigstore/fulcio/issues/754)
 
-#### Goal: Improve our own Infrastructure
+### Goal: Improve our own Infrastructure
 
 * LTS testing
   * Continuous integrity testing on LTS releases + kubernetes compatibility
 	matrix + supported platforms
-* Demonstrate SLSA with Tekton’s own CI
+* Demonstrate SLSA with Tekton's own CI
   * Tekton project builds (Pipelines, Triggers, Chains, Results) at SLSA L3+
   * Signing all release artifacts in Catalog
   * Streamline integration of dogfooding into feature development
 * Fuzz testing
 * Testing across supported platforms -- amd64, Windows, Power, Z
-* Better separation of responsibilities and security controls in Tekton 
-  * Minimization of “root in Tekton” access
+* Better separation of responsibilities and security controls in Tekton
+  * Minimization of "root in Tekton" access
 * Monitoring dashboard for our own infrastructure
 
-### 2021 Roadmap
+[pipeline-issue-5265]: https://github.com/tektoncd/pipeline/issues/5265
 
-*2021 Roadmap appears below for historic purposes.*
+</details>
 
-These are the things we want to work toward in 2021! They are concerns that either impact multiple projects or may
-result in the creation of new projects!
+<details>
+<summary>2021 Roadmap</summary>
+
+These are the things we wanted to work toward in 2021. They were concerns that either impacted multiple projects or may
+have resulted in the creation of new projects.
 
 *  Beta and GA for all _core_ Tekton Projects, where "core" means: pipeline, triggers, cli, dashboard
 *  Deciding our release policy going forward with regard to:
@@ -191,7 +231,7 @@ result in the creation of new projects!
 * Opinionated solutions / guidance based on Tekton
   * Documentation, tools, examples for how to handle specific problems using Tekton
     * Best practice getting started example repo(s)
-    * E.g. being able to answer questions like “I want to setup a CI pipeline for my repo using Tekton,
-      how do I do that in two steps?”
+    * E.g. being able to answer questions like "I want to setup a CI pipeline for my repo using Tekton,
+      how do I do that in two steps?"
 
-[pipeline-issue-5265]: https://github.com/tektoncd/pipeline/issues/5265
+</details>

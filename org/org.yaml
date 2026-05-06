@@ -107,6 +107,7 @@ orgs:
     - jromero
     - jsminem
     - jtudelag
+    - kaushalnavneet
     - kgcarr
     - khalkie
     - khrm
@@ -674,6 +675,7 @@ orgs:
         - jessm12
         - ziheng
         - LyndseyBu
+        - kaushalnavneet
         privacy: closed
         repos:
           dashboard: read

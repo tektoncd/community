@@ -152,11 +152,11 @@ Reviewer of one of these repositories, you must either:
 Repositories currently using this simpler mechanism are:
 
 - tektoncd/community
-- tektoncd/friends
+- tektoncd/mcp-server
 - tektoncd/plumbing
+- tektoncd/pruner
 - tektoncd/results
 - tektoncd/website
-- tektoncd/experimental
 
 The process of becoming a Reviewer is:
 
@@ -171,9 +171,9 @@ The process of becoming a Reviewer is:
    corresponding
    [GitHub team(s)](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams).
 
-- Each project has a `<repo>.Reviewers` entry in `org.yaml`, where `<repo>` is
+- Each project has a `<repo>.collaborators` entry in `org.yaml`, where `<repo>` is
   the name of the GitHub repository. The only exception is `pipeline` whose
-  maintainer team is named `core.Reviewers`.
+  reviewer team is named `core.collaborators`.
 
 ## Maintainer
 
@@ -222,11 +222,11 @@ Maintainer of one of these repositories, you must either:
 Repositories currently using this simpler mechanism are:
 
 - tektoncd/community
-- tektoncd/friends
+- tektoncd/mcp-server
 - tektoncd/plumbing
+- tektoncd/pruner
 - tektoncd/results
 - tektoncd/website
-- tektoncd/experimental
 
 Process of becoming an Maintainer:
 

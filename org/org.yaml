@@ -267,6 +267,8 @@ orgs:
         description: the chains maintainers
         members:
         - anithapriyanatarajan
+        - ab-ghosh
+        - enarha
         - jkhelil
         - lcarva
         - PuneetPunamiya

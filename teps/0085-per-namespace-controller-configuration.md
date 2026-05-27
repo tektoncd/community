@@ -235,15 +235,6 @@ flowchart TB
 
 ## Proposal
 
-| Section | Summary |
-|---------|---------|
-| [Overview](#overview) | Four-component design: ConfigMaps, gate, merging, field categorization |
-| [Namespace ConfigMap Discovery](#namespace-configmap-discovery) | Label-based discovery, ConfigMap naming conventions |
-| [Operator Control via per-namespace-configuration](#operator-control-via-per-namespace-configuration) | Cluster-level gate: `false` (default) or `true` |
-| [Configuration Hierarchy and Merging](#configuration-hierarchy-and-merging) | Three-level precedence, raw map merge before parsing |
-| [Overridable Fields](#overridable-fields) | Field-by-field categorization for config-defaults and feature-flags |
-| [Security Considerations](#security-considerations) | Six safeguards: opt-in, non-overridable fields, RBAC, system NS exclusion |
-| [Displaying Merged Configuration](#displaying-merged-configuration) | Annotation, logs, and future CLI for config inspection |
 
 ### Overview
 
@@ -493,7 +484,7 @@ Per-namespace configuration introduces a privilege boundary: namespace administr
 
 3. **Operator-lockable fields:** The `non-overridable-fields` key allows operators to lock additional fields, adapting the allowed overrides to their organizational security policies.
 
-4. **RBAC enforcement:** Creating ConfigMaps in a namespace requires the `create` verb on `configmaps` in that namespace. Existing Kubernetes RBAC controls who can create namespace ConfigMaps. No additional RBAC resources are introduced.
+4. **RBAC enforcement:** Creating ConfigMaps in a namespace requires the `create` verb on `configmaps` in that namespace, so existing namespace RBAC controls who can define overrides. The controller/webhook ClusterRoles need cross-namespace `list`/`watch` on ConfigMaps because Kubernetes RBAC cannot restrict those verbs by label; the informer narrows what is cached and processed with `tekton.dev/pipeline-config=true`.
 
 5. **System namespace exclusion:** The controller ignores namespace ConfigMaps in system namespaces such as `kube-system`, `kube-public`, and `tekton-pipelines`.
 
@@ -536,14 +527,6 @@ Applying namespace config for "team-alpha": overriding default-service-account, 
 
 ## Design Details
 
-| Section | Implements | Summary |
-|---------|------------|---------|
-| [Namespace ConfigMap Informer](#namespace-configmap-informer) | [Namespace ConfigMap Discovery](#namespace-configmap-discovery) | Cluster-scoped, label-filtered informer per process (controller + webhook). |
-| [Config Merging Implementation](#config-merging-implementation) | [Configuration Hierarchy and Merging](#configuration-hierarchy-and-merging) | Reconciliation flow with merged config injected into context |
-| [Webhook Defaulting Interaction](#webhook-defaulting-interaction) | CREATE-time defaults | Namespace-aware SetDefaults, no Knative vendor changes needed |
-| [Validation](#validation) | [Security Considerations](#security-considerations) | Unknown keys, invalid values, non-overridable fields, non-fatal errors |
-| [Impact on Existing Resources](#impact-on-existing-resources) | mid-flight behavior | New/in-flight/completed resource behavior on config change |
-| [Impact on Resource Types](#impact-on-resource-types) | resource coverage | TaskRun, PipelineRun, and CustomRun opt-in handling |
 
 ### Namespace ConfigMap Informer
 
@@ -776,12 +759,6 @@ Per-namespace configuration applies to all resource types that read configuratio
 
 ## Design Evaluation
 
-| Section | Summary |
-|---------|---------|
-| [Pros](#pros) | No restart, backward compatible, TEP-0138 aligned, efficient discovery |
-| [Cons](#cons) | Additional informer, merge complexity, boolean ambiguity, debugging |
-| [Risks and Mitigations](#risks-and-mitigations) | 7 risks (split-brain, escalation, webhook conflict) with mitigations |
-| [Prior Art](#prior-art) | ResourceQuota/LimitRange, Prometheus Operator, cert-manager, CoreDNS |
 
 ### Pros
 

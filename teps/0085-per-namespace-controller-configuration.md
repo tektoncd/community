@@ -1,8 +1,8 @@
 ---
-status: implementable
+status: proposed
 title: Per-Namespace Controller Configuration
 creation-date: '2021-08-25'
-last-updated: '2026-02-11'
+last-updated: '2026-05-27'
 authors:
 - '@sbwsg'
 - '@jerop'
@@ -72,7 +72,6 @@ The design uses namespace-scoped ConfigMaps discovered via labels. A `per-namesp
 This TEP introduces:
 
 - `per-namespace-configuration` field in the cluster `feature-flags` ConfigMap (`true` or `false`)
-- `namespace-config-cache-size` field for tuning the namespace config LRU cache
 - `non-overridable-fields` field for operator lockdown
 - Namespace ConfigMaps (`tekton-config-defaults`, `tekton-feature-flags`) discovered by label
 
@@ -86,7 +85,6 @@ metadata:
   namespace: tekton-pipelines
 data:
   per-namespace-configuration: "true"                   # default: "false"
-  namespace-config-cache-size: "1000"             # default: 1000
   non-overridable-fields: "coschedule,enable-step-actions"  # optional operator lockdown
   # ... existing feature flags ...
 ```
@@ -253,7 +251,7 @@ This proposal introduces namespace-scoped ConfigMaps that override the cluster-w
 
 1. **Namespace ConfigMaps**: ConfigMaps in user namespaces, discovered via labels, containing per-namespace overrides for `config-defaults` and `feature-flags`.
 2. **`per-namespace-configuration`**: A boolean field in the cluster-wide `feature-flags` ConfigMap that gates whether namespace overrides are honored.
-3. **Config merging**: Field-by-field merge at the typed Go struct level, with precedence: namespace ConfigMap > cluster ConfigMap > hardcoded defaults.
+3. **Config merging**: Raw ConfigMap data is filtered and merged before one typed parse, with precedence: namespace ConfigMap > cluster ConfigMap > hardcoded defaults.
 4. **Overridable field categorization**: An explicit list of which fields can be overridden per namespace and which are cluster-only.
 
 ### Namespace ConfigMap Discovery
@@ -328,14 +326,12 @@ metadata:
   namespace: tekton-pipelines
 data:
   per-namespace-configuration: "false"  # default: "false"
-  namespace-config-cache-size: "1000"  # default: 1000
   # ... existing feature flags ...
 ```
 
 | Field | Default | Description |
 |-------|---------|-------------|
 | `per-namespace-configuration` | `false` | `false`: namespace ConfigMaps ignored (backward compatible). `true`: namespace ConfigMaps discovered and merged. |
-| `namespace-config-cache-size` | `1000` | Max number of namespace configs held in the LRU cache. Tune for clusters with many namespaces. |
 
 By defaulting to `false`, this feature is entirely opt-in and introduces no behavioral change for existing installations.
 
@@ -467,7 +463,6 @@ Not all configuration fields should be overridable per namespace. Fields are cat
 | `set-security-context-read-only-root-filesystem` | No | Security-critical, operators must enforce cluster-wide |
 | `enable-kubernetes-sidecar` | Yes | Teams may need different sidecar implementation behavior |
 | `enable-wait-exponential-backoff` | Yes | Teams may need different retry backoff behavior |
-| `namespace-config-cache-size` | No | Controller infrastructure concern, controls max cached namespace configs (default: 1000) |
 | Per-feature flags (TEP-0138 style) | Yes* | Each per-feature flag is overridable within the stability envelope set by the cluster's `enable-api-fields` |
 
 **Note on per-feature flags:** Flags marked with `*` are overridable but subject to a stability gate. A namespace cannot enable an alpha-stability feature if the cluster-wide `enable-api-fields` is set to `stable` or `beta`. The namespace config can only enable features within the allowed stability level, preventing privilege escalation where namespace admins bypass cluster-wide stability controls.
@@ -501,7 +496,7 @@ Per-namespace configuration introduces a privilege boundary: namespace administr
 
 5. **System namespace exclusion:** The controller will ignore namespace ConfigMaps in the `tekton-pipelines` namespace itself and any namespace listed in a `system-namespaces` key in the cluster-wide `feature-flags` ConfigMap. By default, `kube-system`, `kube-public`, and `tekton-pipelines` are excluded.
 
-6. **Validation:** Namespace ConfigMaps containing non-overridable fields or invalid values will be rejected with a warning event on the ConfigMap, and the non-overridable fields will be ignored (the cluster value is used instead).
+6. **Validation:** Namespace ConfigMaps containing non-overridable fields or invalid values are handled non-fatally. Non-overridable and unknown fields are ignored with warning logs; invalid parsed values cause that namespace override to be skipped and the cluster value is used instead.
 
 The following diagram illustrates the multi-gate security model that determines whether a namespace can override a given configuration field:
 
@@ -549,7 +544,7 @@ Applying namespace config for "team-alpha": overriding default-service-account, 
 
 | Section | Implements | Summary |
 |---------|------------|---------|
-| [Namespace ConfigMap Informer](#namespace-configmap-informer) | [Namespace ConfigMap Discovery](#namespace-configmap-discovery) | Lazy LRU cache per process (controller + webhook). |
+| [Namespace ConfigMap Informer](#namespace-configmap-informer) | [Namespace ConfigMap Discovery](#namespace-configmap-discovery) | Cluster-scoped, label-filtered informer per process (controller + webhook). |
 | [Config Merging Implementation](#config-merging-implementation) | [Configuration Hierarchy and Merging](#configuration-hierarchy-and-merging) | Reconciliation flow with merged config injected into context |
 | [Webhook Defaulting Interaction](#webhook-defaulting-interaction) | CREATE-time defaults | Namespace-aware SetDefaults, no Knative vendor changes needed |
 | [Validation](#validation) | [Security Considerations](#security-considerations) | Unknown keys, invalid values, non-overridable fields, non-fatal errors |
@@ -558,63 +553,57 @@ Applying namespace config for "team-alpha": overriding default-service-account, 
 
 ### Namespace ConfigMap Informer
 
-Namespace configuration is discovered using **lazy per-namespace loading**: the controller fetches and caches namespace ConfigMaps on first access rather than listing all of them at startup.
+Namespace configuration is discovered with a **cluster-scoped, label-filtered
+ConfigMap informer** in each Tekton process that needs merged config. The
+informer watches only ConfigMaps labeled `tekton.dev/pipeline-config=true`;
+callers then select the two supported names (`tekton-config-defaults` and
+`tekton-feature-flags`) from the resource namespace.
 
-**Why lazy loading over a cluster-wide informer:**
+This is the same access pattern used by the current implementation in
+`pkg/apis/config/namespace`: list/watch once with a label selector, then serve
+reads from the informer cache. There are no per-reconciliation API calls and
+no per-namespace WATCH objects.
 
-A cluster-wide label-filtered informer (e.g., Knative's `filteredconfigmapinformer`) would LIST all matching ConfigMaps across all namespaces at startup and maintain a single WATCH stream. While this is simpler, it has two drawbacks at scale:
+**Why a filtered informer:**
 
-1. **Startup cost scales with total namespace configs**, not active namespaces. A cluster with 5000 namespace ConfigMaps pays the full LIST cost even if only 50 namespaces have active workloads.
-2. **Memory holds configs for idle namespaces.** The cache retains parsed configs for namespaces with no running TaskRuns or PipelineRuns.
+1. Kubernetes RBAC cannot grant list/watch on only two ConfigMap names across
+   namespaces. A controller that needs dynamic namespace overrides must either
+   perform direct GET calls per namespace or maintain a broader watch. The
+   filtered informer keeps the watch narrow by label and requires users to opt
+   in each namespace ConfigMap explicitly.
+2. It avoids a cold-path API GET during every first reconciliation in a
+   namespace. Reads are cache lookups after the informer is synced.
+3. It gives update/delete propagation using standard Kubernetes informer
+   semantics instead of bespoke per-namespace watch lifecycle management.
 
-Lazy loading avoids both: zero startup LIST cost, and the cache only holds configs for namespaces with active reconciliations.
-
-The controller and webhook are separate processes in Tekton Pipelines (`tekton-pipelines-controller` and `tekton-pipelines-webhook`). They use different strategies for namespace config access:
-
-**Controller (reconciliation path): lazy LRU cache**
-
-The controller is the hot path — it reconciles resources repeatedly. It maintains a `NamespaceConfigCache` with lazy per-namespace loading:
-
-1. On reconciliation, the controller calls `NamespaceConfigCache.Get(namespace)`.
-2. On cache miss, a direct `GET` fetches `tekton-config-defaults` and `tekton-feature-flags` from that namespace by name and label.
-3. If found, the ConfigMap is parsed and cached. A namespace-scoped WATCH is started for that namespace to receive updates and deletes.
-4. On cache hit, the cached config is returned immediately.
-5. Namespace-deletion events and LRU eviction (bounded by [`namespace-config-cache-size`](#operator-control-via-per-namespace-configuration)) clean up stale entries. When an entry is evicted, its namespace-scoped WATCH is stopped.
+The controller and webhook are separate processes in Tekton Pipelines
+(`tekton-pipelines-controller` and `tekton-pipelines-webhook`). Each process
+keeps its own informer-backed cache so reconciliation and admission defaulting
+use the same data model without sharing memory.
 
 ```go
-// NamespaceConfigCache holds parsed per-namespace configuration overrides.
-// Each process (controller and webhook) maintains its own instance.
-// Lazy-loaded on first access per namespace.
-// Bounded by namespace-config-cache-size (default: 1000).
-// Uses LRU eviction; namespace-deletion events also trigger eviction.
+// NamespaceConfigCache is backed by a label-filtered ConfigMap informer.
+// The lister contains only ConfigMaps with tekton.dev/pipeline-config=true.
 type NamespaceConfigCache struct {
-    mu       sync.RWMutex
-    configs  map[string]*NamespaceConfig // keyed by namespace name
-    maxSize  int                         // from namespace-config-cache-size
+    configMapLister corev1listers.ConfigMapLister
 }
 
-// NamespaceConfig holds the raw and parsed overrides for a single namespace.
 type NamespaceConfig struct {
     // Raw ConfigMap data, used for merge-before-parse strategy
     // to preserve "field present but zero-value" semantics for booleans.
     RawDefaults map[string]string // from tekton-config-defaults
     RawFlags    map[string]string // from tekton-feature-flags
-
-    // Parsed configs, populated after merging raw data with cluster defaults.
-    Defaults     *Defaults
-    FeatureFlags *FeatureFlags
 }
 ```
 
-On cache hit, the existing parsed structs are returned. On updates or deletes (received via the namespace-scoped WATCH), the entry is re-parsed or removed using the existing [`NewDefaultsFromConfigMap`](https://github.com/tektoncd/pipeline/blob/main/pkg/apis/config/default.go#L268) and [`NewFeatureFlagsFromConfigMap`](https://github.com/tektoncd/pipeline/blob/main/pkg/apis/config/metrics_tls.go#L19) functions.
+The cache deliberately stores **raw** ConfigMap data. Merging happens after
+the cluster config is known for the current request, so cluster-wide changes
+are naturally reflected the next time `WithNamespaceConfig` is called. No
+negative cache is needed: a missing ConfigMap is simply absent from the
+informer store, and a later add/update event makes it visible.
 
-**Global config change handling:** When the cluster-wide `config-defaults` or `feature-flags` ConfigMap changes (detected by the existing `config.Store` callback), all cached entries in `NamespaceConfigCache` are invalidated but not eagerly recomputed. Each namespace's merged config is recomputed on its next reconciliation, spreading the load across the work queue's natural requeue intervals.
-
-**Webhook (admission path): own `NamespaceConfigCache` instance**
-
-The webhook process maintains its own `NamespaceConfigCache` instance with the same lazy loading and LRU behavior. While this means namespace configs are cached in two processes, the duplication is acceptable: it avoids an API call per admission request and keeps both paths consistently fast. Both caches are independently invalidated on global config changes via their respective `config.Store` callbacks.
-
-No controller restart is required when namespaces add or remove configuration overrides.
+No controller restart is required when namespaces add or remove configuration
+overrides.
 
 ### Config Merging Implementation
 
@@ -629,7 +618,7 @@ During reconciliation, the config resolution flow becomes:
 3. Continue reconciliation with merged config in context
 ```
 
-The merge is performed at the Go struct level using the `MergeConfigs` function described in the [Proposal](#configuration-hierarchy-and-merging) section. Non-overridable fields and operator-locked fields are filtered out before merging.
+The merge is performed at the raw ConfigMap data level using the `MergeConfigMaps` function described in the [Proposal](#configuration-hierarchy-and-merging) section. Unknown keys, non-overridable fields, and operator-locked fields are filtered out before the merged map is parsed once into typed config structs.
 
 The following diagram compares the current cluster-wide config architecture with the proposed per-namespace extension, highlighting that existing components remain unchanged:
 
@@ -659,7 +648,7 @@ flowchart TD
             Ctx2["ToContext"]
 
             NSCM["NS ConfigMaps"]
-            NSCache["NEW: NS Cache<br/>(lazy load + LRU)"]
+            NSCache["NEW: NS informer cache<br/>(label-filtered)"]
 
             MergeR["NEW: Merge"]
             CtxUpdate["NEW: Inject"]
@@ -669,7 +658,7 @@ flowchart TD
             IW2 --> Store2
             Store2 --> Ctx2
 
-            NSCM -.->|GET on cache miss| NSCache
+            NSCM -.->|filtered LIST/WATCH| NSCache
 
             NSCache -.-> MergeR
             Ctx2 --> MergeR
@@ -679,11 +668,11 @@ flowchart TD
 
         subgraph WebhookProc["Webhook Process"]
             NSCM2["NS ConfigMaps"]
-            NSCache2["NEW: NS Cache<br/>(lazy load + LRU)"]
+            NSCache2["NEW: NS informer cache<br/>(label-filtered)"]
             MergeWH["NEW: Merge"]
             Webhook2["SetDefaults"]
 
-            NSCM2 -.->|GET on cache miss| NSCache2
+            NSCM2 -.->|filtered LIST/WATCH| NSCache2
             NSCache2 -.-> MergeWH
             MergeWH --> Webhook2
         end
@@ -761,21 +750,21 @@ This eliminates the CREATE-time vs RECONCILE-time conflict. Namespace overrides 
 
 Namespace ConfigMaps are validated when they are parsed:
 
-1. **Unknown keys:** Unknown keys in the ConfigMap data are logged as warnings AND a Kubernetes Event is emitted on the ConfigMap resource, helping namespace administrators catch typos and configuration errors.
-2. **Invalid values:** Values that fail parsing (e.g., non-boolean for a boolean field, invalid enum value) cause the entire namespace ConfigMap to be rejected with a warning event. The namespace falls back to cluster defaults. This is because the existing parsing functions ([`NewFeatureFlagsFromMap`](https://github.com/tektoncd/pipeline/blob/main/pkg/apis/config/feature_flags.go#L225-L321), [`NewDefaultsFromMap`](https://github.com/tektoncd/pipeline/blob/main/pkg/apis/config/default.go#L141)) return an error on any invalid field rather than skipping individual fields.
-3. **Non-overridable fields:** If a namespace ConfigMap sets a non-overridable field, a warning event is emitted on the ConfigMap and the field is ignored. The cluster value is used instead.
+1. **Unknown keys:** Unknown keys in namespace ConfigMap data are ignored and logged as warnings. They do not fail reconciliation because a typo in one namespace must not destabilize the controller.
+2. **Invalid values:** Values that fail parsing (for example, non-boolean for a boolean field or an invalid enum value) cause the affected namespace override to be skipped for that reconciliation. The namespace falls back to cluster defaults. This is because the existing parsing functions ([`NewFeatureFlagsFromMap`](https://github.com/tektoncd/pipeline/blob/main/pkg/apis/config/feature_flags.go#L225-L321), [`NewDefaultsFromMap`](https://github.com/tektoncd/pipeline/blob/main/pkg/apis/config/default.go#L141)) return an error on any invalid field rather than skipping individual fields.
+3. **Non-overridable fields:** If a namespace ConfigMap sets a non-overridable field, the field is ignored, the cluster value is used, and the controller logs a warning.
 4. **ConfigMap name validation:** Only ConfigMaps named `tekton-config-defaults` and `tekton-feature-flags` with the required labels are processed. Other names are ignored.
 
-**Non-fatal error handling:** Namespace ConfigMap parse errors MUST NOT crash the controller. Unlike cluster-wide ConfigMaps, where parse errors are returned to the Knative configmap watcher (which may cause the controller to fail to start), namespace ConfigMap errors are logged at the error level and the namespace falls back to cluster defaults. This ensures that a malformed namespace ConfigMap affects only that namespace and does not destabilize the controller. Note: the existing parsing functions ([`NewFeatureFlagsFromMap`](https://github.com/tektoncd/pipeline/blob/main/pkg/apis/config/feature_flags.go#L225-L321), [`NewDefaultsFromMap`](https://github.com/tektoncd/pipeline/blob/main/pkg/apis/config/default.go#L141)) fail the entire parse on any invalid field. The namespace config implementation will need a wrapper that catches parse errors and falls back to cluster defaults, rather than relying on per-field error recovery.
+**Non-fatal error handling:** Namespace ConfigMap parse errors MUST NOT crash the controller. Unlike cluster-wide ConfigMaps, where parse errors are returned to the Knative configmap watcher (which may cause the controller to fail to start), namespace ConfigMap errors are logged and the namespace falls back to cluster defaults. This ensures that a malformed namespace ConfigMap affects only that namespace and does not destabilize the controller.
 
-**Version skew handling:** If a namespace ConfigMap contains configuration keys not recognized by the current controller version (for example, after a controller downgrade or when a namespace ConfigMap is created with keys from a newer Tekton version), the unrecognized fields are ignored and a warning event is emitted on the ConfigMap. This allows forward compatibility where namespace configurations can be prepared in advance of controller upgrades.
+**Version skew handling:** If a namespace ConfigMap contains configuration keys not recognized by the current controller version (for example, after a controller downgrade or when a namespace ConfigMap is created with keys from a newer Tekton version), the unrecognized fields are ignored and logged. This allows forward compatibility where namespace configurations can be prepared in advance of controller upgrades. A future validating admission webhook may add early warning Events, but warning Events are not required for the initial implementation.
 
 ### Impact on Existing Resources
 
 When namespace configuration changes (ConfigMap created, updated, or deleted), the behavior is consistent with how cluster-wide ConfigMap changes work today (per [feedback from @chmouel](https://github.com/tektoncd/community/pull/607)):
 
 - **New resources:** Resources created after the change will use the new merged configuration.
-- **In-flight resources:** Resources already being reconciled will pick up the new configuration on their next reconciliation loop. The timing depends on the reconciler's requeue interval.
+- **In-flight resources:** Behavior that is read during reconciliation can pick up the new configuration on a later reconciliation. Defaults already written by the admission webhook are not retroactively rewritten; this matches today's cluster-wide ConfigMap behavior.
 - **Completed resources:** Already-completed TaskRuns and PipelineRuns are not affected.
 
 This is the same behavior as changing the cluster-wide `feature-flags` or `config-defaults` ConfigMap today. No additional guarantees or protections are introduced for in-flight resources.
@@ -818,11 +807,11 @@ Per-namespace configuration applies to all resource types that read configuratio
 
 | Risk | Severity | Mitigation |
 |------|----------|------------|
-| **Split-brain between global and namespace config caches** | HIGH | Flush `NamespaceConfigCache` when `config.Store` detects a [`per-namespace-configuration`](#operator-control-via-per-namespace-configuration) change. Both the reconciler and [`SetDefaults`](#webhook-defaulting-interaction) re-read the level per request. Effective window is watch event latency (<1s typical). |
-| **Cold-start latency on first namespace access** | LOW | [Lazy loading](#namespace-configmap-informer) avoids cluster-wide LIST at startup. First reconciliation per namespace pays a one-time `GET` cost (~1-2ms). Subsequent accesses are cache hits. |
-| **Thundering herd on global config change** | MEDIUM | [Lazy invalidation](#namespace-configmap-informer): on global config change, invalidate cached entries without eager recomputation. Each namespace's config is recomputed on next reconciliation, spreading load across the work queue's natural requeue intervals. |
-| **Unbounded namespace config cache** | MEDIUM | Bounded LRU cache with namespace-deletion eviction and configurable TTL. Cache size configurable via [`namespace-config-cache-size`](#feature-flags-fields) in cluster `feature-flags` (default: 1000). |
-| **Malformed namespace ConfigMap crashes controller** | HIGH | Parse errors MUST be non-fatal. Fall back to cluster defaults and emit a warning event on the ConfigMap. See [Validation](#validation). |
+| **Split-brain between global and namespace config caches** | HIGH | Both controller and webhook maintain their own label-filtered informer cache. They independently receive watch updates and re-merge with the current cluster config per request. Effective skew is bounded by watch propagation latency. |
+| **Cold-start LIST cost** | MEDIUM | The informer performs one label-filtered LIST/WATCH per process, not an unfiltered all-ConfigMap watch. Namespace ConfigMaps must opt in with `tekton.dev/pipeline-config=true`. |
+| **Thundering herd on global config change** | LOW | Namespace cache stores raw data only. Global config changes are reflected by re-merging raw namespace data with the current global config; namespace entries do not need eager recomputation. |
+| **Unbounded labeled ConfigMaps** | MEDIUM | Only labeled ConfigMaps are cached, and only two names per namespace are used. Operators can audit/limit who can create ConfigMaps with the opt-in label via namespace RBAC or policy. |
+| **Malformed namespace ConfigMap crashes controller** | HIGH | Parse errors MUST be non-fatal. Fall back to cluster defaults and log a warning. See [Validation](#validation). |
 | **Namespace feature escalation** | HIGH | [`enable-api-fields`](#feature-flags-fields) is cluster-only. Per-feature flags are gated by the cluster stability level, blocking alpha enablement when cluster restricts to stable. |
 | **Webhook defaulting conflict** | RESOLVED | `SetDefaults` reads namespace from `ObjectMeta.Namespace` and reads the webhook's own `NamespaceConfigCache`. No Knative vendor changes. See [Webhook Defaulting Interaction](#webhook-defaulting-interaction). |
 
@@ -988,7 +977,7 @@ data:
 
 1. **Config merging:** Test `MergeConfigs` with various combinations of global and namespace configs, including partial overrides, empty namespace configs, and non-overridable field filtering.
 2. **ConfigMap parsing:** Verify that namespace ConfigMaps are parsed correctly using existing parsing functions.
-3. **Validation:** Test that non-overridable fields in namespace ConfigMaps produce warning events and are ignored.
+3. **Validation:** Test that non-overridable fields in namespace ConfigMaps are logged and ignored.
 4. **Boolean field tracking:** Verify that "set to false" is distinguished from "not set" for boolean fields.
 
 ### Integration Tests
@@ -1027,7 +1016,7 @@ The existing testing matrix (stable/beta/alpha) is extended with `per-namespace-
 **Milestone 2: Operator controls**
 - Implement `non-overridable-fields` key
 - Implement system namespace exclusion
-- Add validation and warning events for namespace ConfigMaps
+- Add validation and warning logs for namespace ConfigMaps
 - Integration tests for enforcement and validation
 
 **Milestone 3: Observability**
@@ -1047,7 +1036,7 @@ The existing testing matrix (stable/beta/alpha) is extended with `per-namespace-
 - **Tekton Operator integration:** The Tekton Operator could manage namespace ConfigMaps through its `TektonConfig` CRD, enabling operators to declaratively manage per-namespace configuration.
 - **Per-namespace `config-events`:** [Issue #7888](https://github.com/tektoncd/pipeline/issues/7888) requested per-namespace CloudEvents sinks. This could be supported by adding `tekton-config-events` to the set of overridable namespace ConfigMaps.
 - **Namespace grouping:** Support label-based namespace grouping (e.g., all namespaces with label `team=alpha` share a configuration), reducing ConfigMap duplication.
-- **Admission webhook:** An optional validating admission webhook that rejects namespace ConfigMaps containing non-overridable fields, providing earlier feedback than warning events.
+- **Admission webhook:** An optional validating admission webhook that rejects namespace ConfigMaps containing non-overridable fields, providing earlier feedback than reconciler warning logs.
 
 ## References
 

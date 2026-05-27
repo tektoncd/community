@@ -34,7 +34,7 @@ authors:
   - [Entrypoint Collection](#entrypoint-collection)
   - [Reconciler Processing](#reconciler-processing)
   - [Size Limits and Termination Message Budget](#size-limits-and-termination-message-budget)
-  - [Eviction Order](#eviction-order)
+  - [Budget Priority](#budget-priority)
   - [Per-Item Size Limits](#per-item-size-limits)
   - [Per-Step Cardinality Limits](#per-step-cardinality-limits)
   - [Truncation Signaling](#truncation-signaling)
@@ -402,8 +402,13 @@ directory. The path is `/tekton/steps/<step-name>/notices/`, which the
 entrypoint creates automatically (same infrastructure as
 `/tekton/steps/<step-name>/artifacts/`). No new volume mount is needed.
 
+This TEP adds an author-facing variable, `$(step.notices.path)`, that
+resolves to the current step's notices directory. It intentionally does
+not expose a broad `$(step.stepMetadataDir)` variable; task authors only
+get the scoped write path for notices.
+
 ```bash
-cat > $(step.stepMetadataDir)/notices/lint.json <<EOF
+cat > $(step.notices.path)/lint.json <<EOF
 [
   {"level": "warning", "message": "unused variable 'x'", "file": "main.go", "startLine": 42},
   {"level": "info", "message": "consider using errors.Is", "file": "handler.go", "startLine": 88}
@@ -416,11 +421,11 @@ files in the directory are read and merged:
 
 ```bash
 # File per category
-cat > $(step.stepMetadataDir)/notices/deprecations.json <<EOF
+cat > $(step.notices.path)/deprecations.json <<EOF
 [{"level": "warning", "message": "dependency 'foo' is deprecated", "file": "go.mod", "startLine": 15}]
 EOF
 
-cat > $(step.stepMetadataDir)/notices/style.json <<EOF
+cat > $(step.notices.path)/style.json <<EOF
 [{"level": "info", "message": "consider extracting helper function", "file": "handler.go", "startLine": 88}]
 EOF
 ```
@@ -581,15 +586,22 @@ pattern:
 6. Collected notices are serialized as a `RunResult` with
    `NoticeResultType` and included in the termination message.
 
-The termination message format is extended to include a notices entry:
+The termination message format is extended to include a notices entry.
+Because this transport competes for bytes with Results and Artifacts, the
+wire payload uses compact JSON field names while the public API keeps the
+readable `Notice` schema:
 
 ```json
 [
   {"key": "StartedAt", "value": "2026-03-20T10:00:00Z", "type": 3},
   {"key": "Results", "value": "[...]", "type": 1},
-  {"key": "Notices", "value": "[{\"level\":\"warning\",\"message\":\"...\"}]", "type": 7}
+  {"key": "Notices", "value": "[{\"l\":\"w\",\"m\":\"unused variable\",\"p\":\"main.go\",\"sl\":42}]", "type": 7}
 ]
 ```
+
+The reconciler expands this compact representation into
+`Notice{Level: "warning", Message: "unused variable", File: "main.go",
+StartLine: 42}` before writing status.
 
 ### Reconciler Processing
 
@@ -637,19 +649,30 @@ notices (Phase 2) are best-effort within this budget.
 
 **Sidecar-log fallback:** When `results-from: sidecar-logs` is
 configured (TEP-0127), notices use the same sidecar-log mechanism,
-bypassing the 12 KB limit entirely. This is the **required
-configuration** for use cases expecting more than 5 notices per step.
+bypassing the 12 KB limit entirely. This fallback is opt-in because
+sidecar-log results are not enabled by default and have their own scaling
+trade-offs. Without sidecar-logs, step-emitted notices remain
+best-effort and may be truncated when the termination message budget is
+exhausted.
 
-### Eviction Order
+### Budget Priority
 
-When the termination message budget is insufficient for all data, the
-entrypoint evicts items in this order (lowest priority dropped first):
+When the termination message budget is insufficient for all data,
+notices are the lowest-priority payload because they are informational
+and must not break Task/Pipeline data flow.
 
-1. **Internal metadata** (StartedAt, ExitCode) -- never evicted
-2. **Results** -- never evicted (required for pipeline data flow)
-3. **Artifacts** -- evicted before notices only if artifacts have moved
-   to external storage (TEP-0164); otherwise evicted after notices
-4. **Notices** -- best-effort, progressively dropped (last-in-first-dropped)
+Retention priority is:
+
+1. **Internal metadata** (`StartedAt`, `ExitCode`) -- required for core
+   status behavior.
+2. **Results** -- required for Pipeline data flow and never evicted by
+   notices.
+3. **Artifacts metadata** -- retained ahead of notices while artifacts
+   still use termination-message transport. If artifacts later move to
+   external storage (TEP-0164), their inline metadata pressure changes.
+4. **Notices** -- best-effort, progressively dropped
+   (last-in-first-dropped) after per-step and per-TaskRun caps are
+   applied.
 
 ### Per-Item Size Limits
 
@@ -690,8 +713,9 @@ fit.
 
 ### Notice File Format
 
-Steps write notices as **JSON arrays** to their per-step notices directory.
-Single JSON objects and plain text are also accepted via the fallback chain:
+Steps write notices as **JSON arrays** to their per-step notices directory
+using the public field names. Single JSON objects and plain text are also
+accepted via the fallback chain:
 
 ```json
 [
@@ -707,7 +731,10 @@ bare object:
 {"level": "warning", "message": "dependency 'foo' is deprecated", "file": "go.mod", "startLine": 15}
 ```
 
-Plain text files are wrapped as info-level notices automatically.
+The entrypoint accepts public field names from task authors, then encodes
+the termination-message payload with compact field names (`l`, `m`, `p`,
+`sl`, `el`) to conserve the Kubernetes termination-message budget. Plain
+text files are wrapped as info-level notices automatically.
 
 The `step` field should NOT be included in the file. The reconciler
 populates it automatically from the step name, reducing per-notice wire

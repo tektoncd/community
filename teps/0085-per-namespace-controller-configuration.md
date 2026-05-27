@@ -345,17 +345,17 @@ When `per-namespace-configuration` is set to `true`, configuration is resolved u
 2. **Cluster ConfigMap**: Fields from the cluster-wide ConfigMap in `tekton-pipelines`
 3. **Hardcoded defaults**: Built-in defaults in the Tekton Pipelines codebase
 
-Merging happens at the **raw `map[string]string` level** before parsing into typed Go structs. This approach is necessary because the existing [`FeatureFlags` struct](https://github.com/tektoncd/pipeline/blob/main/pkg/apis/config/feature_flags.go#L182-L213) uses raw `bool` types, which cannot distinguish between "explicitly set to false" and "not set" after parsing. By merging at the ConfigMap data level, the implementation preserves the ability to detect which fields are present in the namespace override.
+Merging happens at the **ConfigMap-data key level** before parsing into typed Go structs. The controller starts from the current cluster-level config, serializes the supported fields into the same key/value shape used by ConfigMaps, overlays only allowed namespace keys, then parses once. This preserves the ability to detect which fields are present in the namespace override while avoiding pointer-heavy typed config structs.
 
 ```go
-// Merge strategy: raw map merge, then single parse call
-func MergeConfigMaps(globalData, namespaceData map[string]string, overridableFields []string) map[string]string {
+// Merge strategy: key/value merge, then single parse call
+func MergeConfigMaps(clusterData, namespaceData map[string]string, overridableFields []string) map[string]string {
     merged := make(map[string]string)
-    // Start with global config
-    for k, v := range globalData {
+    // Start with current cluster-level config serialized as ConfigMap keys.
+    for k, v := range clusterData {
         merged[k] = v
     }
-    // Override with namespace config for allowed fields only
+    // Override with namespace config for allowed fields only.
     for k, v := range namespaceData {
         if isOverridable(k, overridableFields) {
             merged[k] = v
@@ -364,13 +364,13 @@ func MergeConfigMaps(globalData, namespaceData map[string]string, overridableFie
     return merged
 }
 
-// After merging, parse once
-mergedData := MergeConfigMaps(globalConfigMap.Data, namespaceConfigMap.Data, allowedOverrides)
+// After merging, parse once.
+mergedData := MergeConfigMaps(configToMap(clusterConfig), namespaceConfigMap.Data, allowedOverrides)
 mergedDefaults := config.NewDefaultsFromMap(mergedData)
 mergedFeatureFlags := config.NewFeatureFlagsFromMap(mergedData)
 ```
 
-This raw map merge delegates to the existing [`NewDefaultsFromMap`](https://github.com/tektoncd/pipeline/blob/main/pkg/apis/config/default.go#L141) and [`NewFeatureFlagsFromMap`](https://github.com/tektoncd/pipeline/blob/main/pkg/apis/config/feature_flags.go#L225) parsing functions, ensuring consistency with cluster-wide config parsing and avoiding refactoring of the `FeatureFlags` struct to use pointer types.
+The parse step delegates to the existing [`NewDefaultsFromMap`](https://github.com/tektoncd/pipeline/blob/main/pkg/apis/config/default.go#L141) and [`NewFeatureFlagsFromMap`](https://github.com/tektoncd/pipeline/blob/main/pkg/apis/config/feature_flags.go#L225) functions, ensuring consistency with cluster-wide config parsing and avoiding refactoring of the `FeatureFlags` struct to use pointer types. The serializer must cover all supported fields that can otherwise be lost during a partial namespace override, including complex defaults such as pod templates and default container resource requirements.
 
 The following diagram illustrates the merge algorithm step-by-step, including how security fields are protected and concrete examples of field-level merge outcomes:
 
@@ -453,19 +453,19 @@ Not all configuration fields should be overridable per namespace. Fields are cat
 | `set-security-context` | No | Security-critical, operators must enforce cluster-wide |
 | `coschedule` | Yes | Teams may need different pod scheduling strategies. **Note:** operators using `isolate-pipelinerun` for workload isolation should add `coschedule` to `non-overridable-fields` to prevent namespace admins from disabling the isolation guarantee. |
 | `keep-pod-on-cancel` | Yes | Teams may want different cancel behavior for debugging |
-| `enable-cel-in-whenexpression` | Yes* | Gradual migration use case (gated by cluster stability level) |
-| `enable-step-actions` | Yes* | Gradual migration use case (gated by cluster stability level) |
-| `enable-artifacts` | Yes* | Gradual migration use case (gated by cluster stability level) |
-| `enable-param-enum` | Yes* | Gradual migration use case (gated by cluster stability level) |
+| `enable-cel-in-whenexpression` | Yes | Gradual migration use case |
+| `enable-step-actions` | Yes | Gradual migration use case |
+| `enable-artifacts` | Yes | Gradual migration use case |
+| `enable-param-enum` | Yes | Gradual migration use case |
 | `disable-inline-spec` | Yes | Teams may have different inline spec policies |
 | `trusted-resources-verification-no-match-policy` | No | Security-critical, operators must enforce cluster-wide |
 | `enable-concise-resolver-syntax` | Yes | Teams may prefer different resolver syntax |
 | `set-security-context-read-only-root-filesystem` | No | Security-critical, operators must enforce cluster-wide |
 | `enable-kubernetes-sidecar` | Yes | Teams may need different sidecar implementation behavior |
 | `enable-wait-exponential-backoff` | Yes | Teams may need different retry backoff behavior |
-| Per-feature flags (TEP-0138 style) | Yes* | Each per-feature flag is overridable within the stability envelope set by the cluster's `enable-api-fields` |
+| Explicitly listed per-feature flags (TEP-0138 style) | Yes | Each listed per-feature flag is independently overridable; `enable-api-fields` itself remains cluster-only. |
 
-**Note on per-feature flags:** Flags marked with `*` are overridable but subject to a stability gate. A namespace cannot enable an alpha-stability feature if the cluster-wide `enable-api-fields` is set to `stable` or `beta`. The namespace config can only enable features within the allowed stability level, preventing privilege escalation where namespace admins bypass cluster-wide stability controls.
+**Note on per-feature flags:** Namespace overrides are explicit allowlist entries, not a blanket bypass of `enable-api-fields`. Operators that do not want namespace admins to change a listed per-feature flag can add that key to `non-overridable-fields`.
 
 **Operator-lockable fields:** Fields marked "No" in the table above cannot be overridden per namespace under any circumstances. Additionally, operators may further restrict the set of overridable fields by specifying a `non-overridable-fields` key in the cluster-wide `feature-flags` ConfigMap:
 
@@ -494,7 +494,7 @@ Per-namespace configuration introduces a privilege boundary: namespace administr
 
 4. **RBAC enforcement:** Creating ConfigMaps in a namespace requires the `create` verb on `configmaps` in that namespace. Existing Kubernetes RBAC controls who can create namespace ConfigMaps. No additional RBAC resources are introduced.
 
-5. **System namespace exclusion:** The controller will ignore namespace ConfigMaps in the `tekton-pipelines` namespace itself and any namespace listed in a `system-namespaces` key in the cluster-wide `feature-flags` ConfigMap. By default, `kube-system`, `kube-public`, and `tekton-pipelines` are excluded.
+5. **System namespace exclusion:** The controller ignores namespace ConfigMaps in system namespaces such as `kube-system`, `kube-public`, and `tekton-pipelines`.
 
 6. **Validation:** Namespace ConfigMaps containing non-overridable fields or invalid values are handled non-fatally. Non-overridable and unknown fields are ignored with warning logs; invalid parsed values cause that namespace override to be skipped and the cluster value is used instead.
 
@@ -506,7 +506,7 @@ flowchart TD
 
     Start --> Gate1{Operator<br/>locked?}
     Gate1 -->|yes| Block1[BLOCKED]
-    Gate1 -->|no| Gate2{Stability<br/>flag?}
+    Gate1 -->|no| Gate2{Cluster-only<br/>field?}
 
     Gate2 -->|yes| Block2[BLOCKED]
     Gate2 -->|no| Gate3{Security<br/>flag?}
@@ -525,20 +525,13 @@ flowchart TD
 
 To address [feedback from @pritidesai](https://github.com/tektoncd/community/pull/607) about easy access to resolved configuration, the following mechanisms are provided:
 
-1. **Status annotation on runs:** When `per-namespace-configuration` is `true`, TaskRun and PipelineRun objects will have an annotation `tekton.dev/resolved-config-source` indicating whether namespace-level config was applied:
-
-```yaml
-annotations:
-  tekton.dev/resolved-config-source: "namespace:team-alpha"
-```
-
-2. **Controller logs:** The controller will log at INFO level when namespace configuration is applied, including which fields were overridden:
+1. **Controller logs:** The controller will log at INFO level when namespace configuration is applied, including which fields were overridden:
 
 ```
 Applying namespace config for "team-alpha": overriding default-service-account, default-timeout-minutes
 ```
 
-3. **Future work:** A `tkn` CLI command to display the resolved configuration for a namespace (see [Future Work](#future-work)).
+2. **Future work:** A `tkn` CLI command to display the resolved configuration for a namespace, and optional status annotations such as `tekton.dev/resolved-config-source` if operators need per-run auditability (see [Future Work](#future-work)).
 
 ## Design Details
 
@@ -618,7 +611,7 @@ During reconciliation, the config resolution flow becomes:
 3. Continue reconciliation with merged config in context
 ```
 
-The merge is performed at the raw ConfigMap data level using the `MergeConfigMaps` function described in the [Proposal](#configuration-hierarchy-and-merging) section. Unknown keys, non-overridable fields, and operator-locked fields are filtered out before the merged map is parsed once into typed config structs.
+The merge is performed at the ConfigMap-data key level using the `MergeConfigMaps` function described in the [Proposal](#configuration-hierarchy-and-merging) section. Unknown keys, non-overridable fields, and operator-locked fields are filtered out before the merged map is parsed once into typed config structs.
 
 The following diagram compares the current cluster-wide config architecture with the proposed per-namespace extension, highlighting that existing components remain unchanged:
 
@@ -812,7 +805,7 @@ Per-namespace configuration applies to all resource types that read configuratio
 | **Thundering herd on global config change** | LOW | Namespace cache stores raw data only. Global config changes are reflected by re-merging raw namespace data with the current global config; namespace entries do not need eager recomputation. |
 | **Unbounded labeled ConfigMaps** | MEDIUM | Only labeled ConfigMaps are cached, and only two names per namespace are used. Operators can audit/limit who can create ConfigMaps with the opt-in label via namespace RBAC or policy. |
 | **Malformed namespace ConfigMap crashes controller** | HIGH | Parse errors MUST be non-fatal. Fall back to cluster defaults and log a warning. See [Validation](#validation). |
-| **Namespace feature escalation** | HIGH | [`enable-api-fields`](#feature-flags-fields) is cluster-only. Per-feature flags are gated by the cluster stability level, blocking alpha enablement when cluster restricts to stable. |
+| **Namespace feature escalation** | HIGH | [`enable-api-fields`](#feature-flags-fields) and security-sensitive flags are cluster-only. Operators can further lock any otherwise-overridable flag with `non-overridable-fields`. |
 | **Webhook defaulting conflict** | RESOLVED | `SetDefaults` reads namespace from `ObjectMeta.Namespace` and reads the webhook's own `NamespaceConfigCache`. No Knative vendor changes. See [Webhook Defaulting Interaction](#webhook-defaulting-interaction). |
 
 ### Prior Art
@@ -975,7 +968,7 @@ data:
 
 ### Unit Tests
 
-1. **Config merging:** Test `MergeConfigs` with various combinations of global and namespace configs, including partial overrides, empty namespace configs, and non-overridable field filtering.
+1. **Config merging:** Test `MergeConfigMaps` with various combinations of global and namespace configs, including partial overrides, empty namespace configs, and non-overridable field filtering.
 2. **ConfigMap parsing:** Verify that namespace ConfigMaps are parsed correctly using existing parsing functions.
 3. **Validation:** Test that non-overridable fields in namespace ConfigMaps are logged and ignored.
 4. **Boolean field tracking:** Verify that "set to false" is distinguished from "not set" for boolean fields.
@@ -1008,7 +1001,7 @@ The existing testing matrix (stable/beta/alpha) is extended with `per-namespace-
 **Milestone 1: Core infrastructure**
 - Add `per-namespace-configuration` boolean field to `feature-flags` ConfigMap parsing
 - Implement the cluster-wide ConfigMap informer with label selector
-- Implement `MergeConfigs` function for `config-defaults` and `feature-flags`
+- Implement `MergeConfigMaps` function for `config-defaults` and `feature-flags`
 - Add namespace config cache
 - Wire namespace config resolution into reconciler context
 - Unit tests for config merging and parsing
@@ -1020,8 +1013,8 @@ The existing testing matrix (stable/beta/alpha) is extended with `per-namespace-
 - Integration tests for enforcement and validation
 
 **Milestone 3: Observability**
-- Add `tekton.dev/resolved-config-source` annotation on runs
 - Add controller log messages for namespace config application
+- Consider `tekton.dev/resolved-config-source` annotations on runs if per-run auditability is needed
 - Integration tests for observability
 
 **Milestone 4: Graduation**

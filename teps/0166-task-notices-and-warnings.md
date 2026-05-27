@@ -53,7 +53,7 @@ authors:
   - [Kubernetes Events](#kubernetes-events)
   - [Annotations on TaskRun](#annotations-on-taskrun)
   - [Condition Message Encoding](#condition-message-encoding)
-  - [Tekton Artifacts (TEP-0164)](#tekton-artifacts-tep-0164)
+  - [Tekton Artifacts External Storage Proposal](#tekton-artifacts-external-storage-proposal)
   - [Reusable Finally Task](#reusable-finally-task)
 - [Implementation Plan](#implementation-plan)
   - [Phase 1: Controller Notices and Core API (alpha)](#phase-1-controller-notices-and-core-api-alpha)
@@ -669,7 +669,7 @@ Retention priority is:
    notices.
 3. **Artifacts metadata** -- retained ahead of notices while artifacts
    still use termination-message transport. If artifacts later move to
-   external storage (TEP-0164), their inline metadata pressure changes.
+   external storage, their inline metadata pressure changes.
 4. **Notices** -- best-effort, progressively dropped
    (last-in-first-dropped) after per-step and per-TaskRun caps are
    applied.
@@ -733,8 +733,8 @@ bare object:
 
 The entrypoint accepts public field names from task authors, then encodes
 the termination-message payload with compact field names (`l`, `m`, `p`,
-`sl`, `el`) to conserve the Kubernetes termination-message budget. Plain
-text files are wrapped as info-level notices automatically.
+`sl`) to conserve the Kubernetes termination-message budget. Plain text
+files are wrapped as info-level notices automatically.
 
 The `step` field should NOT be included in the file. The reconciler
 populates it automatically from the step name, reducing per-notice wire
@@ -909,27 +909,28 @@ This requires no API change but:
 - Mixes success confirmation with warning details
 - Limited space in the condition message
 
-### Tekton Artifacts (TEP-0164)
+### Tekton Artifacts External Storage Proposal
 
 Model notices as artifacts with a well-known type (e.g.,
 `tekton.dev/notice`):
 
-[TEP-0164](https://github.com/tektoncd/community/pull/1248) extends
+The Tekton Artifacts external storage proposal in
+[community#1248](https://github.com/tektoncd/community/pull/1248) extends
 TEP-0147 with external storage backends, solving the termination message
 size problem. However:
 - Artifacts carry provenance metadata (URI, Digest, StorageRef) that is
   meaningless for "unused variable at main.go:42"
 - Notices need fields (Level, File, StartLine) that `ArtifactValue`
   does not have
-- TEP-0164 is in draft with no implementation. Blocking TEP-0166 on it
-  creates a dependency in the wrong direction
+- The external-storage proposal is in draft with no implementation.
+  Blocking TEP-0166 on it creates a dependency in the wrong direction
 - External storage (OCI, S3) is too heavy for 5 lint warnings totaling
   500 bytes
 
-TEP-0164's `Inline` mode could serve as a transport for notice payloads,
-but the data model is a poor fit. The correct architecture is: small
-notices go in status (this TEP), large structured reports (SARIF, JUnit)
-are artifacts for TEP-0164 when it ships.
+The proposal's `Inline` mode could serve as a transport for notice
+payloads, but the data model is a poor fit. The correct architecture is:
+small notices go in status (this TEP), while large structured reports
+(SARIF, JUnit) become artifacts when external artifact storage ships.
 
 ### Reusable Finally Task
 
@@ -1052,7 +1053,7 @@ To be filled in after implementation.
   Mechanism for bypassing termination message limits
 - [TEP-0147: Tekton Artifacts Phase 1](https://github.com/tektoncd/community/blob/main/teps/0147-tekton-artifacts-phase1.md):
   Recent addition to TaskRun status (similar pattern of extending status)
-- [TEP-0164: Tekton Artifacts Phase 2](https://github.com/tektoncd/community/pull/1248):
+- [Tekton Artifacts external storage proposal](https://github.com/tektoncd/community/pull/1248):
   External storage backends for artifacts and results
 - [tektoncd/pipeline#4808](https://github.com/tektoncd/pipeline/issues/4808):
   Termination message size constraints and container count impact

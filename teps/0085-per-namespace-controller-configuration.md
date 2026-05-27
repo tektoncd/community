@@ -463,6 +463,7 @@ Not all configuration fields should be overridable per namespace. Fields are cat
 | `set-security-context-read-only-root-filesystem` | No | Security-critical, operators must enforce cluster-wide |
 | `enable-kubernetes-sidecar` | Yes | Teams may need different sidecar implementation behavior |
 | `enable-wait-exponential-backoff` | Yes | Teams may need different retry backoff behavior |
+| `enable-termination-message-compression` | Yes | Teams may need different result transport behavior while this alpha flag exists |
 | Explicitly listed per-feature flags (TEP-0138 style) | Yes | Each listed per-feature flag is independently overridable; `enable-api-fields` itself remains cluster-only. |
 
 **Note on per-feature flags:** Namespace overrides are explicit allowlist entries, not a blanket bypass of `enable-api-fields`. Operators that do not want namespace admins to change a listed per-feature flag can add that key to `non-overridable-fields`.
@@ -542,7 +543,7 @@ Applying namespace config for "team-alpha": overriding default-service-account, 
 | [Webhook Defaulting Interaction](#webhook-defaulting-interaction) | CREATE-time defaults | Namespace-aware SetDefaults, no Knative vendor changes needed |
 | [Validation](#validation) | [Security Considerations](#security-considerations) | Unknown keys, invalid values, non-overridable fields, non-fatal errors |
 | [Impact on Existing Resources](#impact-on-existing-resources) | mid-flight behavior | New/in-flight/completed resource behavior on config change |
-| [Impact on Resource Types](#impact-on-resource-types) | resource coverage | TaskRun, PipelineRun, CustomRun handling |
+| [Impact on Resource Types](#impact-on-resource-types) | resource coverage | TaskRun, PipelineRun, and CustomRun opt-in handling |
 
 ### Namespace ConfigMap Informer
 
@@ -706,7 +707,8 @@ func (tr *TaskRun) SetDefaults(ctx context.Context) {
 This works because:
 - The Knative defaulting webhook decodes the `AdmissionRequest` into a typed struct before calling `SetDefaults`, so `tr.ObjectMeta.Namespace` is populated
 - [`config.FromContextOrDefaults(ctx)`](https://github.com/tektoncd/pipeline/blob/main/pkg/apis/config/store.go#L53) in `TaskRunSpec.SetDefaults` will see the namespace-merged config
-- The same pattern applies to `PipelineRun.SetDefaults` and `CustomRun.SetDefaults`
+- The same pattern applies to `PipelineRun.SetDefaults`
+- `CustomRun` defaulting is not part of the initial namespace-aware admission defaulting path. CustomRun-compatible controllers can still opt in during reconciliation by reading the merged config from context.
 - No changes to `knative.dev/pkg/webhook` are needed: the `withContext` closure signature (`func(context.Context) context.Context`) remains unchanged
 
 The following diagram shows the namespace-aware defaulting flow:
@@ -737,7 +739,7 @@ sequenceDiagram
     R->>R: Apply NS behavioral flags
 ```
 
-This eliminates the CREATE-time vs RECONCILE-time conflict. Namespace overrides apply to all config fields (including `default-timeout-minutes`, `default-service-account`, `default-pod-template`) from the initial release.
+This eliminates the CREATE-time vs RECONCILE-time conflict for TaskRun and PipelineRun defaults. Namespace overrides for TaskRun/PipelineRun defaulting fields (including `default-timeout-minutes`, `default-service-account`, `default-pod-template`) are part of the initial release; CustomRun defaulting remains future/opt-in work for controllers that use the merged config.
 
 ### Validation
 
@@ -770,7 +772,7 @@ Per-namespace configuration applies to all resource types that read configuratio
 |---------------|--------|
 | **TaskRun** | Namespace config applied during TaskRun reconciliation. Affects defaults (service account, timeout), feature flags, and pod template. |
 | **PipelineRun** | Namespace config applied during PipelineRun reconciliation. Affects defaults and feature flags. Child TaskRuns inherit the PipelineRun's namespace config. |
-| **CustomRun** | Namespace config applied if the custom controller uses `config.FromContextOrDefaults(ctx)`. Third-party controllers must opt in by using the merged config from context. |
+| **CustomRun** | Not namespace-defaulted by the initial admission path. CustomRun-compatible controllers can opt in during reconciliation by using the merged config from context. |
 
 ## Design Evaluation
 

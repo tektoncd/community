@@ -151,3 +151,4 @@ This is the complete list of Tekton TEPs:
 |[TEP-0162](0162-event-based-pruning-of-tekton-resources.md) | event based pruning of tekton resources | proposed | 2025-06-18 |
 |[TEP-0163](0163-profilebased-dynamic-compute-resources-for-steps.md) | Profile-Based Dynamic Compute Resources for Steps | proposed | 2025-09-01 |
 |[TEP-0164](0164-tekton-kueue-integration.md) | Tekton Kueue Integration | proposed | 2026-01-28 |
+|[TEP-0165](0165-ordering-finally-tasks-with-run-after-always.md) | Ordering Finally Tasks with runAfterAlways | proposed | 2026-06-05 |

@@ -2,7 +2,7 @@
 status: proposed
 title: Task Notices and Warnings
 creation-date: '2026-03-20'
-last-updated: '2026-05-11'
+last-updated: '2026-06-09'
 authors:
 - '@waveywaves'
 - '@athorp96'
@@ -261,6 +261,11 @@ verification warnings, LimitRange adjustments, pod rescheduling events,
 pod affinity overwrites) in the TaskRun status, rather than hunting
 through ephemeral Kubernetes Events that may have already been garbage
 collected.
+
+As a **Tekton controller author**, I want a canonical way to reflect
+non-failure warnings and information on runs that can be semantically
+consumed by other services, integrations, and users. These notices are not
+always attributable to a step, so step attribution must remain optional.
 
 ### Requirements
 
@@ -529,7 +534,10 @@ Notice{Level: NoticeLevelInfo, Message: "<raw content>"}
 The parsing chain is: try `[]Notice`, try single `Notice` object, fall
 back to plain text. This follows the same pattern as `ParamValue.UnmarshalJSON`
 which has a four-stage fallback chain that never fails. Silently dropping
-user data is worse than a degraded parse.
+user data is worse than a degraded parse. The fallback is a convenience
+path only: plain text notices have no source location metadata and default
+to `info`, so task authors that need VCS annotations or warning severity
+should use the JSON format.
 
 ### Notes and Caveats
 
@@ -589,7 +597,9 @@ pattern:
 The termination message format is extended to include a notices entry.
 Because this transport competes for bytes with Results and Artifacts, the
 wire payload uses compact JSON field names while the public API keeps the
-readable `Notice` schema:
+readable `Notice` schema. The compact representation uses one-letter
+field names (`l`, `m`, `p`, `sl`) and one-letter levels (`w` for warning,
+`i` for info):
 
 ```json
 [
@@ -601,7 +611,9 @@ readable `Notice` schema:
 
 The reconciler expands this compact representation into
 `Notice{Level: "warning", Message: "unused variable", File: "main.go",
-StartLine: 42}` before writing status.
+StartLine: 42}` before writing status. The compact wire format is an
+internal transport detail only; task authors and API consumers use the
+readable public field names and level strings.
 
 ### Reconciler Processing
 
@@ -649,11 +661,13 @@ notices (Phase 2) are best-effort within this budget.
 
 **Sidecar-log fallback:** When `results-from: sidecar-logs` is
 configured (TEP-0127), notices use the same sidecar-log mechanism,
-bypassing the 12 KB limit entirely. This fallback is opt-in because
-sidecar-log results are not enabled by default and have their own scaling
-trade-offs. Without sidecar-logs, step-emitted notices remain
-best-effort and may be truncated when the termination message budget is
-exhausted.
+bypassing the 12 KB limit. This fallback is opt-in, is not enabled by
+default, and inherits the operational and scaling trade-offs of
+sidecar-log results. It is not the default answer for large reports.
+Without sidecar-logs, step-emitted notices remain best-effort and may be
+truncated when the termination message budget is exhausted. Workloads that
+produce large, structured reports should publish those reports as
+artifacts and use notices only for bounded summary warnings.
 
 ### Budget Priority
 

@@ -326,6 +326,7 @@ orgs:
         - AlanGreene
         members:
         - briangleeson
+        - kaushalnavneet
         - LyndseyBu
         # alumni:
         # - skaegi
@@ -661,23 +662,24 @@ orgs:
         - afrittoli
         - ImJasonH
         members:
-        - steveodonovan
-        - Megan-Wright
-        - carlos-logro
         - AlanGreene
         - briangleeson
-        - ncskier
-        - CarolynMabbott
-        - dibbles
-        - mnuttall
-        - akihikokuroda
-        - a-roberts
-        - vdemeester
-        - skaegi
-        - jessm12
-        - ziheng
-        - LyndseyBu
         - kaushalnavneet
+        - LyndseyBu
+        - skaegi
+        - vdemeester
+        # alumni:
+        # - a-roberts
+        # - akihikokuroda
+        # - carlos-logro
+        # - CarolynMabbott
+        # - dibbles
+        # - jessm12
+        # - Megan-Wright
+        # - mnuttall
+        # - ncskier
+        # - steveodonovan
+        # - ziheng
         privacy: closed
         repos:
           dashboard: read

@@ -25,12 +25,11 @@ authors:
 - [Proposal](#proposal)
   - [Overview](#overview)
   - [Notice Type Definition](#notice-type-definition)
-  - [Emitting Notices from Steps](#emitting-notices-from-steps)
   - [Emitting Notices from Controllers](#emitting-notices-from-controllers)
-  - [Notice Aggregation in PipelineRun Status](#notice-aggregation-in-pipelinerun-status)
-  - [Plain Text Fallback](#plain-text-fallback)
+  - [Deferred: Emitting Notices from Steps](#deferred-emitting-notices-from-steps)
+  - [Deferred: Notice Aggregation in PipelineRun Status](#deferred-notice-aggregation-in-pipelinerun-status)
   - [Notes and Caveats](#notes-and-caveats)
-- [Design Details](#design-details)
+- [Deferred Step-Emitted Notice Design Details](#deferred-step-emitted-notice-design-details)
   - [Entrypoint Collection](#entrypoint-collection)
   - [Reconciler Processing](#reconciler-processing)
   - [Size Limits and Termination Message Budget](#size-limits-and-termination-message-budget)
@@ -48,7 +47,12 @@ authors:
   - [Performance](#performance)
   - [Risks and Mitigations](#risks-and-mitigations)
   - [Drawbacks](#drawbacks)
-- [Alternatives](#alternatives)
+- [Alternatives and Explored Ideas](#alternatives-and-explored-ideas)
+  - [StepState Notices and Flattened TaskRun Notices](#stepstate-notices-and-flattened-taskrun-notices)
+  - [Condition Message Count Updates](#condition-message-count-updates)
+  - [Configurable Notice Caps](#configurable-notice-caps)
+  - [Additional Notice Fields and Levels](#additional-notice-fields-and-levels)
+  - [Plain Text Fallback](#plain-text-fallback)
   - [Results with Reserved Prefix](#results-with-reserved-prefix)
   - [Kubernetes Events](#kubernetes-events)
   - [Annotations on TaskRun](#annotations-on-taskrun)
@@ -58,7 +62,7 @@ authors:
 - [Implementation Plan](#implementation-plan)
   - [Phase 1: Controller Notices and Core API (alpha)](#phase-1-controller-notices-and-core-api-alpha)
   - [Phase 2: Step-Emitted Notices (alpha)](#phase-2-step-emitted-notices-alpha)
-  - [Phase 3: PipelineRun Aggregation](#phase-3-pipelinerun-aggregation)
+  - [Future Phase: PipelineRun Aggregation](#future-phase-pipelinerun-aggregation)
   - [Phase 4: Graduation to Beta](#phase-4-graduation-to-beta)
   - [Test Plan](#test-plan)
   - [Infrastructure Needed](#infrastructure-needed)
@@ -83,24 +87,20 @@ overwritten by the final Succeeded state. This gap prevents CI/CD systems
 built on Tekton (such as Konflux, Pipelines as Code) from surfacing
 warnings as GitHub Check Run annotations, PR comments, or dashboard alerts.
 
-This TEP introduces:
+This TEP's implementable Phase 1 introduces:
 
 - A `Notice` type with `level`, `message`, optional `step`, and optional
   source location fields (`file`, `startLine`)
 - A `notices` field on `TaskRunStatusFields` for task-level notices
-- A `notices` field on `StepState` for per-step notices
 - Controller-emitted notices written directly to status (no termination
   message path)
-- Per-step notice directory at `/tekton/steps/<step-name>/notices/` using
-  the existing step metadata directory infrastructure (no new volume mount)
-- Entrypoint collection of notices alongside results
-- PipelineRun summary aggregation of notice counts from child TaskRuns
 
-The implementation is phased: Phase 1 ships the API and controller-emitted
-notices (~200 LOC, no entrypoint changes). Phase 2 adds step-emitted
-notices with honest termination message budget assessment.
+The following designs remain documented, but are explicitly deferred until
+Phase 1 has usage data: per-step notice files, entrypoint collection,
+termination-message transport, sidecar-log fallback, PipelineRun summary
+aggregation, and alternate API shapes such as `StepState.Notices`.
 
-**Example TaskRun status with notices:**
+**Example TaskRun status after the deferred step-emitted-notices phase:**
 
 ```yaml
 status:
@@ -183,17 +183,14 @@ Downstream platforms built on Tekton are directly impacted:
 
 ### Goals
 
-- Steps and controllers can emit structured notices (warnings, info) that
-  persist in TaskRun status after completion.
-- Notices are available at both the step level (`stepState.notices`) and
-  the task level (`taskRunStatus.notices`) for flexible consumption.
-- The mechanism follows existing Tekton patterns (similar to Results via
-  `/tekton/results/`).
+- Controllers can emit structured notices (warnings, info) that persist in
+  TaskRun status after completion.
 - Downstream systems (PAC, Konflux, Dashboard, `tkn` CLI) can consume
   notices from the TaskRun status API without parsing logs.
-- PipelineRun status summarizes notice counts from child TaskRuns.
 - Controller-emitted notices (e.g., verification warnings, deprecated API
   field usage) have a structured home instead of ephemeral Events.
+- Step-emitted notices and PipelineRun notice summaries are documented as
+  deferred follow-up designs, not Phase 1 requirements.
 
 ### Non-Goals
 
@@ -274,36 +271,36 @@ always attributable to a step, so step attribution must remain optional.
 - The mechanism must not affect the TaskRun or PipelineRun's Succeeded
   condition. A run with notices is still Succeeded if all steps exit 0.
 - Notices must persist in TaskRun status (not ephemeral like Events).
-- Step-emitted notices must work within the existing termination message
-  size constraints or use the sidecar-log approach (TEP-0127) for larger
-  payloads.
 - Controller-emitted notices bypass the termination message path entirely
   (written directly to status by the reconciler).
-- Step-emitted notices must be attributable to a specific step (the
-  reconciler populates the `step` field automatically). Controller-emitted
-  notices have no step attribution.
+- Controller notices have no step attribution.
 - The mechanism should support optional source location (file, line) for
   VCS annotation use cases.
+- Step-emitted notices must work within the existing termination message
+  size constraints or use the sidecar-log approach (TEP-0127) for larger
+  payloads if/when that deferred phase is implemented.
 
 ## Proposal
 
 ### Overview
 
 This proposal introduces notices as a first-class concept in the Tekton
-API, delivered in two phases:
+API. The implementable scope is intentionally small:
 
-**Phase 1: Controller notices and core API.** The `Notice` type and
-`notices` fields are added to the API. The reconciler can write notices
-directly to TaskRun status (e.g., verification warnings, deprecated field
-usage). No entrypoint changes are needed. This immediately unblocks
-downstream consumers (PAC, Konflux) that can start consuming
-`status.notices`.
+**Phase 1: Controller notices and core API.** The `Notice` type and a
+`notices` field are added to TaskRun status. The reconciler can write
+bounded notices directly to TaskRun status (e.g., verification warnings,
+pod rescheduling history, deprecated field usage). No entrypoint changes
+are needed. This immediately unblocks downstream consumers (PAC, Konflux,
+Dashboard) that can start consuming `status.notices`.
 
-**Phase 2: Step-emitted notices.** Steps write notice files to their
-per-step notices directory, following the Artifacts (TEP-0147) pattern.
-The entrypoint collects notices and includes them in the termination
-message. This phase requires honest budget assessment of the termination
-message constraints.
+Everything that requires a step transport is deferred. That includes
+`$(step.notices.path)`, entrypoint collection, `NoticeResultType`,
+termination-message budgeting, sidecar-log fallback, truncation signaling,
+PipelineRun summary aggregation, and alternate API shapes such as
+`StepState.Notices`. These designs are preserved below as deferred design
+notes and explored alternatives so they can be implemented later without
+being part of Phase 1.
 
 ### Notice Type Definition
 
@@ -370,7 +367,7 @@ design considered `"error"` for non-fatal errors, but a non-fatal error
 is a warning by definition. Two levels keep the semantics clean
 and simplify downstream mapping.
 
-The `notices` field is added to both `TaskRunStatusFields` and `StepState`:
+Phase 1 adds the `notices` field to `TaskRunStatusFields`:
 
 ```go
 type TaskRunStatusFields struct {
@@ -382,25 +379,18 @@ type TaskRunStatusFields struct {
     // +listType=atomic
     Notices []Notice `json:"notices,omitempty"`
 }
-
-type StepState struct {
-    // ... existing fields ...
-
-    // Notices are structured messages emitted by this step.
-    // +optional
-    // +listType=atomic
-    Notices []Notice `json:"notices,omitempty"`
-}
 ```
 
 The `+listType=atomic` marker is consistent with every other status array
 in the Tekton v1 API (`Steps`, `Results`, `Sidecars`, `ChildReferences`,
 `RetriesStatus`, `Artifacts.Inputs`, `Artifacts.Outputs`). Tekton does not
 use Server-Side Apply for status updates, so the list type marker has no
-runtime effect. The reconciler reconstructs the entire notices array from
-pod termination messages on each reconciliation (single-writer model).
+runtime effect.
 
-### Emitting Notices from Steps
+A separate `StepState.Notices` field was explored and is documented in
+[Alternatives and Explored Ideas](#stepstate-notices-and-flattened-taskrun-notices).
+
+### Deferred: Emitting Notices from Steps
 
 Steps emit notices by writing JSON files to their per-step notices
 directory. The path is `/tekton/steps/<step-name>/notices/`, which the
@@ -478,7 +468,7 @@ notices from accumulating across reconciliation loops.
 | LimitRange resource adjustment | Silent, no record | Notice records the adjustment |
 | Result validation failure | Warning Event only | Notice + Event (hybrid) |
 
-### Notice Aggregation in PipelineRun Status
+### Deferred: Notice Aggregation in PipelineRun Status
 
 PipelineRun status includes a summary `noticeSummary` field that
 collects notice counts from child TaskRuns, following the
@@ -521,31 +511,13 @@ per summary entry, 100 entries consume ~8 KB. Dashboard gets badge data
 without additional API calls. PAC and Konflux can target-fetch only
 TaskRuns that actually have notices.
 
-### Plain Text Fallback
-
-The entrypoint supports a fallback for plain text notice files. When a
-file in the notices directory is not valid JSON, the entrypoint wraps
-the content as an info-level notice:
-
-```go
-Notice{Level: NoticeLevelInfo, Message: "<raw content>"}
-```
-
-The parsing chain is: try `[]Notice`, try single `Notice` object, fall
-back to plain text. This follows the same pattern as `ParamValue.UnmarshalJSON`
-which has a four-stage fallback chain that never fails. Silently dropping
-user data is worse than a degraded parse. The fallback is a convenience
-path only: plain text notices have no source location metadata and default
-to `info`, so task authors that need VCS annotations or warning severity
-should use the JSON format.
-
 ### Notes and Caveats
 
 - Notices are **not** included in the TaskRun's Succeeded condition
   determination. A TaskRun with notices is still `Succeeded: True` if all
-  steps exited 0. However, the condition **message** includes notice counts
-  (e.g., `"All Steps completed. 3 warning(s) emitted."`) for visibility in
-  `kubectl get taskrun` without any API change.
+  steps exited 0.
+- Updating the Succeeded condition message with notice counts was explored
+  but is deferred; the typed `status.notices` field is the Phase 1 contract.
 - A future TEP may introduce a `SucceededWithWarnings` condition reason
   (following the pattern of `PipelineRunReasonCompleted` for runs with
   skipped tasks). This TEP does not commit to that decision.
@@ -566,7 +538,7 @@ should use the JSON format.
 - When `onError: continue` is set, the entrypoint continues normally
   after step failure and notices are collected as usual.
 
-## Design Details
+## Deferred Step-Emitted Notice Design Details
 
 ### Entrypoint Collection
 
@@ -769,24 +741,19 @@ invalid, `"warning"` is valid).
 
 ### Reusability
 
-Notices follow the same architectural pattern as Artifacts (TEP-0147):
+Phase 1 reuses the existing controller status-update path: the reconciler
+adds bounded notices directly to TaskRun status. The deferred step-emitted
+design follows the same architectural pattern as Artifacts (TEP-0147):
 per-step directories under `/tekton/steps/<step-name>/` -> entrypoint
-collection -> termination message -> reconciler -> status. This reuses
-the existing step metadata directory, entrypoint collection, and status
-propagation infrastructure. No new volume mounts are introduced. Task
-authors familiar with Results and Artifacts will find Notices intuitive.
+collection -> termination message -> reconciler -> status.
 
 ### Simplicity
 
-The core user experience is simple: write a JSON file to the step's
-notices directory, and the notices appear in the TaskRun status. No
-new binaries, sidecars, or configuration is needed for basic usage.
+Phase 1 requires no task author action: controller notices appear in
+TaskRun status when the feature flag is enabled.
 
-Phase 1 (controller notices) requires no user action at all.
-
-The API addition is minimal: one new type (`Notice`) and one new field
-on two existing types (`TaskRunStatusFields.Notices` and
-`StepState.Notices`).
+The API addition is minimal: one new type (`Notice`) and one new field on
+one existing type (`TaskRunStatusFields.Notices`).
 
 ### Flexibility
 
@@ -802,8 +769,8 @@ on two existing types (`TaskRunStatusFields.Notices` and
 
 ### Conformance
 
-- This proposal adds new optional fields to the TaskRun and PipelineRun
-  status. No existing fields are modified.
+- Phase 1 adds a new optional field to TaskRun status. No existing fields
+  are modified.
 - The `Notice` type introduces no new Kubernetes concepts. It is a
   plain struct stored in the status subresource.
 - The API spec would need to document the new `notices` field and the
@@ -811,8 +778,8 @@ on two existing types (`TaskRunStatusFields.Notices` and
 
 ### User Experience
 
-- **Task authors**: Write JSON to the step's notices directory. Plain
-  text fallback for convenience.
+- **Task authors**: No Phase 1 changes. A deferred phase may add a
+  step-emitted JSON file path.
 - **Platform engineers**: Read `taskrun.status.notices` to build
   integrations (dashboards, VCS annotations, alerting).
 - **Controller authors**: Append notices directly to status during
@@ -824,34 +791,96 @@ on two existing types (`TaskRunStatusFields.Notices` and
 
 ### Performance
 
-- **Minimal overhead**: Notice collection adds one directory read per step
-  (same as results). If no notice files exist, no work is done.
-- **Termination message size**: Notices are best-effort after results.
-  Per-step caps and message limits bound growth.
-- **Reconciler**: Notice parsing adds negligible CPU. Controller notice
-  deduplication is O(n) where n <= 10.
+- **Phase 1 overhead**: Controller notice deduplication is O(n) where n <= 10.
+- **Deferred step transport**: Notice collection would add one directory
+  read per step and compete with the termination message budget, which is
+  why it is not part of Phase 1.
 
 ### Risks and Mitigations
 
 | Risk | Severity | Mitigation |
 |------|----------|------------|
 | **Termination message overflow** | HIGH | Phase 1 uses controller notices (no termination message). Phase 2 uses results-first eviction. Sidecar-log fallback for large payloads. |
-| **CR size** | MEDIUM | PipelineRun uses summary counts (~8 KB for 100 tasks) instead of full copies. Per-TaskRun cap of 50 notices. |
-| **Abuse (excessively large notices)** | MEDIUM | Message capped at 1024 characters. File path capped at 256 characters. Per-step and per-TaskRun caps. |
+| **CR size** | MEDIUM | Phase 1 uses a small controller-notice cap. PipelineRun summaries are deferred. |
+| **Abuse (excessively large notices)** | MEDIUM | Message capped at 1024 characters. File path capped at 256 characters. Controller notices capped at 10. |
 | **Backward compatibility** | LOW | New optional field, defaulting to empty. No behavior change for existing TaskRuns. |
-| **Schema bloat** | LOW | One new type, two new fields. Comparable to the recent `Artifacts` addition. |
-| **Invalid JSON from step authors** | LOW | Plain text fallback wraps content gracefully. Does not affect step success/failure. |
+| **Schema bloat** | LOW | One new type, one new status field. |
+| **Invalid JSON from step authors** | LOW | Only applies to the deferred step-emitted transport. |
 
 ### Drawbacks
 
 - Adds another concept to the TaskRun API surface that users must learn.
-- Step-emitted notices compete with Results for termination message space.
+- Deferred step-emitted notices would compete with Results for termination message space.
 - Downstream consumers must be updated to display notices (Dashboard, CLI,
   PAC, Konflux). The value is only realized when integrations exist.
 - Phase 1 (controller notices only) delivers partial value. The full
   step-emitted notice experience requires Phase 2.
 
-## Alternatives
+## Alternatives and Explored Ideas
+
+### StepState Notices and Flattened TaskRun Notices
+
+The original design stored step-emitted notices in both `StepState.Notices`
+and the flattened `TaskRunStatusFields.Notices` list:
+
+```go
+type StepState struct {
+    // ... existing fields ...
+
+    // Notices are structured messages emitted by this step.
+    // +optional
+    // +listType=atomic
+    Notices []Notice `json:"notices,omitempty"`
+}
+```
+
+This makes per-step display cheap, but duplicates the same notice data in
+two status locations and requires the reconciler to keep both arrays in
+sync. Phase 1 keeps a single canonical `status.notices` array. A later
+step-emitted-notices implementation can re-evaluate whether per-step
+storage is worth the extra API surface.
+
+### Condition Message Count Updates
+
+The original design included notice counts in the Succeeded condition
+message, for example `"All Steps completed. 3 warning(s) emitted."`.
+This improves `kubectl get` visibility but changes condition messages and
+creates UI/test churn outside the typed API. Phase 1 keeps the condition
+semantics unchanged. CLI and Dashboard can add notice display by reading
+`status.notices` directly.
+
+### Configurable Notice Caps
+
+The original design proposed `max-notices-per-step`. Phase 1 does not add
+a new configuration key. Controller notices use a hard-coded small cap;
+step-emitted notices can revisit configurability after real usage shows
+that fixed caps are insufficient.
+
+### Additional Notice Fields and Levels
+
+The original design explored `endLine` and an `error` level. Both are
+deferred. Single-line annotations cover the initial linter/warning use
+case, and non-fatal errors map cleanly to `warning`. `endLine` is a
+backward-compatible addition if a concrete consumer needs ranges later.
+
+### Plain Text Fallback
+
+The entrypoint supports a fallback for plain text notice files. When a
+file in the notices directory is not valid JSON, the entrypoint wraps
+the content as an info-level notice:
+
+```go
+Notice{Level: NoticeLevelInfo, Message: "<raw content>"}
+```
+
+The parsing chain is: try `[]Notice`, try single `Notice` object, fall
+back to plain text. This follows the same pattern as `ParamValue.UnmarshalJSON`
+which has a four-stage fallback chain that never fails. Silently dropping
+user data is worse than a degraded parse. The fallback is a convenience
+path only: plain text notices have no source location metadata and default
+to `info`, so task authors that need VCS annotations or warning severity
+should use the JSON format.
+
 
 ### Results with Reserved Prefix
 
@@ -984,15 +1013,15 @@ wiring.
 
 ### Phase 1: Controller Notices and Core API (alpha)
 
-~200 lines of code, no entrypoint changes.
+No entrypoint changes.
 
 - Add `Notice` type to `pkg/apis/pipeline/v1/notice_types.go`
-- Add `notices` field to `TaskRunStatusFields` and `StepState`
+- Add `notices` field to `TaskRunStatusFields`
 - Add `EnableNotices` as `PerFeatureFlag` with `Stability: AlphaAPIFields`
   in `pkg/apis/config/feature_flags.go`
 - Implement controller notice emission in TaskRun reconciler
   (verification warnings, pod rescheduling, affinity overwrite, etc.)
-- Include notice count in Succeeded condition message
+- Keep Succeeded condition semantics unchanged; expose notices through status
 - Gate all paths behind the feature flag
 - Unit tests for notice types, validation, deduplication, caps
 
@@ -1007,7 +1036,7 @@ wiring.
 - Gate behind `-enable_notices` entrypoint flag
 - Integration tests for step-emitted notices
 
-### Phase 3: PipelineRun Aggregation
+### Future Phase: PipelineRun Aggregation
 
 - Add `PipelineRunNoticeSummary` type and `noticeSummary` to
   `PipelineRunStatusFields`

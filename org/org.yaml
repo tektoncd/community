@@ -113,7 +113,6 @@ orgs:
     - khrm
     - kimholmes
     - kimsterv
-    - lcarva
     - lbernick
     - lukehinds
     - maneeshmehra
@@ -256,7 +255,6 @@ orgs:
       chains.admins:
         description: the chains admins
         members:
-          - lcarva
           - priyawadhwa
           - PuneetPunamiya
           - wlynch
@@ -271,7 +269,6 @@ orgs:
         - enarha
         - infernus01
         - jkhelil
-        - lcarva
         - PuneetPunamiya
         - vdemeester
         - wlynch
@@ -632,7 +629,6 @@ orgs:
         - vinamra28
         - pierretasci
         - priyawadhwa
-        - lcarva
         - adambkaplan
         - chitrangpatel
         - avinal
@@ -688,7 +684,6 @@ orgs:
         - savitaashture
         - SM43
         - afrittoli
-        - lcarva
         - vinamra28
         - JeromeJu
         - chitrangpatel
@@ -880,7 +875,6 @@ orgs:
         - ImJasonH
         - infernus01
         - jkhelil
-        - lcarva
         - mattmoor
         - ngelman1
         - pritidesai

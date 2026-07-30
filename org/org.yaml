@@ -205,7 +205,22 @@ orgs:
     - zakisk
     - gbenhaim
     - mathur07
+    - celeztyne
     - dorzel
+    - eisraeli
+    - enkeefe00
+    - filariow
+    - gcpsoares
+    - glevi-rh
+    - hugares
+    - ilaydamari
+    - manish-jangra
+    - meyrevived
+    - mshaposhnik
+    - oswcab
+    - sadlerap
+    - vsokolen-redhat
+    - wbrefvem
     # alumni:
     # sbwsg
     teams:
@@ -450,6 +465,56 @@ orgs:
         privacy: closed
         repos:
           results: read
+      tekton-kueue.maintainers:
+        description: the tekton-kueue maintainers
+        maintainers:
+        - gbenhaim
+        - pramodbindal
+        - vdemeester
+        members:
+        - celeztyne
+        - eisraeli
+        - enkeefe00
+        - filariow
+        - gcpsoares
+        - glevi-rh
+        - hugares
+        - ilaydamari
+        - manish-jangra
+        - meyrevived
+        - mshaposhnik
+        - oswcab
+        - sadlerap
+        - vsokolen-redhat
+        - wbrefvem
+        privacy: closed
+        repos:
+          tekton-kueue: maintain
+      tekton-kueue.collaborators:
+        description: The tekton-kueue collaborators
+        maintainers:
+        - gbenhaim
+        - pramodbindal
+        - vdemeester
+        members:
+        - celeztyne
+        - eisraeli
+        - enkeefe00
+        - filariow
+        - gcpsoares
+        - glevi-rh
+        - hugares
+        - ilaydamari
+        - manish-jangra
+        - meyrevived
+        - mshaposhnik
+        - oswcab
+        - sadlerap
+        - vsokolen-redhat
+        - wbrefvem
+        privacy: closed
+        repos:
+          tekton-kueue: read
       triggers.maintainers:
         description: the triggers maintainers
         maintainers:

@@ -25,20 +25,29 @@ you can find something interesting to work on:
 
 ### Assigning yourself an issue
 
-To assign an issue to a user (or yourself), use GitHub or the Prow command by
+To assign an issue to yourself, use GitHub or the Prow command by
 writing a comment in the issue such as:
 
 ```none
 /assign @your_github_username
 ```
 
-Unfortunately, GitHub will only allow issues to be assigned to users who are
-["collaborators"](https://developer.github.com/v3/repos/Reviewers/), aka anyone
-in [the tektoncd org](https://github.com/orgs/tektoncd/people) and/or Reviewers
-added to the repo itself.
+If you are not a member of the `tektoncd` organization:
 
-But don't let that stop you! **Leave a comment in the issue indicating you would
-like to work on it** and we will consider it assigned to you.
+- You can assign yourself to issues that you created.
+- For issues that you do not own, you must first leave a comment indicating that you would like to work on the issue. Once you have submitted that comment, you can assign yourself to the issue.
+
+For example, first leave a comment:
+
+```none
+I would like to work on this issue.
+```
+
+After submitting that comment, you can assign yourself using GitHub or the Prow command:
+
+```none
+/assign @your_github_username
+```
 
 ### Contributor SLO
 
@@ -212,6 +221,7 @@ into a new file in the Postmortems folder.
 ### When to write a postmortem
 
 Project maintainers may decide to write a postmortem when:
+
 - a project fails to conform to its stability policies
 - users can't cleanly upgrade to a new release
 - a workflow that worked before a release breaks after upgrading
@@ -224,6 +234,7 @@ While we do seek to identify root causes of technical and human failures, assign
 a problem is an antipattern that should be avoided.
 
 Postmortems should cover:
+
 - How we will investigate and repair the existing incident?
 - How can we detect similar incidents in the future more quickly?
 - How can we reduce the impact of similar incidents?

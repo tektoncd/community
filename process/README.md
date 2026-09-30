@@ -10,6 +10,7 @@ you can find documented in their individual `CONTRIBUTING.md` files.
 - Pull request [reviews](#reviews) and [process](#pull-request-process)
 - [Propose projects](./projects.md)
 - [Writing design proposals](./tep-process.md)
+- [Vulnerability management (VMT)](./security-vmt.md)
 - [The CDF CLA](#cla)
 - [Postmortems](#postmortems)
 

@@ -492,6 +492,8 @@ For bypassed **matrix tasks** specifically, the controller must pre-populate `Re
 
 This behavior is correct and desired, but must be documented internally: entries in `GetTaskRunsResults()` for bypassed tasks are sourced from memoized status and have no backing live TaskRun object. Code that iterates this map must not unconditionally dereference a live TaskRun for every entry.
 
+**Scheduling guard gap:** The `isBypassed()` predicate must also be added to `isDone()` (`ResolvedPipelineTask.isDone`), not only to the result-resolution guards described above. `isDone()` determines whether a task's dependents can be scheduled and whether the main DAG is considered complete for the purpose of starting finally tasks. Without this, a downstream task that depends on a preserved task only through task ordering (`runAfter`), with no result reference, would never be scheduled, and finally tasks would never start while any preserved task remains in the graph.
+
 `isBypassed()` is only ever set to `true` during retry setup for tasks in `preservedTasks`. Normal (non-retry) PipelineRuns never set this predicate, so existing behavior for all non-retry runs is unchanged.
 
 **Execution-status context variables for bypassed tasks (`$(tasks.X.status)`):**
@@ -543,13 +545,13 @@ Chains reconciles every TaskRun and PipelineRun unconditionally and generates
 an attestation once an object is observed `completed`; there is no window in
 which handling can be safely retrofitted after alpha ships. Without explicit
 handling, a retry PipelineRun's preserved (bypassed) tasks have no TaskRun at
-all, so Chains' existing task-enumeration logic would silently omit them —
+all, so Chains' existing task-enumeration logic would silently omit them -
 producing an attestation that looks complete but is not.
 
 **Confirmed principles:**
 - **Rerun vs. preserved split:** Tasks rerun by this retry have a real new
-  TaskRun and are attested normally. Preserved tasks have no new TaskRun —
-  only an entry in `status.retriedTaskResults` — and must not be attested as
+  TaskRun and are attested normally. Preserved tasks have no new TaskRun -
+  only an entry in `status.retriedTaskResults` - and must not be attested as
   if a fresh execution produced them.
 - **No false build provenance on reuse:** If a preserved task's output (e.g.
   an image digest) is reused by a rerun task, the retry must not issue build
@@ -564,28 +566,71 @@ producing an attestation that looks complete but is not.
 - **No status forgery carries through to Chains:** consistent with the rest of
   this TEP, Chains must never attest a TaskRun that does not exist.
 
-**Open implementation questions** (tracked for resolution with the Chains
-maintainers before Phase 1 implementation begins):
-- Whether a preserved task's type-hinted output can be surfaced to Chains'
-  existing subject-extraction logic by bubbling it into the retry
-  PipelineRun's own pipeline-level `status.results[]` (under the source's
-  type-hint name), or whether new extraction logic is required.
-- How a retry's attestation references/links to the source run's previously
-  generated attestation for preserved tasks — whether Chains needs new
-  read-back capability against its own storage backend, whether it instead
-  reads the live source PipelineRun object while still in-cluster, or whether
-  resolution is left to the verifier/consumer.
-- Which provenance format(s) this applies to (`slsa/v1`, `v2alpha3`,
-  `v2alpha4`) — whether all three need the rerun/preserved distinction or only
-  the current recommended formatter.
-- Whether an existing attestation primitive (e.g. a verification-style
-  predicate for "used/tested" claims) is reused, or whether a new predicate
-  extension is defined.
-- Whether a provenance-gap retry still gets signed and uploaded in a degraded
-  form, or whether Chains refuses to attest at all in that case.
+**Design:**
 
-This section will be finalized once these are answered; the confirmed
-principles above constrain any answer that is chosen.
+Chains resolves a preserved task's provenance from the source PipelineRun
+directly, rather than the Pipeline reconciler duplicating that data into the
+retry PipelineRun's own status. The retry's `childReferences` continues to
+list only the tasks it actually ran - it is not extended to include preserved
+tasks' original TaskRuns, since `childReferences` is derived each reconcile
+from this run's own owned TaskRuns, and the same field is also consumed by
+cancellation and other Pipeline-internal logic that assumes ownership of
+everything it lists.
+
+1. **Subject and result availability.** Preserved tasks' type-hinted results
+   (e.g. `*_IMAGE_DIGEST`) reach the retry's `status.results[]` through the
+   same mechanism live tasks already use: `GetTaskRunsResults()` is extended
+   to source a preserved task's results from `retriedTaskResults` when no live
+   TaskRun exists for it. This requires no new code path for consumers of
+   `status.results[]`.
+2. **Attestation linking.** Chains recognizes the `tekton.dev/retryOf` /
+   `tekton.dev/retryOfUID` annotations on a PipelineRun it is about to attest.
+   If present, Chains fetches the source PipelineRun, verifies its UID matches
+   `retryOfUID`, and incorporates the TaskRuns referenced by the source's own
+   `childReferences` for any pipeline task not already present among the
+   retry's own children. These incorporated TaskRuns contribute to the
+   attestation's resolved dependencies and materials exactly as a
+   normally-executed TaskRun would.
+3. **No false build claims.** Entries contributed by an incorporated
+   (preserved) TaskRun are marked as inherited from the source run, using the
+   resolved dependency's existing extensible annotation mechanism —
+   distinguishing "this run reused this artifact" from "this run built this
+   artifact." No new predicate or attestation schema is introduced.
+4. **Provenance gaps.** If the source PipelineRun cannot be fetched (e.g.,
+   already garbage-collected), Chains still signs the retry's attestation,
+   marking the affected preserved tasks as an explicit provenance gap using
+   the same annotation mechanism, rather than omitting them without
+   indication or refusing to attest.
+5. **Chained retries.** Because a retry's immediate source may itself be a
+   retry whose preserved tasks it also does not own, `status.retriedTaskResults`
+   carries forward, alongside each preserved task's result values, a
+   reference to the PipelineRun that actually owns its TaskRun (name and UID).
+   This keeps the lookup in (2) a single hop regardless of how many retry
+   generations deep a preserved task originated.
+
+**Required Pipeline changes (beyond what is already specified elsewhere in
+this TEP):**
+- Extend `GetTaskRunsResults()` to resolve bypassed tasks from
+  `retriedTaskResults` (see Result Re-injection).
+- Extend `status.retriedTaskResults` to carry, per preserved task, the
+  owning PipelineRun's name and UID in addition to its result values,
+  supporting single-hop lookup across chained retries.
+
+**Required Chains changes:**
+- Recognize `tekton.dev/retryOf` / `tekton.dev/retryOfUID` on a PipelineRun
+  under attestation.
+- Fetch and UID-verify the source PipelineRun (or, for chained retries, the
+  owning ancestor indicated by `retriedTaskResults`).
+- Incorporate the referenced preserved-task TaskRuns into the attestation's
+  resolved dependencies/materials, annotated as inherited.
+- On fetch failure, annotate the affected tasks as a provenance gap rather
+  than omitting them silently.
+
+These changes require no new RBAC (Chains already watches and reads
+PipelineRuns cluster-wide), no new predicate type, and no formatter-specific
+schema changes — the annotation mechanism used for linking and gap-marking is
+part of the existing resolved-dependency structure and is populated
+identically regardless of formatter (`slsa/v1`, `v2alpha3`, `v2alpha4`).
 
 ### API Shape
 
@@ -916,9 +961,8 @@ Gated behind `enable-api-fields: alpha`.
    `retryOfUID` annotations, distinguish rerun tasks (attested from their
    fresh TaskRuns) from preserved tasks (referenced to the source run's
    provenance), and mark provenance gaps explicitly when source provenance is
-   unavailable. Exact predicate/attestation format and linking mechanism are
-   tracked separately pending input from the Chains maintainers (see Chains
-   Provenance Contract)
+   unavailable. See Chains Provenance Contract for the resolved design and
+   the required changes on each side.
 
 Deliverable: K8s-only retry while source data still exists, available under the alpha flag.
 

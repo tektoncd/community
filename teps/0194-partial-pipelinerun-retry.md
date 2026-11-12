@@ -2,7 +2,7 @@
 status: proposed
 title: Partial PipelineRun Retry
 creation-date: '2026-10-13'
-last-updated: '2026-11-05'
+last-updated: '2026-11-12'
 authors:
 - '@mzgutman'
 collaborators: []
@@ -130,7 +130,7 @@ post-GC retry.
 - For bypassed **matrix tasks**, harvest step 2 finds all N source TaskRuns for the pipeline task, sorts them by TaskRun name for deterministic ordering, and aggregates each result name into a single `type: array` entry in `retriedTaskResults`; the array index order is fixed at harvest time and must match the source run's ordering
 - Persist accepted memoized results in **status** (not as the user-writable source of truth)
 - Partial retry requires all required results; if any are missing or unreadable, setup fails with an actionable condition for `--partial`
-- Limit memoized results stored in status.retriedTaskResults to the configured max-result-size (about 4 KB by default). 
+- Limit each memoized result field stored in status.retriedTaskResults to ~4 KB per field (the TaskRun result limit; the `max-result-size` feature flag does not apply here — it only governs the `results-from: sidecar-logs` path). 
   In alpha/beta, if a required result exceeds that limit, fail --partial setup with an actionable error; do not truncate or omit the result. 
   Support for retrieving larger values through artifacts is a future     extension.
 - **Authz:** Harvest only what the controller is already allowed to read.
@@ -509,7 +509,7 @@ for the controller to accept the values without forging TaskRun conditions.
 **Phase 2 direction:** Let the Results or artifact service provide a verified snapshot of the source run’s results, authorized for the caller and bound to the source PipelineRun and retry plan. The controller verifies the snapshot before using it. If the caller cannot obtain one, an explicit partial retry fails; the user may request a separate full retry, which does not require the snapshot.
 The snapshot can carry small values inline and reference large artifacts by content digest and opaque store reference. The retry API stays storage-neutral; OCI-backed storage is one possible implementation (TEP-0193).
 
-**Limitations:** Result fields are limited to the configured result-size limit (4 KB by default; overridable via the `max-result-size` feature flag). Termination-message compression can increase effective capacity within that limit. Larger values must use artifacts.
+**Limitations:** Result fields are limited to ~4 KB per field. Termination-message compression can increase effective capacity within that limit. Larger values must use artifacts (TEP-0193). (The `max-result-size` feature flag only governs the `results-from: sidecar-logs` path and does not raise this limit.)
 
 ### Retry Orchestration Boundary
 
@@ -957,7 +957,7 @@ Docs warn that PVC reuse is as-is (not a snapshot), that `--partial` requires id
   - `parameter-mismatch` — `--partial` failed: effective params differ from source
   - `workspace-unavailable` — `--partial` failed: required PVC missing or unusable (including source-owned VCT); suggest a user-owned PVC or `--full`
   - `rwo-busy-deadline` — retry exceeded the RWO wait deadline
-- Users can inspect `status.preservedTasks` and `status.rerunTasks` to understand what was reused; both are empty when setup failed
+- Users can inspect `status.retryMetadata.preservedTasks` and `status.retryMetadata.rerunTasks` to understand what was reused; both are empty when setup failed
 - When `--partial` setup fails, clients should surface `strategyReason` and, for `empty-subgraph` / `workspace-unavailable`, offer a clear path to retry with `--full` (no automatic second create)
 
 **Dashboard / OpenShift Console:** Replace the existing **Rerun** button with a single **Retry** action on terminal unsuccessful PipelineRuns. The action includes a full/partial selector (dropdown or toggle) defaulting to **full**. Selecting **partial** and clicking Retry creates a PipelineRun with `retryOf` lineage and `tekton.dev/retryStrategy: partial`; the UI surfaces the setup failure if partial conditions are not met. After create, link to the new PipelineRun.
@@ -981,7 +981,7 @@ validated in tests; the architectural win is **one** planner.
 | RWO busy | Pending + requeue until deadline if the selected strategy uses the claim |
 | Tekton/PVC exclusivity | Prevent assignment when a visible Tekton run uses the claim; storage and other Pods are out of scope |
 | Source pruned quickly | Document live-data window; Phase 2 Results/artifacts |
-| Result size | Configured limit (4 KB by default, overridable via `max-result-size`); use artifacts for large payloads |
+| Result size | ~4 KB per field (the `max-result-size` flag only applies to the `results-from: sidecar-logs` path); use artifacts for large payloads |
 | Chains false attestation | No forged TaskRun success |
 | `onError: continue` staleness | Documented initial-release tradeoff |
 | Unauthorized historical results | Do not reuse them; fail closed for `--partial`. Phase 2 may enable partial retry through a verified, source- and plan-bound snapshot |

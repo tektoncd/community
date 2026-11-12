@@ -45,6 +45,7 @@ see-also:
   - [TaskRun Status](#taskrun-status)
   - [Pipeline-Level Artifact Bindings](#pipeline-level-artifact-bindings)
   - [Pipeline-Level Artifact Declarations](#pipeline-level-artifact-declarations)
+    - [PipelineRun Status](#pipelinerun-status)
   - [PipelineRun Artifact Inputs](#pipelinerun-artifact-inputs)
   - [Transparent Content Fetch and Verification](#transparent-content-fetch-and-verification)
   - [Storage Backend](#storage-backend)
@@ -195,12 +196,17 @@ declarative API + pluggable storage backends**.
    download, and digest verification without user intervention.
 5. **Pipeline-level binding** — Pipelines connect Tasks through artifact
    bindings with implicit DAG edges.
-6. **SLSA subject declaration** — `subject: true` on artifact declarations
+6. **Pipeline-level declaration** — Pipelines declare their own artifact
+   inputs and outputs (like `spec.params` / `spec.results`), and
+   PipelineRuns supply inputs and report outputs in status. This gives
+   CLI, Dashboard, Chains and Results a single place to read a run's
+   artifacts without walking child TaskRuns.
+7. **SLSA subject declaration** — `subject: true` on artifact declarations
    replaces the `IMAGE_URL`/`IMAGE_DIGEST` type-hinting convention.
-7. **Pluggable storage** — Define a `Provider` interface for storage
+8. **Pluggable storage** — Define a `Provider` interface for storage
    backends (OCI, S3, GCS, PVC). The default OCI implementation is in
    [TEP-0193](0193-tekton-artifacts-oci-storage.md).
-8. **Replace TEP-0147 Phase 1 API** — the manual `$(step.artifacts.path)`
+9. **Replace TEP-0147 Phase 1 API** — the manual `$(step.artifacts.path)`
    provenance-JSON model is deprecated and removed. This is acceptable
    because the feature is alpha, behind a feature flag.
 
@@ -491,12 +497,14 @@ in the artifact bindings rather than implicit in shared filesystem paths.
 8. Init container injection for downloading content artifacts.
 9. Digest verification on upload and download.
 10. Feature-flag gated (`enable-artifacts` flag, already exists).
+11. `Pipeline.spec.artifacts` inputs/outputs declarations.
+12. `PipelineRun.spec.artifacts.inputs`.
+13. `PipelineRun.status.artifacts.outputs`, aggregated from the declared
+    Pipeline outputs.
 
 **Nice to Have (can be deferred):**
 
-11. Pipeline-level artifact declarations (inputs/outputs on Pipeline spec).
-12. PipelineRun-level artifact inputs.
-13. Inline storage mode for small content artifacts.
+14. Inline storage mode for small content artifacts.
 
 ## Proposal
 
@@ -965,6 +973,8 @@ content fetch).
 | `$(tasks.<task>.outputs.<name>)`        | Serialized artifact JSON (for params) |
 | `$(tasks.<task>.outputs.<name>.uri)`    | URI of the first artifact value       |
 | `$(tasks.<task>.outputs.<name>.digest)` | Digest of the first artifact value    |
+| `$(artifacts.inputs.<name>.uri)`        | URI of the first PipelineRun input value |
+| `$(artifacts.inputs.<name>.digest)`     | Digest of the first PipelineRun input value |
 
 ### Entrypoint Behavior
 
@@ -1144,12 +1154,52 @@ spec:
 ```
 
 Pipeline-level outputs carry the same `ArtifactValue` references from
-the producing Tasks (no re-upload). The PipelineRun status includes the
-full artifact provenance chain.
+the producing Tasks (no re-upload).
+
+Semantics (mirroring `Pipeline.spec.results`):
+
+- Output `from` MUST be `tasks.<task>.outputs.<artifact>` and resolve to a
+  declared Task output. Names are unique within `inputs` and within
+  `outputs`.
+- `from` may reference a `finally` task. It does not create a DAG edge.
+- If the producing task is skipped, fails, or produced no value, the output
+  is omitted from status (warning event, not a failure), as for results.
+- Pipeline outputs hold references only (`uri`, `digest`, `ref`), never
+  uploaded content; `inline` values are carried over unchanged. This bounds
+  PipelineRun status size, which remains subject to the etcd object limit.
+
+#### PipelineRun Status
+
+```yaml
+status:
+  artifacts:
+    outputs:
+      - name: image
+        subject: true
+        values:
+          - uri: "registry.example.com/myapp@sha256:abc123..."
+            digest:
+              sha256: "abc123..."
+      - name: signatures
+        values: [...]
+```
+
+- The shape is identical to TaskRun `status.artifacts.outputs`, so
+  consumers reuse one parser.
+- `subject` is inherited from the producing declaration.
+- Status is populated **once, when the PipelineRun completes** (including
+  `finally` tasks). It is deliberately not updated incrementally: each
+  update is a write to the PipelineRun object, and per-output updates would
+  multiply API server and etcd load for little benefit. While running,
+  consumers can read per-task artifacts from the child TaskRuns.
 
 ### PipelineRun Artifact Inputs
 
-PipelineRuns can provide artifact inputs when triggering a run:
+PipelineRuns can provide artifact inputs when triggering a run. Each input
+MUST match a name declared in `Pipeline.spec.artifacts.inputs`; missing
+inputs fail validation. Reference values MUST carry a digest (as for Task
+outputs), and content values MUST carry a `ref` so the consuming Task's
+init container can fetch and verify them.
 
 ```yaml
 apiVersion: tekton.dev/v1
@@ -1358,7 +1408,10 @@ fetch and verify content from the storage backend.
 - Enables querying by artifact digest for cross-pipeline correlation.
 
 **UIs (Dashboard, third-party):**
-- Display artifact metadata (URI, digest, size) from TaskRun status.
+- Display a run's artifacts from `PipelineRun.status.artifacts.outputs`
+  (and `TaskRun.status.artifacts` for per-task detail) without walking
+  child TaskRuns.
+- Display artifact metadata (URI, digest, size) from the status values.
 - For content viewing: resolve `StorageRef` and fetch on demand.
 - `Inline` artifacts display directly without fetching.
 - `Size` field enables showing content size without fetching.
@@ -1530,6 +1583,9 @@ PVC-only.
 5. Implement `PipelineTask` artifact binding with implicit DAG edges
    (partially landed: `5f9fe0ecdf02`).
 6. Implement `Provider` interface.
+6a. Add `Pipeline.spec.artifacts`, `PipelineRun.spec.artifacts.inputs` and
+    `PipelineRun.status.artifacts.outputs` (resolved at completion, including
+    `finally` tasks).
 7. Integrate first backend (OCI, per TEP-0193).
 8. Deprecate and remove `$(step.artifacts.path)` / `$(artifacts.path)`.
 9. Update examples and documentation.
@@ -1537,11 +1593,9 @@ PVC-only.
 
 ### Phase 2 (Beta)
 
-1. Pipeline-level artifact declarations.
-2. PipelineRun artifact inputs.
-3. Chains integration (`subject: true` → SLSA subject).
-4. Additional backends.
-5. Inline storage mode.
+1. Chains integration (`subject: true` → SLSA subject).
+2. Additional backends.
+3. Inline storage mode.
 
 ### Phase 3 (Stable)
 

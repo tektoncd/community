@@ -165,7 +165,7 @@ post-GC retry.
 - CLI/UI may suggest available PVCs in the namespace (best-effort)
 
 **Definition stability:**
-- Execute `source.status.pipelineSpec` (resolved definition), not a live mutable `pipelineRef`
+- Execute the same pipeline definition the source executed: the retry carries the source's original `pipelineRef`/`pipelineSpec`, and `--partial` setup verifies the resolved definition is unchanged from the source's (see Pipeline Definition Stability); fail closed otherwise
 - Provenance annotations (Git SHA / OCI digest) for audit
 
 **API shape:**
@@ -185,7 +185,7 @@ post-GC retry.
 - Retry lineage metadata and source references are immutable after creation
 
 *At reconciliation (using the controller's own identity):*
-- Clients cannot write controller-owned retry status or memoized results
+- Controller-owned retry status (`retryMetadata`, `preservedTaskResults`, `reusedFrom` markers) is protected by RBAC on the `pipelineruns/status` subresource — standard user roles do not grant it — and by the controller writing it once during setup; no admission enforcement is required
 - The controller must not forge TaskRun status for bypassed tasks
 - The controller harvests only what its existing RBAC allows; it does not impersonate the requesting user or retain their identity
 - Unreadable historical data is never trusted. An explicit `--partial` request fails if required data is unreadable; a full retry does not require historical data.
@@ -211,12 +211,12 @@ Tekton are out of scope.
 
 **Backward compatibility:**
 - Normal PipelineRuns unchanged
-- Feature gated behind `enable-api-fields` flag, graduating alpha → beta → stable
+- Feature gated behind a dedicated per-feature flag (`enable-pipelinerun-retry`), graduating alpha → beta → stable. With the flag disabled, admission rejects creation of PipelineRuns carrying retry annotations; normal PipelineRuns and updates to already-created retry runs are unaffected
 
 ## Proposal
 
 **Terminology used in this TEP:**
-- **alpha / beta / stable** — feature graduation via `enable-api-fields` (Implementation Plan Phase 1 / 1b).
+- **alpha / beta / stable** — feature graduation via the `enable-pipelinerun-retry` per-feature flag (Implementation Plan Phase 1 / 1b).
 - **live-data path** — the initial design that harvests from live cluster objects while the source PipelineRun and related data still exist.
 - **Phase 2** — later Results / artifact-backed persistence that can survive source garbage collection.
 - `apiVersion: tekton.dev/v1` — the Kubernetes API version; unrelated to the terms above.
@@ -736,16 +736,26 @@ non-Tekton Pods are outside the guarantee.
 
 **Deadline configuration:**
 - Configurable via controller flag (default: 5 minutes or TBD per implementation)
-- Stored in retry status for observability
+- Surfaced in the RWO deadline failure condition for observability
 - Can be overridden per-retry via annotation (future enhancement if needed)
 
 ### Pipeline Definition Stability
 
-Copy/set `retry.spec.pipelineSpec` from `source.status.pipelineSpec` before
-scheduling (controller-owned snapshot). Provenance annotations record Git SHA /
-OCI digest for audit. Exact mutation/compare rules are a follow-up API contract
-(semantic compare after defaulting; users must not swap the definition after
-create).
+The retry references the same pipeline definition as the source: the CLI copies
+the source's original `spec.pipelineRef`/`spec.pipelineSpec` (it does **not**
+copy `source.status.pipelineSpec`, which contains the source's substituted
+values — its run name, UID, and parameters are baked in). For `--partial`,
+setup verifies the definition before scheduling: the controller resolves the
+retry's reference, applies the **source's** parameters, context values, and
+workspace substitutions (the same substitution chain used to produce
+`status.pipelineSpec`), and compares the result with
+`source.status.pipelineSpec` after normalizing current defaults. A mismatch
+fails setup with `strategyReason: definition-changed`; there is no fallback.
+The parameter-identity check runs first, so parameter differences are reported
+as `parameter-mismatch`. `--full` skips this check: it re-runs the current
+definition from scratch, and nothing is reused. On retry-annotated runs,
+`spec.pipelineRef`/`spec.pipelineSpec` are immutable after creation (admission).
+Provenance annotations record Git SHA / OCI digest for audit.
 
 ### Data Availability
 
@@ -779,8 +789,9 @@ metadata:
 
 `retryOf` is the **immediate parent name**; `retryOfUID` is that object's UID.
 `tekton.dev/retryStrategy` is set by the CLI (`--full`/`--partial`) and is immutable after create.
-`tekton.dev/retryAttempt` is **controller-derived**, not a client-chosen
-arbitrary number.
+`retryAttempt` is **controller-derived**, recorded in
+`status.retryMetadata.retryAttempt`; it is not a client-chosen number, and no
+`tekton.dev/retryAttempt` annotation is set.
 
 **Status (controller-owned):**
 
@@ -803,10 +814,14 @@ status:
         pipelineRunUID: 6fc8e6e6-1cc3-4fa5-bb3e-7c1b2e0b637a
   preservedTaskResults:
     - pipelineTaskName: clone          # scalar string result
+      owningPipelineRunName: build-42  # the run whose TaskRun produced these results (single hop for chained retries)
+      owningPipelineRunUID: 6fc8e6e6-1cc3-4fa5-bb3e-7c1b2e0b637a
       results:
         - name: commit-sha
           value: "abc123def456"
     - pipelineTaskName: build-images   # bypassed matrix task: aggregated array result
+      owningPipelineRunName: build-42
+      owningPipelineRunUID: 6fc8e6e6-1cc3-4fa5-bb3e-7c1b2e0b637a
       results:
         - name: IMAGE_REF
           type: array
@@ -839,18 +854,19 @@ When a `--partial` request fails during setup, `strategy` is set to `partial`
 records the failure cause. No additional PipelineRun is created; the retry
 object itself carries the failure state in its conditions and status.
 
-**Scheduling rule:** No retry TaskRuns until setup has persisted the definition
-snapshot and selected strategy. For partial retry, required memoized results
+**Scheduling rule:** No retry TaskRuns until setup has completed definition
+verification and selected strategy. For partial retry, required memoized results
 must also be ready. The strategy cannot change after TaskRuns are scheduled.
 
 **Strategy selection and immutability:**
 - Strategy is selected and persisted in status during the **first reconciliation** of a retry PipelineRun
 - Before any TaskRuns are created
-- Immutable thereafter (enforced via admission webhook or field validation)
+- Immutable thereafter (the controller writes `retryMetadata` once during setup and never rewrites it; status writes are restricted to the controller by RBAC on the `pipelineruns/status` subresource)
 
 **Admission / security:** The mandatory checklist is:
 
 *Validating webhook rules (admission-time, using the requesting user's identity):*
+- If the `enable-pipelinerun-retry` feature flag is disabled, reject creation of a PipelineRun carrying retry annotations (updates to already-created runs remain allowed)
 - Caller can `get` source PipelineRun and `create` the retry PipelineRun (checked against the request identity)
 - Source UID matches `retryOfUID` and source is terminal
 - Same namespace for retry, source, and PVCs
@@ -865,7 +881,7 @@ must also be ready. The strategy cannot change after TaskRuns are scheduled.
 - For `--partial`: effective params on retry must match effective params of source (resolved against `source.status.pipelineSpec` defaults); mismatch causes setup failure with `strategyReason: parameter-mismatch`
 
 *General:*
-- Clients cannot write controller-owned retry status or memoized results
+- Controller-owned retry status (`retryMetadata`, `preservedTaskResults`, `reusedFrom` markers) is protected by RBAC on the `pipelineruns/status` subresource — standard user roles do not grant it — and by the controller writing it once during setup; no admission enforcement is required
 - Controller-owned status only
 - For `--partial`: unreadable required results cause setup failure (fail closed); there is no silent fallback to full retry
 - Never accepted from an unsigned client payload
@@ -955,6 +971,7 @@ Docs warn that PVC reuse is as-is (not a snapshot), that `--partial` requires id
   - `missing-results` — `--partial` failed: required task results were unreadable
   - `result-conflict` — `--partial` failed: two harvest steps returned different values for the same result key
   - `parameter-mismatch` — `--partial` failed: effective params differ from source
+  - `definition-changed` — `--partial` failed: the pipeline definition resolved by the retry differs from the one the source executed; suggest `--full` (re-runs the current definition) or restoring/pinning the original definition
   - `workspace-unavailable` — `--partial` failed: required PVC missing or unusable (including source-owned VCT); suggest a user-owned PVC or `--full`
   - `rwo-busy-deadline` — retry exceeded the RWO wait deadline
 - Users can inspect `status.retryMetadata.preservedTasks` and `status.retryMetadata.rerunTasks` to understand what was reused; both are empty when setup failed
@@ -1028,14 +1045,15 @@ server-side planner.
 
 ### Phase 1 (Alpha)
 
-Gated behind `enable-api-fields: alpha`.
+Gated behind the `enable-pipelinerun-retry` per-feature flag (alpha; off by default).
 
 1. Failed subgraph library + tests (rules 1–9)
 2. CRD/status fields for retry metadata and memoized results; lineage annotations
-3. Reconciler setup path (source verify, definition snapshot, strategy selection, required harvest/workspace checks, then schedule partial or full task set)
+3. Reconciler setup path (source verify, definition verification, strategy selection, required harvest/workspace checks, then schedule partial or full task set)
 4. Admission/SAR enforcement for source refs, same-namespace scope, terminal
-   source, immutable lineage, controller-owned status, and PVC scope
-5. Definition snapshot from `status.pipelineSpec`
+   source, immutable lineage, feature-flag gating, and PVC scope (controller-owned
+   status is protected by RBAC on the status subresource, not by admission)
+5. Definition verification against `source.status.pipelineSpec` (see Pipeline Definition Stability)
 6. `tkn pipelinerun retry`, Dashboard/Console create+watch
 7. Docs: TTL, opt-in PVC reuse, Pending/deadline behavior, no reproducibility
    claim, idempotency warnings, and no status forgery
@@ -1050,7 +1068,7 @@ Deliverable: K8s-only retry while source data still exists, available under the 
 
 ### Phase 1b (Beta)
 
-Promote to `enable-api-fields: beta` once the alpha implementation is stable and feedback from early adopters is incorporated. Beta graduation requires:
+Promote `enable-pipelinerun-retry` to beta once the alpha implementation is stable and feedback from early adopters is incorporated. Beta graduation requires:
 - No breaking API changes since alpha
 - Test coverage for all subgraph rules, harvest order, chained retries, and fail-closed partial behavior
 - CLI (`tkn pipelinerun retry`) and Dashboard/Console Retry action shipping and tested
@@ -1094,7 +1112,8 @@ workspace, empty/finally-only subgraph (`empty-subgraph`), result conflicts,
 and source data insufficient for either strategy; harvest (scalar, array,
 object; matrix aggregation); `ResolveResultRef` status tier and `isBypassed()`;
 execution-status context seeding for `$(tasks.X.status)` / `$(tasks.status)`;
-snapshot compare.
+definition-verify compare (unchanged definition passes; edited definition fails
+with `definition-changed`; Tekton-version defaulting drift does not fail).
 
 Integration: create annotated PR → setup → selected task set only; verify
 partial retry when required data is available; verify terminal setup failure

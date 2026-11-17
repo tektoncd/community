@@ -2,7 +2,7 @@
 status: proposed
 title: Partial PipelineRun Retry
 creation-date: '2026-10-13'
-last-updated: '2026-11-16'
+last-updated: '2026-11-17'
 authors:
 - '@mzgutman'
 collaborators: []
@@ -434,7 +434,7 @@ under normal TaskRun rules.
 - Future: a later release could support per-combination retry if needed.
 - **Bypassed matrix tasks:** If all combinations of a matrix task succeeded and it is preserved (not in the subgraph), the controller must still make its aggregated results available to any re-running downstream tasks that reference `$(tasks.X.results.Y[*])` or `$(tasks.X.results.Y[i])`. See the Result Re-injection section for the required harvest and state-machine handling.
 
-**Rule 6 - Finally:** Not in the partial subgraph; they run fresh on either retry strategy. If *only* finally failed, the partial subgraph is empty, so an explicit `--partial` request fails with `strategyReason: empty-subgraph`. No full-retry PipelineRun is created automatically; the user may request a separate `--full` retry, which re-executes the main DAG and finally tasks. Docs and CLI/UI should surface this guidance when setup fails for that reason.
+**Rule 6 - Finally:** Not in the partial subgraph; they run fresh on either retry strategy. Finally tasks close over the execution they follow — they consume results and state from that run's taskruns — so a succeeded finally result is only accurate in the context of that execution; reusing it on a retry, where inputs are a different mix of preserved and re-executed results, would be inaccurate. If *only* finally failed, the partial subgraph is empty, so an explicit `--partial` request fails with `strategyReason: empty-subgraph`. No full-retry PipelineRun is created automatically; the user may request a separate `--full` retry, which re-executes the main DAG and finally tasks. Docs and CLI/UI should surface this guidance when setup fails for that reason.
 
 **Rule 7 - Custom tasks:** Atomic (no recursion into the custom controller).
 
